@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<!DOCTYPE workflow
+[
+  <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
+
+  <!-- USER-DEPENDENT ITEMS -->
+  <!ENTITY PROJ_HOME                         "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template">
+  <!ENTITY PROJ_DATA                         "&PROJ_HOME;/data">
+  <!ENTITY EMAIL                             "cgrudzien@ucsd.edu">
+  <!ENTITY USERID                            "cgrudzien">
+  <!ENTITY WRF_ROOT                          "/cw3e/mead/projects/cwp130/scratch/cgrudzien/WRF_CODE/WRF">
+  <!ENTITY GSI_ROOT                          "/cw3e/mead/projects/cwp106/scratch/cgrudzien/comGSIv3.7_EnKFv1.3">
+  <!ENTITY CRTM_VERSION                      "2.3.0">
+  <!-- END USER-DEPENDENT -->
+
+  <!-- WORKFLOW SETTINGS -->
+  <!ENTITY LOG                               "&PROJ_DATA;/log">
+  <!ENTITY STATIC_DATA                       "&PROJ_DATA;/static">
+  <!ENTITY INPUT_DATAROOT                    "&PROJ_DATA;/cycle_io">
+  <!-- END WORKFLOW SETTINGS -->
+
+  <!-- CYCLING SETTINGS -->
+  <!ENTITY CYCLE_START                       "201808121200">
+  <!ENTITY CYCLE_END                         "201808121800">
+  <!ENTITY CYCLE_INTV                        "06:00:00">
+  <!ENTITY MAX_DOM                           "1">
+  <!-- END CYCLING SETTINGS -->
+
+  <!-- WRF SETTINGS -->
+  <!ENTITY WRF_CONSTANT                      "&STATIC_DATA;/WRF_constants.ksh">
+  <!ENTITY FCST_LENGTH                       "7">
+  <!ENTITY FCST_INTERVAL                     "01">
+  <!ENTITY NIO_TASKS_PER_GROUP               "0"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
+  <!ENTITY NIO_GROUPS                        "1"> 
+  <!-- END WRF SETTINGS -->
+
+  <!-- GSI SETTINGS -->
+  <!ENTITY GSI_CONSTANT                      "&STATIC_DATA;/GSI_constants.ksh">
+  <!ENTITY IF_SATRAD                         "Yes">
+  <!ENTITY IF_OBSERVER                       "No"> <!-- NOTE, IF_OBSERVER crashes on the test case, need to do more investigation / debugging --> 
+  <!ENTITY NO_MEMBER                         "20">
+  <!ENTITY IF_HYBRID                         "No">
+  <!ENTITY IF_4DENVAR                        "No">
+  <!ENTITY IF_NEMSIO                         "No">
+  <!ENTITY IF_ONEOB                          "No">
+  <!-- END GSI SETTINGS -->
+ 
+  <!-- JOB SETTINGS -->
+  <!ENTITY PROJECT                           "cwp106">
+  <!ENTITY SCHED                             "slurm">
+  <!ENTITY COMPUTE                           "compute"> 
+  <!ENTITY MPIRUN                            "mpiexec">
+  <!ENTITY WRF_PROC                          "4">
+  <!ENTITY WRF_MEM_PER_CPU                   "5G">
+  <!ENTITY WRF_NODESIZE                      "4">
+  <!ENTITY WRF_NODES                         "1">
+  <!ENTITY WRF_WC                            "00:15:00">
+  <!ENTITY GSI_PROC                          "4">
+  <!ENTITY GSI_MEM_PER_CPU                   "5G">
+  <!ENTITY GSI_NODESIZE                      "4">
+  <!ENTITY GSI_NODES                         "1">
+  <!ENTITY GSI_WC                            "00:15:00">
+  <!-- END JOB SETTINGS -->
+]>
+
+<workflow realtime="F" scheduler="&SCHED;" cyclethrottle="31">
+
+  <cycledef group="q_daily">&CYCLE_START; &CYCLE_END; &CYCLE_INTV;</cycledef>
+
+  <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
+    <task name="gsi" maxtries="2" cycledefs="q_daily">
+
+      <command>&STATIC_DATA;/gsi.ksh</command>
+      <nodesize>&GSI_NODESIZE;</nodesize>
+      <cores>&GSI_PROC;</cores>
+      <walltime>&GSI_WC;</walltime>
+      <jobname><cyclestr>gsi_@Y@m@d@H</cyclestr></jobname>
+      <join><cyclestr>&LOG;/gsi/gsi_@Y@m@d@H.log</cyclestr></join>
+      <native>--partition=&COMPUTE;</native>
+      <native>--account=&PROJECT;</native>
+      <native>--export=ALL</native>
+      <native>--nodes=&GSI_NODES;</native>
+      <!--NOTE: it seems like there is an incompatibility in GSI where a mem-per-cpu field is specified within GSI
+	  runtime and this makes a conflict in SLURM when running from a workflow with other memory options specified
+          here in xml.  This is resolved in testing by using the mem-per-cpu argument in xml tags below.-->
+      <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
+      <native>--mail-type BEGIN</native>
+      <native>--mail-type END</native>
+      <native>--mail-type FAIL</native>
+
+      <envar>
+        <name>CONSTANT</name>
+        <value>&GSI_CONSTANT;</value>
+      </envar>
+      <envar>
+        <name>ANAL_TIME</name>
+        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>IF_SATRAD</name>
+        <value>&IF_SATRAD;</value>
+      </envar>
+      <envar>
+        <name>IF_OBSERVER</name>
+        <value>&IF_OBSERVER;</value>
+      </envar>
+      <envar>
+        <name>NO_MEMBER</name>
+        <value>&NO_MEMBER;</value>
+      </envar>
+      <envar>
+        <name>IF_HYBRID</name>
+        <value>&IF_HYBRID;</value>
+      </envar>
+      <envar>
+        <name>IF_4DENVAR</name>
+        <value>&IF_4DENVAR;</value>
+      </envar>
+      <envar>
+        <name>IF_NEMSIO</name>
+        <value>&IF_NEMSIO;</value>
+      </envar>
+      <envar>
+        <name>IF_ONEOB</name>
+        <value>&IF_ONEOB;</value>
+      </envar>
+      <envar>
+	<name>INPUT_DATAROOT</name>
+	<value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>GSI_ROOT</name>
+        <value>&GSI_ROOT;</value>
+      </envar>
+      <envar>
+	<name>CRTM_VERSION</name>
+	<value>&CRTM_VERSION;</value>
+      </envar>
+      <envar>
+        <name>MPIRUN</name>
+        <value>&MPIRUN;</value>
+      </envar>
+      <envar>
+        <name>GSI_PROC</name>
+        <value>&GSI_PROC;</value>
+      </envar>
+      <dependency> 
+	<!-- NOTE: the first cycle of this task will not start unless booted directly -->
+        <taskdep task="wrf" cycle_offset="-&CYCLE_INTV;"/> 
+     </dependency>
+    </task>
+
+    <task name="wrf" maxtries="3" cycledefs="q_daily">
+    
+      <command>&STATIC_DATA;/wrf.ksh</command>
+      <cores>&WRF_PROC;</cores>
+      <nodesize>&WRF_NODESIZE;</nodesize>
+      <walltime>&WRF_WC;</walltime>
+      <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
+      <join><cyclestr>&LOG;/wrf/wrf_@Y@m@d@H.log</cyclestr></join>
+      <native>--partition=&COMPUTE;</native>
+      <native>--account=&PROJECT;</native>
+      <native>--export=ALL</native>
+      <native>--nodes=&WRF_NODES;</native>
+      <native>--mail-type BEGIN</native>
+      <native>--mail-type END</native>
+      <native>--mail-type=FAIL</native>
+      <native>--mail-user=&EMAIL;</native>
+      <native>--mem-per-cpu=&WRF_MEM_PER_CPU;</native>
+      <envar>
+        <name>CONSTANT</name>
+        <value>&WRF_CONSTANT;</value>
+      </envar>
+      <envar>
+        <name>START_TIME</name>
+        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>FCST_LENGTH</name>
+        <value>&FCST_LENGTH;</value>
+      </envar>
+      <envar>
+	<name>FCST_INTERVAL</name>
+	<value>&FCST_INTERVAL;</value>
+      </envar>
+      <envar>
+	<name>CYCLE_INTV</name>
+	<value>&CYCLE_INTV;</value>
+      </envar>
+      <envar>
+        <name>MAX_DOM</name>
+        <value>&MAX_DOM;</value>
+      </envar>
+      <envar>
+        <name>WRF_ROOT</name>
+        <value>&WRF_ROOT;</value>
+      </envar>
+      <envar>
+        <name>STATIC_DATA</name>
+        <value>&STATIC_DATA;</value>
+      </envar>
+      <envar>
+        <name>INPUT_DATAROOT</name>
+        <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>WRF_PROC</name>
+        <value>&WRF_PROC;</value>
+      </envar>
+      <envar>
+        <name>MPIRUN</name>
+        <value>&MPIRUN;</value>
+      </envar>
+      <envar>
+        <name>NIO_GROUPS</name>
+        <value>&NIO_GROUPS;</value>
+      </envar>
+      <envar>
+        <name>NIO_TASKS_PER_GROUP</name>
+        <value>&NIO_TASKS_PER_GROUP;</value>
+      </envar>
+      <dependency>
+        <taskdep task="gsi" state="SUCCEEDED"/>
+      </dependency>
+
+      <hangdependency>
+        <datadep age="1200"><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H/wrfprd/rsl.out.0000</cyclestr></datadep>
+      </hangdependency>
+    </task>
+
+</workflow>
+

@@ -1,0 +1,62 @@
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.pyc
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.store
+*.log
+*.sql
+*.sqlite
+*.e*
+*.o*
+rsl*
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# no vim backups #
+##################
+*~
+*.swp
+
+# no output from nohup #
+########################
+*.out 
+
+# no actual data #
+##################
+*.nc
+wrfout_*
+wrfbdy_*
+wrfinput_*
+geo_em*
+gdas.*
+rap.*
+data/cycle_io
