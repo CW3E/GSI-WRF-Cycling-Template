@@ -168,10 +168,6 @@ fi
 # INPUT_DATAROOT = start time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wrfprd, wpsprd
 #
-# Below variables are derived by cycling.xml variables for convenience
-# 
-# RUN_COMMAND    = defined by the MPI settings above, calls WRF_EXE
-#
 #####################################################
 
 if [ ! -d ${WRF_ROOT} ]; then
@@ -193,8 +189,6 @@ if [ ! -d ${INPUT_DATAROOT} ]; then
   ${ECHO} "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
   exit 1
 fi
-
-RUN_COMMAND="${MPIRUN} -n ${WRF_PROC}"
 
 #####################################################
 # Begin pre-WRF setup
@@ -384,13 +378,6 @@ ${ECHO}
 
 now=`${DATE} +%Y%m%d%H%M%S`
 ${ECHO} "Running WRF at ${now}"
-
-# NEW VERSION THAT GIVES MPI BUGS
-#${ECHO} "${RUN_COMMAND} ${WRF_EXE}"
-#${RUN_COMAND} ${WRF_EXE}
-
-# OLD VERSION THAT WORKS WITH ROCOTO
-${ECHO} "${MPIRUN} -n ${WRF_PROC} ${WRF_EXE}"
 ${MPIRUN} -n ${WRF_PROC} ${WRF_EXE}
 
 #####################################################
