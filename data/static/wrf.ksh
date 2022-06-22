@@ -227,12 +227,6 @@ for file in ${WRF_DAT_FILES[@]}; do
   ${LN} -sf ${file} ./
 done
 
-# Make sure the executable is linked correctly, directly from WRF/main
-${LN} -sf ${WRF_EXE} ./
-
-# prepend working directory to path so that the executable is found
-export PATH=`pwd`:$PATH
-
 # Link WRF initial conditions from GSI analysis 
 # NOTE: THIS IS CURRENTLY ONLY DESIGNED FOR A SINGLE DOMAIN
 # MORE TESTING AND INVESTIGATION IS NEEDED TO GENERALIZE THE GSI
@@ -430,7 +424,6 @@ fi
 cycle_intv=`${DATE} +%H -d "${CYCLE_INTV}"`
 ${ECHO} ${START_TIME}
 datestr=`${DATE} +%Y%m%d%H -d "${START_TIME} ${cycle_intv} hours"`
-#new_bkg=${INPUT_DATAROOT}/../${datestr}/bkg
 new_bkg=${datestr}/bkg
 ${MKDIR} -p ../../${new_bkg} 
 
@@ -457,8 +450,6 @@ for file in ${WRF_DAT_FILES[@]}; do
     ${RM} -f `${BASENAME} ${file}`
 done
 
-# remove the wrf.exe link and complete
-${RM} -f ./wrf.exe
 ${ECHO} "wrf.ksh completed successfully at `${DATE}`"
 
 exit 0

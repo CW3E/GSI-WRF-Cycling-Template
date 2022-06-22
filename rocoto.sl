@@ -8,8 +8,8 @@
 # set up rocoto workflow code root
 ROCOTO_WORKFLOW_DIR="/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI_cycling_test/"
 
-# prepend the ROCOTO_WORKFLOW_DIR to the PYTHONPATH to find the workflow call / constants
+# prepend the ROCOTO_WORKFLOW_DIR to the PYTHONPATH to find the workflow call / utilities 
 export PYTHONPATH=$ROCOT_WORKFLOW_DIR:$PYTHONPATH
 
 # run rocoto 
-python advance_rocoto.py
+python start_rocoto.py

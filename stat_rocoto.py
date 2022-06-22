@@ -17,14 +17,7 @@
 # 
 ##################################################################################
 # imports
-import os
-import time
-from rocoto_utilities import run_rocotorun
+from rocoto_utilities import run_rocotostat
 
 ##################################################################################
-# monitor the jobs
-check = True
-
-while (check):
-    time.sleep(60)
-    run_rocotorun()
+run_rocotostat()

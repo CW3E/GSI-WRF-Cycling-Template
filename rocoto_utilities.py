@@ -25,7 +25,7 @@ import os
 # path to .xml workflow
 pathnam = "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template"
 
-# name of .xml workflow
+# name of .xml workflow WITHOUT the extension
 wrknam = "cycling"
 
 # path to database

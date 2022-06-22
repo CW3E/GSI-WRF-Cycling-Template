@@ -348,13 +348,7 @@ fi
 mkdir -p ${workdir}
 cd ${workdir}
 
-echo " Copy GSI executable, background file, and link observation bufr to working directory"
-
-# Link a copy of the GSI executable in the workdir
-${LN} -sf ${GSI_EXE} ./
-
-# prepend working directory to path so that the executable is found
-export PATH=`pwd`:$PATH
+echo " Copy background file and link observation bufr to working directory"
 
 # Copy over background field -- THIS IS MODIFIED BY GSI DO NOT LINK TO IT
 cp ${BKG_FILE} ./wrf_inout
@@ -618,7 +612,7 @@ ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 ${ECHO}
 
 echo ' Run GSI with' ${bk_core} 'background'
-${RUN_COMMAND} gsi.x > stdout.anl.${ANAL_TIME} 2>&1
+${RUN_COMMAND} ${GSI_EXE} > stdout.anl.${ANAL_TIME} 2>&1
 
 #####################################################
 # Run time error check
@@ -742,7 +736,7 @@ if [ ${IF_OBSERVER} = Yes ] ; then
 
 #  run  GSI
      echo ' Run GSI with' ${bk_core} 'for member ', ${ensmemid}
-    ${RUN_COMMAND} gsi.x > stdout_mem${ensmemid} 2>&1
+    ${RUN_COMMAND} ${GSI_EXE} > stdout_mem${ensmemid} 2>&1
 
 #  run time error check and save run time file status
      error=$?
@@ -770,8 +764,6 @@ if [ ${IF_OBSERVER} = Yes ] ; then
 
 fi
 
-# remove the gsi.x link and complete
-${RM} -f ./gsi.x
 ${ECHO} "gsi.ksh completed successfully at `${DATE}`"
 
 exit 0
