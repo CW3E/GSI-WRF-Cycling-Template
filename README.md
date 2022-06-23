@@ -90,6 +90,7 @@ compilations:
 The current release (of GSI) does not build with any of the Intel v19 compilers.
 Please use v18 or earlier to compile the code.
 </blockquote>
+
 The environment and software specific dependencies / paths should be specified respectively 
 in the `WRF_constants.ksh` and `GSI_constants.ksh` located in the 
 `data/static/` directory.  Example configuration / build scripts for WRF and GSI are
@@ -131,9 +132,7 @@ the first cycle, the `start_rocoto.py` script will use both of the `run_rocotoru
 workflow.  However, the `run_rocotoboot` method can also be used to restart a cycle-task
 for debugging and testing.  The `run_rocotostat` method in the `rocoto_utilities.py` module
 automates the check status command for Rocoto, so that this can be used by calling
-```
-python stat_rocoto.py
-```
+`python stat_rocoto.py`
 to check the status of the workflow, or used directly as with the other utitlies in a Python
 session.
 
