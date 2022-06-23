@@ -19,7 +19,7 @@ versions of this code base.
 
 ### Setting up workflow directories 
 
-A basic schema of the cycling workflow directory heirachy is pictured below:
+A basic schema of the cycling workflow directory heirarchy is pictured below:
 ```
 GSI-WRF-Cycling-Template
 |  cycling.xml                -- sets cycle options
