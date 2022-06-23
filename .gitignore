@@ -23,6 +23,7 @@
 
 # Logs and databases #
 ######################
+*.lock
 *.store
 *.log
 *.sql
@@ -59,6 +60,3 @@ wrfinput_*
 geo_em*
 gdas.*
 rap.*
-data/cycle_io
-data/log
-data/workflow
