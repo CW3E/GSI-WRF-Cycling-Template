@@ -33,7 +33,7 @@ outnam = "/cw3e/mead/projects/cwp106/scratch/cgrudzien/" +\
          "GSI-WRF-Cycling-Template/data"
 
 # path to rocoto binary root directory
-pathroc = "/cw3e/mead/projects/cwp130/scratch/cgrudzien/rocoto-1.3.3"
+pathroc = "/cw3e/mead/projects/cwp106/scratch/cgrudzien/rocoto"
 
 ##################################################################################
 # rocoto utility commands

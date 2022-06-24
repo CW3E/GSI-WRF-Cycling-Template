@@ -53,7 +53,7 @@
 #####################################################
 
 # uncomment to run verbose for debugging / testing
-set -x
+#set -x
 
 bk_core=ARW
 bkcv_option=NAM
