@@ -166,12 +166,7 @@ The full cycling experiment will complete with the forecast initialized from the
 to initate a new cycle.
 
 ## Known issues
-Testing with this workflow has only been validated with using a
-```
---mem-per-cpu
-```
-argument in the `cycling.xml` calls to Slurm.  Ongoing debugging and testing will evaluate if
-this can be generalized to include a `--mem` argument instead.
+See the Github issues page for ongoing issues / debugging efforts with this template.
 
 ## Posting issues
 If you encounter bugs, please post a detailed issue in the Github page, with steps and parameter
