@@ -49,7 +49,7 @@
   <!ENTITY PROJECT                           "cwp106">
   <!ENTITY SCHED                             "slurm">
   <!ENTITY COMPUTE                           "compute"> 
-  <!ENTITY MPIRUN                            "mpiexec">
+  <!ENTITY MPIRUN                            "mpirun">
   <!ENTITY WRF_PROC                          "4">
   <!ENTITY WRF_MEM_PER_CPU                   "5G">
   <!ENTITY WRF_NODESIZE                      "4">

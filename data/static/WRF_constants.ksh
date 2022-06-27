@@ -71,7 +71,6 @@ LN=/bin/ln
 LS=/bin/ls
 MD5SUM=/bin/md5sum
 MKDIR=/bin/mkdir
-MPIRUN=mpirun
 MV=/bin/mv
 OD=/bin/od
 PATH=${NCARG_ROOT}/bin:${PATH}

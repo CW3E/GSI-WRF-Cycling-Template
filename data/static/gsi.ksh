@@ -53,7 +53,7 @@
 #####################################################
 
 # uncomment to run verbose for debugging / testing
-#set -x
+set -x
 
 bk_core=ARW
 bkcv_option=NAM
@@ -151,7 +151,6 @@ fi
 #
 # DATE_STR       = defined by the ANAL_TIME variable, to be used as path
 #                  name variable in YYMMDDHH format 
-# RUN_COMMAND    = defined by the MPI settings above, calls gsi.x
 #####################################################
 
 if [ ! "${ANAL_TIME}" ]; then
@@ -194,7 +193,6 @@ if [ -z "${GSI_PROC}" ]; then
   exit 1
 fi
 
-RUN_COMMAND="${MPIRUN} -n ${GSI_PROC}"
 
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
@@ -612,7 +610,7 @@ ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 ${ECHO}
 
 echo ' Run GSI with' ${bk_core} 'background'
-${RUN_COMMAND} ${GSI_EXE} > stdout.anl.${ANAL_TIME} 2>&1
+${MPIRUN} -n ${GSI_PROC} ${GSI_EXE} > stdout.anl.${ANAL_TIME} 2>&1
 
 #####################################################
 # Run time error check
@@ -736,7 +734,7 @@ if [ ${IF_OBSERVER} = Yes ] ; then
 
 #  run  GSI
      echo ' Run GSI with' ${bk_core} 'for member ', ${ensmemid}
-    ${RUN_COMMAND} ${GSI_EXE} > stdout_mem${ensmemid} 2>&1
+     ${MPIRUN} -n ${GSI_PROC} ${GSI_EXE} > stdout_mem${ensmemid} 2>&1
 
 #  run time error check and save run time file status
      error=$?
