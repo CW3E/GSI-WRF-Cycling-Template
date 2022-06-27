@@ -145,7 +145,6 @@ fi
 # INPUT_DATAROOT = analysis time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wrfprd, wpsprd
 # MPIRUN         = MPI Command to execute GSI
-# GSI_PROC       = number of processors to run GSI
 #
 # Below variables are derived by cycling.xml variables for convenience
 #
@@ -187,12 +186,6 @@ if [ ! "${MPIRUN}" ]; then
   echo "ERROR: \$MPIRUN is not defined!"
   exit 1
 fi
-
-if [ -z "${GSI_PROC}" ]; then
-  echo "ERROR: The variable \$GSI_PROC must be set to contain the number of processors to run GSI!"
-  exit 1
-fi
-
 
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
@@ -610,7 +603,7 @@ ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 ${ECHO}
 
 echo ' Run GSI with' ${bk_core} 'background'
-${MPIRUN} -n ${GSI_PROC} ${GSI_EXE} > stdout.anl.${ANAL_TIME} 2>&1
+${MPIRUN} ${GSI_EXE} > stdout.anl.${ANAL_TIME} 2>&1
 
 #####################################################
 # Run time error check
@@ -734,7 +727,7 @@ if [ ${IF_OBSERVER} = Yes ] ; then
 
 #  run  GSI
      echo ' Run GSI with' ${bk_core} 'for member ', ${ensmemid}
-     ${MPIRUN} -n ${GSI_PROC} ${GSI_EXE} > stdout_mem${ensmemid} 2>&1
+     ${MPIRUN} ${GSI_EXE} > stdout_mem${ensmemid} 2>&1
 
 #  run time error check and save run time file status
      error=$?

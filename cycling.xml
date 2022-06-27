@@ -144,10 +144,6 @@
         <name>MPIRUN</name>
         <value>&MPIRUN;</value>
       </envar>
-      <envar>
-        <name>GSI_PROC</name>
-        <value>&GSI_PROC;</value>
-      </envar>
       <dependency> 
 	<!-- NOTE: the first cycle of this task will not start unless booted directly -->
         <taskdep task="wrf" cycle_offset="-&CYCLE_INTV;"/> 
@@ -208,12 +204,12 @@
         <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
       </envar>
       <envar>
-        <name>WRF_PROC</name>
-        <value>&WRF_PROC;</value>
-      </envar>
-      <envar>
         <name>MPIRUN</name>
         <value>&MPIRUN;</value>
+      </envar>
+      <envar>
+        <name>WRF_PROC</name>
+        <value>&WRF_PROC;</value>
       </envar>
       <envar>
         <name>NIO_GROUPS</name>

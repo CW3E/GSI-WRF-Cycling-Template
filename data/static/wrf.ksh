@@ -378,7 +378,7 @@ ${ECHO}
 
 now=`${DATE} +%Y%m%d%H%M%S`
 ${ECHO} "Running WRF at ${now}"
-${MPIRUN} -n ${WRF_PROC} ${WRF_EXE}
+${MPIRUN} ${WRF_EXE}
 
 #####################################################
 # Run time error check
