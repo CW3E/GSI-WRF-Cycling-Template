@@ -80,13 +80,6 @@
       <native>--account=&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&GSI_NODES;</native>
-      <!--
-	  NOTE: it seems like there is an incompatibility in GSI where a mem-per-cpu field is specified within GSI
-	  runtime and this makes a conflict in SLURM when running from a workflow with other memory options specified
-	  here in xml.  This is resolved in testing by using the mem-per-cpu argument in xml tags below.  UPDATE:
-          this may be deeper in the underlying Ruby code in how these commands are parsed, may need to do further
-          investigation and testing to resolve this argument with mem=* directly.
-      -->
       <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
       <native>--mail-type BEGIN</native>
       <native>--mail-type END</native>
