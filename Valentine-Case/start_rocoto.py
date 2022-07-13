@@ -25,11 +25,6 @@ from rocoto_utilities import run_rocotorun, run_rocotoboot
 # initiate rocoto
 run_rocotorun()
 
-# boot first cold start
-cycle = "201808121200"
-task_list = "gsi"
-run_rocotoboot(cycle, task_list)
-
 # monitor and advance the jobs
 while (True):
     time.sleep(60)

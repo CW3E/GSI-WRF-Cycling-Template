@@ -127,7 +127,7 @@ fi
 # Options below are defined in cycling.xml
 #
 # FCST_LENGTH = Total length of WRF forecast simulation in HH 
-# FCST_INTERVAL = Interval of wrfout.d01 in HH
+# DATA_INTERVAL = Interval of input data in HH
 # START_TIME = Simulation start time in YYMMDDHH
 # MAX_DOM = Max number of domains to use in namelist settings
 #
@@ -138,8 +138,8 @@ if [ ! "${FCST_LENGTH}" ]; then
   exit 1
 fi
 
-if [ ! "${FCST_INTERVAL}" ]; then
-  ${ECHO} "ERROR: \$FCST_INTERVAL is not defined"
+if [ ! "${DATA_INTERVAL}" ]; then
+  ${ECHO} "ERROR: \$DATA_INTERVAL is not defined"
   exit 1
 fi
 
@@ -169,7 +169,7 @@ fi
 # Below variables are defined in cycling.xml workflow variables
 #
 # WRF_ROOT       = root directory of a "clean" WRF build WRF/run directory
-# REAL_PROC      = the total number of processes to run REAL with MPI
+# REAL_PROC      = the total number of processes to run real.exe with MPI
 # STATIC_DATA    = directory containing source constants and namelist file 
 # INPUT_DATAROOT = start time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wrfprd, wpsprd
@@ -182,7 +182,17 @@ if [ ! "${WRF_ROOT}" ]; then
 fi
 
 if [ ! -d "${WRF_ROOT}" ]; then
-  ${ECHO} "ERROR: WRF_ROOT directory, '${WRF_ROOT}', does not exist"
+  ${ECHO} "ERROR: WRF_ROOT directory ${WRF_ROOT} does not exist"
+  exit 1
+fi
+
+if [ ! "${REAL_PROC}" ]; then
+  ${ECHO} "ERROR: \$REAL_PROC is not defined"
+  exit 1
+fi
+
+if [ -z "${REAL_PROC}" ]; then
+  ${ECHO} "ERROR: The variable \$REAL_PROC must be set to the number of processors to run real"
   exit 1
 fi
 
@@ -209,7 +219,7 @@ fi
 # 
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/bkg
+WORK_ROOT=${INPUT_DATAROOT}/realprd
 set -A WRF_DAT_FILES ${WRF_ROOT}/run/*
 REAL_EXE=${WRF_ROOT}/main/real.exe
 
@@ -244,7 +254,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       exit 1
     fi
     ${LN} -sf ${INPUT_DATAROOT}/wpsprd/${realinput_name} ./ 
-    (( fcst = fcst + ${FCST_INTERVAL} ))
+    (( fcst = fcst + ${DATA_INTERVAL} ))
   done
   (( dmn = dmn + 1 ))
 done
@@ -330,8 +340,8 @@ ${CAT} namelist.input | ${SED} "s/\(${end}_${year}\)${equal}[[:digit:]]\{4\}.*/\
 ${MV} namelist.input.new namelist.input
 
 # Update interval in namelist
-(( fcst_interval_sec = ${FCST_INTERVAL} * 3600 ))
-${CAT} namelist.input | ${SED} "s/\(${interval}${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${fcst_interval_sec}/" \
+(( data_interval_sec = ${DATA_INTERVAL} * 3600 ))
+${CAT} namelist.input | ${SED} "s/\(${interval}${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
    > namelist.input.new 
 ${MV} namelist.input.new namelist.input
 
@@ -339,16 +349,6 @@ ${MV} namelist.input.new namelist.input
 ${CAT} namelist.input | ${SED} "s/\(max_dom\)${equal}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
    > namelist.input.new
 ${MV} namelist.input.new namelist.input
-
-if [ "${WRITE_INPUT}" ]; then
-${CAT} namelist.input | ${SED} "s/\(write_input\)${equal}.false./\1 = .true./" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-(( history_begin_h = ${FCST_INTERVAL} + 1))
-${CAT} namelist.input | ${SED} "s/\(history_begin_h\)${equal}[[:digit:]]\{1,\}/\1 = ${history_begin_h}/" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-fi
 
 #####################################################
 # Run REAL
@@ -362,7 +362,7 @@ ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
 ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 ${ECHO}
 ${ECHO} "FCST LENGTH    = ${FCST_LENGTH}"
-${ECHO} "FCST INTERVAL  = ${FCST_INTERVAL}"
+${ECHO} "DATA INTERVAL  = ${DATA_INTERVAL}"
 ${ECHO} "MAX_DOM        = ${MAX_DOM}"
 ${ECHO}
 ${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${START_TIME}"`
@@ -415,10 +415,11 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     ${MPIRUN} ${EXIT_CALL} 1
     exit
   fi
-  # Remove the real input files (e.g. met_em.d01.*)
-  ${RM} -f ./${real_prefix}.d0${dmn}.*
   (( dmn = dmn + 1 ))
 done
+
+# Remove the real input files (e.g. met_em.d01.*)
+${RM} -f ./${real_prefix}.*
 
 # Remove links to the WRF DAT files
 for file in ${WRF_DAT_FILES[@]}; do

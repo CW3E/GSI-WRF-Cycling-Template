@@ -170,13 +170,23 @@ fi
 #
 #####################################################
 
+if [ ! "${WRF_ROOT}" ]; then
+  ${ECHO} "ERROR: \$WRF_ROOT is not defined"
+  exit 1
+fi
+
 if [ ! -d ${WRF_ROOT} ]; then
   ${ECHO} "ERROR: \$WRF_ROOT directory ${WRF_ROOT} does not exist"
   exit 1
 fi
 
+if [ ! "${WRF_PROC}" ]; then
+  ${ECHO} "ERROR: \$WRF_PROC is not defined"
+  exit 1
+fi
+
 if [ -z "${WRF_PROC}" ]; then
-  ${ECHO} "ERROR: The variable $WRF_PROC must be set to contain the number of processors to run WRF"
+  ${ECHO} "ERROR: The variable \$WRF_PROC must be set to the number of processors to run WRF"
   exit 1
 fi
 
