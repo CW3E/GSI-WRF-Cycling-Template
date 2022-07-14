@@ -15,7 +15,7 @@
  j_parent_start    = 1,215,
  e_we          = 800,901,
  e_sn          = 660,781,
- geog_data_res = '2m','30s',
+ geog_data_res = '30s','30s',
  dx = 9000,
  dy = 9000,
  map_proj =  'lambert',
