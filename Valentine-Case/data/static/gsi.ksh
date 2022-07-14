@@ -143,7 +143,7 @@ fi
 # GSI_ROOT       = directory for clean GSI build
 # CRTM_VERSION   = version number of CRTM to specify path to binaries
 # INPUT_DATAROOT = analysis time named directory for input data, containing
-#                  subdirectories obs, bkg, gfsens, wrfprd, wpsprd
+#                  subdirectories obs, bkg, gfsens, wrfprd, realprd, wpsprd
 # MPIRUN         = MPI Command to execute GSI
 #
 # Below variables are derived by cycling.xml variables for convenience

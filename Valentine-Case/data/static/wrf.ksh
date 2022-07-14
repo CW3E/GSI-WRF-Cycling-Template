@@ -124,6 +124,7 @@ fi
 # FCST_INTERVAL = Interval of wrfout.d01 in HH
 # START_TIME = Simulation start time in YYMMDDHH
 # MAX_DOM = Max number of domains to use in namelist settings
+# IF_CYCLING = Yes / No: whether to use ICs from GSI analysis or real.exe, case sensitive
 #
 #####################################################
 
@@ -157,6 +158,11 @@ if [ ! "${MAX_DOM}" ]; then
   exit 1
 fi
 
+if [[ ${IF_CYCLING} != Yes && ${IF_CYCLING} != No ]]; then
+  ${ECHO} "ERROR: \$IF_CYCLING must equal 'Yes' or 'No' case sensitive!"
+  exit 1
+fi
+
 #####################################################
 # Define WRF workflow dependencies
 #####################################################
@@ -167,6 +173,7 @@ fi
 # STATIC_DATA    = directory containing source constants and namelist file 
 # INPUT_DATAROOT = start time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wrfprd, wpsprd
+# MPIRUN         = MPI Command to execute WRF
 #
 #####################################################
 
@@ -197,6 +204,11 @@ fi
 
 if [ ! -d ${INPUT_DATAROOT} ]; then
   ${ECHO} "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
+  exit 1
+fi
+
+if [ ! "${MPIRUN}" ]; then
+  echo "ERROR: \$MPIRUN is not defined!"
   exit 1
 fi
 
@@ -231,25 +243,34 @@ for file in ${WRF_DAT_FILES[@]}; do
   ${LN} -sf ${file} ./
 done
 
-# Link WRF initial conditions from GSI analysis 
+# Link WRF initial conditions from real.exe or GSI analysis depending on IF_CYCLING switch
 # NOTE: THIS IS CURRENTLY ONLY DESIGNED FOR A SINGLE DOMAIN
 # MORE TESTING AND INVESTIGATION IS NEEDED TO GENERALIZE THE GSI
 # WORKFLOW TO MULTIPLE DOMAINS
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   wrfinput_name=wrfinput_d0${dmn}
-  gsi_outname=${INPUT_DATAROOT}/gsiprd/wrf_inout
-  ${LN} -sf ${gsi_outname} ./${wrfinput_name}
-
-  if [ ! -r ${WORK_ROOT}/${wrfinput_name} ]; then
-    ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
-    exit 1
+  if [ ${IF_CYCLING} = Yes ]
+    gsi_outname=${INPUT_DATAROOT}/gsiprd/wrf_inout
+    ${LN} -sf ${gsi_outname} ./${wrfinput_name}
+    if [ ! -r ${WORK_ROOT}/${wrfinput_name} ]; then
+      ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
+      exit 1
+    fi
+  else
+    real_outname=${INPUT_DATAROOT}/realprd/${wrfinput_name} 
+    ${LN} -sf ${real_outname} ./
+    if [ ! -r ${WORK_ROOT}/${wrfinput_name} ]; then
+      ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${real_outname}"
+      exit 1
+    fi
   fi
   (( dmn = dmn + 1 ))
 done
 
-# Link the wrfbdy_d01 file from background
-${LN} -sf ${INPUT_DATAROOT}/bkg/wrfbdy_d01 ./
+# Link the wrfbdy_d01 file from real.exe
+# NOTE: THIS WILL NEED TO BE UPDATED FOR WRFDA LOOP
+${LN} -sf ${INPUT_DATAROOT}/realprd/wrfbdy_d01 ./
 if [ ! -r ${WORK_ROOT}/wrfbdy_d01 ]; then
   ${ECHO} "ERROR: ${WORK_ROOT}/wrfbdy_d01 does not exist, or is not readable, check source in ${INPUT_DATAROOT}/bkg"
   exit 1
@@ -417,14 +438,15 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
   fi
 fi
 
-# ensure that the cycle_io/date/bkg directory exists for starting next cycle
-cycle_intv=`${DATE} +%H -d "${CYCLE_INTV}"`
-${ECHO} ${START_TIME}
-datestr=`${DATE} +%Y%m%d%H -d "${START_TIME} ${cycle_intv} hours"`
-new_bkg=${datestr}/bkg
-${MKDIR} -p ../../${new_bkg} 
+if [ ${IF_CYCLING} = Yes ]
+  # ensure that the cycle_io/date/bkg directory exists for starting next cycle
+  cycle_intv=`${DATE} +%H -d "${CYCLE_INTV}"`
+  datestr=`${DATE} +%Y%m%d%H -d "${START_TIME} ${cycle_intv} hours"`
+  new_bkg=${datestr}/bkg
+  ${MKDIR} -p ../../${new_bkg} 
+fi
 
-# Check for all wrfout files on FCST_INTERVAL and link files to the next cycle bkg directory 
+# Check for all wrfout files on FCST_INTERVAL and link files to the appropriate bkg directory 
 fcst=0
 while [ ${fcst} -le ${FCST_LENGTH} ]; do
   datestr=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${START_TIME} ${fcst} hours"`
@@ -435,7 +457,11 @@ while [ ${fcst} -le ${FCST_LENGTH} ]; do
       ${MPIRUN} ${EXIT_CALL} 1
       exit
     else
-      ${LN} -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}
+      if [ ${IF_CYCLING} = Yes ]
+        ${LN} -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}
+      else
+	${LN} -sfr wrfout_d0${dmn}_${datestr} ${INPUT_DATAROOT}/bkg
+      fi
     fi
     (( dmn = dmn + 1 ))
   done

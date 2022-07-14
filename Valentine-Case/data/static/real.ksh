@@ -173,6 +173,7 @@ fi
 # STATIC_DATA    = directory containing source constants and namelist file 
 # INPUT_DATAROOT = start time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wrfprd, wpsprd
+# MPIRUN         = MPI Command to execute REAL
 #
 #####################################################
 
@@ -203,6 +204,11 @@ fi
 
 if [ ! -d ${INPUT_DATAROOT} ]; then
   ${ECHO} "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
+  exit 1
+fi
+
+if [ ! "${MPIRUN}" ]; then
+  echo "ERROR: \$MPIRUN is not defined!"
   exit 1
 fi
 

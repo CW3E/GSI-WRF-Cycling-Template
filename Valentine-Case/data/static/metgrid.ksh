@@ -171,10 +171,10 @@ fi
 # Below variables are defined in cycling.xml workflow variables
 #
 # WPS_ROOT       = root directory of a "clean" WPS build
-# METGRID_PROC   = the total number of processes to run METGRID with MPI
 # STATIC_DATA    = directory containing source constants, namelist file and geogrid data
 # INPUT_DATAROOT = start time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wrfprd, wpsprd
+# MPIRUN         = MPI Command to execute METGRID
 #
 #####################################################
 
@@ -188,16 +188,6 @@ if [ ! -d "${WPS_ROOT}" ]; then
   exit 1
 fi
 
-if [ ! "${METGRID_PROC}" ]; then
-  ${ECHO} "ERROR: \$METGRID_PROC is not defined"
-  exit 1
-fi
-
-if [ -z "${METGRID_PROC}" ]; then
-  ${ECHO} "ERROR: The variable \$METGRID_PROC must be set to the number of processors to run metgrid"
-  exit 1
-fi
-
 if [ ! -d ${STATIC_DATA} ]; then
   ${ECHO} "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
   exit 1
@@ -205,6 +195,11 @@ fi
 
 if [ ! -d ${INPUT_DATAROOT} ]; then
   ${ECHO} "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
+  exit 1
+fi
+
+if [ ! "${MPIRUN}" ]; then
+  echo "ERROR: \$MPIRUN is not defined!"
   exit 1
 fi
 
@@ -319,7 +314,7 @@ ${MPIRUN} ${METGRID_EXE}
 #####################################################
 error=$?
 
-# save a copy of metgrid logs
+# save metgrid logs
 log_dir= metgrid_log.${now} 
 ${MKDIR} ${log_dir}
 ${MV} metgrid.log* ${log_dir}
