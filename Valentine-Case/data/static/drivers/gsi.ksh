@@ -42,8 +42,8 @@
 # Options below are hard-coded based on the type of experiment
 # (i.e., these not expected to change within DA cycles).
 #
-# bk_core     = which WRF core is used as background (NMM or ARW or NMMB)
-# bkcv_option = which background error covariance and parameter will be used 
+# bk_core     = Which WRF core is used as background (NMM or ARW or NMMB)
+# bkcv_option = Which background error covariance and parameter will be used 
 #              (GLOBAL or NAM)
 #
 # if_clean    = clean  : delete temporal files in working directory (default)
@@ -80,8 +80,8 @@ fi
 #                       satellite radiances, gpsro and radar data 
 #               No    : GSI uses conventional data alone
 #
-# IF_OBSERVER = Yes   : only used as observation operator for EnKF
-# NO_MEMBER   = INT   : number of ensemble members must be specified
+# IF_OBSERVER = Yes   : Only used as observation operator for EnKF
+# NO_MEMBER   = INT   : Number of ensemble members must be specified
 #                       when IF_OBSERVER = yes above          
 # IF_HYBRID   = Yes   : Run GSI as 3D/4D EnVar
 # IF_4DENVAR  = Yes   : Run GSI as 4D EnVar 
@@ -139,17 +139,18 @@ fi
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
-# ANAL_TIME      = analysis time YYYYMMDDHH*
-# GSI_ROOT       = directory for clean GSI build
-# CRTM_VERSION   = version number of CRTM to specify path to binaries
-# INPUT_DATAROOT = analysis time named directory for input data, containing
+# ANAL_TIME      = Analysis time YYYYMMDDHH*
+# GSI_ROOT       = Directory for clean GSI build
+# CRTM_VERSION   = Version number of CRTM to specify path to binaries
+# INPUT_DATAROOT = Analysis time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wrfprd, realprd, wpsprd
 # MPIRUN         = MPI Command to execute GSI
 #
 # Below variables are derived by cycling.xml variables for convenience
 #
-# DATE_STR       = defined by the ANAL_TIME variable, to be used as path
+# DATE_STR       = Defined by the ANAL_TIME variable, to be used as path
 #                  name variable in YYMMDDHH format 
+#
 #####################################################
 
 if [ ! "${ANAL_TIME}" ]; then
@@ -190,17 +191,17 @@ fi
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT    = working directory where GSI runs
-# OBS_ROOT     = path of observations files
-# BKG_ROOT     = path for root directory of background file and ensemble members
-# ENS_ROOT     = path where ensemble background files exist, not required
+# WORK_ROOT    = Working directory where GSI runs
+# OBS_ROOT     = Path of observations files
+# BKG_ROOT     = Path for root directory of background file and ensemble members
+# ENS_ROOT     = Path where ensemble background files exist, not required
 #                if not running hybrid EnVAR  
-# FIX_ROOT     = path of fix files
-# GSI_EXE      = path and name of the gsi.x executable 
-# CRTM_ROOT    = path of the CRTM root directory, contained in GSI_ROOT 
-# PREPBUFR     = path of PreBUFR conventional obs
-# BKG_FILE     = path and name of background file
-# BKG_FILE_mem = path and base for ensemble members, only applies IF_OBSERVER = Yes
+# FIX_ROOT     = Path of fix files
+# GSI_EXE      = Path and name of the gsi.x executable 
+# CRTM_ROOT    = Path of the CRTM root directory, contained in GSI_ROOT 
+# PREPBUFR     = Path of PreBUFR conventional obs
+# BKG_FILE     = Path and name of background file
+# BKG_FILE_mem = Path and base for ensemble members, only applies IF_OBSERVER = Yes
 #####################################################
 
 WORK_ROOT=${INPUT_DATAROOT}/gsiprd
@@ -413,21 +414,21 @@ echo " Copy fixed files and link CRTM coefficient files to working directory"
 #####################################################
 # Set fixed files
 #
-#   berror    = forecast model background error statistics
+#   berror    = Forecast model background error statistics
 #   specoef   = CRTM spectral coefficients
 #   trncoef   = CRTM transmittance coefficients
 #   emiscoef  = CRTM coefficients for IR sea surface emissivity model
 #   aerocoef  = CRTM coefficients for aerosol effects
 #   cldcoef   = CRTM coefficients for cloud effects
-#   satinfo   = text file with information about assimilation of brightness temperatures
-#   satangl   = angle dependent bias correction file (fixed in time)
-#   pcpinfo   = text file with information about assimilation of prepcipitation rates
-#   ozinfo    = text file with information about assimilation of ozone data
-#   errtable  = text file with obs error for conventional data (regional only)
-#   convinfo  = text file with information about assimilation of conventional data
-#   lightinfo = text file with information about assimilation of GLM lightning data
-#   bufrtable = text file ONLY needed for single obs test (oneobstest=.true.)
-#   bftab_sst = bufr table for sst ONLY needed for sst retrieval (retrieval=.true.)
+#   satinfo   = Text file with information about assimilation of brightness temperatures
+#   satangl   = Angle dependent bias correction file (fixed in time)
+#   pcpinfo   = Text file with information about assimilation of prepcipitation rates
+#   ozinfo    = Text file with information about assimilation of ozone data
+#   errtable  = Text file with obs error for conventional data (regional only)
+#   convinfo  = Text file with information about assimilation of conventional data
+#   lightinfo = Text file with information about assimilation of GLM lightning data
+#   bufrtable = Text file ONLY needed for single obs test (oneobstest=.true.)
+#   bftab_sst = Bufr table for sst ONLY needed for sst retrieval (retrieval=.true.)
 #####################################################
 
 if [ ${bkcv_option} = GLOBAL ] ; then
@@ -598,7 +599,6 @@ ${ECHO}
 ${ECHO} "ANAL_TIME      = ${ANAL_TIME}"
 ${ECHO} "GSI_ROOT       = ${GSI_ROOT}"
 ${ECHO} "CRTM_VERSION   = ${CRTM_VERSION}"
-${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
 ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 ${ECHO}
 

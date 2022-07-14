@@ -128,10 +128,10 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# FCST_LENGTH = Total length of WRF forecast simulation in HH 
+# FCST_LENGTH   = Total length of WRF forecast simulation in HH 
 # DATA_INTERVAL = Interval of input data in HH
-# START_TIME = Simulation start time in YYMMDDHH
-# MAX_DOM = Max number of domains to use in namelist settings
+# START_TIME    = Simulation start time in YYMMDDHH
+# MAX_DOM       = Max number of domains to use in namelist settings
 #
 #####################################################
 
@@ -170,10 +170,11 @@ fi
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
-# WPS_ROOT       = root directory of a "clean" WPS build
-# STATIC_DATA    = directory containing source constants, namelist file and geogrid data
-# INPUT_DATAROOT = start time named directory for input data, containing
-#                  subdirectories obs, bkg, gfsens, wrfprd, wpsprd
+# WPS_ROOT       = Root directory of a "clean" WPS build
+# STATIC_DATA    = Root directory containing sub-directories for constants, namelists
+#                  grib data, geogrid data, etc.
+# INPUT_DATAROOT = Start time named directory for input data, containing
+#                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd 
 # MPIRUN         = MPI Command to execute METGRID
 #
 #####################################################
@@ -208,10 +209,10 @@ fi
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT      = working directory where METGRID_EXE runs and outputs
-# WPS_DAT_FILES  = all file contents of clean WPS directory 
+# WORK_ROOT      = Working directory where METGRID_EXE runs and outputs
+# WPS_DAT_FILES  = All file contents of clean WPS directory 
 #                  namelists and input data will be linked from other sources
-# METGRID_EXE    = path and name of working executable
+# METGRID_EXE    = Path and name of working executable
 # 
 #####################################################
 
@@ -240,7 +241,7 @@ ${RM} -f geo_em.d0*
 # are available and make links to them
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
-  geoinput_name=${STATIC_DATA}/geo_em.d0${dmn}.nc
+  geoinput_name=${STATIC_DATA}/geogrid/geo_em.d0${dmn}.nc
   if [ ! -r "${geoinput_name}" ]; then
     echo "ERROR: Input file '${geoinput_name}' is missing"
     exit 1
@@ -253,7 +254,7 @@ done
 #  Build WPS namelist
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-${CP} ${STATIC_DATA}/namelist.wps .
+${CP} ${STATIC_DATA}/namelists/namelist.wps .
 
 # Create patterns for updating the wps namelist (case independent)
 equal=[[:blank:]]*=[[:blank:]]*
@@ -278,7 +279,7 @@ ${CAT} namelist.wps | ${SED} "s/\(${start}_${date}\)${equal}'${yyyymmdd_hhmmss}'
 ${MV} namelist.wps.new namelist.wps
 
 # Update interval in namelist
-(( data_interval_sec = ${DATA_INTERVAL} * 3600 ))
+(( data_interval_sec = DATA_INTERVAL * 3600 ))
 ${CAT} namelist.wps | ${SED} "s/\(${interval}_${seconds}\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
                       > namelist.wps.new 
 ${MV} namelist.wps.new namelist.wps
@@ -336,7 +337,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       ${MPIRUN} ${EXIT_CALL} 1
       exit
     fi
-    (( fcst = fcst + ${DATA_INTERVAL} ))
+    (( fcst = fcst + DATA_INTERVAL ))
   done
   (( dmn = dmn + 1 ))
 done

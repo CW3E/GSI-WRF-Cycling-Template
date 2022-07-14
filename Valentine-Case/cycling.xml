@@ -3,21 +3,27 @@
 [
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
+  <!-- COMET-DEPENDENT ITEMS -->
+  <!ENTITY HOME_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
+  <!-- END COMET-DEPENDENT -->
+
   <!-- USER-DEPENDENT ITEMS -->
-  <!ENTITY PROJ_HOME           "/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case">
+  <!ENTITY PROJ_HOME           "&HOME_SPACE;/GSI-WRF-Cycling-Template/Valentine-Case">
   <!ENTITY PROJ_DATA           "&PROJ_HOME;/data">
   <!ENTITY EMAIL               "cgrudzien@ucsd.edu">
   <!ENTITY USERID              "cgrudzien">
-  <!ENTITY WPS_ROOT            "/cw3e/mead/projects/cwp130/scratch/cgrudzien/WRF_CODE/WPS_parallel">
-  <!ENTITY WRF_ROOT            "/cw3e/mead/projects/cwp130/scratch/cgrudzien/WRF_CODE/WRF">
-  <!ENTITY GSI_ROOT            "/cw3e/mead/projects/cwp130/scratch/cgrudzien/comGSIv3.7_EnKFv1.3">
+  <!ENTITY WPS_ROOT            "&HOME_SPACE;/WRF_CODE/WPS_parallel">
+  <!ENTITY WRF_ROOT            "&HOME_SPACE;/WRF_CODE/WRF">
+  <!ENTITY GSI_ROOT            "&HOME_SPACE;/comGSIv3.7_EnKFv1.3">
   <!ENTITY CRTM_VERSION        "2.3.0">
   <!-- END USER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
   <!ENTITY LOG                 "&PROJ_DATA;/log">
-  <!ENTITY STATIC_DATA         "&PROJ_DATA;/static">
   <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/cycle_io">
+  <!ENTITY STATIC_DATA         "&PROJ_DATA;/static">
+  <!ENTITY ENVIRONMENTS        "&STATIC_DATA;/enviroments">
+  <!ENTITY DRIVERS             "&STATIC_DATA;/drivers">
   <!-- END WORKFLOW SETTINGS -
 
   <!-- CYCLING SETTINGS -->
@@ -27,20 +33,27 @@
   <!ENTITY MAX_DOM             "2">
   <!-- END CYCLING SETTINGS --
 
+  <!-- UNGRIB SETTINGS -->
+  <!ENTITY UNGRIB_CONSTANT     "&ENVIRONMENTS;/WPS_constants.ksh">
+  <!ENTITY FCST_LENGTH         "9">
+  <!ENTITY DATA_INTERVAL       "06">
+  <!ENTITY IF_ECMWF_ML         "No">
+  <!-- END UNGRIB SETTINGS --
+
   <!-- METGRID SETTINGS -->
-  <!ENTITY REAL_CONSTANT       "&STATIC_DATA;/WPS_constants.ksh">
+  <!ENTITY METGRID_CONSTANT    "&ENVIRONMENTS;/WPS_constants.ksh">
   <!ENTITY FCST_LENGTH         "9">
   <!ENTITY DATA_INTERVAL       "06">
   <!-- END METGRID SETTINGS --
 
   <!-- REAL SETTINGS -->
-  <!ENTITY REAL_CONSTANT       "&STATIC_DATA;/WRF_constants.ksh">
+  <!ENTITY REAL_CONSTANT       "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY FCST_LENGTH         "9">
   <!ENTITY DATA_INTERVAL       "06">
   <!-- END REAL SETTINGS -->
 
   <!-- WRF SETTINGS -->
-  <!ENTITY WRF_CONSTANT        "&STATIC_DATA;/WRF_constants.ksh">
+  <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY FCST_LENGTH         "9">
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY NIO_TASKS_PER_GROUP "0"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
@@ -48,7 +61,7 @@
   <!-- END WRF SETTINGS -->
 
   <!-- GSI SETTINGS -->
-  <!ENTITY GSI_CONSTANT        "&STATIC_DATA;/GSI_constants.ksh">
+  <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
   <!ENTITY IF_SATRAD           "Yes">
   <!ENTITY IF_OBSERVER         "No"> <!-- NOTE, IF_OBSERVER crashes on the test case --> 
   <!ENTITY NO_MEMBER           "20">
@@ -63,6 +76,10 @@
   <!ENTITY SCHED               "slurm">
   <!ENTITY COMPUTE             "compute"> 
   <!ENTITY MPIRUN              "mpirun">
+  <!ENTITY UNGRIB_PROC         "1">
+  <!ENTITY UNGRIB_MEM_PER_CPU  "120G">
+  <!ENTITY UNGRIB_NODESIZE     "1">
+  <!ENTITY UNGRIB_NODES        "1">
   <!ENTITY METGRID_PROC        "24">
   <!ENTITY METGRID_MEM_PER_CPU "5G">
   <!ENTITY METGRID_NODESIZE    "24">
@@ -89,8 +106,66 @@
 <workflow realtime="F" scheduler="&SCHED;" cyclethrottle="31">
   <cycledef group="q_daily">&CYCLE_START; &CYCLE_END; &CYCLE_INTV;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
+
+    <task name="first_ungrib" maxtries="1" cycledefs="q_daily">
+      <command>&DRIVERS;/ungrib.ksh</command>
+      <cores>&UNGRIB_PROC;</cores>
+      <nodesize>&UNGRIB_NODESIZE;</nodesize>
+      <walltime>&UNGRIB_WC;</walltime>
+      <jobname><cyclestr>first_ungrib_@Y@m@d@H</cyclestr></jobname>
+      <join><cyclestr>&LOG;/ungrib/first_ungrib_@Y@m@d@H.log</cyclestr></join>
+      <native>--partition=&COMPUTE;</native>
+      <native>--account=&PROJECT;</native>
+      <native>--export=ALL</native>
+      <native>--nodes=&UNGRIB_NODES;</native>
+      <native>--mail-type BEGIN</native>
+      <native>--mail-type END</native>
+      <native>--mail-type=FAIL</native>
+      <native>--mail-user=&EMAIL;</native>
+      <native>--mem-per-cpu=&UNGRIB_MEM_PER_CPU;</native>
+      <envar>
+        <name>CONSTANT</name>
+        <value>&UNGRIB_CONSTANT;</value>
+      </envar>
+      <envar>
+        <name>START_TIME</name>
+        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>FCST_LENGTH</name>
+        <value>&FCST_LENGTH;</value>
+      </envar>
+      <envar>
+	<name>DATA_INTERVAL</name>
+	<value>&DATA_INTERVAL;</value>
+      </envar>
+      <envar>
+        <name>MAX_DOM</name>
+        <value>&MAX_DOM;</value>
+      </envar>
+      <envar>
+        <name>WPS_ROOT</name>
+        <value>&WPS_ROOT;</value>
+      </envar>
+      <envar>
+        <name>STATIC_DATA</name>
+        <value>&STATIC_DATA;</value>
+      </envar>
+      <envar>
+        <name>INPUT_DATAROOT</name>
+        <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>IF_ECMWF_ML</name>
+        <value>&IF_ECMWF_ML;</value>
+      </envar>
+      <dependency> 
+	<streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
+     </dependency>
+    </task>
+
     <task name="first_metgrid" maxtries="1" cycledefs="q_daily">
-      <command>&STATIC_DATA;/metgrid.ksh</command>
+      <command>&DRIVERS;/metgrid.ksh</command>
       <cores>&METGRID_PROC;</cores>
       <nodesize>&METGRID_NODESIZE;</nodesize>
       <walltime>&METGRID_WC;</walltime>
@@ -99,7 +174,7 @@
       <native>--partition=&COMPUTE;</native>
       <native>--account=&PROJECT;</native>
       <native>--export=ALL</native>
-      <native>--nodes=&REAL_NODES;</native>
+      <native>--nodes=&METGRID_NODES;</native>
       <native>--mail-type BEGIN</native>
       <native>--mail-type END</native>
       <native>--mail-type=FAIL</native>
@@ -142,11 +217,15 @@
         <value>&MPIRUN;</value>
       </envar>
       <dependency> 
-	<streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
+	<and>
+          <taskdep task="first_ungrib" state="SUCCEEDED"/>
+	  <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
+	</and>
      </dependency>
     </task>
+
     <task name="first_real" maxtries="1" cycledefs="q_daily">
-      <command>&STATIC_DATA;/real.ksh</command>
+      <command>&DRIVERS;/real.ksh</command>
       <cores>&REAL_PROC;</cores>
       <nodesize>&REAL_NODESIZE;</nodesize>
       <walltime>&REAL_WC;</walltime>
@@ -208,8 +287,9 @@
         </and>
      </dependency>
     </task>
+
     <task name="first_wrf" maxtries="1" cycledefs="q_daily">
-      <command>&STATIC_DATA;/wrf.ksh</command>
+      <command>&DRIVERS;/wrf.ksh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>
       <walltime>&WRF_WC;</walltime>
@@ -287,4 +367,5 @@
         </and>
      </dependency>
     </task>
+
 </workflow>
