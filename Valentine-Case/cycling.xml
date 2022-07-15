@@ -12,7 +12,8 @@
   <!ENTITY PROJ_DATA           "&PROJ_HOME;/data">
   <!ENTITY EMAIL               "cgrudzien@ucsd.edu">
   <!ENTITY USERID              "cgrudzien">
-  <!ENTITY WPS_ROOT            "&HOME_SPACE;/WRF_CODE/WPS_parallel">
+  <!ENTITY WPS_SERIAL_ROOT     "&HOME_SPACE;/WRF_CODE/WPS_serial">
+  <!ENTITY WPS_PARALLEL_ROOT   "&HOME_SPACE;/WRF_CODE/WPS_parallel">
   <!ENTITY WRF_ROOT            "&HOME_SPACE;/WRF_CODE/WRF">
   <!ENTITY GSI_ROOT            "&HOME_SPACE;/comGSIv3.7_EnKFv1.3">
   <!ENTITY CRTM_VERSION        "2.3.0">
@@ -22,39 +23,39 @@
   <!ENTITY LOG                 "&PROJ_DATA;/log">
   <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/cycle_io">
   <!ENTITY STATIC_DATA         "&PROJ_DATA;/static">
-  <!ENTITY ENVIRONMENTS        "&STATIC_DATA;/enviroments">
+  <!ENTITY ENVIRONMENTS        "&STATIC_DATA;/environments">
   <!ENTITY DRIVERS             "&STATIC_DATA;/drivers">
-  <!-- END WORKFLOW SETTINGS -
+  <!-- END WORKFLOW SETTINGS -->
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902090000">
   <!ENTITY CYCLE_END           "201902090000">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY MAX_DOM             "2">
-  <!-- END CYCLING SETTINGS --
+  <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
   <!ENTITY UNGRIB_CONSTANT     "&ENVIRONMENTS;/WPS_constants.ksh">
-  <!ENTITY FCST_LENGTH         "9">
-  <!ENTITY DATA_INTERVAL       "06">
-  <!ENTITY IF_ECMWF_ML         "No">
-  <!-- END UNGRIB SETTINGS --
+  <!ENTITY FCST_LENGTH         "06">
+  <!ENTITY DATA_INTERVAL       "01">
+  <!ENTITY IF_ECMWF_ML         "Yes">
+  <!-- END UNGRIB SETTINGS -->
 
   <!-- METGRID SETTINGS -->
   <!ENTITY METGRID_CONSTANT    "&ENVIRONMENTS;/WPS_constants.ksh">
-  <!ENTITY FCST_LENGTH         "9">
-  <!ENTITY DATA_INTERVAL       "06">
-  <!-- END METGRID SETTINGS --
+  <!ENTITY FCST_LENGTH         "06">
+  <!ENTITY DATA_INTERVAL       "01">
+  <!-- END METGRID SETTINGS -->
 
   <!-- REAL SETTINGS -->
   <!ENTITY REAL_CONSTANT       "&ENVIRONMENTS;/WRF_constants.ksh">
-  <!ENTITY FCST_LENGTH         "9">
-  <!ENTITY DATA_INTERVAL       "06">
+  <!ENTITY FCST_LENGTH         "06">
+  <!ENTITY DATA_INTERVAL       "01">
   <!-- END REAL SETTINGS -->
 
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
-  <!ENTITY FCST_LENGTH         "9">
+  <!ENTITY FCST_LENGTH         "06">
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY NIO_TASKS_PER_GROUP "0"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
   <!ENTITY NIO_GROUPS          "1"> 
@@ -77,9 +78,10 @@
   <!ENTITY COMPUTE             "compute"> 
   <!ENTITY MPIRUN              "mpirun">
   <!ENTITY UNGRIB_PROC         "1">
-  <!ENTITY UNGRIB_MEM_PER_CPU  "120G">
-  <!ENTITY UNGRIB_NODESIZE     "1">
+  <!ENTITY UNGRIB_MEM_PER_CPU  "5G">
+  <!ENTITY UNGRIB_NODESIZE     "24">
   <!ENTITY UNGRIB_NODES        "1">
+  <!ENTITY UNGRIB_WC           "02:00:00">
   <!ENTITY METGRID_PROC        "24">
   <!ENTITY METGRID_MEM_PER_CPU "5G">
   <!ENTITY METGRID_NODESIZE    "24">
@@ -107,7 +109,7 @@
   <cycledef group="q_daily">&CYCLE_START; &CYCLE_END; &CYCLE_INTV;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
 
-    <task name="first_ungrib" maxtries="1" cycledefs="q_daily">
+    <task name="first_ungrib" maxtries="10" cycledefs="q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
       <nodesize>&UNGRIB_NODESIZE;</nodesize>
@@ -145,7 +147,7 @@
       </envar>
       <envar>
         <name>WPS_ROOT</name>
-        <value>&WPS_ROOT;</value>
+        <value>&WPS_SERIAL_ROOT;</value>
       </envar>
       <envar>
         <name>STATIC_DATA</name>
@@ -202,7 +204,7 @@
       </envar>
       <envar>
         <name>WPS_ROOT</name>
-        <value>&WPS_ROOT;</value>
+        <value>&WPS_PARALLEL_ROOT;</value>
       </envar>
       <envar>
         <name>STATIC_DATA</name>

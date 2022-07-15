@@ -251,7 +251,7 @@ done
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   wrfinput_name=wrfinput_d0${dmn}
-  if [ ${IF_CYCLING} = Yes ]
+  if [ ${IF_CYCLING} = Yes ]; then
     gsi_outname=${INPUT_DATAROOT}/gsiprd/wrf_inout
     ${LN} -sf ${gsi_outname} ./${wrfinput_name}
     if [ ! -r ${WORK_ROOT}/${wrfinput_name} ]; then
@@ -439,7 +439,7 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
   fi
 fi
 
-if [ ${IF_CYCLING} = Yes ]
+if [ ${IF_CYCLING} = Yes ]; then
   # ensure that the cycle_io/date/bkg directory exists for starting next cycle
   cycle_intv=`${DATE} +%H -d "${CYCLE_INTV}"`
   datestr=`${DATE} +%Y%m%d%H -d "${START_TIME} ${cycle_intv} hours"`
@@ -458,7 +458,7 @@ while [ ${fcst} -le ${FCST_LENGTH} ]; do
       ${MPIRUN} ${EXIT_CALL} 1
       exit
     else
-      if [ ${IF_CYCLING} = Yes ]
+      if [ ${IF_CYCLING} = Yes ]; then
         ${LN} -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}
       else
 	${LN} -sfr wrfout_d0${dmn}_${datestr} ${INPUT_DATAROOT}/bkg

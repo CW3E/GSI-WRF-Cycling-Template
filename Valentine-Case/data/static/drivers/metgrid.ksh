@@ -319,6 +319,7 @@ error=$?
 log_dir= metgrid_log.${now} 
 ${MKDIR} ${log_dir}
 ${MV} metgrid.log* ${log_dir}
+${MV} namelist.wps ${log_dir}
 
 if [ ${error} -ne 0 ]; then
   ${ECHO} "ERROR: ${METGRID} exited with status: ${error}"

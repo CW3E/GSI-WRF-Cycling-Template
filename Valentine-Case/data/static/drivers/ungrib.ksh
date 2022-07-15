@@ -201,8 +201,8 @@ if [ ! ${MAX_DOM} ]; then
   exit 1
 fi
 
-if [[ ${IF_ECMWF} != Yes && ${IF_ECMWF} != No ]]; then
-  ${ECHO} "ERROR: \$IF_ECMWF must equal 'Yes' or 'No' case sensitive!"
+if [[ ${IF_ECMWF_ML} != Yes && ${IF_ECMWF_ML} != No ]]; then
+  ${ECHO} "ERROR: \$IF_ECMWF_ML must equal 'Yes' or 'No' case sensitive!"
   exit 1
 fi
 
@@ -234,8 +234,8 @@ if [ ! -d ${STATIC_DATA} ]; then
   exit 1
 fi
 
-if [ ! -d ${INPUT_DATAROOT} ]; then
-  ${ECHO} "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
+if [ -z ${INPUT_DATAROOT} ]; then
+  ${ECHO} "ERROR: \$INPUT_DATAROOT directory name is not defined"
   exit 1
 fi
 
@@ -277,7 +277,7 @@ ${RM} -f Vtable
 # Check to make sure the variable table is available in the static 
 # data and make a link to it
 VTABLE=${STATIC_DATA}/variable_tables/Vtable
-if [ ! -r ${VTABLE} ]
+if [ ! -r ${VTABLE} ]; then
   ${ECHO} "ERROR: a 'Vtable' should be provided at location ${VTABLE}, Vtable not found"
   exit 1
 else
@@ -286,18 +286,18 @@ fi
 
 # check to make sure the GRIB_DATAROOT exists and is non-empty
 GRIB_DATAROOT=${STATIC_DATA}/gribbed
-if [! -d ${GRIB_DATAROOT} ]
+if [! -d ${GRIB_DATAROOT} ]; then
   ${ECHO} "ERROR: the directory ${GRIB_DATAROOT} does not exist"
   exit 1
 fi
 
-if [ -z `${LS} -A ${GRIB_DATAROOT}`]
+if [ -z `${LS} -A ${GRIB_DATAROOT}`]; then
   ${ECHO} "ERROR: ${GRIB_DATAROOT} is emtpy, put grib data in this location for processing"
   exit 1
 fi
 
 # link the grib data to the working directory
-./link_grib.csh ${GRIB_DATAROOT}
+./link_grib.csh ${GRIB_DATAROOT}/*
 
 #####################################################
 #  Build WPS namelist
@@ -355,7 +355,7 @@ ${ECHO}
 
 now=`${DATE} +%Y%m%d%H%M%S`
 ${ECHO} "Running UNGRIB at ${now}"
-./${UNGRIB_EXE}
+./ungrib.exe
 
 #####################################################
 # Run time error check
@@ -366,6 +366,12 @@ if [ ${error} -ne 0 ]; then
   ${ECHO} "ERROR: ${UNGRIB} exited with status: ${error}"
   exit ${error}
 fi
+
+# save ungrib logs
+log_dir= ungrib_log.${now} 
+${MKDIR} ${log_dir}
+${MV} ungrib.log ${log_dir}
+${MV} namelist.wps ${log_dir}
 
 # Check to see if we've got all the files we're expecting
 fcst=0
@@ -380,7 +386,7 @@ done
 
 # If ungribbing ECMWF model level data, calculate additional coefficients
 # NOTE: namelist.wps should account for the "PRES" file prefixes in fg_names
-if [ ${IF_ECMWF_ML} = "Yes"]
+if [ ${IF_ECMWF_ML} = "Yes"]; then
   ${LN} -sf ${STATIC_DATA}/variable_tables/ecmwf_coeffs ./
   ./util/calc_ecmwf_p.exe
 
@@ -395,6 +401,14 @@ if [ ${IF_ECMWF_ML} = "Yes"]
     (( fcst = fcst + DATA_INTERVAL ))
   done
 fi
+
+# Remove links to the WPS DAT files
+for file in ${WPS_DAT_FILES[@]}; do
+    ${RM} -f `${BASENAME} ${file}`
+done
+
+# remove links to grib files
+${RM} -f GRIBFILE.*
 
 ${ECHO} "ungrib.ksh completed successfully at `${DATE}`"
 
