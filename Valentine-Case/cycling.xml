@@ -109,7 +109,7 @@
   <cycledef group="q_daily">&CYCLE_START; &CYCLE_END; &CYCLE_INTV;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
 
-    <task name="first_ungrib" maxtries="10" cycledefs="q_daily">
+    <task name="first_ungrib" maxtries="1" cycledefs="q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
       <nodesize>&UNGRIB_NODESIZE;</nodesize>
