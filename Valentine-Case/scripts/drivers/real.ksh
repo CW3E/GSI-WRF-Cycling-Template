@@ -12,10 +12,10 @@
 # to match a companion major fork of the standard gsi.ksh
 # driver script provided in the GSI tutorials.
 #
-# One should write machine specific options for the WPS environment
-# in a WPS_constants.ksh script to be sourced in the below.  Variables
+# One should write machine specific options for the WRF environment
+# in a WRF_constants.ksh script to be sourced in the below.  Variables
 # aliases in this script are based on conventions defined in the 
-# companion WPS_constants.ksh with this driver.
+# companion WRF_constants.ksh with this driver.
 #
 # SEE THE README FOR FURTHER INFORMATION
 #
@@ -74,21 +74,17 @@
 #     NO RESPONSIBILITY (1) FOR THE USE OF THE SOFTWARE AND
 #     DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL SUPPORT TO USERS.
 #   
-#     Script Name: metgrid.ksh
-#      
-#          Author: Christopher Harrop
-#                  Forecast Systems Laboratory
-#                  325 Broadway R/FST
-#                  Boulder, CO. 80305
+#     Script Name: wrf_wps.ksh
 #     
-#        Released: 10/30/2003
-#         Version: 1.0
-#         Changes: None
+#         Author: Christopher Harrop
+#                 Forecast Systems Laboratory
+#                 325 Broadway R/FST
+#                 Boulder, CO. 80305
 #     
-#      Purpose: This is a complete rewrite of the metgrid portion of the 
-#               wrfprep.pl script that is distributed with the WRF Standard 
-#               Initialization.  This script may be run on the command line, or 
-#               it may be submitted directly to a batch queueing system.
+#     Purpose: This is a complete rewrite of the real portion of the 
+#              wrfprep.pl script that is distributed with the WRF Standard 
+#              Initialization.  This script may be run on the command line, or 
+#              it may be submitted directly to a batch queueing system.  
 #         
 #     A short and simple "control" script could be written to call this script
 #     or to submit this  script to a batch queueing  system.  Such a "control" 
@@ -108,11 +104,13 @@
 set -x
 
 # assuming data preprocessed with metgrid in WPS
-metgrid_prefix="met_em"
+real_prefix="met_em"
 
-# assuming using serial netcdf -- this is not currently configured for parallel metgrid
-metgrid_suffix="nc"
+# assuming that all data is in NetCDF form
+real_suffix=".nc"
 
+#####################################################
+# Read in WRF constants for local environment 
 #####################################################
 
 if [ ! -x "${CONSTANT}" ]; then
@@ -124,7 +122,7 @@ fi
 . ${CONSTANT}
 
 #####################################################
-# Make checks for METGRID settings
+# Make checks for REAL settings
 #####################################################
 # Options below are defined in cycling.xml
 #
@@ -166,26 +164,37 @@ if [ ! ${MAX_DOM} ]; then
 fi
 
 #####################################################
-# Define METGRID workflow dependencies
+# Define REAL workflow dependencies
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
-# WPS_ROOT       = Root directory of a "clean" WPS build
+# WRF_ROOT       = Root directory of a "clean" WRF build WRF/run directory
+# REAL_PROC      = The total number of processes to run real.exe with MPI
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
 #                  grib data, geogrid data, etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd 
-# MPIRUN         = MPI Command to execute METGRID
+# MPIRUN         = MPI Command to execute REAL
 #
 #####################################################
 
-if [ ! "${WPS_ROOT}" ]; then
-  ${ECHO} "ERROR: \$WPS_ROOT is not defined"
+if [ ! "${WRF_ROOT}" ]; then
+  ${ECHO} "ERROR: \$WRF_ROOT is not defined"
   exit 1
 fi
 
-if [ ! -d "${WPS_ROOT}" ]; then
-  ${ECHO} "ERROR: WPS_ROOT directory ${WPS_ROOT} does not exist"
+if [ ! -d "${WRF_ROOT}" ]; then
+  ${ECHO} "ERROR: WRF_ROOT directory ${WRF_ROOT} does not exist"
+  exit 1
+fi
+
+if [ ! "${REAL_PROC}" ]; then
+  ${ECHO} "ERROR: \$REAL_PROC is not defined"
+  exit 1
+fi
+
+if [ -z "${REAL_PROC}" ]; then
+  ${ECHO} "ERROR: The variable \$REAL_PROC must be set to the number of processors to run real"
   exit 1
 fi
 
@@ -205,96 +214,157 @@ if [ ! "${MPIRUN}" ]; then
 fi
 
 #####################################################
-# Begin pre-METGRID setup
+# Begin pre-REAL setup
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT      = Working directory where METGRID_EXE runs and outputs
-# WPS_DAT_FILES  = All file contents of clean WPS directory 
-#                  namelists and input data will be linked from other sources
-# METGRID_EXE    = Path and name of working executable
+# WORK_ROOT      = Working directory where REAL runs and outputs background files
+# WRF_DAT_FILES  = All file contents of clean WRF/run directory 
+#                  namelists, boundary and input data will be linked
+#                  from other sources
+# REAL_EXE       = Path and name of working executable
 # 
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/wpsprd
-set -A WPS_DAT_FILES ${WPS_ROOT}/*
-METGRID_EXE=${WPS_ROOT}/metgrid.exe
+WORK_ROOT=${INPUT_DATAROOT}/realprd
+set -A WRF_DAT_FILES ${WRF_ROOT}/run/*
+REAL_EXE=${WRF_ROOT}/main/real.exe
 
-if [ ! -x ${METGRID_EXE} ]; then
-  ${ECHO} "ERROR: ${METGRID_EXE} does not exist, or is not executable"
+if [ ! -x ${REAL_EXE} ]; then
+  ${ECHO} "ERROR: ${REAL_EXE} does not exist, or is not executable"
   exit 1
 fi
 
 ${MKDIR} -p ${WORK_ROOT}
 cd ${WORK_ROOT}
 
-# Make links to the WPS DAT files
-for file in ${WPS_DAT_FILES[@]}; do
+# Make links to the WRF DAT files
+for file in ${WRF_DAT_FILES[@]}; do
   ${ECHO} "${LN} -sf ${file}"
   ${LN} -sf ${file} ./
 done
 
-# Remove any previous geogrid static files
-${RM} -f geo_em.d0*
+# Remove IC/BC in the directory if old data present
+${RM} -f wrfinput_d0*
+${RM} -f wrfbdy_d01
 
-# Check to make sure the geogrid input files (e.g. geo_em.d01.nc)
+# Check to make sure the real input files (e.g. met_em.d01.*)
 # are available and make links to them
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
-  geoinput_name=${STATIC_DATA}/geogrid/geo_em.d0${dmn}.nc
-  if [ ! -r "${geoinput_name}" ]; then
-    echo "ERROR: Input file '${geoinput_name}' is missing"
-    exit 1
-  fi
-  ${LN} -sf ${geoinput_name} ./ 
+  fcst=0
+  while [ ${fcst} -le ${FCST_LENGTH} ]; do
+    time_str=`${DATE} "+%Y-%m-%d_%H:%M:%S" -d "${START_TIME} ${fcst} hours"`
+    realinput_name=${real_prefix}.d0${dmn}.${time_str}${real_suffix}
+    if [ ! -r "${INPUT_DATAROOT}/wpsprd/${realinput_name}" ]; then
+      echo "ERROR: Input file '${INPUT_DATAROOT}/${realinput_name}' is missing"
+      exit 1
+    fi
+    ${LN} -sf ${INPUT_DATAROOT}/wpsprd/${realinput_name} ./ 
+    (( fcst = fcst + DATA_INTERVAL ))
+  done
   (( dmn = dmn + 1 ))
 done
 
+# Move existing rsl files to a subdir if there are any
+${ECHO} "Checking for pre-existing rsl files"
+if [ -f "rsl.out.0000" ]; then
+  rsldir=rsl.`${LS} -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | ${CUT} -d" " -f 7`
+  ${MKDIR} ${rsldir}
+  ${ECHO} "Moving pre-existing rsl files to ${rsldir}"
+  ${MV} rsl.out.* ${rsldir}
+  ${MV} rsl.error.* ${rsldir}
+else
+  ${ECHO} "No pre-existing rsl files were found"
+fi
+
 #####################################################
-#  Build WPS namelist
+#  Build REAL namelist
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-${CP} ${STATIC_DATA}/namelists/namelist.wps .
+${CP} ${STATIC_DATA}/namelists/namelist.input .
 
-# Create patterns for updating the wps namelist (case independent)
+# Get the start and end time components
+start_year=`${DATE} +%Y -d "${START_TIME}"`
+start_month=`${DATE} +%m -d "${START_TIME}"`
+start_day=`${DATE} +%d -d "${START_TIME}"`
+start_hour=`${DATE} +%H -d "${START_TIME}"`
+start_minute=`${DATE} +%M -d "${START_TIME}"`
+start_second=`${DATE} +%S -d "${START_TIME}"`
+end_year=`${DATE} +%Y -d "${END_TIME}"`
+end_month=`${DATE} +%m -d "${END_TIME}"`
+end_day=`${DATE} +%d -d "${END_TIME}"`
+end_hour=`${DATE} +%H -d "${END_TIME}"`
+end_minute=`${DATE} +%M -d "${END_TIME}"`
+end_second=`${DATE} +%S -d "${END_TIME}"`
+
+# Compute number of days and hours for the run
+(( run_days = FCST_LENGTH / 24 ))
+(( run_hours = FCST_LENGTH % 24 ))
+
+# Create patterns for updating the wrf namelist (case independent)
+run=[Rr][Uu][Nn]
 equal=[[:blank:]]*=[[:blank:]]*
 start=[Ss][Tt][Aa][Rr][Tt]
 end=[Ee][Nn][Dd]
-date=[Dd][Aa][Tt][Ee]
+year=[Yy][Ee][Aa][Rr]
+month=[Mm][Oo][Nn][Tt][Hh]
+day=[Dd][Aa][Yy]
+hour=[Hh][Oo][Uu][Rr]
+minute=[Mm][Ii][Nn][Uu][Tt][Ee]
+second=[Ss][Ee][Cc][Oo][Nn][Dd]
 interval=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
-seconds=[Ss][Ee][Cc][Oo][Nn][Dd][Ss]
-prefix=[Pp][Rr][Ee][Ff][Ii][Xx]
-fg_name=[Ff][Gg][_][Nn][Aa][Mm][Ee]
-constants_name=[Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][Ss][_][Nn][Aa][Mm][Ee]
-yyyymmdd_hhmmss='[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}_[[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\}'
+history=[Hh][Ii][Ss][Tt][Oo][Rr][Yy]
 
-# define start / end time patterns for namelist.wps
-start_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${START_TIME}"`
-end_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${END_TIME}"`
+# Update the run_days in wrf namelist.input
+${CAT} namelist.input | ${SED} "s/\(${run}_${day}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
+   > namelist.input.new
+${MV} namelist.input.new namelist.input
 
-# Update the start and end date in namelist (propagates settings to three domains) 
-${CAT} namelist.wps | ${SED} "s/\(${start}_${date}\)${equal}'${yyyymmdd_hhmmss}'.*/\1 = '${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}'/" \
-                    | ${SED} "s/\(${end}_${date}\)${equal}'${yyyymmdd_hhmmss}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
-                      > namelist.wps.new
-${MV} namelist.wps.new namelist.wps
+# Update the run_hours in wrf namelist
+${CAT} namelist.input | ${SED} "s/\(${run}_${hour}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_hours}/" \
+   > namelist.input.new
+${MV} namelist.input.new namelist.input
+
+# Update the start time in wrf namelist (propagates settings to three domains)
+${CAT} namelist.input | ${SED} "s/\(${start}_${year}\)${equal}[[:digit:]]\{4\}.*/\1 = ${start_year}, ${start_year}, ${start_year}/" \
+   | ${SED} "s/\(${start}_${month}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
+   | ${SED} "s/\(${start}_${day}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_day}, ${start_day}, ${start_day}/" \
+   | ${SED} "s/\(${start}_${hour}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_hour}, ${start_hour}, ${start_hour}/" \
+   | ${SED} "s/\(${start}_${minute}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_minute}, ${start_minute}, ${start_minute}/" \
+   | ${SED} "s/\(${start}_${second}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_second}, ${start_second}, ${start_second}/" \
+   > namelist.input.new
+${MV} namelist.input.new namelist.input
+
+# Update end time in namelist (propagates settings to three domains)
+${CAT} namelist.input | ${SED} "s/\(${end}_${year}\)${equal}[[:digit:]]\{4\}.*/\1 = ${end_year}, ${end_year}, ${end_year}/" \
+   | ${SED} "s/\(${end}_${month}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_month}, ${end_month}, ${end_month}/" \
+   | ${SED} "s/\(${end}_${day}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_day}, ${end_day}, ${end_day}/" \
+   | ${SED} "s/\(${end}_${hour}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_hour}, ${end_hour}, ${end_hour}/" \
+   | ${SED} "s/\(${end}_${minute}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_minute}, ${end_minute}, ${end_minute}/" \
+   | ${SED} "s/\(${end}_${second}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_second}, ${end_second}, ${end_second}/" \
+   > namelist.input.new
+${MV} namelist.input.new namelist.input
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
-${CAT} namelist.wps | ${SED} "s/\(${interval}_${seconds}\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
-                      > namelist.wps.new 
-${MV} namelist.wps.new namelist.wps
+${CAT} namelist.input | ${SED} "s/\(${interval}${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
+   > namelist.input.new 
+${MV} namelist.input.new namelist.input
 
-# Remove pre-existing metgrid files
-${RM} -f ${metgrid_prefix}.d0*.*.${metgrid_suffix}
+# Update the max_dom in namelist 
+${CAT} namelist.input | ${SED} "s/\(max_dom\)${equal}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
+   > namelist.input.new
+${MV} namelist.input.new namelist.input
 
 #####################################################
-# Run METGRID
+# Run REAL
 #####################################################
 # Print run parameters
 ${ECHO}
-${ECHO} "metgrid.ksh started at `${DATE}`"
+${ECHO} "real.ksh started at `${DATE}`"
 ${ECHO}
-${ECHO} "WPS_ROOT       = ${WPS_ROOT}"
+${ECHO} "WRF_ROOT       = ${WRF_ROOT}"
 ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
 ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 ${ECHO}
@@ -307,52 +377,60 @@ ${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${END_TIME}"`
 ${ECHO}
 
 now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "Running METGRID at ${now}"
-${MPIRUN} ${METGRID_EXE}
+${ECHO} "Running REAL at ${now}"
+${MPIRUN} ${REAL_EXE}
 
 #####################################################
 # Run time error check
 #####################################################
 error=$?
 
-# save metgrid logs
-log_dir=metgrid_log.${now}
-${MKDIR} ${log_dir}
-${MV} metgrid.log* ${log_dir}
+# Save a copy of the RSL files
+rsldir=rsl.real.${now}
+${MKDIR} ${rsldir}
+${MV} rsl.out.* ${rsldir}
+${MV} rsl.error.* ${rsldir}
+${CP} namelist.* ${rsldir}
 
-# save a copy of namelist
-${CP} namelist.wps ${log_dir}
+# Look for successful completion messages in rsl files
+nsuccess=`${CAT} ${rsldir}/rsl.* | ${AWK} '/SUCCESS COMPLETE REAL/' | ${WC} -l`
+(( ntotal = REAL_PROC * 2 ))
+${ECHO} "Found ${nsuccess} of ${ntotal} completion messages"
+if [ ${nsuccess} -ne ${ntotal} ]; then
+  ${ECHO} "ERROR: ${REAL} did not complete sucessfully  Exit status=${error}"
+  if [ ${error} -ne 0 ]; then
+    ${MPIRUN} ${EXIT_CALL} ${error}
+    exit
+  else
+    ${MPIRUN} ${EXIT_CALL} 1
+    exit
+  fi
+fi
 
-if [ ${error} -ne 0 ]; then
-  ${ECHO} "ERROR: ${METGRID} exited with status: ${error}"
-  ${MPIRUN} ${EXIT_CALL} ${error}
+# check to see if the BC output is generated
+if [ ! -s "wrfbdy_d01" ]; then
+  ${ECHO} "${REAL} failed to generate boundary conditions"
+  ${MPIRUN} ${EXIT_CALL} 1
   exit
-else
+fi
 
-# Check to see if metgrid outputs are generated 
-fcst=0
+# check to see if the IC otput is generated
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
-  while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    time_str=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${START_TIME} ${fcst} hours"`
-    if [ ! -e "${metgrid_prefix}.d0${dmn}.${time_str}.${metgrid_suffix}" ]; then
-      ${ECHO} "${METGRID} for d0${dmn} failed to complete"
-      ${MPIRUN} ${EXIT_CALL} 1
-      exit
-    fi
-    (( fcst = fcst + DATA_INTERVAL ))
-  done
+  if [ ! -s "wrfinput_d0${dmn}" ]; then
+    ${ECHO} "${REAL} failed to generate initial conditions for domain d0${dmn}"
+    ${MPIRUN} ${EXIT_CALL} 1
+    exit
+  fi
   (( dmn = dmn + 1 ))
 done
 
-# Remove links to the WPS DAT files
-for file in ${WPS_DAT_FILES[@]}; do
+# Remove the real input files (e.g. met_em.d01.*)
+${RM} -f ./${real_prefix}.*
+
+# Remove links to the WRF DAT files
+for file in ${WRF_DAT_FILES[@]}; do
     ${RM} -f `${BASENAME} ${file}`
 done
 
-# Remove namelist
-${RM} -f namelist.wps
-
-${ECHO} "metgrid.ksh completed successfully at `${DATE}`"
-
-fi
+${ECHO} "real_wps.ksh completed successfully at `${DATE}`"

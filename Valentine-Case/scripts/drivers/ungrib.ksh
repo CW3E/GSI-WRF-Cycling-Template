@@ -391,7 +391,6 @@ done
 if [ ${IF_ECMWF_ML} = Yes ]; then
   ${LN} -sf ${STATIC_DATA}/variable_tables/ecmwf_coeffs ./
   ./util/calc_ecmwf_p.exe
-
   # Check to see if we've got all the files we're expecting
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do

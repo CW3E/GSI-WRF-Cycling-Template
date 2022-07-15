@@ -8,24 +8,28 @@
   <!-- END COMET-DEPENDENT -->
 
   <!-- USER-DEPENDENT ITEMS -->
-  <!ENTITY PROJ_HOME           "&HOME_SPACE;/GSI-WRF-Cycling-Template/Valentine-Case">
-  <!ENTITY PROJ_DATA           "&PROJ_HOME;/data">
   <!ENTITY EMAIL               "cgrudzien@ucsd.edu">
   <!ENTITY USERID              "cgrudzien">
+  <!-- END USER-DEPENDENT -->
+
+  <!-- WORKFLOW SETTINGS -->
+  <!ENTITY PROJ_HOME           "&HOME_SPACE;/GSI-WRF-Cycling-Template/Valentine-Case">
+  <!ENTITY SCRIPTS             "&PROJ_HOME;/scripts">
+  <!ENTITY DRIVERS             "&SCRIPTS;/drivers">
+  <!ENTITY ENVIRONMENTS        "&SCRIPTS;/environments">
+  <!ENTITY PROJ_DATA           "&PROJ_HOME;/data">
+  <!ENTITY LOG                 "&PROJ_DATA;/log">
+  <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/cycle_io">
+  <!ENTITY STATIC_DATA         "&PROJ_DATA;/static">
+  <!-- END WORKFLOW SETTINGS -->
+
+  <!-- SOFTWARE SETTINGS -->
   <!ENTITY WPS_SERIAL_ROOT     "&HOME_SPACE;/WRF_CODE/WPS_serial">
   <!ENTITY WPS_PARALLEL_ROOT   "&HOME_SPACE;/WRF_CODE/WPS_parallel">
   <!ENTITY WRF_ROOT            "&HOME_SPACE;/WRF_CODE/WRF">
   <!ENTITY GSI_ROOT            "&HOME_SPACE;/comGSIv3.7_EnKFv1.3">
   <!ENTITY CRTM_VERSION        "2.3.0">
-  <!-- END USER-DEPENDENT -->
-
-  <!-- WORKFLOW SETTINGS -->
-  <!ENTITY LOG                 "&PROJ_DATA;/log">
-  <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/cycle_io">
-  <!ENTITY STATIC_DATA         "&PROJ_DATA;/static">
-  <!ENTITY ENVIRONMENTS        "&STATIC_DATA;/environments">
-  <!ENTITY DRIVERS             "&STATIC_DATA;/drivers">
-  <!-- END WORKFLOW SETTINGS -->
+  <!-- END SOFTWARE SETTINGS -->
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902090000">
@@ -57,6 +61,7 @@
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY FCST_LENGTH         "06">
   <!ENTITY FCST_INTERVAL       "01">
+  <!ENTITY FIRST_WRF_CYCLE     "No">
   <!ENTITY NIO_TASKS_PER_GROUP "0"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
   <!ENTITY NIO_GROUPS          "1"> 
   <!-- END WRF SETTINGS -->
@@ -290,7 +295,7 @@
      </dependency>
     </task>
 
-    <task name="first_wrf" maxtries="1" cycledefs="q_daily">
+    <task name="first_wrf" maxtries="2" cycledefs="q_daily">
       <command>&DRIVERS;/wrf.ksh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>
@@ -360,7 +365,7 @@
       </envar>
       <envar>
         <name>IF_CYCLING</name>
-        <value>"No"</value>
+        <value>&FIRST_WRF_CYCLE;</value>
       </envar>
       <dependency> 
 	<and>
