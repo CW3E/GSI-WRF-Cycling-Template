@@ -368,7 +368,7 @@ if [ ${error} -ne 0 ]; then
 fi
 
 # save ungrib logs
-log_dir= ungrib_log.${now} 
+log_dir=ungrib_log.${now}
 ${MKDIR} ${log_dir}
 ${MV} ungrib.log ${log_dir}
 ${MV} namelist.wps ${log_dir}
@@ -386,7 +386,7 @@ done
 
 # If ungribbing ECMWF model level data, calculate additional coefficients
 # NOTE: namelist.wps should account for the "PRES" file prefixes in fg_names
-if [ ${IF_ECMWF_ML} = "Yes"]; then
+if [ ${IF_ECMWF_ML} = Yes ]; then
   ${LN} -sf ${STATIC_DATA}/variable_tables/ecmwf_coeffs ./
   ./util/calc_ecmwf_p.exe
 

@@ -316,7 +316,7 @@ ${MPIRUN} ${METGRID_EXE}
 error=$?
 
 # save metgrid logs
-log_dir= metgrid_log.${now} 
+log_dir=metgrid_log.${now} 
 ${MKDIR} ${log_dir}
 ${MV} metgrid.log* ${log_dir}
 ${MV} namelist.wps ${log_dir}
