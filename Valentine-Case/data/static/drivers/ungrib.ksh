@@ -371,6 +371,8 @@ fi
 log_dir=ungrib_log.${now}
 ${MKDIR} ${log_dir}
 ${MV} ungrib.log ${log_dir}
+
+# save a copy of namelist
 ${CP} namelist.wps ${log_dir}
 
 # Check to see if we've got all the files we're expecting
