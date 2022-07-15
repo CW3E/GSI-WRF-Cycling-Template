@@ -163,6 +163,11 @@ if [ ! ${MAX_DOM} ]; then
   exit 1
 fi
 
+if [[ ${IF_SST_UPDATE} != Yes && ${IF_SST_UPDATE} != No ]]; then
+  ${ECHO} "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' case sensitive!"
+  exit 1
+fi
+
 #####################################################
 # Define REAL workflow dependencies
 #####################################################
@@ -408,22 +413,38 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
 fi
 
 # check to see if the BC output is generated
-if [ ! -s "wrfbdy_d01" ]; then
-  ${ECHO} "${REAL} failed to generate boundary conditions"
+bc_file=wrfbdy_d01
+if [ ! -s ${bc_file} ]; then
+  ${ECHO} "${REAL} failed to generate boundary conditions ${bc_file}"
   ${MPIRUN} ${EXIT_CALL} 1
   exit
 fi
 
-# check to see if the IC otput is generated
+# check to see if the IC output is generated
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
-  if [ ! -s "wrfinput_d0${dmn}" ]; then
-    ${ECHO} "${REAL} failed to generate initial conditions for domain d0${dmn}"
+  ic_file=wrfinput_d0${dmn}
+  if [ ! -s ${ic_file} ]; then
+    ${ECHO} "${REAL} failed to generate initial conditions ${ic_file} for domain d0${dmn}"
     ${MPIRUN} ${EXIT_CALL} 1
     exit
   fi
   (( dmn = dmn + 1 ))
 done
+
+# check to see if the STT update field are generated
+if [ ${IF_SST_UPDATE} = Yes ]; then
+  dmn=1
+  while [ ${dmn} -le ${MAX_DOM} ]; do
+    sst_file=wrflowinp_d0${dmn}
+    if [ ! -s ${sst_file} ]; then
+      ${ECHO} "${REAL} failed to generate SST update file ${sst_file} for domain d0${dmn}"
+      ${MPIRUN} ${EXIT_CALL} 1
+      exit
+    fi
+    (( dmn = dmn + 1 ))
+  done
+fi
 
 # Remove the real input files (e.g. met_em.d01.*)
 ${RM} -f ./${real_prefix}.*

@@ -163,6 +163,11 @@ if [[ ${IF_CYCLING} != Yes && ${IF_CYCLING} != No ]]; then
   exit 1
 fi
 
+if [[ ${IF_SST_UPDATE} != Yes && ${IF_SST_UPDATE} != No ]]; then
+  ${ECHO} "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' case sensitive!"
+  exit 1
+fi
+
 #####################################################
 # Define WRF workflow dependencies
 #####################################################
@@ -262,6 +267,15 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     if [ ! -r ./${wrfinput_name} ]; then
       ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${real_outname}"
       exit 1
+    fi
+  fi
+  # NOTE: THIS CURRENTLY LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
+  if [ ${IF_SST_UPDATE} = Yes ]; then
+    wrflowinp_name=wrflowinp_d0${dmn}
+    real_outname=${INPUT_DATAROOT}/realprd/${wrflowinp_name}
+    ${LN} -sf ${real_outname} ./
+    if [ ! -s ${wrflowinp_name} ]; then
+      ${ECHO} "ERROR: ${WORK_ROOT}/${wrflowinp_name} does not exist, or is not readable, check source ${real_outname}"
     fi
   fi
   (( dmn = dmn + 1 ))

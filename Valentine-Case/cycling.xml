@@ -62,6 +62,7 @@
   <!ENTITY FCST_LENGTH         "06">
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY FIRST_WRF_CYCLE     "No">
+  <!ENTITY IF_SST_UPDATE       "Yes"> <!-- This setting is applied to both WRF and real.exe runs -->
   <!ENTITY NIO_TASKS_PER_GROUP "0"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
   <!ENTITY NIO_GROUPS          "1"> 
   <!-- END WRF SETTINGS -->
@@ -280,6 +281,10 @@
         <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
       </envar>
       <envar>
+        <name>IF_SST_UPDATE</name>
+        <value>&IF_SST_UPDATE;</value>
+      </envar>
+      <envar>
         <name>MPIRUN</name>
         <value>&MPIRUN;</value>
       </envar>
@@ -366,6 +371,10 @@
       <envar>
         <name>IF_CYCLING</name>
         <value>&FIRST_WRF_CYCLE;</value>
+      </envar>
+      <envar>
+        <name>IF_SST_UPDATE</name>
+        <value>&IF_SST_UPDATE;</value>
       </envar>
       <dependency> 
 	<and>
