@@ -371,7 +371,7 @@ fi
 log_dir=ungrib_log.${now}
 ${MKDIR} ${log_dir}
 ${MV} ungrib.log ${log_dir}
-${MV} namelist.wps ${log_dir}
+${CP} namelist.wps ${log_dir}
 
 # Check to see if we've got all the files we're expecting
 fcst=0
@@ -409,6 +409,9 @@ done
 
 # remove links to grib files
 ${RM} -f GRIBFILE.*
+
+# Remove namelist
+${RM} -f namelist.wps
 
 ${ECHO} "ungrib.ksh completed successfully at `${DATE}`"
 

@@ -316,10 +316,12 @@ ${MPIRUN} ${METGRID_EXE}
 error=$?
 
 # save metgrid logs
-log_dir=metgrid_log.${now} 
+log_dir=metgrid_log.${now}
 ${MKDIR} ${log_dir}
 ${MV} metgrid.log* ${log_dir}
-${MV} namelist.wps ${log_dir}
+
+# save a copy of namelist
+${CP} namelist.wps ${log_dir}
 
 if [ ${error} -ne 0 ]; then
   ${ECHO} "ERROR: ${METGRID} exited with status: ${error}"
@@ -347,6 +349,9 @@ done
 for file in ${WPS_DAT_FILES[@]}; do
     ${RM} -f `${BASENAME} ${file}`
 done
+
+# Remove namelist
+${RM} -f namelist.wps
 
 ${ECHO} "metgrid.ksh completed successfully at `${DATE}`"
 
