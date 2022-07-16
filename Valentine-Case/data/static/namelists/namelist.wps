@@ -33,6 +33,7 @@
 /
 
 &metgrid
- fg_name = 'FILE', 'PRES'
+ fg_name = 'FILE',
+ !fg_name = 'FILE', 'PRES'
  io_form_metgrid = 2,
 /

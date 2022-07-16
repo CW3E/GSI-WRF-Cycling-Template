@@ -40,26 +40,21 @@
 
   <!-- UNGRIB SETTINGS -->
   <!ENTITY UNGRIB_CONSTANT     "&ENVIRONMENTS;/WPS_constants.ksh">
-  <!ENTITY FCST_LENGTH         "06">
-  <!ENTITY DATA_INTERVAL       "01">
-  <!ENTITY IF_ECMWF_ML         "Yes">
+  <!ENTITY IF_ECMWF_ML         "No">
   <!-- END UNGRIB SETTINGS -->
 
   <!-- METGRID SETTINGS -->
   <!ENTITY METGRID_CONSTANT    "&ENVIRONMENTS;/WPS_constants.ksh">
-  <!ENTITY FCST_LENGTH         "06">
-  <!ENTITY DATA_INTERVAL       "01">
   <!-- END METGRID SETTINGS -->
 
   <!-- REAL SETTINGS -->
   <!ENTITY REAL_CONSTANT       "&ENVIRONMENTS;/WRF_constants.ksh">
-  <!ENTITY FCST_LENGTH         "06">
-  <!ENTITY DATA_INTERVAL       "01">
+  <!ENTITY DATA_INTERVAL       "03"> <!-- This setting is applied to real.exe, metgrid.exe and ungrib.exe -->
   <!-- END REAL SETTINGS -->
 
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
-  <!ENTITY FCST_LENGTH         "06">
+  <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY FIRST_WRF_CYCLE     "No">
   <!ENTITY IF_SST_UPDATE       "Yes"> <!-- This setting is applied to both WRF and real.exe runs -->
@@ -300,7 +295,7 @@
      </dependency>
     </task>
 
-    <task name="first_wrf" maxtries="2" cycledefs="q_daily">
+    <task name="first_wrf" maxtries="1" cycledefs="q_daily">
       <command>&DRIVERS;/wrf.ksh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>
