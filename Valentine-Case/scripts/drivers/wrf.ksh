@@ -460,6 +460,9 @@ if [ ${IF_CYCLING} = Yes ]; then
   datestr=`${DATE} +%Y%m%d%H -d "${START_TIME} ${cycle_intv} hours"`
   new_bkg=${datestr}/bkg
   ${MKDIR} -p ../../${new_bkg} 
+else
+  current_bkg=${INPUT_DATAROOT}/bkg
+  ${MKDIR} -p ${current_bkg}
 fi
 
 # Check for all wrfout files on FCST_INTERVAL and link files to the appropriate bkg directory 
@@ -474,9 +477,9 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       exit
     else
       if [ ${IF_CYCLING} = Yes ]; then
-        ${LN} -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}
+        ${LN} -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}/
       else
-        ${LN} -sfr wrfout_d0${dmn}_${datestr} ${INPUT_DATAROOT}/bkg
+        ${LN} -sfr wrfout_d0${dmn}_${datestr} ${current_bkg}/
       fi
     fi
     (( fcst = fcst + FCST_INTERVAL ))
