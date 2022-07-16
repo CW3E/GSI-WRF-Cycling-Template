@@ -249,6 +249,9 @@ for file in ${WRF_DAT_FILES[@]}; do
   ${LN} -sf ${file} ./
 done
 
+# Remove any old WRF outputs in the directory
+${RM} -f wrfout_*
+
 # Link WRF initial conditions from real.exe or GSI analysis depending on IF_CYCLING switch
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
