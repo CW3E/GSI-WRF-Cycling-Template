@@ -122,6 +122,7 @@ fi
 #
 # FCST_LENGTH = Total length of WRF forecast simulation in HH 
 # FCST_INTERVAL = Interval of wrfout.d01 in HH
+# DATA_INTERVAL = Interval of input data in HH
 # START_TIME = Simulation start time in YYMMDDHH
 # MAX_DOM = Max number of domains to use in namelist settings
 # IF_CYCLING = Yes / No: whether to use ICs from GSI analysis or real.exe, case sensitive
@@ -135,6 +136,11 @@ fi
 
 if [ ! ${FCST_INTERVAL} ]; then
   ${ECHO} "ERROR: \$FCST_INTERVAL is not defined!"
+  exit 1
+fi
+
+if [ ! "${DATA_INTERVAL}" ]; then
+  ${ECHO} "ERROR: \$DATA_INTERVAL is not defined"
   exit 1
 fi
 
@@ -383,9 +389,15 @@ ${CAT} namelist.input | ${SED} "s/\(${nio}_${tasks}_${per}_${group}\)${equal}[[:
    > namelist.input.new
 ${MV} namelist.input.new namelist.input
 
-# Update interval in namelist
+# Update forecast interval in namelist
 (( fcst_interval_sec = FCST_INTERVAL * 3600 ))
 ${CAT} namelist.input | ${SED} "s/\(${interval}${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${fcst_interval_sec}/" \
+   > namelist.input.new 
+${MV} namelist.input.new namelist.input
+
+# Update data interval in namelist
+(( data_interval_sec = DATA_INTERVAL * 3600 ))
+${CAT} namelist.input | ${SED} "s/\(${interval}_${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
    > namelist.input.new 
 ${MV} namelist.input.new namelist.input
 

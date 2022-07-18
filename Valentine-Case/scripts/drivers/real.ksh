@@ -353,7 +353,7 @@ ${MV} namelist.input.new namelist.input
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
-${CAT} namelist.input | ${SED} "s/\(${interval}${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
+${CAT} namelist.input | ${SED} "s/\(${interval}_${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
    > namelist.input.new 
 ${MV} namelist.input.new namelist.input
 
