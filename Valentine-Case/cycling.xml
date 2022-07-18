@@ -56,7 +56,7 @@
   <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "03"> <!-- This setting is applied to all WRF preprocessing and WRF -->
-  <!ENTITY FIRST_WRF_CYCLE     "No">
+  <!ENTITY FIRST_WRF_CYCLE     "No"> <!-- To be used with IF_CYCLING in WRF for the first run to direct to inputs -->
   <!ENTITY IF_SST_UPDATE       "Yes"> <!-- This setting is applied to both WRF and real.exe runs -->
   <!ENTITY NIO_TASKS_PER_GROUP "22"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
   <!ENTITY NIO_GROUPS          "4"> 
@@ -227,7 +227,7 @@
      </dependency>
     </task>
 
-    <task name="first_real" maxtries="3" cycledefs="q_daily">
+    <task name="first_real" maxtries="1" cycledefs="q_daily">
       <command>&DRIVERS;/real.ksh</command>
       <cores>&REAL_PROC;</cores>
       <nodesize>&REAL_NODESIZE;</nodesize>
@@ -295,7 +295,7 @@
      </dependency>
     </task>
 
-    <task name="first_wrf" maxtries="1" cycledefs="q_daily">
+    <task name="first_wrf" maxtries="2" cycledefs="q_daily">
       <command>&DRIVERS;/wrf.ksh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>

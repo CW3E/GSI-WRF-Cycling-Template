@@ -352,6 +352,7 @@ tasks=[Tt][Aa][Ss][Kk][Ss]
 per=[Pp][Ee][Rr]
 group=[Gg][Rr][Oo][Uu][Pp]
 groups=[Gg][Rr][Oo][Uu][Pp][Ss]
+auxinput=[Aa][Uu][Xx][Ii][Nn][Pp][Uu][Tt]
 
 # Update the run_days in wrf namelist.input
 ${CAT} namelist.input | ${SED} "s/\(${run}_${day}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
@@ -389,17 +390,19 @@ ${CAT} namelist.input | ${SED} "s/\(${nio}_${tasks}_${per}_${group}\)${equal}[[:
    > namelist.input.new
 ${MV} namelist.input.new namelist.input
 
-# Update forecast interval in namelist
-(( fcst_interval_sec = FCST_INTERVAL * 3600 ))
-${CAT} namelist.input | ${SED} "s/\(${interval}${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${fcst_interval_sec}/" \
-   > namelist.input.new 
-${MV} namelist.input.new namelist.input
-
 # Update data interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
 ${CAT} namelist.input | ${SED} "s/\(${interval}_${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
    > namelist.input.new 
 ${MV} namelist.input.new namelist.input
+
+if [ ${IF_SST_UPDATE} = Yes ]; then
+  # update the auxinput4_interval to the DATA_INTERVAL (propagates to three domains)
+  (( auxinput4_minutes = DATA_INTERVAL * 60 ))
+  ${CAT} namelist.input | ${SED} "s/\(${auxinput}4_${interval}\)${equal}[[:digit:]]\{1,\}.*/\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}/" \
+     > namelist.input.new
+  ${MV} namelist.input.new namelist.input
+fi
 
 # Update the max_dom in namelist 
 ${CAT} namelist.input | ${SED} "s/\(max_dom\)${equal}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
