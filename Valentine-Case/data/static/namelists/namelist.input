@@ -41,7 +41,7 @@
  io_form_auxhist2                    = 2,
  auxinput4_inname                    = "./wrflowinp_d<domain>",
  auxinput4_outname                   = "./wrflowinp_d<domain>",
- auxinput4_interval                  = 180, 180,
+ auxinput4_interval                  = 60, 60,
  io_form_auxinput4                   = 2,
  debug_level                         = 0,
  diag_print			     = 1,
