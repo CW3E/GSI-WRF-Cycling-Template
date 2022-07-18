@@ -295,7 +295,7 @@
      </dependency>
     </task>
 
-    <task name="first_wrf" maxtries="2" cycledefs="q_daily">
+    <task name="first_wrf" maxtries="1" cycledefs="q_daily">
       <command>&DRIVERS;/wrf.ksh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>
