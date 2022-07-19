@@ -74,7 +74,7 @@ fi
 #####################################################
 # Make checks for DA method settings
 #####################################################
-# Options below are defined in cycling.xml
+# Options below are defined in cycling.xml (case insensitive)
 #
 # IF_SATRAD   = Yes   : GSI uses conventional data from prepbufr,
 #                       satellite radiances, gpsro and radar data 
@@ -91,44 +91,44 @@ fi
 #
 #####################################################
 
-if [[ ${IF_SATRAD} != Yes && ${IF_SATRAD} != No ]]; then
-  ${ECHO} "ERROR: \$IF_SATRAD must equal 'Yes' or 'No' case sensitive!"
+if [[ ${IF_SATRAD} != ${YES} && ${IF_SATRAD} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_SATRAD must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
-if [[ ${IF_OBSERVER} != Yes && ${IF_OBSERVER} != No ]]; then
-  ${ECHO} "ERROR: \$IF_OBSERVER must equal 'Yes' or 'No' case sensitive!"
+if [[ ${IF_OBSERVER} != ${YES} && ${IF_OBSERVER} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_OBSERVER must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
-if [ ${IF_OBSERVER} = Yes ]; then
+if [ ${IF_OBSERVER} = ${YES} ]; then
   if [ -z "${NO_MEMBER}" ]; then
-    ${ECHO} "ERROR: \$NO_MEMBER must be defined as the ensemble size \$IF_OBSERVER = True"
+    ${ECHO} "ERROR: \$NO_MEMBER must be defined as the ensemble size \$IF_OBSERVER = Yes"
     exit 1
   fi
 fi
 
-if [[ ${IF_HYBRID} != Yes && ${IF_HYBRID} != No ]]; then
-  ${ECHO} "ERROR: \$IF_HYBRID must equal 'Yes' or 'No' case sensitive!"
+if [[ ${IF_HYBRID} != ${YES} && ${IF_HYBRID} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_HYBRID must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
-if [[ ${IF_4DENVAR} != Yes && ${IF_4DENVAR} != No ]]; then
-  ${ECHO} "ERROR: \$IF_4DENVAR must equal 'Yes' or 'No' case sensitive!"
+if [[ ${IF_4DENVAR} != ${YES} && ${IF_4DENVAR} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_4DENVAR must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
-if [[ ${IF_NEMSIO} != Yes && ${IF_NEMSIO} != No ]]; then
-  ${ECHO} "ERROR: \$IF_NEMSIO must equal 'Yes' or 'No' case sensitive!"
+if [[ ${IF_NEMSIO} != ${YES} && ${IF_NEMSIO} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_NEMSIO must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
-if [[ ${IF_ONEOB} != Yes && ${IF_ONEOB} != No ]]; then
-  ${ECHO} "ERROR: \$IF_ONEOB must equal 'Yes' or 'No' case sensitive!"
+if [[ ${IF_ONEOB} != ${YES} && ${IF_ONEOB} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_ONEOB must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
-if [ ${IF_ONEOB} = Yes ]; then
+if [ ${IF_ONEOB} = ${YES} ]; then
   if_oneobtest='.true.'
 else
   if_oneobtest='.false.'
@@ -226,7 +226,7 @@ if [ ! -d "${BKG_ROOT}" ]; then
   exit 1
 fi
 
-if [ ${IF_HYBRID} = Yes ] ; then
+if [ ${IF_HYBRID} = ${YES} ] ; then
   # ensembles are only required for hybrid EnVAR
   if [ ! -d "${ENS_ROOT}" ]; then
     echo "ERROR: ENS_ROOT directory '${ENS_ROOT}' does not exist!"
@@ -276,14 +276,14 @@ fi
 # Prep steps for GSI 3D/4D hybrid EnVAR
 #####################################################
 
-if [ ${IF_HYBRID} = Yes ] ; then
+if [ ${IF_HYBRID} = ${YES} ] ; then
   PDYa=`echo $ANAL_TIME | cut -c1-8`
   cyca=`echo $ANAL_TIME | cut -c9-10`
   gdate=`date -u -d "$PDYa $cyca -6 hour" +%Y%m%d%H` #guess date is 6hr ago
   gHH=`echo $gdate |cut -c9-10`
   datem1=`date -u -d "$PDYa $cyca -1 hour" +%Y-%m-%d_%H:%M:%S` #1hr ago
   datep1=`date -u -d "$PDYa $cyca 1 hour"  +%Y-%m-%d_%H:%M:%S`  #1hr later
-  if [ ${IF_NEMSIO} = Yes ]; then
+  if [ ${IF_NEMSIO} = ${YES} ]; then
     if_gfs_nemsio='.true.'
     ENSEMBLE_FILE_mem=${ENS_ROOT}/gdas.t${gHH}z.atmf006s.mem
   else
@@ -291,11 +291,11 @@ if [ ${IF_HYBRID} = Yes ] ; then
     ENSEMBLE_FILE_mem=${ENS_ROOT}/sfg_${gdate}_fhr06s_mem
   fi
 
-  if [ ${IF_4DENVAR} = Yes ] ; then
+  if [ ${IF_4DENVAR} = ${YES} ] ; then
     BKG_FILE_P1=${BKG_ROOT}/wrfout_d01_${datep1}
     BKG_FILE_M1=${BKG_ROOT}/wrfout_d01_${datem1}
 
-    if [ ${IF_NEMSIO} = Yes ]; then
+    if [ ${IF_NEMSIO} = ${YES} ]; then
       ENSEMBLE_FILE_mem_p1=${ENS_ROOT}/gdas.t${gHH}z.atmf009s.mem
       ENSEMBLE_FILE_mem_m1=${ENS_ROOT}/gdas.t${gHH}z.atmf003s.mem
     else
@@ -306,9 +306,9 @@ if [ ${IF_HYBRID} = Yes ] ; then
 fi
 
 ifhyb=.false.
-if [ ${IF_HYBRID} = Yes ] ; then
+if [ ${IF_HYBRID} = ${YES} ] ; then
   ls ${ENSEMBLE_FILE_mem}* > filelist02
-  if [ ${IF_4DENVAR} = Yes ] ; then
+  if [ ${IF_4DENVAR} = ${YES} ] ; then
     ls ${ENSEMBLE_FILE_mem_p1}* > filelist03
     ls ${ENSEMBLE_FILE_mem_m1}* > filelist01
   fi
@@ -322,7 +322,7 @@ if [ ${IF_HYBRID} = Yes ] ; then
   fi
 fi
 if4d=.false.
-if [[ ${ifhyb} = .true. && ${IF_4DENVAR} = Yes ]] ; then
+if [[ ${ifhyb} = .true. && ${IF_4DENVAR} = ${YES} ]] ; then
   if4d=.true.
 fi
 
@@ -344,7 +344,7 @@ echo " Copy background file and link observation bufr to working directory"
 
 # Copy over background field -- THIS IS MODIFIED BY GSI DO NOT LINK TO IT
 cp ${BKG_FILE} ./wrf_inout
-if [ ${IF_4DENVAR} = Yes ] ; then
+if [ ${IF_4DENVAR} = ${YES} ] ; then
   cp ${BKG_FILE_P1} ./wrf_inou3
   cp ${BKG_FILE_M1} ./wrf_inou1
 fi
@@ -355,7 +355,7 @@ ln -s ${PREPBUFR} ./prepbufr
 
 # Link to the radiance data
 ii=1
-if [ ${IF_SATRAD} = Yes ] ; then
+if [ ${IF_SATRAD} = ${YES} ] ; then
    srcobsfile[1]=${OBS_ROOT}/gdas1.t${HH}z.satwnd.tm00.bufr_d
    gsiobsfile[1]=satwnd
    srcobsfile[2]=${OBS_ROOT}/gdas1.t${HH}z.1bamua.tm00.bufr_d
@@ -558,7 +558,7 @@ if [ ${bk_core} = NMMB ] ; then
    bk_if_netcdf='.false.'
 fi
 
-if [ ${IF_OBSERVER} = Yes ] ; then
+if [ ${IF_OBSERVER} = ${YES} ] ; then
   nummiter=0
   if_read_obs_save='.true.'
   if_read_obs_skip='.false.'
@@ -677,7 +677,7 @@ done
 
 #  Clean working directory to save only important files 
 ls -l * > list_run_directory
-if [[ ${if_clean} = clean && ${IF_OBSERVER} != Yes ]]; then
+if [[ ${if_clean} = clean && ${IF_OBSERVER} != ${YES} ]]; then
   echo ' Clean working directory after GSI run'
   rm -f *Coeff.bin     # all CRTM coefficient files
   rm -f pe0*           # diag files on each processor
@@ -690,7 +690,7 @@ fi
 # start to calculate diag files for each member
 #####################################################
 
-if [ ${IF_OBSERVER} = Yes ] ; then
+if [ ${IF_OBSERVER} = ${YES} ] ; then
   string=ges
   for type in $listall; do
     count=0

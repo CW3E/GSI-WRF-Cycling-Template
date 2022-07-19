@@ -130,6 +130,8 @@ fi
 # DATA_INTERVAL = Interval of input data in HH
 # START_TIME    = Simulation start time in YYMMDDHH
 # MAX_DOM       = Max number of domains to use in namelist settings
+# IF_SST_UPDATE = "Yes" or "No" switch to compute dynamic SST forcing, (must include auxinput4 path and
+#                  timing in namelist) case insensitive
 #
 #####################################################
 
@@ -163,8 +165,8 @@ if [ ! ${MAX_DOM} ]; then
   exit 1
 fi
 
-if [[ ${IF_SST_UPDATE} != Yes && ${IF_SST_UPDATE} != No ]]; then
-  ${ECHO} "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' case sensitive!"
+if [[ ${IF_SST_UPDATE} != ${YES} && ${IF_SST_UPDATE} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
@@ -433,7 +435,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 done
 
 # check to see if the STT update field are generated
-if [ ${IF_SST_UPDATE} = Yes ]; then
+if [ ${IF_SST_UPDATE} = ${YES} ]; then
   dmn=1
   while [ ${dmn} -le ${MAX_DOM} ]; do
     sst_file=wrflowinp_d0${dmn}

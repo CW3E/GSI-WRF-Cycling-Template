@@ -167,7 +167,7 @@ fi
 # START_TIME    = Simulation start time in YYMMDDHH
 # MAX_DOM       = Max number of domains to use in namelist settings
 # IF_ECMWF_ML   = "Yes" or "No" switch to compute ECMWF coefficients for
-#                  initializing with model level data, case sensitive
+#                  initializing with model level data, case insensitive
 #
 #####################################################
 
@@ -201,8 +201,8 @@ if [ ! ${MAX_DOM} ]; then
   exit 1
 fi
 
-if [[ ${IF_ECMWF_ML} != Yes && ${IF_ECMWF_ML} != No ]]; then
-  ${ECHO} "ERROR: \$IF_ECMWF_ML must equal 'Yes' or 'No' case sensitive!"
+if [[ ${IF_ECMWF_ML} != ${YES} && ${IF_ECMWF_ML} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_ECMWF_ML must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
@@ -388,7 +388,7 @@ done
 
 # If ungribbing ECMWF model level data, calculate additional coefficients
 # NOTE: namelist.wps should account for the "PRES" file prefixes in fg_names
-if [ ${IF_ECMWF_ML} = Yes ]; then
+if [ ${IF_ECMWF_ML} = ${YES} ]; then
   ${LN} -sf ${STATIC_DATA}/variable_tables/ecmwf_coeffs ./
   ./util/calc_ecmwf_p.exe
   # Check to see if we've got all the files we're expecting
