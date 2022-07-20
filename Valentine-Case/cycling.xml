@@ -55,7 +55,7 @@
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
-  <!ENTITY DATA_INTERVAL       "03"> <!-- This setting is applied to all WRF preprocessing and WRF -->
+  <!ENTITY DATA_INTERVAL       "01"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FIRST_WRF_CYCLE     "No"> <!-- To be used with IF_CYCLING in WRF for the first run to direct to inputs -->
   <!ENTITY IF_SST_UPDATE       "Yes"> <!-- This setting is applied to both WRF and real.exe runs -->
   <!ENTITY NIO_TASKS_PER_GROUP "22"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
