@@ -435,7 +435,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 done
 
 # check to see if the STT update field are generated
-if [ ${IF_SST_UPDATE} = ${YES} ]; then
+if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
   dmn=1
   while [ ${dmn} -le ${MAX_DOM} ]; do
     sst_file=wrflowinp_d0${dmn}

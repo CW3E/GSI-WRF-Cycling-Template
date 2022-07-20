@@ -262,7 +262,7 @@ ${RM} -f wrfout_*
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   wrfinput_name=wrfinput_d0${dmn}
-  if [ ${IF_CYCLING} = ${YES} ]; then
+  if [[ ${IF_CYCLING} = ${YES} ]]; then
     # NOTE: THIS IS CURRENTLY ONLY DESIGNED FOR A SINGLE DOMAIN, NEEDS NAMING PATTERN FOR MULTIPLE DOMAINS
     gsi_outname=${INPUT_DATAROOT}/gsiprd/wrf_inout
     ${LN} -sf ${gsi_outname} ./${wrfinput_name}
@@ -279,7 +279,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     fi
   fi
   # NOTE: THIS CURRENTLY LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
-  if [ ${IF_SST_UPDATE} = ${YES} ]; then
+  if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
     wrflowinp_name=wrflowinp_d0${dmn}
     real_outname=${INPUT_DATAROOT}/realprd/${wrflowinp_name}
     ${LN} -sf ${real_outname} ./
@@ -396,7 +396,7 @@ ${CAT} namelist.input | ${SED} "s/\(${interval}_${second}[Ss]\)${equal}[[:digit:
    > namelist.input.new 
 ${MV} namelist.input.new namelist.input
 
-if [ ${IF_SST_UPDATE} = ${YES} ]; then
+if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
   # update the auxinput4_interval to the DATA_INTERVAL (propagates to three domains)
   (( auxinput4_minutes = DATA_INTERVAL * 60 ))
   ${CAT} namelist.input | ${SED} "s/\(${auxinput}4_${interval}\)${equal}[[:digit:]]\{1,\}.*/\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}/" \
@@ -469,7 +469,7 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
   fi
 fi
 
-if [ ${IF_CYCLING} = ${YES} ]; then
+if [[ ${IF_CYCLING} = ${YES} ]]; then
   # ensure that the cycle_io/date/bkg directory exists for starting next cycle
   cycle_intv=`${DATE} +%H -d "${CYCLE_INTV}"`
   datestr=`${DATE} +%Y%m%d%H -d "${START_TIME} ${cycle_intv} hours"`
@@ -491,7 +491,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       ${MPIRUN} ${EXIT_CALL} 1
       exit
     else
-      if [ ${IF_CYCLING} = ${YES} ]; then
+      if [[ ${IF_CYCLING} = ${YES} ]]; then
         ${LN} -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}/
       else
         ${LN} -sfr wrfout_d0${dmn}_${datestr} ${current_bkg}/
