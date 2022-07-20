@@ -33,7 +33,9 @@
 /
 
 &metgrid
- fg_name = 'FILE',
- !fg_name = 'FILE', 'PRES'
+ ! GFS setting !
+ !fg_name = 'FILE',
+ ! ERA5 setting !
+ fg_name = 'FILE', 'PRES'
  io_form_metgrid = 2,
 /

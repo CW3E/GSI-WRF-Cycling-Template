@@ -40,7 +40,7 @@
 
   <!-- UNGRIB SETTINGS -->
   <!ENTITY UNGRIB_CONSTANT     "&ENVIRONMENTS;/WPS_constants.ksh">
-  <!ENTITY IF_ECMWF_ML         "No">
+  <!ENTITY IF_ECMWF_ML         "Yes">
   <!-- END UNGRIB SETTINGS -->
 
   <!-- METGRID SETTINGS -->
@@ -56,8 +56,8 @@
   <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "03"> <!-- This setting is applied to all WRF preprocessing and WRF -->
-  <!ENTITY FIRST_WRF_CYCLE     "NO"> <!-- To be used with IF_CYCLING in WRF for the first run to direct to inputs -->
-  <!ENTITY IF_SST_UPDATE       "yEs"> <!-- This setting is applied to both WRF and real.exe runs -->
+  <!ENTITY FIRST_WRF_CYCLE     "No"> <!-- To be used with IF_CYCLING in WRF for the first run to direct to inputs -->
+  <!ENTITY IF_SST_UPDATE       "Yes"> <!-- This setting is applied to both WRF and real.exe runs -->
   <!ENTITY NIO_TASKS_PER_GROUP "22"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
   <!ENTITY NIO_GROUPS          "4"> 
   <!-- END WRF SETTINGS -->
