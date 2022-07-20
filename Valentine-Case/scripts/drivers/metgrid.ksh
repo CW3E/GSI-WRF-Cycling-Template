@@ -7,14 +7,14 @@
 # redistribution in the License Statement below.
 #
 # The purpose of this fork is to work in a Rocoto-based
-# Observation-Analysis-Forecast cycle with GSI for data denial 
+# Observation-Analysis-Forecast cycle with GSI for data denial
 # experiments. Naming conventions in this script have been smoothed
 # to match a companion major fork of the standard gsi.ksh
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WPS environment
 # in a WPS_constants.ksh script to be sourced in the below.  Variables
-# aliases in this script are based on conventions defined in the 
+# aliases in this script are based on conventions defined in the
 # companion WPS_constants.ksh with this driver.
 #
 # SEE THE README FOR FURTHER INFORMATION
@@ -23,13 +23,13 @@
 # License Statement:
 #####################################################
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #     Unless required by applicable law or agreed to in writing, software
 #     distributed under the License is distributed on an "AS IS" BASIS,
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,29 +43,29 @@
 #
 #     Open Source License/Disclaimer, Forecast Systems Laboratory
 #     NOAA/OAR/FSL, 325 Broadway Boulder, CO 80305
-#   
+#
 #     This software is distributed under the Open Source Definition,
 #     which may be found at http://www.opensource.org/osd.html.
-#   
+#
 #     In particular, redistribution and use in source and binary forms,
 #     with or without modification, are permitted provided that the
 #     following conditions are met:
-#   
+#
 #     - Redistributions of source code must retain this notice, this
 #     list of conditions and the following disclaimer.
-#   
+#
 #     - Redistributions in binary form must provide access to this
 #     notice, this list of conditions and the following disclaimer, and
 #     the underlying source code.
-#   
+#
 #     - All modifications to this software must be clearly documented,
 #     and are solely the responsibility of the agent making the
 #     modifications.
-#   
+#
 #     - If significant modifications or enhancements are made to this
 #     software, the FSL Software Policy Manager
 #     (softwaremgr@fsl.noaa.gov) should be notified.
-#   
+#
 #     THIS SOFTWARE AND ITS DOCUMENTATION ARE IN THE PUBLIC DOMAIN
 #     AND ARE FURNISHED "AS IS."  THE AUTHORS, THE UNITED STATES
 #     GOVERNMENT, ITS INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND
@@ -73,30 +73,30 @@
 #     OF THE SOFTWARE AND DOCUMENTATION FOR ANY PURPOSE.  THEY ASSUME
 #     NO RESPONSIBILITY (1) FOR THE USE OF THE SOFTWARE AND
 #     DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL SUPPORT TO USERS.
-#   
+#
 #     Script Name: metgrid.ksh
-#      
+#
 #          Author: Christopher Harrop
 #                  Forecast Systems Laboratory
 #                  325 Broadway R/FST
 #                  Boulder, CO. 80305
-#     
+#
 #        Released: 10/30/2003
 #         Version: 1.0
 #         Changes: None
-#     
-#      Purpose: This is a complete rewrite of the metgrid portion of the 
-#               wrfprep.pl script that is distributed with the WRF Standard 
-#               Initialization.  This script may be run on the command line, or 
+#
+#      Purpose: This is a complete rewrite of the metgrid portion of the
+#               wrfprep.pl script that is distributed with the WRF Standard
+#               Initialization.  This script may be run on the command line, or
 #               it may be submitted directly to a batch queueing system.
-#         
+#
 #     A short and simple "control" script could be written to call this script
-#     or to submit this  script to a batch queueing  system.  Such a "control" 
-#     script  could  also  be  used to  set the above environment variables as 
+#     or to submit this  script to a batch queueing  system.  Such a "control"
+#     script  could  also  be  used to  set the above environment variables as
 #     appropriate  for  a  particular experiment.  Batch  queueing options can
 #     be  specified on the command  line or  as directives at  the top of this
 #     script.  A set of default batch queueing directives is provided.
-#   
+#
 #####################################################
 # Preamble
 #####################################################
@@ -128,7 +128,7 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# FCST_LENGTH   = Total length of WRF forecast simulation in HH 
+# FCST_LENGTH   = Total length of WRF forecast simulation in HH
 # DATA_INTERVAL = Interval of input data in HH
 # START_TIME    = Simulation start time in YYMMDDHH
 # MAX_DOM       = Max number of domains to use in namelist settings
@@ -174,7 +174,7 @@ fi
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
 #                  grib data, geogrid data, etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
-#                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd 
+#                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd
 # MPIRUN         = MPI Command to execute METGRID
 #
 #####################################################
@@ -210,10 +210,10 @@ fi
 # The following paths are relative to cycling.xml supplied root paths
 #
 # WORK_ROOT      = Working directory where METGRID_EXE runs and outputs
-# WPS_DAT_FILES  = All file contents of clean WPS directory 
+# WPS_DAT_FILES  = All file contents of clean WPS directory
 #                  namelists and input data will be linked from other sources
 # METGRID_EXE    = Path and name of working executable
-# 
+#
 #####################################################
 
 WORK_ROOT=${INPUT_DATAROOT}/wpsprd
@@ -246,7 +246,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     echo "ERROR: Input file '${geoinput_name}' is missing"
     exit 1
   fi
-  ${LN} -sf ${geoinput_name} ./ 
+  ${LN} -sf ${geoinput_name} ./
   (( dmn = dmn + 1 ))
 done
 
@@ -272,7 +272,7 @@ yyyymmdd_hhmmss='[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}_[[:digit:]]\
 start_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${START_TIME}"`
 end_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${END_TIME}"`
 
-# Update the start and end date in namelist (propagates settings to three domains) 
+# Update the start and end date in namelist (propagates settings to three domains)
 ${CAT} namelist.wps | ${SED} "s/\(${start}_${date}\)${equal}'${yyyymmdd_hhmmss}'.*/\1 = '${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}'/" \
                     | ${SED} "s/\(${end}_${date}\)${equal}'${yyyymmdd_hhmmss}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
                       > namelist.wps.new
@@ -281,7 +281,7 @@ ${MV} namelist.wps.new namelist.wps
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
 ${CAT} namelist.wps | ${SED} "s/\(${interval}_${seconds}\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
-                      > namelist.wps.new 
+                      > namelist.wps.new
 ${MV} namelist.wps.new namelist.wps
 
 # Remove pre-existing metgrid files
@@ -329,7 +329,7 @@ if [ ${error} -ne 0 ]; then
   exit
 else
 
-# Check to see if metgrid outputs are generated 
+# Check to see if metgrid outputs are generated
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   fcst=0

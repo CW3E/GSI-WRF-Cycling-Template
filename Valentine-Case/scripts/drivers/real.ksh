@@ -7,14 +7,14 @@
 # redistribution in the License Statement below.
 #
 # The purpose of this fork is to work in a Rocoto-based
-# Observation-Analysis-Forecast cycle with GSI for data denial 
+# Observation-Analysis-Forecast cycle with GSI for data denial
 # experiments. Naming conventions in this script have been smoothed
 # to match a companion major fork of the standard gsi.ksh
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WRF environment
 # in a WRF_constants.ksh script to be sourced in the below.  Variables
-# aliases in this script are based on conventions defined in the 
+# aliases in this script are based on conventions defined in the
 # companion WRF_constants.ksh with this driver.
 #
 # SEE THE README FOR FURTHER INFORMATION
@@ -23,13 +23,13 @@
 # License Statement:
 #####################################################
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #     Unless required by applicable law or agreed to in writing, software
 #     distributed under the License is distributed on an "AS IS" BASIS,
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,29 +43,29 @@
 #
 #     Open Source License/Disclaimer, Forecast Systems Laboratory
 #     NOAA/OAR/FSL, 325 Broadway Boulder, CO 80305
-#   
+#
 #     This software is distributed under the Open Source Definition,
 #     which may be found at http://www.opensource.org/osd.html.
-#   
+#
 #     In particular, redistribution and use in source and binary forms,
 #     with or without modification, are permitted provided that the
 #     following conditions are met:
-#   
+#
 #     - Redistributions of source code must retain this notice, this
 #     list of conditions and the following disclaimer.
-#   
+#
 #     - Redistributions in binary form must provide access to this
 #     notice, this list of conditions and the following disclaimer, and
 #     the underlying source code.
-#   
+#
 #     - All modifications to this software must be clearly documented,
 #     and are solely the responsibility of the agent making the
 #     modifications.
-#   
+#
 #     - If significant modifications or enhancements are made to this
 #     software, the FSL Software Policy Manager
 #     (softwaremgr@fsl.noaa.gov) should be notified.
-#   
+#
 #     THIS SOFTWARE AND ITS DOCUMENTATION ARE IN THE PUBLIC DOMAIN
 #     AND ARE FURNISHED "AS IS."  THE AUTHORS, THE UNITED STATES
 #     GOVERNMENT, ITS INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND
@@ -73,26 +73,26 @@
 #     OF THE SOFTWARE AND DOCUMENTATION FOR ANY PURPOSE.  THEY ASSUME
 #     NO RESPONSIBILITY (1) FOR THE USE OF THE SOFTWARE AND
 #     DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL SUPPORT TO USERS.
-#   
+#
 #     Script Name: wrf_wps.ksh
-#     
+#
 #         Author: Christopher Harrop
 #                 Forecast Systems Laboratory
 #                 325 Broadway R/FST
 #                 Boulder, CO. 80305
-#     
-#     Purpose: This is a complete rewrite of the real portion of the 
-#              wrfprep.pl script that is distributed with the WRF Standard 
-#              Initialization.  This script may be run on the command line, or 
-#              it may be submitted directly to a batch queueing system.  
-#         
+#
+#     Purpose: This is a complete rewrite of the real portion of the
+#              wrfprep.pl script that is distributed with the WRF Standard
+#              Initialization.  This script may be run on the command line, or
+#              it may be submitted directly to a batch queueing system.
+#
 #     A short and simple "control" script could be written to call this script
-#     or to submit this  script to a batch queueing  system.  Such a "control" 
-#     script  could  also  be  used to  set the above environment variables as 
+#     or to submit this  script to a batch queueing  system.  Such a "control"
+#     script  could  also  be  used to  set the above environment variables as
 #     appropriate  for  a  particular experiment.  Batch  queueing options can
 #     be  specified on the command  line or  as directives at  the top of this
 #     script.  A set of default batch queueing directives is provided.
-#   
+#
 #####################################################
 # Preamble
 #####################################################
@@ -110,7 +110,7 @@ real_prefix="met_em"
 real_suffix=".nc"
 
 #####################################################
-# Read in WRF constants for local environment 
+# Read in WRF constants for local environment
 #####################################################
 
 if [ ! -x "${CONSTANT}" ]; then
@@ -126,7 +126,7 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# FCST_LENGTH   = Total length of WRF forecast simulation in HH 
+# FCST_LENGTH   = Total length of WRF forecast simulation in HH
 # DATA_INTERVAL = Interval of input data in HH
 # START_TIME    = Simulation start time in YYMMDDHH
 # MAX_DOM       = Max number of domains to use in namelist settings
@@ -180,7 +180,7 @@ fi
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
 #                  grib data, geogrid data, etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
-#                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd 
+#                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd
 # MPIRUN         = MPI Command to execute REAL
 #
 #####################################################
@@ -226,11 +226,11 @@ fi
 # The following paths are relative to cycling.xml supplied root paths
 #
 # WORK_ROOT      = Working directory where REAL runs and outputs background files
-# WRF_DAT_FILES  = All file contents of clean WRF/run directory 
+# WRF_DAT_FILES  = All file contents of clean WRF/run directory
 #                  namelists, boundary and input data will be linked
 #                  from other sources
 # REAL_EXE       = Path and name of working executable
-# 
+#
 #####################################################
 
 WORK_ROOT=${INPUT_DATAROOT}/realprd
@@ -267,7 +267,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       echo "ERROR: Input file '${INPUT_DATAROOT}/${realinput_name}' is missing"
       exit 1
     fi
-    ${LN} -sf ${INPUT_DATAROOT}/wpsprd/${realinput_name} ./ 
+    ${LN} -sf ${INPUT_DATAROOT}/wpsprd/${realinput_name} ./
     (( fcst = fcst + DATA_INTERVAL ))
   done
   (( dmn = dmn + 1 ))
@@ -356,10 +356,10 @@ ${MV} namelist.input.new namelist.input
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
 ${CAT} namelist.input | ${SED} "s/\(${interval}_${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
-   > namelist.input.new 
+   > namelist.input.new
 ${MV} namelist.input.new namelist.input
 
-# Update the max_dom in namelist 
+# Update the max_dom in namelist
 ${CAT} namelist.input | ${SED} "s/\(max_dom\)${equal}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
    > namelist.input.new
 ${MV} namelist.input.new namelist.input

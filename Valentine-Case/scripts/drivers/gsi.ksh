@@ -7,14 +7,14 @@
 # https://dtcenter.ucar.edu/com-GSI/users/tutorial/online_tutorial/index_v3.7.php
 #
 # The purpose of this fork is to work in a Rocoto-based
-# Observation-Analysis-Forecast cycle with WRF for data denial 
+# Observation-Analysis-Forecast cycle with WRF for data denial
 # experiments. Naming conventions in this script have been smoothed
 # to match a companion major fork of the wrf.ksh
 # WRF driver script of Christopher Harrop.
 #
 # One should write machine specific options for the GSI environment
 # in a GSI_constants.ksh script to be sourced in the below.  Variables
-# aliases in this script are based on conventions defined in the 
+# aliases in this script are based on conventions defined in the
 # companion GSI_constants.ksh with this driver.
 #
 # SEE THE README FOR FURTHER INFORMATION
@@ -23,13 +23,13 @@
 # License Statement:
 #####################################################
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #     Unless required by applicable law or agreed to in writing, software
 #     distributed under the License is distributed on an "AS IS" BASIS,
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,7 +43,7 @@
 # (i.e., these not expected to change within DA cycles).
 #
 # bk_core     = Which WRF core is used as background (NMM or ARW or NMMB)
-# bkcv_option = Which background error covariance and parameter will be used 
+# bkcv_option = Which background error covariance and parameter will be used
 #              (GLOBAL or NAM)
 #
 # if_clean    = clean  : delete temporal files in working directory (default)
@@ -61,7 +61,7 @@ if_clean=clean
 BYTE_ORDER=Big_Endian
 
 #####################################################
-# Read in GSI constants for local environment 
+# Read in GSI constants for local environment
 #####################################################
 
 if [ ! -x "${CONSTANT}" ]; then
@@ -77,14 +77,14 @@ fi
 # Options below are defined in cycling.xml (case insensitive)
 #
 # IF_SATRAD   = Yes   : GSI uses conventional data from prepbufr,
-#                       satellite radiances, gpsro and radar data 
+#                       satellite radiances, gpsro and radar data
 #               No    : GSI uses conventional data alone
 #
 # IF_OBSERVER = Yes   : Only used as observation operator for EnKF
 # NO_MEMBER   = INT   : Number of ensemble members must be specified
-#                       when IF_OBSERVER = yes above          
+#                       when IF_OBSERVER = yes above
 # IF_HYBRID   = Yes   : Run GSI as 3D/4D EnVar
-# IF_4DENVAR  = Yes   : Run GSI as 4D EnVar 
+# IF_4DENVAR  = Yes   : Run GSI as 4D EnVar
 #                       NOTE set `IF_HYBRID=Yes` first
 # IF_NEMSIO   = Yes   : The GFS background files are in NEMSIO format
 # IF_ONEOB    = Yes   : Do single observation test
@@ -149,7 +149,7 @@ fi
 # Below variables are derived by cycling.xml variables for convenience
 #
 # DATE_STR       = Defined by the ANAL_TIME variable, to be used as path
-#                  name variable in YYMMDDHH format 
+#                  name variable in YYMMDDHH format
 #
 #####################################################
 
@@ -195,10 +195,10 @@ fi
 # OBS_ROOT     = Path of observations files
 # BKG_ROOT     = Path for root directory of background file and ensemble members
 # ENS_ROOT     = Path where ensemble background files exist, not required
-#                if not running hybrid EnVAR  
+#                if not running hybrid EnVAR
 # FIX_ROOT     = Path of fix files
-# GSI_EXE      = Path and name of the gsi.x executable 
-# CRTM_ROOT    = Path of the CRTM root directory, contained in GSI_ROOT 
+# GSI_EXE      = Path and name of the gsi.x executable
+# CRTM_ROOT    = Path of the CRTM root directory, contained in GSI_ROOT
 # PREPBUFR     = Path of PreBUFR conventional obs
 # BKG_FILE     = Path and name of background file
 # BKG_FILE_mem = Path and base for ensemble members, only applies IF_OBSERVER = Yes
@@ -213,7 +213,7 @@ FIX_ROOT=${GSI_ROOT}/fix
 GSI_EXE=${GSI_ROOT}/build/bin/gsi.x
 GSI_NAMELIST=${GSI_ROOT}/ush/comgsi_namelist.sh
 CRTM_ROOT=${GSI_ROOT}/CRTM_v${CRTM_VERSION}
-# NOTE: will likely need to reset the following in generalized script 
+# NOTE: will likely need to reset the following in generalized script
 PREPBUFR=${OBS_ROOT}/nam.t${HH}z.prepbufr.tm00
 
 if [ ! -d "${OBS_ROOT}" ]; then
@@ -233,7 +233,7 @@ if [[ ${IF_HYBRID} = ${YES} ]] ; then
     exit 1
   fi
 fi
-  
+
 if [ ! -d "${FIX_ROOT}" ]; then
   echo "ERROR: FIX directory '${FIX_ROOT}' does not exist!"
   exit 1
@@ -312,7 +312,7 @@ if [[ ${IF_HYBRID} = ${YES} ]] ; then
     ls ${ENSEMBLE_FILE_mem_p1}* > filelist03
     ls ${ENSEMBLE_FILE_mem_m1}* > filelist01
   fi
-  
+
   nummem=`more filelist02 | wc -l`
   nummem=$((nummem -3 ))
 
@@ -516,7 +516,7 @@ cp $bufrtable ./prepobs_prep.bufrtable
 # for satellite bias correction
 # NOTE: may need to use own satbias files for appropriate bias correction
 cp ${GSI_ROOT}/fix/comgsi_satbias_in ./satbias_in
-cp ${GSI_ROOT}/fix/comgsi_satbias_pc_in ./satbias_pc_in 
+cp ${GSI_ROOT}/fix/comgsi_satbias_pc_in ./satbias_pc_in
 
 #####################################################
 # Build GSI namelist
@@ -588,7 +588,7 @@ fi
 ${ECHO}
 ${ECHO} "gsi.ksh started at `${DATE}`"
 ${ECHO}
-${ECHO} "IF_SATRAD      = ${IF_SATRAD}"    
+${ECHO} "IF_SATRAD      = ${IF_SATRAD}"
 ${ECHO} "IF_OBSERVER    = ${IF_OBSERVER}"
 ${ECHO} "NO_MEMBER      = ${NO_MEMBER}"
 ${ECHO} "IF_HYBRID      = ${IF_HYBRID}"
@@ -675,7 +675,7 @@ esac
    done
 done
 
-#  Clean working directory to save only important files 
+#  Clean working directory to save only important files
 ls -l * > list_run_directory
 if [[ ${if_clean} = clean && ${IF_OBSERVER} != ${YES} ]]; then
   echo ' Clean working directory after GSI run'
@@ -750,7 +750,7 @@ if [[ ${IF_OBSERVER} = ${YES} ]] ; then
 
 # next member
      (( ensmem += 1 ))
-      
+
   done
 
 fi
