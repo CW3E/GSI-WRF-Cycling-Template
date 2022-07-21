@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-# WRF configure and compile steps, based on COMET tutorial for
+# WRFDA configure and compile steps, based on COMET tutorial for
 # WRF v4.4 / WPS 4.4
 # sets COMET specific environment for intelmpi 2019.5.281
 # change to intel mpi
@@ -23,12 +23,17 @@ module load netcdf/4.7.4intelmpi
 export NETCDF="/share/apps/compute/netcdf/intel2019/intelmpi"
 export HDF5="/share/apps/compute/hdf5/intel2019/intelmpi"
 
+# WRFDA specific, from Michael Murphy
+export BUFR=1
+export CRTM=1
+export NETCDF_classic=1 # have to turn classic on or it complains
+
 # Set log report, named with compiler / netcdf version 
 export log_version="intelmpi_2019.5.281_netcdf_4.7.4"
 export log_file="compile_"$log_version".log"
 
 #Some simple checks
-echo "WRF 4.4 compile intel version 2019.5.281, intelmpi, hdf5/1.10.7, and netcdf 4.7.4 on comet" &> $log_file 
+echo "WRFDA 4.4 compile intel version 2019.5.281, intelmpi, hdf5/1.10.7, and netcdf 4.7.4 on comet" &> $log_file 
 echo `module list` >> $log_file  2>&1
 echo `which mpif77` >> $log_file  2>&1
 echo `which ifort` >> $log_file  2>&1
@@ -41,12 +46,12 @@ echo `ls -l $JASPERLIB/libz.so` >> $log_file  2>&1
 echo `ls -l $JASPERLIB/libz.so.1.2.7` >> $log_file  2>&1
 echo "LD_LIBRARY_PATH: ${LD_LIBRARY_PATH}" >> $log_file  2>&1
 
-# Set up WRF directory / configure
+# Set up WRFDA directory / configure
 echo "setting up compile directory"   >> $log_file  2>&1
-./clean -a >> $log_file  2>&1
+./clean -aa >> $log_file  2>&1
 
 # uncomment for fresh configuration file
-#./configure 
+#./configure wrfda
 #
 # if making fresh configure note the following
 # Use 66  will have AVX2 optimization, needs so flag fixing after configure
@@ -81,13 +86,13 @@ echo "setting up compile directory"   >> $log_file  2>&1
 # 	(base) [cpapadop@comet-ln2 WRF-4.3.1]$ 
 # 	
 # 
-cp configure.wrf-4.4_intelmpi_2019.5.281_comet ./configure.wrf  >> $log_file  2>&1
+cp configure.wrfda-4.4_intelmpi_2019.5.281_comet ./configure.wrf  >> $log_file  2>&1
 echo "END setting up compile directory"   >> $log_file  2>&1
 
 
 echo "Begin wrf compile" >> $log_file 2>&1
 # Uncomment to run compile, can be tested to this point
 # for debugging without this step
-./compile -j 20 em_real >> $log_file 2>&1
+./compile -j 20 all_wrfvar >> $log_file 2>&1
 
-echo "End of wrf compile" `date` >> $log_file  2>&1
+echo "End of WRFDA compile" `date` >> $log_file  2>&1

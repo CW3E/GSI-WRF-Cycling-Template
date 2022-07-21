@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 # WPS configure and compile steps, based on COMET tutorial for
 # WRF v4.4 / WPS 4.4
