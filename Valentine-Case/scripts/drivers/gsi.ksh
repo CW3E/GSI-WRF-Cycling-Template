@@ -76,20 +76,28 @@ fi
 #####################################################
 # Options below are defined in cycling.xml (case insensitive)
 #
-# IF_SATRAD   = Yes   : GSI uses conventional data from prepbufr,
-#                       satellite radiances, gpsro and radar data
-#               No    : GSI uses conventional data alone
+# IF_FIRST_ANAL = Yes   : GSI analyzes wrfinput_d01 file instead of
+#                         wrfout_d01 file to start first DA cycle
+#                 No    : GSI uses conventional data alone
+# IF_SATRAD     = Yes   : GSI uses conventional data from prepbufr,
+#                         satellite radiances, gpsro and radar data
+#                 No    : GSI uses conventional data alone
 #
-# IF_OBSERVER = Yes   : Only used as observation operator for EnKF
-# NO_MEMBER   = INT   : Number of ensemble members must be specified
-#                       when IF_OBSERVER = yes above
-# IF_HYBRID   = Yes   : Run GSI as 3D/4D EnVar
-# IF_4DENVAR  = Yes   : Run GSI as 4D EnVar
-#                       NOTE set `IF_HYBRID=Yes` first
-# IF_NEMSIO   = Yes   : The GFS background files are in NEMSIO format
-# IF_ONEOB    = Yes   : Do single observation test
+# IF_OBSERVER   = Yes   : Only used as observation operator for EnKF
+# NO_MEMBER     = INT   : Number of ensemble members must be specified
+#                         when IF_OBSERVER = yes above
+# IF_HYBRID     = Yes   : Run GSI as 3D/4D EnVar
+# IF_4DENVAR    = Yes   : Run GSI as 4D EnVar
+#                         NOTE set `IF_HYBRID=Yes` first
+# IF_NEMSIO     = Yes   : The GFS background files are in NEMSIO format
+# IF_ONEOB      = Yes   : Do single observation test
 #
 #####################################################
+
+if [[ ${IF_FIRST_ANAL} != ${YES} && ${IF_FIRST_ANAL} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_FIRST_ANAL must equal 'Yes' or 'No' (case insensitive)"
+  exit 1
+fi
 
 if [[ ${IF_SATRAD} != ${YES} && ${IF_SATRAD} != ${NO} ]]; then
   ${ECHO} "ERROR: \$IF_SATRAD must equal 'Yes' or 'No' (case insensitive)"
@@ -263,9 +271,13 @@ fi
 #fi
 
 # NOTE: BKG_FILE only currently dynamically links to the d01 with date string
-# for the background, probably need to update this later for multiple domains
-BKG_FILE=${BKG_ROOT}/wrfout_d01_${DATE_STR}
-BKG_FILE_mem=${BKG_ROOT}/wrfarw.mem
+# or to the d01 input file
+if [[ ${IF_FIRST_ANAL} = ${Yes} ]]; then
+  BKG_FILE=${INPUT_DATAROOT}/realprd/wrfinput_d01
+else
+  BKG_FILE=${BKG_ROOT}/wrfout_d01_${DATE_STR}
+  BKG_FILE_mem=${BKG_ROOT}/wrfarw.mem
+fi
 
 if [ ! -r "${BKG_FILE}" ]; then
   echo "ERROR: background file ${BKG_FILE} does not exist!"
