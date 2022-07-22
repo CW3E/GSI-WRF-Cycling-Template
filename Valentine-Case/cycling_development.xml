@@ -164,7 +164,6 @@
       <native>--mail-type BEGIN</native>
       <native>--mail-type END</native>
       <native>--mail-type FAIL</native>
-
       <envar>
         <name>CONSTANT</name>
         <value>&GSI_CONSTANT;</value>
