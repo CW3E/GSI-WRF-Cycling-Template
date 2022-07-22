@@ -65,6 +65,7 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
+  <!ENTITY DOMAIN              "1">
   <!ENTITY IF_FIRST_ANAL       "Yes">
   <!ENTITY IF_SATRAD           "No">
   <!ENTITY IF_OBSERVER         "No"> <!-- NOTE, IF_OBSERVER crashes on the test case --> 
@@ -315,6 +316,10 @@
       <envar>
         <name>CONSTANT</name>
         <value>&GSI_CONSTANT;</value>
+      </envar>
+      <envar>
+        <name>DOMAIN</name>
+        <value>&DOMAIN;</value>
       </envar>
       <envar>
         <name>ANAL_TIME</name>

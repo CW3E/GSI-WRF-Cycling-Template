@@ -76,9 +76,9 @@ fi
 #####################################################
 # Options below are defined in cycling.xml (case insensitive)
 #
-# IF_FIRST_ANAL = Yes   : GSI analyzes wrfinput_d01 file instead of
-#                         wrfout_d01 file to start first DA cycle
-#                 No    : GSI uses conventional data alone
+# DOMAIN        = INT   : GSI analyzes the domain d0${DOMAIN}
+# IF_FIRST_ANAL = Yes   : GSI analyzes wrfinput_d0${DOMAIN} file instead
+#                         of wrfout_d0${DOMAIN} file to start first DA cycle
 # IF_SATRAD     = Yes   : GSI uses conventional data from prepbufr,
 #                         satellite radiances, gpsro and radar data
 #                 No    : GSI uses conventional data alone
@@ -93,6 +93,11 @@ fi
 # IF_ONEOB      = Yes   : Do single observation test
 #
 #####################################################
+
+if [ ! ${DOMAIN} ]; then
+  ${ECHO} "ERROR: \$DOMAIN is not defined!"
+  exit 1
+fi
 
 if [[ ${IF_FIRST_ANAL} != ${YES} && ${IF_FIRST_ANAL} != ${NO} ]]; then
   ${ECHO} "ERROR: \$IF_FIRST_ANAL must equal 'Yes' or 'No' (case insensitive)"
@@ -221,7 +226,6 @@ FIX_ROOT=${GSI_ROOT}/fix
 GSI_EXE=${GSI_ROOT}/build/bin/gsi.x
 GSI_NAMELIST=${GSI_ROOT}/ush/comgsi_namelist.sh
 CRTM_ROOT=${GSI_ROOT}/CRTM_v${CRTM_VERSION}
-# NOTE: will likely need to reset the following in generalized script
 PREPBUFR=${OBS_ROOT}/prepbufr.gdas.${ANAL_DATE}.t${HH}z.nr
 
 if [ ! -d "${OBS_ROOT}" ]; then
@@ -262,20 +266,15 @@ if [ ! -d "${CRTM_ROOT}" ]; then
   exit 1
 fi
 
-# NOTE: THIS IS COMMENTED FOR DEBUGGING UNTIL THIS
-# VARIABLE IS BETTER UNDERSTOOD.  THIS READ CHECK IS NEW TO
-# DRIVER CODE AND BREAKS THE TUTORIAL
-#if [ ! -r "${PREPBUFR}" ]; then
-#  echo "ERROR: file '${PREPBUFR}' does not exist!"
-#  exit 1
-#fi
+if [ ! -r "${PREPBUFR}" ]; then
+  echo "ERROR: file '${PREPBUFR}' does not exist!"
+  exit 1
+fi
 
-# NOTE: BKG_FILE only currently dynamically links to the d01 with date string
-# or to the d01 input file
 if [[ ${IF_FIRST_ANAL} = ${Yes} ]]; then
-  BKG_FILE=${INPUT_DATAROOT}/realprd/wrfinput_d01
+  BKG_FILE=${INPUT_DATAROOT}/realprd/wrfinput_d0${DOMAIN}
 else
-  BKG_FILE=${BKG_ROOT}/wrfout_d01_${DATE_STR}
+  BKG_FILE=${BKG_ROOT}/wrfout_d0${DOMAIN}_${DATE_STR}
   BKG_FILE_mem=${BKG_ROOT}/wrfarw.mem
 fi
 
@@ -304,8 +303,8 @@ if [[ ${IF_HYBRID} = ${YES} ]] ; then
   fi
 
   if [[ ${IF_4DENVAR} = ${YES} ]] ; then
-    BKG_FILE_P1=${BKG_ROOT}/wrfout_d01_${datep1}
-    BKG_FILE_M1=${BKG_ROOT}/wrfout_d01_${datem1}
+    BKG_FILE_P1=${BKG_ROOT}/wrfout_d0${DOMAIN}_${datep1}
+    BKG_FILE_M1=${BKG_ROOT}/wrfout_d0${DOMAIN}_${datem1}
 
     if [[ ${IF_NEMSIO} = ${YES} ]]; then
       ENSEMBLE_FILE_mem_p1=${ENS_ROOT}/gdas.t${gHH}z.atmf009s.mem
@@ -632,13 +631,13 @@ fi
 #####################################################
 # GSI updating satbias_in (only for cycling assimilation)
 
-# Copy the output to more understandable names
-ln -s wrf_inout   wrfanl.${ANAL_TIME}
-ln -s fort.201    fit_p1.${ANAL_TIME}
-ln -s fort.202    fit_w1.${ANAL_TIME}
-ln -s fort.203    fit_t1.${ANAL_TIME}
-ln -s fort.204    fit_q1.${ANAL_TIME}
-ln -s fort.207    fit_rad1.${ANAL_TIME}
+# Rename the output to more understandable names
+${CP} wrf_inout   wrfanl.d0${DOMAIN}_${DATE_STR}
+${MV} fort.201    fit_p1.d0${DOMAIN}_${DATE_STR}
+${MV} fort.202    fit_w1.d0${DOMAIN}_${DATE_STR}
+${MV} fort.203    fit_t1.d0${DOMAIN}_${DATE_STR}
+${MV} fort.204    fit_q1.d0${DOMAIN}_${DATE_STR}
+${MV} fort.207    fit_rad1.d0${DOMAIN}_${DATE_STR}
 
 #####################################################
 # Loop over first and last outer loops to generate innovation

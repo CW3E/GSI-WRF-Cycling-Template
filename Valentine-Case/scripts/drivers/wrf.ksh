@@ -151,13 +151,13 @@ fi
 
 # Convert START_TIME from 'YYYYMMDDHH' format to Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
 if [ `${ECHO} "${START_TIME}" | ${AWK} '/^[[:digit:]]{10}$/'` ]; then
-  START_TIME=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
+  date_str=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
   ${ECHO} "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
-START_TIME=`${DATE} -d "${START_TIME}"`
-END_TIME=`${DATE} -d "${START_TIME} ${FCST_LENGTH} hours"`
+date_str=`${DATE} -d "${date_str}"`
+end_time=`${DATE} -d "${date_str} ${FCST_LENGTH} hours"`
 
 if [ ! "${MAX_DOM}" ]; then
   ${ECHO} "ERROR: \$MAX_DOM is not defined"
@@ -262,9 +262,9 @@ ${RM} -f wrfout_*
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   wrfinput_name=wrfinput_d0${dmn}
-  if [[ ${IF_CYCLING} = ${YES} ]]; then
-    # NOTE: THIS IS CURRENTLY ONLY DESIGNED FOR A SINGLE DOMAIN, NEEDS NAMING PATTERN FOR MULTIPLE DOMAINS
-    gsi_outname=${INPUT_DATAROOT}/gsiprd/wrf_inout
+  # NOTE: THIS IS CURRENTLY ONLY DESIGNED FOR A SINGLE DOMAIN, NEEDS NAMING PATTERN FOR MULTIPLE DOMAINS
+  if [[ ${IF_CYCLING} = ${YES} && -e ${dmn} 1 ]]; then
+    gsi_outname=${INPUT_DATAROOT}/gsiprd/wrfanl.d0${dmn}_${START_TIME}
     ${LN} -sf ${gsi_outname} ./${wrfinput_name}
     if [ ! -r ./${wrfinput_name} ]; then
       ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
@@ -317,18 +317,18 @@ fi
 ${CP} ${STATIC_DATA}/namelists/namelist.input .
 
 # Get the start and end time components
-start_year=`${DATE} +%Y -d "${START_TIME}"`
-start_month=`${DATE} +%m -d "${START_TIME}"`
-start_day=`${DATE} +%d -d "${START_TIME}"`
-start_hour=`${DATE} +%H -d "${START_TIME}"`
-start_minute=`${DATE} +%M -d "${START_TIME}"`
-start_second=`${DATE} +%S -d "${START_TIME}"`
-end_year=`${DATE} +%Y -d "${END_TIME}"`
-end_month=`${DATE} +%m -d "${END_TIME}"`
-end_day=`${DATE} +%d -d "${END_TIME}"`
-end_hour=`${DATE} +%H -d "${END_TIME}"`
-end_minute=`${DATE} +%M -d "${END_TIME}"`
-end_second=`${DATE} +%S -d "${END_TIME}"`
+start_year=`${DATE} +%Y -d "${date_str}"`
+start_month=`${DATE} +%m -d "${date_str}"`
+start_day=`${DATE} +%d -d "${date_str}"`
+start_hour=`${DATE} +%H -d "${date_str}"`
+start_minute=`${DATE} +%M -d "${date_str}"`
+start_second=`${DATE} +%S -d "${date_str}"`
+end_year=`${DATE} +%Y -d "${end_time}"`
+end_month=`${DATE} +%m -d "${end_time}"`
+end_day=`${DATE} +%d -d "${end_time}"`
+end_hour=`${DATE} +%H -d "${end_time}"`
+end_minute=`${DATE} +%M -d "${end_time}"`
+end_second=`${DATE} +%S -d "${end_time}"`
 
 # Compute number of days and hours for the run
 (( run_days = FCST_LENGTH / 24 ))
@@ -434,8 +434,8 @@ ${ECHO} "FCST LENGTH    = ${FCST_LENGTH}"
 ${ECHO} "FCST INTERVAL  = ${FCST_INTERVAL}"
 ${ECHO} "MAX_DOM        = ${MAX_DOM}"
 ${ECHO}
-${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${START_TIME}"`
-${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${END_TIME}"`
+${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${date_str}"`
+${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 ${ECHO}
 
 now=`${DATE} +%Y%m%d%H%M%S`
