@@ -64,7 +64,7 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
-  <!ENTITY IF_SATRAD           "Yes">
+  <!ENTITY IF_SATRAD           "No">
   <!ENTITY IF_OBSERVER         "No"> <!-- NOTE, IF_OBSERVER crashes on the test case --> 
   <!ENTITY NO_MEMBER           "20">
   <!ENTITY IF_HYBRID           "No">
@@ -76,7 +76,7 @@
   <!-- JOB SETTINGS -->
   <!ENTITY PROJECT             "cwp130">
   <!ENTITY SCHED               "slurm">
-  <!ENTITY COMPUTE             "compute"> 
+  <!ENTITY PARTITION           "compute"> 
   <!ENTITY MPIRUN              "mpirun">
   <!ENTITY UNGRIB_PROC         "1">
   <!ENTITY UNGRIB_MEM_PER_CPU  "5G">
@@ -98,10 +98,10 @@
   <!ENTITY WRF_NODESIZE        "22">
   <!ENTITY WRF_NODES           "16">
   <!ENTITY WRF_WC              "03:00:00">
-  <!ENTITY GSI_PROC            "24">
+  <!ENTITY GSI_PROC            "352">
   <!ENTITY GSI_MEM_PER_CPU     "5G">
-  <!ENTITY GSI_NODESIZE        "24">
-  <!ENTITY GSI_NODES           "2">
+  <!ENTITY GSI_NODESIZE        "22">
+  <!ENTITY GSI_NODES           "16">
   <!ENTITY GSI_WC              "02:00:00">
   <!-- END JOB SETTINGS -->
 ]>
@@ -117,7 +117,7 @@
       <walltime>&UNGRIB_WC;</walltime>
       <jobname><cyclestr>first_ungrib_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&LOG;/ungrib/first_ungrib_@Y@m@d@H.log</cyclestr></join>
-      <native>--partition=&COMPUTE;</native>
+      <native>--partition=&PARTITION;</native>
       <native>--account=&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&UNGRIB_NODES;</native>
@@ -174,7 +174,7 @@
       <walltime>&METGRID_WC;</walltime>
       <jobname><cyclestr>first_metgrid_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&LOG;/metgrid/first_metgrid_@Y@m@d@H.log</cyclestr></join>
-      <native>--partition=&COMPUTE;</native>
+      <native>--partition=&PARTITION;</native>
       <native>--account=&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&METGRID_NODES;</native>
@@ -234,7 +234,7 @@
       <walltime>&REAL_WC;</walltime>
       <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&LOG;/real/first_real_@Y@m@d@H.log</cyclestr></join>
-      <native>--partition=&COMPUTE;</native>
+      <native>--partition=&PARTITION;</native>
       <native>--account=&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&REAL_NODES;</native>
@@ -302,7 +302,7 @@
       <walltime>&WRF_WC;</walltime>
       <jobname><cyclestr>first_wrf_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&LOG;/wrf/first_wrf_@Y@m@d@H.log</cyclestr></join>
-      <native>--partition=&COMPUTE;</native>
+      <native>--partition=&PARTITION;</native>
       <native>--account=&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WRF_NODES;</native>
@@ -380,6 +380,81 @@
           <taskdep task="first_real" state="SUCCEEDED"/>
 	  <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
         </and>
+     </dependency>
+    </task>
+
+    <task name="first_gsi" maxtries="2" cycledefs="q_daily">
+      <command>&DRIVERS;/gsi.ksh</command>
+      <nodesize>&GSI_NODESIZE;</nodesize>
+      <cores>&GSI_PROC;</cores>
+      <walltime>&GSI_WC;</walltime>
+      <jobname><cyclestr>gsi_@Y@m@d@H</cyclestr></jobname>
+      <join><cyclestr>&LOG;/gsi/gsi_@Y@m@d@H.log</cyclestr></join>
+      <native>--partition=&PARTITION;</native>
+      <native>--account=&PROJECT;</native>
+      <native>--export=ALL</native>
+      <native>--nodes=&GSI_NODES;</native>
+      <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
+      <native>--mail-type BEGIN</native>
+      <native>--mail-type END</native>
+      <native>--mail-type FAIL</native>
+      <envar>
+        <name>CONSTANT</name>
+        <value>&GSI_CONSTANT;</value>
+      </envar>
+      <envar>
+        <name>ANAL_TIME</name>
+        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>IF_SATRAD</name>
+        <value>&IF_SATRAD;</value>
+      </envar>
+      <envar>
+        <name>IF_OBSERVER</name>
+        <value>&IF_OBSERVER;</value>
+      </envar>
+      <envar>
+        <name>NO_MEMBER</name>
+        <value>&NO_MEMBER;</value>
+      </envar>
+      <envar>
+        <name>IF_HYBRID</name>
+        <value>&IF_HYBRID;</value>
+      </envar>
+      <envar>
+        <name>IF_4DENVAR</name>
+        <value>&IF_4DENVAR;</value>
+      </envar>
+      <envar>
+        <name>IF_NEMSIO</name>
+        <value>&IF_NEMSIO;</value>
+      </envar>
+      <envar>
+        <name>IF_ONEOB</name>
+        <value>&IF_ONEOB;</value>
+      </envar>
+      <envar>
+	<name>INPUT_DATAROOT</name>
+	<value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>GSI_ROOT</name>
+        <value>&GSI_ROOT;</value>
+      </envar>
+      <envar>
+	<name>CRTM_VERSION</name>
+	<value>&CRTM_VERSION;</value>
+      </envar>
+      <envar>
+        <name>MPIRUN</name>
+        <value>&MPIRUN;</value>
+      </envar>
+      <dependency> 
+	<or>
+	  <taskdep task="wrf" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/> 
+          <taskdep task="first_wrf" state="SUCCEEDED"/> 
+        </or>
      </dependency>
     </task>
 

@@ -214,7 +214,7 @@ GSI_EXE=${GSI_ROOT}/build/bin/gsi.x
 GSI_NAMELIST=${GSI_ROOT}/ush/comgsi_namelist.sh
 CRTM_ROOT=${GSI_ROOT}/CRTM_v${CRTM_VERSION}
 # NOTE: will likely need to reset the following in generalized script
-PREPBUFR=${OBS_ROOT}/nam.t${HH}z.prepbufr.tm00
+PREPBUFR=${OBS_ROOT}/prepbufr.gdas.${ANAL_DATE}.t${HH}z.nr
 
 if [ ! -d "${OBS_ROOT}" ]; then
   echo "ERROR: OBS_ROOT directory '${OBS_ROOT}' does not exist!"
