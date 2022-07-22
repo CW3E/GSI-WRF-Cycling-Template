@@ -292,8 +292,6 @@ ${RM} -f ${metgrid_prefix}.d0*.*.${metgrid_suffix}
 #####################################################
 # Print run parameters
 ${ECHO}
-${ECHO} "metgrid.ksh started at `${DATE}`"
-${ECHO}
 ${ECHO} "WPS_ROOT       = ${WPS_ROOT}"
 ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
 ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
@@ -305,9 +303,8 @@ ${ECHO}
 ${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${START_TIME}"`
 ${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${END_TIME}"`
 ${ECHO}
-
 now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "Running METGRID at ${now}"
+${ECHO} "metgrid started at ${now}"
 ${MPIRUN} ${METGRID_EXE}
 
 #####################################################

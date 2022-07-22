@@ -338,8 +338,6 @@ ${MV} namelist.wps.new namelist.wps
 #####################################################
 # Print run parameters
 ${ECHO}
-${ECHO} "ungrib.ksh started at `${DATE}`"
-${ECHO}
 ${ECHO} "WPS_ROOT       = ${WPS_ROOT}"
 ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
 ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
@@ -352,9 +350,8 @@ ${ECHO}
 ${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${START_TIME}"`
 ${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${END_TIME}"`
 ${ECHO}
-
 now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "Running UNGRIB at ${now}"
+${ECHO} "ungrib started at ${now}"
 ./ungrib.exe
 
 #####################################################

@@ -124,7 +124,8 @@ fi
 # FCST_INTERVAL = Interval of wrfout.d01 in HH
 # DATA_INTERVAL = Interval of input data in HH
 # START_TIME = Simulation start time in YYMMDDHH
-# MAX_DOM = Max number of domains to use in namelist settings
+# MAX_WRF_DOM = Max number of domains to use in namelist settings
+# MAX_GSI_DOM = Number of domains GSI analyzes when cycling
 # IF_CYCLING = Yes / No: whether to use ICs from GSI analysis or real.exe, case insensitive
 #
 #####################################################
@@ -149,18 +150,23 @@ if [ ! "${START_TIME}" ]; then
   exit 1
 fi
 
-# Convert START_TIME from 'YYYYMMDDHH' format to Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
+# Convert START_TIME from 'YYYYMMDDHH' format to start_time in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
 if [ `${ECHO} "${START_TIME}" | ${AWK} '/^[[:digit:]]{10}$/'` ]; then
-  date_str=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
+  start_time=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
   ${ECHO} "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
-date_str=`${DATE} -d "${date_str}"`
-end_time=`${DATE} -d "${date_str} ${FCST_LENGTH} hours"`
+start_time=`${DATE} -d "${start_time}"`
+end_time=`${DATE} -d "${start_time} ${FCST_LENGTH} hours"`
 
-if [ ! "${MAX_DOM}" ]; then
-  ${ECHO} "ERROR: \$MAX_DOM is not defined"
+if [ ! "${MAX_WRF_DOM}" ]; then
+  ${ECHO} "ERROR: \$MAX_WRF_DOM is not defined"
+  exit 1
+fi
+
+if [ ! "${MAX_GSI_DOM}" ]; then
+  ${ECHO} "ERROR: \$MAX_GSI_DOM is not defined"
   exit 1
 fi
 
@@ -260,10 +266,10 @@ ${RM} -f wrfout_*
 
 # Link WRF initial conditions from real.exe or GSI analysis depending on IF_CYCLING switch
 dmn=1
-while [ ${dmn} -le ${MAX_DOM} ]; do
+while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
   wrfinput_name=wrfinput_d0${dmn}
-  # NOTE: THIS IS CURRENTLY ONLY DESIGNED FOR A SINGLE DOMAIN, NEEDS NAMING PATTERN FOR MULTIPLE DOMAINS
-  if [[ ${IF_CYCLING} = ${YES} && -e ${dmn} 1 ]]; then
+  if [[ ${IF_CYCLING} = ${YES} && ${dmn} -le ${MAX_GSI_DOM} ]]; then
+    # if cycling AND analyzing this domain, get initial conditions from last analysis
     gsi_outname=${INPUT_DATAROOT}/gsiprd/wrfanl.d0${dmn}_${START_TIME}
     ${LN} -sf ${gsi_outname} ./${wrfinput_name}
     if [ ! -r ./${wrfinput_name} ]; then
@@ -271,6 +277,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       exit 1
     fi
   else
+    # else get initial conditions from real.exe
     real_outname=${INPUT_DATAROOT}/realprd/${wrfinput_name}
     ${LN} -sf ${real_outname} ./
     if [ ! -r ./${wrfinput_name} ]; then
@@ -317,12 +324,12 @@ fi
 ${CP} ${STATIC_DATA}/namelists/namelist.input .
 
 # Get the start and end time components
-start_year=`${DATE} +%Y -d "${date_str}"`
-start_month=`${DATE} +%m -d "${date_str}"`
-start_day=`${DATE} +%d -d "${date_str}"`
-start_hour=`${DATE} +%H -d "${date_str}"`
-start_minute=`${DATE} +%M -d "${date_str}"`
-start_second=`${DATE} +%S -d "${date_str}"`
+start_year=`${DATE} +%Y -d "${start_time}"`
+start_month=`${DATE} +%m -d "${start_time}"`
+start_day=`${DATE} +%d -d "${start_time}"`
+start_hour=`${DATE} +%H -d "${start_time}"`
+start_minute=`${DATE} +%M -d "${start_time}"`
+start_second=`${DATE} +%S -d "${start_time}"`
 end_year=`${DATE} +%Y -d "${end_time}"`
 end_month=`${DATE} +%m -d "${end_time}"`
 end_day=`${DATE} +%d -d "${end_time}"`
@@ -405,7 +412,7 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
 fi
 
 # Update the max_dom in namelist
-${CAT} namelist.input | ${SED} "s/\(max_dom\)${equal}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
+${CAT} namelist.input | ${SED} "s/\(max_dom\)${equal}[[:digit:]]\{1,\}/\1 = ${MAX_WRF_DOM}/" \
    > namelist.input.new
 ${MV} namelist.input.new namelist.input
 
@@ -424,22 +431,23 @@ fi
 #####################################################
 # Print run parameters
 ${ECHO}
-${ECHO} "wrf.ksh started at `${DATE}`"
-${ECHO}
 ${ECHO} "WRF_ROOT       = ${WRF_ROOT}"
 ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
 ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 ${ECHO}
 ${ECHO} "FCST LENGTH    = ${FCST_LENGTH}"
 ${ECHO} "FCST INTERVAL  = ${FCST_INTERVAL}"
-${ECHO} "MAX_DOM        = ${MAX_DOM}"
+${ECHO} "MAX_WRF_DOM    = ${MAX_WRF_DOM}"
+${ECHO} "MAX_GSI_DOM    = ${MAX_GSI_DOM}"
+${ECHO} "IF_CYCLING     = ${IF_CYCLING}"
+${ECHO} "IF_SST_UPDATE  = ${IF_SST_UPDATE}"
 ${ECHO}
-${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${date_str}"`
+${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
 ${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 ${ECHO}
-
 now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "Running WRF at ${now}"
+${ECHO} "wrf started at ${now}"
+
 ${MPIRUN} ${WRF_EXE}
 
 #####################################################
@@ -472,7 +480,7 @@ fi
 if [[ ${IF_CYCLING} = ${YES} ]]; then
   # ensure that the cycle_io/date/bkg directory exists for starting next cycle
   cycle_intv=`${DATE} +%H -d "${CYCLE_INTV}"`
-  datestr=`${DATE} +%Y%m%d%H -d "${START_TIME} ${cycle_intv} hours"`
+  datestr=`${DATE} +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
   new_bkg=${datestr}/bkg
   ${MKDIR} -p ../../${new_bkg}
 else
@@ -482,10 +490,10 @@ fi
 
 # Check for all wrfout files on FCST_INTERVAL and link files to the appropriate bkg directory
 dmn=1
-while [ ${dmn} -le ${MAX_DOM} ]; do
+while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    datestr=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${START_TIME} ${fcst} hours"`
+    datestr=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
     if [ ! -s "wrfout_d0${dmn}_${datestr}" ]; then
       ${ECHO} "WRF failed to complete.  wrfout_d0${dmn}_${datestr} is missing or empty!"
       ${MPIRUN} ${EXIT_CALL} 1

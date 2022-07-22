@@ -369,8 +369,6 @@ ${MV} namelist.input.new namelist.input
 #####################################################
 # Print run parameters
 ${ECHO}
-${ECHO} "real.ksh started at `${DATE}`"
-${ECHO}
 ${ECHO} "WRF_ROOT       = ${WRF_ROOT}"
 ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
 ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
@@ -382,9 +380,8 @@ ${ECHO}
 ${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${START_TIME}"`
 ${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${END_TIME}"`
 ${ECHO}
-
 now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "Running REAL at ${now}"
+${ECHO} "real started at ${now}"
 ${MPIRUN} ${REAL_EXE}
 
 #####################################################
