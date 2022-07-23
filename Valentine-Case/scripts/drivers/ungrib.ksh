@@ -380,7 +380,7 @@ while [ ${fcst} -le ${FCST_LENGTH} ]; do
     echo "ERROR: ${filename} is missing"
     exit 1
   fi
-  (( fcst = fcst + DATA_INTERVAL ))
+  (( fcst += DATA_INTERVAL ))
 done
 
 # If ungribbing ECMWF model level data, calculate additional coefficients
@@ -396,7 +396,7 @@ if [[ ${IF_ECMWF_ML} = ${YES} ]]; then
       echo "ERROR: ${filename} is missing"
       exit 1
     fi
-    (( fcst = fcst + DATA_INTERVAL ))
+    (( fcst += DATA_INTERVAL ))
   done
 fi
 

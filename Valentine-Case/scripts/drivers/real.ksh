@@ -268,9 +268,9 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       exit 1
     fi
     ${LN} -sf ${INPUT_DATAROOT}/wpsprd/${realinput_name} ./
-    (( fcst = fcst + DATA_INTERVAL ))
+    (( fcst += DATA_INTERVAL ))
   done
-  (( dmn = dmn + 1 ))
+  (( dmn += 1 ))
 done
 
 # Move existing rsl files to a subdir if there are any
@@ -428,7 +428,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     ${MPIRUN} ${EXIT_CALL} 1
     exit
   fi
-  (( dmn = dmn + 1 ))
+  (( dmn += 1 ))
 done
 
 # check to see if the STT update field are generated
@@ -441,7 +441,7 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
       ${MPIRUN} ${EXIT_CALL} 1
       exit
     fi
-    (( dmn = dmn + 1 ))
+    (( dmn += 1 ))
   done
 fi
 

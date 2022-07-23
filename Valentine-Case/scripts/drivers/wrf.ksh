@@ -270,7 +270,7 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
   wrfinput_name=wrfinput_d0${dmn}
   if [[ ${IF_CYCLING} = ${YES} && ${dmn} -le ${MAX_GSI_DOM} ]]; then
     # if cycling AND analyzing this domain, get initial conditions from last analysis
-    gsi_outname=${INPUT_DATAROOT}/gsiprd/wrfanl.d0${dmn}_${START_TIME}
+    gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl.d0${dmn}_${START_TIME}
     ${LN} -sf ${gsi_outname} ./${wrfinput_name}
     if [ ! -r ./${wrfinput_name} ]; then
       ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
@@ -294,7 +294,7 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
       ${ECHO} "ERROR: ${WORK_ROOT}/${wrflowinp_name} does not exist, or is not readable, check source ${real_outname}"
     fi
   fi
-  (( dmn = dmn + 1 ))
+  (( dmn += 1 ))
 done
 
 # Link the wrfbdy_d01 file from real.exe
@@ -505,9 +505,9 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
         ${LN} -sfr wrfout_d0${dmn}_${datestr} ${current_bkg}/
       fi
     fi
-    (( fcst = fcst + FCST_INTERVAL ))
+    (( fcst += FCST_INTERVAL ))
   done
-  (( dmn = dmn + 1 ))
+  (( dmn += 1 ))
 done
 
 # Remove links to the WRF DAT files

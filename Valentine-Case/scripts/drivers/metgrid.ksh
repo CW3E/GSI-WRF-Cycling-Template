@@ -247,7 +247,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     exit 1
   fi
   ${LN} -sf ${geoinput_name} ./
-  (( dmn = dmn + 1 ))
+  (( dmn += 1 ))
 done
 
 #####################################################
@@ -337,9 +337,9 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       ${MPIRUN} ${EXIT_CALL} 1
       exit
     fi
-    (( fcst = fcst + DATA_INTERVAL ))
+    (( fcst += DATA_INTERVAL ))
   done
-  (( dmn = dmn + 1 ))
+  (( dmn += 1 ))
 done
 
 # Remove links to the WPS DAT files
