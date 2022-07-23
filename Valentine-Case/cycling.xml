@@ -54,7 +54,7 @@
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY MAX_WRF_DOM         "2">
-  <!ENTITY FCST_LENGTH         "03"> <!-- This setting is applied to all WRF preprocessing and WRF -->
+  <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "03"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY IF_CYCLING          "Yes"> <!-- To be used with IF_CYCLING in WRF to direct to inputs during cycling-->
