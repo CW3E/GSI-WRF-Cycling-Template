@@ -33,8 +33,9 @@
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902090000">
-  <!ENTITY CYCLE_END           "201902090000">
+  <!ENTITY CYCLE_END           "201902091800">
   <!ENTITY CYCLE_INTV          "06:00:00">
+  <!ENTITY SECOND_CYCLE        "201902090600">
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
@@ -56,7 +57,6 @@
   <!ENTITY FCST_LENGTH         "03"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "03"> <!-- This setting is applied to all WRF preprocessing and WRF -->
-  <!ENTITY FIRST_WRF_CYCLE     "No"> <!-- To be used with IF_CYCLING in WRF for the first run to direct to inputs -->
   <!ENTITY IF_CYCLING          "Yes"> <!-- To be used with IF_CYCLING in WRF to direct to inputs during cycling-->
   <!ENTITY IF_SST_UPDATE       "Yes"> <!-- This setting is applied to both WRF and real.exe runs -->
   <!ENTITY NIO_TASKS_PER_GROUP "22"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
@@ -106,376 +106,447 @@
   <!ENTITY GSI_MEM_PER_CPU     "5G">
   <!ENTITY GSI_NODESIZE        "22">
   <!ENTITY GSI_NODES           "16">
-  <!ENTITY GSI_WC              "02:00:00">
+  <!ENTITY GSI_WC              "00:45:00">
   <!-- END JOB SETTINGS -->
 ]>
 
 <workflow realtime="F" scheduler="&SCHED;" cyclethrottle="31">
   <cycledef group="first_cycle">&CYCLE_START; &CYCLE_START; &CYCLE_INTV;</cycledef>
-  <cycledef group="q_daily">&CYCLE_START; &CYCLE_END; &CYCLE_INTV;</cycledef>
+  <cycledef group="q_daily">&SECOND_CYCLE; &CYCLE_END; &CYCLE_INTV;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
 
-    <task name="ungrib" maxtries="1" cycledefs="first_cycle,q_daily">
-      <command>&DRIVERS;/ungrib.ksh</command>
-      <cores>&UNGRIB_PROC;</cores>
-      <nodesize>&UNGRIB_NODESIZE;</nodesize>
-      <walltime>&UNGRIB_WC;</walltime>
-      <jobname><cyclestr>first_ungrib_@Y@m@d@H</cyclestr></jobname>
-      <join><cyclestr>&LOG;/ungrib/first_ungrib_@Y@m@d@H.log</cyclestr></join>
-      <native>--partition=&PARTITION;</native>
-      <native>--account=&PROJECT;</native>
-      <native>--export=ALL</native>
-      <native>--nodes=&UNGRIB_NODES;</native>
-      <native>--mail-type BEGIN</native>
-      <native>--mail-type END</native>
-      <native>--mail-type=FAIL</native>
-      <native>--mail-user=&EMAIL;</native>
-      <native>--mem-per-cpu=&UNGRIB_MEM_PER_CPU;</native>
-      <envar>
-        <name>CONSTANT</name>
-        <value>&UNGRIB_CONSTANT;</value>
-      </envar>
-      <envar>
-        <name>START_TIME</name>
-        <value><cyclestr>@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>FCST_LENGTH</name>
-        <value>&FCST_LENGTH;</value>
-      </envar>
-      <envar>
-	<name>DATA_INTERVAL</name>
-	<value>&DATA_INTERVAL;</value>
-      </envar>
-      <envar>
-        <name>MAX_DOM</name>
-        <value>&MAX_WRF_DOM;</value>
-      </envar>
-      <envar>
-        <name>WPS_ROOT</name>
-        <value>&WPS_SERIAL_ROOT;</value>
-      </envar>
-      <envar>
-        <name>STATIC_DATA</name>
-        <value>&STATIC_DATA;</value>
-      </envar>
-      <envar>
-        <name>INPUT_DATAROOT</name>
-        <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>IF_ECMWF_ML</name>
-        <value>&IF_ECMWF_ML;</value>
-      </envar>
-      <dependency> 
-	<or>
-	  <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
-	  <taskdep task="wrf" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/> 
-	</or>
-     </dependency>
-    </task>
+  <task name="ungrib" maxtries="1" cycledefs="first_cycle,q_daily">
+    <command>&DRIVERS;/ungrib.ksh</command>
+    <cores>&UNGRIB_PROC;</cores>
+    <nodesize>&UNGRIB_NODESIZE;</nodesize>
+    <walltime>&UNGRIB_WC;</walltime>
+    <jobname><cyclestr>first_ungrib_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/ungrib/first_ungrib_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&UNGRIB_NODES;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type=FAIL</native>
+    <native>--mail-user=&EMAIL;</native>
+    <native>--mem-per-cpu=&UNGRIB_MEM_PER_CPU;</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&UNGRIB_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>FCST_LENGTH</name>
+      <value>&FCST_LENGTH;</value>
+    </envar>
+    <envar>
+      <name>DATA_INTERVAL</name>
+      <value>&DATA_INTERVAL;</value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_WRF_DOM;</value>
+    </envar>
+    <envar>
+      <name>WPS_ROOT</name>
+      <value>&WPS_SERIAL_ROOT;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>IF_ECMWF_ML</name>
+      <value>&IF_ECMWF_ML;</value>
+    </envar>
+    <dependency> 
+      <or>
+        <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
+        <taskdep task="wrf" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/> 
+      </or>
+    </dependency>
+  </task>
 
-    <task name="first_metgrid" maxtries="1" cycledefs="q_daily">
-      <command>&DRIVERS;/metgrid.ksh</command>
-      <cores>&METGRID_PROC;</cores>
-      <nodesize>&METGRID_NODESIZE;</nodesize>
-      <walltime>&METGRID_WC;</walltime>
-      <jobname><cyclestr>first_metgrid_@Y@m@d@H</cyclestr></jobname>
-      <join><cyclestr>&LOG;/metgrid/first_metgrid_@Y@m@d@H.log</cyclestr></join>
-      <native>--partition=&PARTITION;</native>
-      <native>--account=&PROJECT;</native>
-      <native>--export=ALL</native>
-      <native>--nodes=&METGRID_NODES;</native>
-      <native>--mail-type BEGIN</native>
-      <native>--mail-type END</native>
-      <native>--mail-type=FAIL</native>
-      <native>--mail-user=&EMAIL;</native>
-      <native>--mem-per-cpu=&METGRID_MEM_PER_CPU;</native>
-      <envar>
-        <name>CONSTANT</name>
-        <value>&METGRID_CONSTANT;</value>
-      </envar>
-      <envar>
-        <name>START_TIME</name>
-        <value><cyclestr>@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>FCST_LENGTH</name>
-        <value>&FCST_LENGTH;</value>
-      </envar>
-      <envar>
-	<name>DATA_INTERVAL</name>
-	<value>&DATA_INTERVAL;</value>
-      </envar>
-      <envar>
-        <name>MAX_DOM</name>
-        <value>&MAX_WRF_DOM;</value>
-      </envar>
-      <envar>
-        <name>WPS_ROOT</name>
-        <value>&WPS_PARALLEL_ROOT;</value>
-      </envar>
-      <envar>
-        <name>STATIC_DATA</name>
-        <value>&STATIC_DATA;</value>
-      </envar>
-      <envar>
-        <name>INPUT_DATAROOT</name>
-        <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>MPIRUN</name>
-        <value>&MPIRUN;</value>
-      </envar>
-      <dependency> 
-	<and>
-          <taskdep task="first_ungrib" state="SUCCEEDED"/>
-	  <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
-	</and>
-     </dependency>
-    </task>
+  <task name="metgrid" maxtries="1" cycledefs="first_cycle,q_daily">
+    <command>&DRIVERS;/metgrid.ksh</command>
+    <cores>&METGRID_PROC;</cores>
+    <nodesize>&METGRID_NODESIZE;</nodesize>
+    <walltime>&METGRID_WC;</walltime>
+    <jobname><cyclestr>first_metgrid_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/metgrid/first_metgrid_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&METGRID_NODES;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type=FAIL</native>
+    <native>--mail-user=&EMAIL;</native>
+    <native>--mem-per-cpu=&METGRID_MEM_PER_CPU;</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&METGRID_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>FCST_LENGTH</name>
+      <value>&FCST_LENGTH;</value>
+    </envar>
+    <envar>
+      <name>DATA_INTERVAL</name>
+      <value>&DATA_INTERVAL;</value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_WRF_DOM;</value>
+    </envar>
+    <envar>
+      <name>WPS_ROOT</name>
+      <value>&WPS_PARALLEL_ROOT;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <taskdep task="ungrib" state="SUCCEEDED"/>
+    </dependency>
+  </task>
 
-    <task name="first_real" maxtries="1" cycledefs="q_daily">
-      <command>&DRIVERS;/real.ksh</command>
-      <cores>&REAL_PROC;</cores>
-      <nodesize>&REAL_NODESIZE;</nodesize>
-      <walltime>&REAL_WC;</walltime>
-      <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
-      <join><cyclestr>&LOG;/real/first_real_@Y@m@d@H.log</cyclestr></join>
-      <native>--partition=&PARTITION;</native>
-      <native>--account=&PROJECT;</native>
-      <native>--export=ALL</native>
-      <native>--nodes=&REAL_NODES;</native>
-      <native>--mail-type BEGIN</native>
-      <native>--mail-type END</native>
-      <native>--mail-type=FAIL</native>
-      <native>--mail-user=&EMAIL;</native>
-      <native>--mem-per-cpu=&REAL_MEM_PER_CPU;</native>
-      <envar>
-        <name>CONSTANT</name>
-        <value>&REAL_CONSTANT;</value>
-      </envar>
-      <envar>
-        <name>START_TIME</name>
-        <value><cyclestr>@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>FCST_LENGTH</name>
-        <value>&FCST_LENGTH;</value>
-      </envar>
-      <envar>
-	<name>DATA_INTERVAL</name>
-	<value>&DATA_INTERVAL;</value>
-      </envar>
-      <envar>
-        <name>MAX_DOM</name>
-        <value>&MAX_WRF_DOM;</value>
-      </envar>
-      <envar>
-        <name>WRF_ROOT</name>
-        <value>&WRF_ROOT;</value>
-      </envar>
-      <envar>
-        <name>STATIC_DATA</name>
-        <value>&STATIC_DATA;</value>
-      </envar>
-      <envar>
-        <name>INPUT_DATAROOT</name>
-        <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>IF_SST_UPDATE</name>
-        <value>&IF_SST_UPDATE;</value>
-      </envar>
-      <envar>
-        <name>MPIRUN</name>
-        <value>&MPIRUN;</value>
-      </envar>
-      <envar>
-        <name>REAL_PROC</name>
-        <value>&REAL_PROC;</value>
-      </envar>
-      <dependency> 
-	<and>
-          <taskdep task="first_metgrid" state="SUCCEEDED"/>
-	  <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
-        </and>
-     </dependency>
-    </task>
+  <task name="real" maxtries="1" cycledefs="first_cycle,q_daily">
+    <command>&DRIVERS;/real.ksh</command>
+    <cores>&REAL_PROC;</cores>
+    <nodesize>&REAL_NODESIZE;</nodesize>
+    <walltime>&REAL_WC;</walltime>
+    <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/real/first_real_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&REAL_NODES;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type=FAIL</native>
+    <native>--mail-user=&EMAIL;</native>
+    <native>--mem-per-cpu=&REAL_MEM_PER_CPU;</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&REAL_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>FCST_LENGTH</name>
+      <value>&FCST_LENGTH;</value>
+    </envar>
+    <envar>
+      <name>DATA_INTERVAL</name>
+      <value>&DATA_INTERVAL;</value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_WRF_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRF_ROOT</name>
+      <value>&WRF_ROOT;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>IF_SST_UPDATE</name>
+      <value>&IF_SST_UPDATE;</value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <envar>
+      <name>REAL_PROC</name>
+      <value>&REAL_PROC;</value>
+    </envar>
+    <dependency> 
+      <taskdep task="metgrid" state="SUCCEEDED"/>
+    </dependency>
+  </task>
 
-    <task name="first_gsi" maxtries="1" cycledefs="q_daily">
-      <command>&DRIVERS;/gsi.ksh</command>
-      <nodesize>&GSI_NODESIZE;</nodesize>
-      <cores>&GSI_PROC;</cores>
-      <walltime>&GSI_WC;</walltime>
-      <jobname><cyclestr>gsi_@Y@m@d@H</cyclestr></jobname>
-      <join><cyclestr>&LOG;/gsi/gsi_@Y@m@d@H.log</cyclestr></join>
-      <native>--partition=&PARTITION;</native>
-      <native>--account=&PROJECT;</native>
-      <native>--export=ALL</native>
-      <native>--nodes=&GSI_NODES;</native>
-      <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
-      <native>--mail-type BEGIN</native>
-      <native>--mail-type END</native>
-      <native>--mail-type FAIL</native>
-      <envar>
-        <name>CONSTANT</name>
-        <value>&GSI_CONSTANT;</value>
-      </envar>
-      <envar>
-        <name>MAX_DOM</name>
-        <value>&MAX_GSI_DOM;</value>
-      </envar>
-      <envar>
-        <name>ANAL_TIME</name>
-        <value><cyclestr>@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>IF_FIRST_ANAL</name>
-        <value>&FIRST_ANAL;</value>
-      </envar>
-      <envar>
-        <name>IF_SATRAD</name>
-        <value>&IF_SATRAD;</value>
-      </envar>
-      <envar>
-        <name>IF_OBSERVER</name>
-        <value>&IF_OBSERVER;</value>
-      </envar>
-      <envar>
-        <name>NO_MEMBER</name>
-        <value>&NO_MEMBER;</value>
-      </envar>
-      <envar>
-        <name>IF_HYBRID</name>
-        <value>&IF_HYBRID;</value>
-      </envar>
-      <envar>
-        <name>IF_4DENVAR</name>
-        <value>&IF_4DENVAR;</value>
-      </envar>
-      <envar>
-        <name>IF_NEMSIO</name>
-        <value>&IF_NEMSIO;</value>
-      </envar>
-      <envar>
-        <name>IF_ONEOB</name>
-        <value>&IF_ONEOB;</value>
-      </envar>
-      <envar>
-	<name>INPUT_DATAROOT</name>
-	<value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>GSI_ROOT</name>
-        <value>&GSI_ROOT;</value>
-      </envar>
-      <envar>
-	<name>CRTM_VERSION</name>
-	<value>&CRTM_VERSION;</value>
-      </envar>
-      <envar>
-        <name>MPIRUN</name>
-        <value>&MPIRUN;</value>
-      </envar>
-      <dependency> 
-	<or>
-          <taskdep task="first_real" state="SUCCEEDED"/> 
-        </or>
-     </dependency>
-    </task>
+  <task name="first_gsi" maxtries="1" cycledefs="first_cycle">
+    <command>&DRIVERS;/gsi.ksh</command>
+    <nodesize>&GSI_NODESIZE;</nodesize>
+    <cores>&GSI_PROC;</cores>
+    <walltime>&GSI_WC;</walltime>
+    <jobname><cyclestr>gsi_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/gsi/gsi_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&GSI_NODES;</native>
+    <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type FAIL</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&GSI_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_GSI_DOM;</value>
+    </envar>
+    <envar>
+      <name>ANAL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>IF_FIRST_ANAL</name>
+      <value>&FIRST_ANAL;</value>
+    </envar>
+    <envar>
+      <name>IF_SATRAD</name>
+      <value>&IF_SATRAD;</value>
+    </envar>
+    <envar>
+      <name>IF_OBSERVER</name>
+      <value>&IF_OBSERVER;</value>
+    </envar>
+    <envar>
+      <name>NO_MEMBER</name>
+      <value>&NO_MEMBER;</value>
+    </envar>
+    <envar>
+      <name>IF_HYBRID</name>
+      <value>&IF_HYBRID;</value>
+    </envar>
+    <envar>
+      <name>IF_4DENVAR</name>
+      <value>&IF_4DENVAR;</value>
+    </envar>
+    <envar>
+      <name>IF_NEMSIO</name>
+      <value>&IF_NEMSIO;</value>
+    </envar>
+    <envar>
+      <name>IF_ONEOB</name>
+      <value>&IF_ONEOB;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>GSI_ROOT</name>
+      <value>&GSI_ROOT;</value>
+    </envar>
+    <envar>
+      <name>CRTM_VERSION</name>
+      <value>&CRTM_VERSION;</value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <taskdep task="real" state="SUCCEEDED"/> 
+    </dependency>
+  </task>
 
-    <task name="first_wrf" maxtries="1" cycledefs="q_daily">
-      <command>&DRIVERS;/wrf.ksh</command>
-      <cores>&WRF_PROC;</cores>
-      <nodesize>&WRF_NODESIZE;</nodesize>
-      <walltime>&WRF_WC;</walltime>
-      <jobname><cyclestr>first_wrf_@Y@m@d@H</cyclestr></jobname>
-      <join><cyclestr>&LOG;/wrf/first_wrf_@Y@m@d@H.log</cyclestr></join>
-      <native>--partition=&PARTITION;</native>
-      <native>--account=&PROJECT;</native>
-      <native>--export=ALL</native>
-      <native>--nodes=&WRF_NODES;</native>
-      <native>--mail-type BEGIN</native>
-      <native>--mail-type END</native>
-      <native>--mail-type=FAIL</native>
-      <native>--mail-user=&EMAIL;</native>
-      <native>--mem-per-cpu=&WRF_MEM_PER_CPU;</native>
-      <envar>
-        <name>CONSTANT</name>
-        <value>&WRF_CONSTANT;</value>
-      </envar>
-      <envar>
-        <name>START_TIME</name>
-        <value><cyclestr>@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>FCST_LENGTH</name>
-        <value>&FCST_LENGTH;</value>
-      </envar>
-      <envar>
-	<name>FCST_INTERVAL</name>
-	<value>&FCST_INTERVAL;</value>
-      </envar>
-      <envar>
-	<name>DATA_INTERVAL</name>
-	<value>&DATA_INTERVAL;</value>
-      </envar>
-      <envar>
-	<name>CYCLE_INTV</name>
-	<value>&CYCLE_INTV;</value>
-      </envar>
-      <envar>
-        <name>MAX_WRF_DOM</name>
-        <value>&MAX_WRF_DOM;</value>
-      </envar>
-      <envar>
-        <name>MAX_GSI_DOM</name>
-        <value>&MAX_GSI_DOM;</value>
-      </envar>
-      <envar>
-        <name>WRF_ROOT</name>
-        <value>&WRF_ROOT;</value>
-      </envar>
-      <envar>
-        <name>STATIC_DATA</name>
-        <value>&STATIC_DATA;</value>
-      </envar>
-      <envar>
-        <name>INPUT_DATAROOT</name>
-        <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
-      </envar>
-      <envar>
-        <name>MPIRUN</name>
-        <value>&MPIRUN;</value>
-      </envar>
-      <envar>
-        <name>WRF_PROC</name>
-        <value>&WRF_PROC;</value>
-      </envar>
-      <envar>
-        <name>NIO_GROUPS</name>
-        <value>&NIO_GROUPS;</value>
-      </envar>
-      <envar>
-        <name>NIO_TASKS_PER_GROUP</name>
-        <value>&NIO_TASKS_PER_GROUP;</value>
-      </envar>
-      <envar>
-        <name>IF_CYCLING</name>
-        <value>&IF_CYCLING;</value>
-      </envar>
-      <envar>
-        <name>IF_SST_UPDATE</name>
-        <value>&IF_SST_UPDATE;</value>
-      </envar>
-      <dependency> 
-	<and>
-          <taskdep task="first_gsi" state="SUCCEEDED"/>
-	  <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
-        </and>
-     </dependency>
-    </task>
+  <task name="gsi" maxtries="1" cycledefs="q_daily">
+    <command>&DRIVERS;/gsi.ksh</command>
+    <nodesize>&GSI_NODESIZE;</nodesize>
+    <cores>&GSI_PROC;</cores>
+    <walltime>&GSI_WC;</walltime>
+    <jobname><cyclestr>gsi_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/gsi/gsi_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&GSI_NODES;</native>
+    <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type FAIL</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&GSI_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_GSI_DOM;</value>
+    </envar>
+    <envar>
+      <name>ANAL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>IF_FIRST_ANAL</name>
+      <value>&CYCLE_ANAL;</value>
+    </envar>
+    <envar>
+      <name>IF_SATRAD</name>
+      <value>&IF_SATRAD;</value>
+    </envar>
+    <envar>
+      <name>IF_OBSERVER</name>
+      <value>&IF_OBSERVER;</value>
+    </envar>
+    <envar>
+      <name>NO_MEMBER</name>
+      <value>&NO_MEMBER;</value>
+    </envar>
+    <envar>
+      <name>IF_HYBRID</name>
+      <value>&IF_HYBRID;</value>
+    </envar>
+    <envar>
+      <name>IF_4DENVAR</name>
+      <value>&IF_4DENVAR;</value>
+    </envar>
+    <envar>
+      <name>IF_NEMSIO</name>
+      <value>&IF_NEMSIO;</value>
+    </envar>
+    <envar>
+      <name>IF_ONEOB</name>
+      <value>&IF_ONEOB;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>GSI_ROOT</name>
+      <value>&GSI_ROOT;</value>
+    </envar>
+    <envar>
+      <name>CRTM_VERSION</name>
+      <value>&CRTM_VERSION;</value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <taskdep task="real" state="SUCCEEDED"/> 
+    </dependency>
+  </task>
 
+  <task name="wrf" maxtries="1" cycledefs="first_cycle,q_daily">
+    <command>&DRIVERS;/wrf.ksh</command>
+    <cores>&WRF_PROC;</cores>
+    <nodesize>&WRF_NODESIZE;</nodesize>
+    <walltime>&WRF_WC;</walltime>
+    <jobname><cyclestr>first_wrf_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/wrf/first_wrf_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WRF_NODES;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type=FAIL</native>
+    <native>--mail-user=&EMAIL;</native>
+    <native>--mem-per-cpu=&WRF_MEM_PER_CPU;</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&WRF_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>FCST_LENGTH</name>
+      <value>&FCST_LENGTH;</value>
+    </envar>
+    <envar>
+      <name>FCST_INTERVAL</name>
+      <value>&FCST_INTERVAL;</value>
+    </envar>
+    <envar>
+      <name>DATA_INTERVAL</name>
+      <value>&DATA_INTERVAL;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_INTV</name>
+      <value>&CYCLE_INTV;</value>
+    </envar>
+    <envar>
+      <name>MAX_WRF_DOM</name>
+      <value>&MAX_WRF_DOM;</value>
+    </envar>
+    <envar>
+      <name>MAX_GSI_DOM</name>
+      <value>&MAX_GSI_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRF_ROOT</name>
+      <value>&WRF_ROOT;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <envar>
+      <name>WRF_PROC</name>
+      <value>&WRF_PROC;</value>
+    </envar>
+    <envar>
+      <name>NIO_GROUPS</name>
+      <value>&NIO_GROUPS;</value>
+    </envar>
+    <envar>
+      <name>NIO_TASKS_PER_GROUP</name>
+      <value>&NIO_TASKS_PER_GROUP;</value>
+    </envar>
+    <envar>
+      <name>IF_CYCLING</name>
+      <value>&IF_CYCLING;</value>
+    </envar>
+    <envar>
+      <name>IF_SST_UPDATE</name>
+      <value>&IF_SST_UPDATE;</value>
+    </envar>
+    <dependency> 
+      <or>
+        <taskdep task="gsi" state="SUCCEEDED"/>
+        <taskdep task="first_gsi" state="SUCCEEDED"/>
+      </or>
+    </dependency>
+  </task>
 
 </workflow>
