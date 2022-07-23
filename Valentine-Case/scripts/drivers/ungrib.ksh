@@ -213,7 +213,7 @@ fi
 #
 # WPS_ROOT       = Root directory of a "clean" WPS build
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
-#                  grib data, geogrid data, etc.
+#                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd
 #
@@ -244,6 +244,8 @@ fi
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
+# OBS_ROOT       = Diretory to which obs are un-tared at the begining of the cycle
+# OBS_SRC        = Directory from which obs tar files are obtained
 # WORK_ROOT      = Working directory where UNGRIB_EXE runs and outputs
 # WPS_DAT_FILES  = All file contents of clean WPS directory
 #                  namelists and input data will be linked from other sources
@@ -253,7 +255,28 @@ fi
 #
 #####################################################
 
+# prep the obs directory for future tasks
+OBS_ROOT=${INPUT_DATAROOT}/obs
+OBS_SRC=${STATIC_DATA}/obs_data
+OBS_DATE=`echo $START_TIME | cut -c1-8`
+OBS_HH=`echo $START_TIME | cut -c9-10`
+
+cd ${OBS_SRC}
+${TAR} -xvf prepbufr.${OBS_DATE}.nr.tar.gz
+PREPBUFR=${OBS_SRC}/${OBS_DATE}.nr/prepbufr.gdas.${OBS_DATE}.t${OBS_HH}z.nr
+if [ ! -r ${PREPBUFR} ]
+  ${ECHO} "ERROR: ${UNGRIB_EXE} does not exist, or is not readable" 
+  exit 1
+fi
+
+${MKDIR} -p ${OBS_ROOT}
+cd ${OBS_ROOT}
+${LN} -sf ${PREP_BUFR} ./ 
+
 WORK_ROOT=${INPUT_DATAROOT}/wpsprd
+${MKDIR} -p ${WORK_ROOT}
+cd ${WORK_ROOT}
+
 set -A WPS_DAT_FILES ${WPS_ROOT}/*
 UNGRIB_EXE=${WPS_ROOT}/ungrib.exe
 
@@ -261,9 +284,6 @@ if [ ! -x ${UNGRIB_EXE} ]; then
   ${ECHO} "ERROR: ${UNGRIB_EXE} does not exist, or is not executable"
   exit 1
 fi
-
-${MKDIR} -p ${WORK_ROOT}
-cd ${WORK_ROOT}
 
 # Make links to the WPS DAT files
 for file in ${WPS_DAT_FILES[@]}; do

@@ -111,10 +111,11 @@
 ]>
 
 <workflow realtime="F" scheduler="&SCHED;" cyclethrottle="31">
+  <cycledef group="first_cycle">&CYCLE_START; &CYCLE_START; &CYCLE_INTV;</cycledef>
   <cycledef group="q_daily">&CYCLE_START; &CYCLE_END; &CYCLE_INTV;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
 
-    <task name="first_ungrib" maxtries="2" cycledefs="q_daily">
+    <task name="ungrib" maxtries="1" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
       <nodesize>&UNGRIB_NODESIZE;</nodesize>
@@ -167,7 +168,10 @@
         <value>&IF_ECMWF_ML;</value>
       </envar>
       <dependency> 
-	<streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
+	<or>
+	  <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
+	  <taskdep task="wrf" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/> 
+	</or>
      </dependency>
     </task>
 
@@ -376,7 +380,6 @@
       </envar>
       <dependency> 
 	<or>
-	  <taskdep task="wrf" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/> 
           <taskdep task="first_real" state="SUCCEEDED"/> 
         </or>
      </dependency>
