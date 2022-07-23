@@ -265,13 +265,13 @@ cd ${OBS_SRC}
 ${TAR} -xvf prepbufr.${OBS_DATE}.nr.tar.gz
 PREPBUFR=${OBS_SRC}/${OBS_DATE}.nr/prepbufr.gdas.${OBS_DATE}.t${OBS_HH}z.nr
 if [ ! -r ${PREPBUFR} ]; then
-  ${ECHO} "ERROR: ${PREPBUFR} does not exist, or is not readable" 
+  ${ECHO} "ERROR: ${PREPBUFR} does not exist, or is not readable"
   exit 1
 fi
 
 ${MKDIR} -p ${OBS_ROOT}
 cd ${OBS_ROOT}
-${LN} -sf ${PREPBUFR} ./ 
+${LN} -sf ${PREPBUFR} ./
 
 WORK_ROOT=${INPUT_DATAROOT}/wpsprd
 ${MKDIR} -p ${WORK_ROOT}
