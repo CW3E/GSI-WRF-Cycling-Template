@@ -282,19 +282,19 @@ dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   workdir=${WORK_ROOT}/d0${dmn}
   echo " Create working directory:" ${workdir}
-  
+
   if [ -d "${workdir}" ]; then
     rm -rf ${workdir}
   fi
   mkdir -p ${workdir}
   cd ${workdir}
-  
+
   echo " Link observation bufr to working directory"
-  
+
   # Link to the prepbufr data
   ln -s ${PREPBUFR} ./prepbufr
   # ln -s ${OBS_ROOT}/gdas1.t${HH}z.sptrmm.tm00.bufr_d tmirrbufr
-  
+
   # Link to the radiance data
   ii=1
   if [[ ${IF_SATRAD} = ${YES} ]] ; then
@@ -351,9 +351,9 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
         (( ii += 1 ))
      done
   fi
-  
+
   echo " Copy fixed files and link CRTM coefficient files to working directory"
-  
+
   #####################################################
   # Set fixed files
   #
@@ -373,7 +373,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   #   bufrtable = Text file ONLY needed for single obs test (oneobstest=.true.)
   #   bftab_sst = Bufr table for sst ONLY needed for sst retrieval (retrieval=.true.)
   #####################################################
-  
+
   if [ ${bkcv_option} = GLOBAL ] ; then
     echo ' Use global background error covariance'
     BERROR=${FIX_ROOT}/${BYTE_ORDER}/nam_glb_berror.f77.gcv
@@ -401,14 +401,14 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
        ANAVINFO=${FIX_ROOT}/anavinfo_nems_nmmb
     fi
   fi
-  
+
   SATANGL=${FIX_ROOT}/global_satangbias.txt
   SATINFO=${FIX_ROOT}/global_satinfo.txt
   CONVINFO=${FIX_ROOT}/global_convinfo.txt
   OZINFO=${FIX_ROOT}/global_ozinfo.txt
   PCPINFO=${FIX_ROOT}/global_pcpinfo.txt
   LIGHTINFO=${FIX_ROOT}/global_lightinfo.txt
-  
+
   #  copy Fixed fields to working directory
   cp $ANAVINFO anavinfo
   cp $BERROR   berror_stats
@@ -419,7 +419,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   cp $PCPINFO  pcpinfo
   cp $LIGHTINFO lightinfo
   cp $OBERROR  errtable
-  
+
   # CRTM Spectral and Transmittance coefficients
   CRTM_ROOT_ORDER=${CRTM_ROOT}/${BYTE_ORDER}
   emiscoef_IRwater=${CRTM_ROOT_ORDER}/Nalli.IRwater.EmisCoeff.bin
@@ -433,7 +433,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   emiscoef_MWwater=${CRTM_ROOT_ORDER}/FASTEM6.MWwater.EmisCoeff.bin
   aercoef=${CRTM_ROOT_ORDER}/AerosolCoeff.bin
   cldcoef=${CRTM_ROOT_ORDER}/CloudCoeff.bin
-  
+
   ln -s $emiscoef_IRwater ./Nalli.IRwater.EmisCoeff.bin
   ln -s $emiscoef_IRice ./NPOESS.IRice.EmisCoeff.bin
   ln -s $emiscoef_IRsnow ./NPOESS.IRsnow.EmisCoeff.bin
@@ -445,24 +445,24 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   ln -s $emiscoef_MWwater ./FASTEM6.MWwater.EmisCoeff.bin
   ln -s $aercoef  ./AerosolCoeff.bin
   ln -s $cldcoef  ./CloudCoeff.bin
-  
+
   # Copy CRTM coefficient files based on entries in satinfo file
   for file in `awk '{if($1!~"!"){print $1}}' ./satinfo | sort | uniq` ;do
      ln -s ${CRTM_ROOT_ORDER}/${file}.SpcCoeff.bin ./
      ln -s ${CRTM_ROOT_ORDER}/${file}.TauCoeff.bin ./
   done
-  
+
   # Only need this file for single obs test
   bufrtable=${FIX_ROOT}/prepobs_prep.bufrtable
   cp $bufrtable ./prepobs_prep.bufrtable
-  
+
   # for satellite bias correction
   # NOTE: may need to use own satbias files for appropriate bias correction
   cp ${GSI_ROOT}/fix/comgsi_satbias_in ./satbias_in
   cp ${GSI_ROOT}/fix/comgsi_satbias_pc_in ./satbias_pc_in
-  
+
   #####################################################
-  # Set background depending on the first analysis or cycling and analysis domain 
+  # Set background depending on the first analysis or cycling and analysis domain
   #####################################################
   # Below are defined depending on the ${dmn} -le ${MAX_DOM}
   #
@@ -478,16 +478,16 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     BKG_FILE=${BKG_ROOT}/wrfout_d0${dmn}_${DATE_STR}
     BKG_FILE_mem=${BKG_ROOT}/wrfarw.mem
   fi
-  
+
   if [ ! -r "${BKG_FILE}" ]; then
     echo "ERROR: background file ${BKG_FILE} does not exist!"
     exit 1
   fi
-  
+
   #####################################################
   # Prep steps for GSI 3D/4D hybrid EnVAR
   #####################################################
-  
+
   if [[ ${IF_HYBRID} = ${YES} ]] ; then
     PDYa=`echo $ANAL_TIME | cut -c1-8`
     cyca=`echo $ANAL_TIME | cut -c9-10`
@@ -502,11 +502,11 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       if_gfs_nemsio='.false.'
       ENSEMBLE_FILE_mem=${ENS_ROOT}/sfg_${gdate}_fhr06s_mem
     fi
-  
+
     if [[ ${IF_4DENVAR} = ${YES} ]] ; then
       BKG_FILE_P1=${BKG_ROOT}/wrfout_d0${dmn}_${datep1}
       BKG_FILE_M1=${BKG_ROOT}/wrfout_d0${dmn}_${datem1}
-  
+
       if [[ ${IF_NEMSIO} = ${YES} ]]; then
         ENSEMBLE_FILE_mem_p1=${ENS_ROOT}/gdas.t${gHH}z.atmf009s.mem
         ENSEMBLE_FILE_mem_m1=${ENS_ROOT}/gdas.t${gHH}z.atmf003s.mem
@@ -516,7 +516,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       fi
     fi
   fi
-  
+
   ifhyb=.false.
   if [[ ${IF_HYBRID} = ${YES} ]] ; then
     ls ${ENSEMBLE_FILE_mem}* > filelist02
@@ -525,10 +525,10 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       ls ${ENSEMBLE_FILE_mem_p1}* > filelist03
       ls ${ENSEMBLE_FILE_mem_m1}* > filelist01
     fi
-  
+
     nummem=`more filelist02 | wc -l`
     nummem=$((nummem -3 ))
-  
+
     if [[ ${nummem} -ge 5 ]]; then
       ifhyb=.true.
       ${ECHO} " GSI hybrid uses ${ENSEMBLE_FILE_mem} with n_ens=${nummem}"
@@ -539,7 +539,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   if [[ ${ifhyb} = .true. && ${IF_4DENVAR} = ${YES} ]] ; then
     if4d=.true.
   fi
-  
+
   echo " Copy background file(s) to working directory"
   # Copy over background field -- THIS IS MODIFIED BY GSI DO NOT LINK TO IT
   cp ${BKG_FILE} ./wrf_inout
@@ -548,47 +548,47 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     cp ${BKG_FILE_P1} ./wrf_inou3
     cp ${BKG_FILE_M1} ./wrf_inou1
   fi
-  
+
   #####################################################
   # Build GSI namelist
   #####################################################
   echo " Build the namelist "
-  
+
   # default is NAM
   #   as_op='1.0,1.0,0.5 ,0.7,0.7,0.5,1.0,1.0,'
   vs_op='1.0,'
   hzscl_op='0.373,0.746,1.50,'
-  
+
   if [ ${bkcv_option} = GLOBAL ] ; then
   #   as_op='0.6,0.6,0.75,0.75,0.75,0.75,1.0,1.0'
      vs_op='0.7,'
      hzscl_op='1.7,0.8,0.5,'
   fi
-  
+
   if [ ${bk_core} = NMMB ] ; then
      vs_op='0.6,'
   fi
-  
+
   # default is NMM
   bk_core_arw='.false.'
   bk_core_nmm='.true.'
   bk_core_nmmb='.false.'
   bk_if_netcdf='.true.'
-  
+
   if [ ${bk_core} = ARW ] ; then
      bk_core_arw='.true.'
      bk_core_nmm='.false.'
      bk_core_nmmb='.false.'
      bk_if_netcdf='.true.'
   fi
-  
+
   if [ ${bk_core} = NMMB ] ; then
      bk_core_arw='.false.'
      bk_core_nmm='.false.'
      bk_core_nmmb='.true.'
      bk_if_netcdf='.false.'
   fi
-  
+
   if [[ ${IF_OBSERVER} = ${YES} ]] ; then
     nummiter=0
     if_read_obs_save='.true.'
@@ -598,10 +598,10 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     if_read_obs_save='.false.'
     if_read_obs_skip='.false.'
   fi
-  
+
   # Build the GSI namelist on-the-fly
   . $GSI_NAMELIST
-  
+
   # modify the anavinfo vertical levels based on wrf_inout for WRF ARW and NMM
   if [ ${bk_core} = ARW ] || [ ${bk_core} = NMM ] ; then
     bklevels=`ncdump -h wrf_inout | grep "bottom_top =" | awk '{print $3}' `
@@ -611,7 +611,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     sed -i 's/ '$anavlevels'/ '$bklevels'/g' anavinfo
     sed -i 's/ '$anavlevels_stag'/ '$bklevels_stag'/g' anavinfo
   fi
-  
+
   #####################################################
   # Run GSI
   #####################################################
@@ -634,17 +634,17 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   now=`${DATE} +%Y%m%d%H%M%S`
   ${ECHO} "gsi started at ${now} with ${bk_core} background on domain d0${dmn}"
   ${MPIRUN} ${GSI_EXE} > stdout.anl.d0${dmn}_${ANAL_TIME} 2>&1
-  
+
   #####################################################
   # Run time error check
   #####################################################
   error=$?
-  
+
   if [ ${error} -ne 0 ]; then
     echo "ERROR: ${GSI} crashed  Exit status=${error}"
     exit ${error}
   fi
-  
+
   #####################################################
   # GSI updating satbias_in
   #####################################################
@@ -657,7 +657,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   ${CP} fort.203    fit_t1.d0${dmn}_${ANAL_TIME}
   ${CP} fort.204    fit_q1.d0${dmn}_${ANAL_TIME}
   ${CP} fort.207    fit_rad1.d0${dmn}_${ANAL_TIME}
-  
+
   #####################################################
   # Loop over first and last outer loops to generate innovation
   # diagnostic files for indicated observation types (groups)
@@ -670,7 +670,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   #        innovation files.
   #
   #####################################################
-  
+
   loops="01 03"
   for loop in $loops; do
     case $loop in
@@ -678,7 +678,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       03) string=anl;;
        *) string=$loop;;
     esac
-    
+
     #####################################################
     #  Collect diagnostic files for obs types (groups) below
     #   listall="conv amsua_metop-a mhs_metop-a hirs4_metop-a hirs2_n14 msu_n14 \
@@ -703,7 +703,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
        fi
     done
   done
-  
+
   #  Clean working directory to save only important files
   ls -l * > list_run_directory
 
@@ -715,11 +715,11 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     rm -f siganl sigf0?  # background middle files
     rm -f fsize_*        # delete temperal file for bufr size
   fi
-  
+
   #####################################################
   # start to calculate diag files for each member
   #####################################################
-  
+
   if [[ ${IF_OBSERVER} = ${YES} ]] ; then
     string=ges
     for type in $listall; do
@@ -729,13 +729,13 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       fi
     done
     mv wrf_inout wrf_inout_ensmean
-  
+
     # Build the GSI namelist on-the-fly for each member
     nummiter=0
     if_read_obs_save='.false.'
     if_read_obs_skip='.true.'
     . $GSI_NAMELIST
-  
+
     # Loop through each member
     loop="01"
     ensmem=1
@@ -744,23 +744,23 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
        rm pe0*
        print "\$ensmem is $ensmem"
        ensmemid=`printf %3.3i $ensmem`
-  
+
        # get new background for each member
        if [[ -f wrf_inout ]]; then
          rm wrf_inout
        fi
-  
+
        BKG_FILE=${BKG_FILE_mem}${ensmemid}
        echo $BKG_FILE
        ln -s $BKG_FILE wrf_inout
-  
+
        # run GSI
        echo ' Run GSI with' ${bk_core} 'for member ', ${ensmemid}
        ${MPIRUN} ${GSI_EXE} > stdout_mem${ensmemid} 2>&1
-  
+
        # run time error check and save run time file status
        error=$?
-  
+
        if [ ${error} -ne 0 ]; then
          echo "ERROR: ${GSI} crashed for member ${ensmemid} Exit status=${error}"
          exit ${error}
@@ -781,7 +781,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   fi
   (( dmn += 1 ))
 
-done  
+done
 ${ECHO} "gsi.ksh completed successfully at `${DATE}`"
 
 exit 0
