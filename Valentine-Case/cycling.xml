@@ -120,8 +120,8 @@
     <cores>&UNGRIB_PROC;</cores>
     <nodesize>&UNGRIB_NODESIZE;</nodesize>
     <walltime>&UNGRIB_WC;</walltime>
-    <jobname><cyclestr>first_ungrib_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/ungrib/first_ungrib_@Y@m@d@H.log</cyclestr></join>
+    <jobname><cyclestr>ungrib_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/ungrib/ungrib_@Y@m@d@H.log</cyclestr></join>
     <native>--partition=&PARTITION;</native>
     <native>--account=&PROJECT;</native>
     <native>--export=ALL</native>
@@ -180,8 +180,8 @@
     <cores>&METGRID_PROC;</cores>
     <nodesize>&METGRID_NODESIZE;</nodesize>
     <walltime>&METGRID_WC;</walltime>
-    <jobname><cyclestr>first_metgrid_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/metgrid/first_metgrid_@Y@m@d@H.log</cyclestr></join>
+    <jobname><cyclestr>metgrid_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/metgrid/metgrid_@Y@m@d@H.log</cyclestr></join>
     <native>--partition=&PARTITION;</native>
     <native>--account=&PROJECT;</native>
     <native>--export=ALL</native>
@@ -238,7 +238,7 @@
     <nodesize>&REAL_NODESIZE;</nodesize>
     <walltime>&REAL_WC;</walltime>
     <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/real/first_real_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/real/real_@Y@m@d@H.log</cyclestr></join>
     <native>--partition=&PARTITION;</native>
     <native>--account=&PROJECT;</native>
     <native>--export=ALL</native>
@@ -462,8 +462,8 @@
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>
-    <jobname><cyclestr>first_wrf_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/wrf/first_wrf_@Y@m@d@H.log</cyclestr></join>
+    <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/wrf/wrf_@Y@m@d@H.log</cyclestr></join>
     <native>--partition=&PARTITION;</native>
     <native>--account=&PROJECT;</native>
     <native>--export=ALL</native>

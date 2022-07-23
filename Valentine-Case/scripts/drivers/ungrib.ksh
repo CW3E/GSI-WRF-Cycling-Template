@@ -186,15 +186,15 @@ if [ ! "${START_TIME}" ]; then
   exit 1
 fi
 
-# Convert START_TIME from 'YYYYMMDDHH' format to Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
+# Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
 if [ `${ECHO} "${START_TIME}" | ${AWK} '/^[[:digit:]]{10}$/'` ]; then
-  START_TIME=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
+  start_time=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
   ${ECHO} "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
-START_TIME=`${DATE} -d "${START_TIME}"`
-END_TIME=`${DATE} -d "${START_TIME} ${FCST_LENGTH} hours"`
+start_time=`${DATE} -d "${start_time}"`
+end_time=`${DATE} -d "${start_time} ${FCST_LENGTH} hours"`
 
 if [ ! ${MAX_DOM} ]; then
   ${ECHO} "ERROR: \$MAX_DOM is not defined!"
@@ -264,14 +264,14 @@ OBS_HH=`echo $START_TIME | cut -c9-10`
 cd ${OBS_SRC}
 ${TAR} -xvf prepbufr.${OBS_DATE}.nr.tar.gz
 PREPBUFR=${OBS_SRC}/${OBS_DATE}.nr/prepbufr.gdas.${OBS_DATE}.t${OBS_HH}z.nr
-if [ ! -r ${PREPBUFR} ]
-  ${ECHO} "ERROR: ${UNGRIB_EXE} does not exist, or is not readable" 
+if [ ! -r ${PREPBUFR} ]; then
+  ${ECHO} "ERROR: ${PREPBUFR} does not exist, or is not readable" 
   exit 1
 fi
 
 ${MKDIR} -p ${OBS_ROOT}
 cd ${OBS_ROOT}
-${LN} -sf ${PREP_BUFR} ./ 
+${LN} -sf ${PREPBUFR} ./ 
 
 WORK_ROOT=${INPUT_DATAROOT}/wpsprd
 ${MKDIR} -p ${WORK_ROOT}
@@ -338,8 +338,8 @@ constants_name=[Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][Ss][_][Nn][Aa][Mm][Ee]
 yyyymmdd_hhmmss='[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}_[[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\}'
 
 # define start / end time patterns for namelist.wps
-start_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${START_TIME}"`
-end_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${END_TIME}"`
+start_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${start_time}"`
+end_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
 
 # Update the start and end date in namelist (propagates settings to three domains)
 ${CAT} namelist.wps | ${SED} "s/\(${start}_${date}\)${equal}'${yyyymmdd_hhmmss}'.*/\1 = '${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}'/" \
@@ -367,8 +367,8 @@ ${ECHO} "DATA INTERVAL  = ${DATA_INTERVAL}"
 ${ECHO} "MAX_DOM        = ${MAX_DOM}"
 ${ECHO} "IF_ECMWF_ML    = ${IF_ECMWF_ML}"
 ${ECHO}
-${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${START_TIME}"`
-${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${END_TIME}"`
+${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
+${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 ${ECHO}
 now=`${DATE} +%Y%m%d%H%M%S`
 ${ECHO} "ungrib started at ${now}"
@@ -395,7 +395,7 @@ ${CP} namelist.wps ${log_dir}
 # Check to see if we've got all the files we're expecting
 fcst=0
 while [ ${fcst} -le ${FCST_LENGTH} ]; do
-  filename=FILE:`${DATE} +%Y-%m-%d_%H -d "${START_TIME} ${fcst} hours"`
+  filename=FILE:`${DATE} +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
   if [ ! -s ${filename} ]; then
     echo "ERROR: ${filename} is missing"
     exit 1
@@ -411,7 +411,7 @@ if [[ ${IF_ECMWF_ML} = ${YES} ]]; then
   # Check to see if we've got all the files we're expecting
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    filename=PRES:`${DATE} +%Y-%m-%d_%H -d "${START_TIME} ${fcst} hours"`
+    filename=PRES:`${DATE} +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
     if [ ! -s ${filename} ]; then
       echo "ERROR: ${filename} is missing"
       exit 1
