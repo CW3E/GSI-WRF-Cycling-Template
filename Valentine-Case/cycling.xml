@@ -27,6 +27,7 @@
   <!ENTITY WPS_SERIAL_ROOT     "&HOME_SPACE;/WRF_CODE/WPS_serial">
   <!ENTITY WPS_PARALLEL_ROOT   "&HOME_SPACE;/WRF_CODE/WPS_parallel">
   <!ENTITY WRF_ROOT            "&HOME_SPACE;/WRF_CODE/WRF">
+  <!ENTITY WRF_ROOT            "&HOME_SPACE;/WRF_CODE/WRF_DA">
   <!ENTITY GSI_ROOT            "&HOME_SPACE;/comGSIv3.7_EnKFv1.3">
   <!ENTITY CRTM_VERSION        "2.3.0">
   <!-- END SOFTWARE SETTINGS -->
@@ -63,6 +64,11 @@
   <!ENTITY NIO_GROUPS          "4"> 
   <!-- END WRF SETTINGS -->
 
+  <!-- WRFDA SETTINGS -->
+  <!ENTITY LOWER               "Yes"> <!-- setting for lower boundary update setting IF_LOWER -->
+  <!ENTITY LATERAL             "No"> <!-- setting for lateral boundary update setting IF_LOWER -->
+  <!-- END WRFDA SETTINGS -->
+
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
   <!ENTITY MAX_GSI_DOM         "2">
@@ -97,6 +103,11 @@
   <!ENTITY REAL_NODESIZE       "24">
   <!ENTITY REAL_NODES          "2">
   <!ENTITY REAL_WC             "03:00:00">
+  <!ENTITY WRFDA_PROC          "352">
+  <!ENTITY WRFDA_MEM_PER_CPU   "2G">
+  <!ENTITY WRFDA_NODESIZE      "22">
+  <!ENTITY WRFDA_NODES         "16">
+  <!ENTITY WRFDA_WC            "00:45:00">
   <!ENTITY WRF_PROC            "352">
   <!ENTITY WRF_MEM_PER_CPU     "2G">
   <!ENTITY WRF_NODESIZE        "22">
@@ -297,6 +308,59 @@
     </dependency>
   </task>
 
+  <task name="wrfda_lowbc" maxtries="1" cycledefs="q_daily">
+    <command>&DRIVERS;/wrfda.ksh</command>
+    <cores>&WRFDA_PROC;</cores>
+    <nodesize>&WRFDA_NODESIZE;</nodesize>
+    <walltime>&WRFDA_WC;</walltime>
+    <jobname><cyclestr>wrfda_lowbc_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/wrfda/wrfda_lowbc_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WRFDA_NODES;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type=FAIL</native>
+    <native>--mail-user=&EMAIL;</native>
+    <native>--mem-per-cpu=&WRFDA_MEM_PER_CPU;</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&WRF_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>IF_LOWER</name>
+      <value>&LOWER;</value>
+    </envar>
+    <envar>
+      <name>ANAL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_WRF_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRFDA_ROOT</name>
+      <value>&WRFDA_ROOT;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <taskdep task="real" state="SUCCEEDED"/>
+    </dependency>
+  </task>
+
   <task name="first_gsi" maxtries="1" cycledefs="first_cycle">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
@@ -453,7 +517,63 @@
       <value>&MPIRUN;</value>
     </envar>
     <dependency> 
-      <taskdep task="real" state="SUCCEEDED"/> 
+      <taskdep task="wrfda_lowbc" state="SUCCEEDED"/> 
+    </dependency>
+  </task>
+
+  <task name="wrfda_latbc" maxtries="1" cycledefs="first_cycle,q_daily">
+    <command>&DRIVERS;/wrfda.ksh</command>
+    <cores>&WRFDA_PROC;</cores>
+    <nodesize>&WRFDA_NODESIZE;</nodesize>
+    <walltime>&WRFDA_WC;</walltime>
+    <jobname><cyclestr>wrfda_latbc_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/wrfda/wrfda_latbc_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WRFDA_NODES;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type=FAIL</native>
+    <native>--mail-user=&EMAIL;</native>
+    <native>--mem-per-cpu=&WRFDA_MEM_PER_CPU;</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&WRF_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>IF_LOWER</name>
+      <value>&LOWER;</value>
+    </envar>
+    <envar>
+      <name>ANAL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_WRF_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRFDA_ROOT</name>
+      <value>&WRFDA_ROOT;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <or>
+        <taskdep task="gsi" state="SUCCEEDED"/>
+        <taskdep task="first_gsi" state="SUCCEEDED"/>
+      </or>
     </dependency>
   </task>
 
@@ -542,10 +662,7 @@
       <value>&IF_SST_UPDATE;</value>
     </envar>
     <dependency> 
-      <or>
-        <taskdep task="gsi" state="SUCCEEDED"/>
-        <taskdep task="first_gsi" state="SUCCEEDED"/>
-      </or>
+      <taskdep task="wrfda_latbc" state="SUCCEEDED"/>
     </dependency>
   </task>
 

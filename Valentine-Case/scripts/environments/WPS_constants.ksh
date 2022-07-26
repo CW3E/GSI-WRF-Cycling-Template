@@ -53,6 +53,23 @@ export LD_LIBRARY_PATH=/usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 # ensure ulimit is set unlimited
 ulimit -s unlimited
 
+# Yes / No case insensitive switch
+NO=[Nn][Oo]
+YES=[Yy][Ee][Ss]
+
+# create case insensitive string variables for updating wps namelists
+equal=[[:blank:]]*=[[:blank:]]*
+start=[Ss][Tt][Aa][Rr][Tt]
+end=[Ee][Nn][Dd]
+date=[Dd][Aa][Tt][Ee]
+interval=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
+seconds=[Ss][Ee][Cc][Oo][Nn][Dd][Ss]
+prefix=[Pp][Rr][Ee][Ff][Ii][Xx]
+fg_name=[Ff][Gg][_][Nn][Aa][Mm][Ee]
+constants_name=[Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][Ss][_][Nn][Aa][Mm][Ee]
+yyyymmdd_hhmmss='[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}_[[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\}'
+
+
 # Set up paths to shell commands
 AWK="/bin/gawk --posix"
 BASENAME=/bin/basename
@@ -72,7 +89,6 @@ LS=/bin/ls
 MD5SUM=/bin/md5sum
 MKDIR=/bin/mkdir
 MV=/bin/mv
-NO=[Nn][Oo]
 OD=/bin/od
 PATH=${NCARG_ROOT}/bin:${PATH}
 RM=/bin/rm
@@ -87,4 +103,3 @@ TIME=/bin/time
 TOUCH=/bin/touch
 TR=/bin/tr
 WC=/bin/wc
-YES=[Yy][Ee][Ss]

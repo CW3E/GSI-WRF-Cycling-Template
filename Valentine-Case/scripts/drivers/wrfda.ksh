@@ -64,8 +64,9 @@ fi
 #
 # ANAL_TIME     = Analysis time YYYYMMDDHH
 # IF_LOWER      = 'Yes' if updating lower boundary conditions 
-#                 'No' if updating lateral boundary conditions,
+#                 'No' if updating lateral boundary conditions
 # MAX_DOM       = Max number of domains to update lower boundary conditions 
+#                 (lateral boundary conditions for nested domains are always defined by the parent)
 #
 # Below variables are derived by cycling.xml variables for convenience
 #
@@ -105,7 +106,6 @@ fi
 # Below variables are defined in cycling.xml workflow variables
 #
 # WRFDA_ROOT     = Root directory of a WRFDA build 
-# WRFDA_PROC     = The total number of processes to run da_update_bc.exe with MPI
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
 #                  grib data, geogrid data, etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
@@ -121,16 +121,6 @@ fi
 
 if [ ! -d "${WRFDA_ROOT}" ]; then
   ${ECHO} "ERROR: WRFDA_ROOT directory ${WRFDA_ROOT} does not exist"
-  exit 1
-fi
-
-if [ ! "${WRFDA_PROC}" ]; then
-  ${ECHO} "ERROR: \$WRFDA_PROC is not defined"
-  exit 1
-fi
-
-if [ -z "${WRFDA_PROC}" ]; then
-  ${ECHO} "ERROR: The variable \$WRFDA_PROC must be set to the number of processors to run real"
   exit 1
 fi
 
@@ -154,11 +144,11 @@ fi
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT      = Working directory where REAL runs and outputs background files
-# GSI_DIR        =
-# REAL_DIR       =
-# BKG_DIR        =
-# UPDATE_BC_EXE  = Path and name of working executable
+# WORK_ROOT      = Working directory where da_update_bc.exe runs and outputs updated files
+# GSI_DIR        = Working directory where GSI runs and outputs analysis files for the current cycle
+# REAL_DIR       = Working directory real.exe runs and outputs IC and BC files for the current cycle
+# BKG_DIR        = Working directory with forecast data from WRF linked for the current cycle
+# UPDATE_BC_EXE  = Path and name of the update executable
 #
 #####################################################
 
@@ -166,55 +156,125 @@ WORK_ROOT=${INPUT_DATAROOT}/wrfdaprd
 GSI_DIR=${INPUT_DATAROOT}/gsiprd
 REAL_DIR=${INPUT_DATAROOT}/realprd
 BKG_DIR=${INPUT_DATAROOT}/wrfprd
-
-
-
 UPDATE_BC_EXE=${WRFDA_ROOT}/var/da/da_update_bc.exe
+
+if [ ! -d ${GSI_DIR} ]; then
+  ${ECHO} "ERROR: \$GSI_DIR directory ${GSI_DIR} does not exist"
+fi
+
+if [ ! -d ${REAL_DIR} ]; then
+  ${ECHO} "ERROR: \$REAL_DIR directory ${REAL_DIR} does not exist"
+fi
+
+if [ ! -d ${BKG_DIR} ]; then
+  ${ECHO} "ERROR: \$BKG_DIR directory ${INPUT_DATAROOT} does not exist"
+fi
 
 if [ ! -x ${UPDATE_BC_EXE} ]; then
   ${ECHO} "ERROR: ${UPDATE_BC_EXE} does not exist, or is not executable"
   exit 1
 fi
 
+# create working directory and cd into it
 ${MKDIR} -p ${WORK_ROOT}
 cd ${WORK_ROOT}
 
 ${LN} -sf ${UPDATE_BC_EXE} ./
 
 # Remove IC/BC in the directory if old data present
+${RM} -f wrfout_*
 ${RM} -f wrfinput_d0*
 ${RM} -f wrfbdy_d01
 
+# define domain variable to iterate on in lower boundary, fixed in lateral
+dmn=1
+
 if [[ ${IF_LOWER} = ${YES} ]]; then 
   # Check to make sure the input files are available and copy them
-  dmn=1
   while [ ${dmn} -le ${MAX_DOM} ]; do
-    wrfout=${WRF_DIR}/wrfout_d0${dmn}_${DATE_STR}
-    wrfinput=${REAL_DIR}/wrfinput_d0${dmn}
+    wrfout=wrfout_d0${dmn}_${DATE_STR}
+    wrfinput=wrfinput_d0${dmn}
 
     if [ ! -r "${wrfout}" ]; then
       echo "ERROR: Input file '${wrfout}' is missing"
       exit 1
     else
-      ${CP} ${wrfout} ./wrfout
+      ${CP} ${BKG_DIR}/${wrfout} ./
     fi
 
     if [ ! -r "${wrfnput}" ]; then
       echo "ERROR: Input file '${wrfinput}' is missing"
       exit 1
     else
-      ${CP} ${wrfinput} ./wrfinput
+      ${CP} ${REAL_DIR}/${wrfinput} ./
     fi
+
+    #####################################################
+    #  Build da_update_bc namelist
+    #####################################################
     # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-    ${CP} ${STATIC_DATA}/namelists/parame.in .
+    ${CP} ${STATIC_DATA}/namelists/parame.in ./
 
-    # UPDATE THE NAMELIST for the lower boundary update settings 
+    # Update the namelist for the domain id 
+    ${CAT} parame.in | ${SED} "s/\(${da}_${file}\)${equal}.*\{1,\}/\1 = ./${wrfout}/" \
+       > parame.in.new
+    ${MV} parame.in.new parame.in
 
+    ${CAT} parame.in | ${SED} "s/\(${wrf}_${input}\)${equal}.*\{1,\}/\1 = ./${wrfinput}/" \
+       > parame.in.new
+    ${MV} parame.in.new parame.in
 
-    # run the boundary update
+    ${CAT} parame.in | ${SED} "s/\(${domain}_${id}\)${equal}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+       > parame.in.new
+    ${MV} parame.in.new parame.in
+
+    # Update the namelist for lower boundary update 
+    ${CAT} parame.in | ${SED} "s/\(${update}_${low}_${bdy}\)${equal}.*\{1,\}/\1 = .true./" \
+       > parame.in.new
+    ${MV} parame.in.new parame.in
+
+    ${CAT} parame.in | ${SED} "s/\(${update}_${lateral}_${bdy}\)${equal}.*\{1,\}/\1 = .false./" \
+       > parame.in.new
+    ${MV} parame.in.new parame.in
+
+    #####################################################
+    # Run UPDATE_BC_EXE
+    #####################################################
+    # Print run parameters
+    ${ECHO}
+    ${ECHO} "WRFDA_ROOT     = ${WRFDA_ROOT}"
+    ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
+    ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+    ${ECHO}
+    ${ECHO} "IF_LOWER       = ${IF_LOWER}"
+    ${ECHO} "DOMAIN         = ${dmn}"
+    ${ECHO}
+    now=`${DATE} +%Y%m%d%H%M%S`
+    ${ECHO} "da_update_bc.exe started at ${now}"
+    ${MPIRUN} ${UPDATE_BC_EXE}
+
+    #####################################################
+    # Run time error check
+    #####################################################
+    error=$?
+    
+    if [ ${error} -ne 0 ]; then
+      ${MPIRUN} ${EXIT_CALL} ${error}
+      exit
+    else
+      ${MPIRUN} ${EXIT_CALL} 1
+      exit
+    fi
 
     # save the files where they can be accessed for GSI analysis
+    lower_bdy_data=${WORK_DIR}/lower_bdy_update
+    ${MKDIR} -p ${lower_bdy_data}
+    ${MV} ${wrfout} ${lower_bdy_data}/${wrfout}
+    ${MV} ${wrfinput} ${lower_bdy_data}/${wrfinput}
+    ${MV} parame.in ${lower_bdy_data}/parame.in_d0${dmn} 
+    ${MV} fort.* ${lower_bdy_data}/
 
+    # move forward through domains
     (( dmn += 1 ))
   done
 else
@@ -225,104 +285,81 @@ else
     echo "ERROR: Input file '${wrfanl}' is missing"
     exit 1
   else
-    ${CP} ${wrfanl} ./wrfanl
+    ${CP} ${wrfanl} ./wrfvar_output
   fi
 
   if [ ! -r "${wrfbdy}" ]; then
     echo "ERROR: Input file '${wrfbdy}' is missing"
     exit 1
   else
-    ${CP} ${wrfbdy} ./wrfbdy
+    ${CP} ${wrfbdy} ./wrfbdy_d01
   fi
+
+  #####################################################
+  #  Build da_update_bc namelist
+  #####################################################
   # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-  ${CP} ${STATIC_DATA}/namelists/parame.in .
+  ${CP} ${STATIC_DATA}/namelists/parame.in ./
 
-  # UPDATE the namelist for the lateral boundary setting
+  # Update the namelist for the domain id 
+  ${CAT} parame.in | ${SED} "s/\(${da}_${file}\)${equal}.*\{1,\}/\1 = ./wrfvar_output/" \
+     > parame.in.new
+  ${MV} parame.in.new parame.in
 
-  # run the boundary update
+  ${CAT} parame.in | ${SED} "s/\(${domain}_${id}\)${equal}[[:digit:]]\{1,\}/\1 = 1/" \
+     > parame.in.new
+  ${MV} parame.in.new parame.in
+
+  # Update the namelist for lower boundary update 
+  ${CAT} parame.in | ${SED} "s/\(${wrf}_${bdy}_${file}\)${equal}.*\{1,\}/\1 = ./wrfbdy_d01/" \
+     > parame.in.new
+  ${MV} parame.in.new parame.in
+
+  ${CAT} parame.in | ${SED} "s/\(${update}_${low}_${bdy}\)${equal}.*\{1,\}/\1 = .false./" \
+     > parame.in.new
+  ${MV} parame.in.new parame.in
+
+  ${CAT} parame.in | ${SED} "s/\(${update}_${lateral}_${bdy}\)${equal}.*\{1,\}/\1 = .true./" \
+     > parame.in.new
+  ${MV} parame.in.new parame.in
+
+  #####################################################
+  # Run UPDATE_BC_EXE
+  #####################################################
+  # Print run parameters
+  ${ECHO}
+  ${ECHO} "WRFDA_ROOT     = ${WRFDA_ROOT}"
+  ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
+  ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+  ${ECHO}
+  ${ECHO} "IF_LOWER       = ${IF_LOWER}"
+  ${ECHO} "DOMAIN         = ${dmn}"
+  ${ECHO}
+  now=`${DATE} +%Y%m%d%H%M%S`
+  ${ECHO} "da_update_bc.exe started at ${now}"
+  ${MPIRUN} ${UPDATE_BC_EXE}
+
+  #####################################################
+  # Run time error check
+  #####################################################
+  error=$?
+  
+  if [ ${error} -ne 0 ]; then
+    ${MPIRUN} ${EXIT_CALL} ${error}
+    exit
+  else
+    ${MPIRUN} ${EXIT_CALL} 1
+    exit
+  fi
 
   # save the files where they can be accessed for new WRF forecast
+  lateral_bdy_data=${WORK_DIR}/lateral_bdy_update
+  ${MKDIR} -p ${lateral_bdy_data}
+  ${MV} wrfvar_out ${lateral_bdy_data}/
+  ${MV} wrfbdy_d01 ${lateral_bdy_data}/
+  ${MV} parame.in ${lateral_bdy_data}/parame.in_d0${dmn} 
+  ${MV} fort.* ${lateral_bdy_data}/
+
 fi
 
-#####################################################
-#  Build da_update_bc namelist
-#####################################################
-
-
-# Create patterns for updating the wrf namelist (case independent)
-
-# Update the run_days in wrf namelist.input
-${CAT} namelist.input | ${SED} "s/\(${run}_${day}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-
-# Update the run_hours in wrf namelist
-${CAT} namelist.input | ${SED} "s/\(${run}_${hour}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_hours}/" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-
-# Update the start time in wrf namelist (propagates settings to three domains)
-${CAT} namelist.input | ${SED} "s/\(${start}_${year}\)${equal}[[:digit:]]\{4\}.*/\1 = ${start_year}, ${start_year}, ${start_year}/" \
-   | ${SED} "s/\(${start}_${month}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
-   | ${SED} "s/\(${start}_${day}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_day}, ${start_day}, ${start_day}/" \
-   | ${SED} "s/\(${start}_${hour}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_hour}, ${start_hour}, ${start_hour}/" \
-   | ${SED} "s/\(${start}_${minute}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_minute}, ${start_minute}, ${start_minute}/" \
-   | ${SED} "s/\(${start}_${second}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_second}, ${start_second}, ${start_second}/" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-
-# Update end time in namelist (propagates settings to three domains)
-${CAT} namelist.input | ${SED} "s/\(${end}_${year}\)${equal}[[:digit:]]\{4\}.*/\1 = ${end_year}, ${end_year}, ${end_year}/" \
-   | ${SED} "s/\(${end}_${month}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_month}, ${end_month}, ${end_month}/" \
-   | ${SED} "s/\(${end}_${day}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_day}, ${end_day}, ${end_day}/" \
-   | ${SED} "s/\(${end}_${hour}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_hour}, ${end_hour}, ${end_hour}/" \
-   | ${SED} "s/\(${end}_${minute}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_minute}, ${end_minute}, ${end_minute}/" \
-   | ${SED} "s/\(${end}_${second}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_second}, ${end_second}, ${end_second}/" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-
-# Update interval in namelist
-(( data_interval_sec = DATA_INTERVAL * 3600 ))
-${CAT} namelist.input | ${SED} "s/\(${interval}_${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-
-# Update the max_dom in namelist
-${CAT} namelist.input | ${SED} "s/\(max_dom\)${equal}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-
-#####################################################
-# Run REAL
-#####################################################
-# Print run parameters
-${ECHO}
-${ECHO} "WRFDA_ROOT       = ${WRFDA_ROOT}"
-${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
-${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
-${ECHO}
-${ECHO} "FCST LENGTH    = ${FCST_LENGTH}"
-${ECHO} "DATA INTERVAL  = ${DATA_INTERVAL}"
-${ECHO} "MAX_DOM        = ${MAX_DOM}"
-${ECHO}
-${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${START_TIME}"`
-${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${END_TIME}"`
-${ECHO}
-now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "real started at ${now}"
-${MPIRUN} ${UPDATE_BC_EXE}
-
-#####################################################
-# Run time error check
-#####################################################
-error=$?
-
-if [ ${error} -ne 0 ]; then
-  ${MPIRUN} ${EXIT_CALL} ${error}
-  exit
-else
-  ${MPIRUN} ${EXIT_CALL} 1
-  exit
-fi
-
-${ECHO} "real_wps.ksh completed successfully at `${DATE}`"
+${ECHO} "wrfda.ksh completed successfully at `${DATE}`"

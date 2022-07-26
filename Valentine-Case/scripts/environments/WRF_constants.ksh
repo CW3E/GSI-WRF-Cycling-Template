@@ -53,6 +53,40 @@ export LD_LIBRARY_PATH=/usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 # ensure ulimit is set unlimited
 ulimit -s unlimited
 
+# Yes / No case insensitive switch
+YES=[Yy][Ee][Ss]
+NO=[Nn][Oo]
+
+# create case insensitive string variables to update WRF / WRFDA namelists
+run=[Rr][Uu][Nn]
+equal=[[:blank:]]*=[[:blank:]]*
+start=[Ss][Tt][Aa][Rr][Tt]
+end=[Ee][Nn][Dd]
+year=[Yy][Ee][Aa][Rr]
+month=[Mm][Oo][Nn][Tt][Hh]
+day=[Dd][Aa][Yy]
+hour=[Hh][Oo][Uu][Rr]
+minute=[Mm][Ii][Nn][Uu][Tt][Ee]
+second=[Ss][Ee][Cc][Oo][Nn][Dd]
+interval=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
+history=[Hh][Ii][Ss][Tt][Oo][Rr][Yy]
+nio=[Nn][Ii][Oo]
+tasks=[Tt][Aa][Ss][Kk][Ss]
+per=[Pp][Ee][Rr]
+group=[Gg][Rr][Oo][Uu][Pp]
+auxinput=[Aa][Uu][Xx][Ii][Nn][Pp][Uu][Tt]
+domain=[Dd][Oo][Mm][Aa][Ii][Nn]
+id=[Ii][Dd]
+update=[Uu][Pp][Dd][Aa][Tt][Ee]
+lateral=[Ll][Aa][Tt][Ee][Rr][Aa][Ll]
+low=[Ll][Oo][Ww]
+bdy=[Bb][Dd][Yy]
+da=[Dd][Aa]
+file=[Ff][Ii][Ll][Ee]
+wrf=[Ww][Rr][Ff]
+input=[Ii][Nn][Pp][Uu][Tt]
+
+
 # Set up paths to shell commands
 AWK="/bin/gawk --posix"
 BASENAME=/bin/basename
@@ -72,7 +106,6 @@ LS=/bin/ls
 MD5SUM=/bin/md5sum
 MKDIR=/bin/mkdir
 MV=/bin/mv
-NO=[Nn][Oo]
 OD=/bin/od
 PATH=${NCARG_ROOT}/bin:${PATH}
 RM=/bin/rm
@@ -87,4 +120,3 @@ TIME=/bin/time
 TOUCH=/bin/touch
 TR=/bin/tr
 WC=/bin/wc
-YES=[Yy][Ee][Ss]

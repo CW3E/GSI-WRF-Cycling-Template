@@ -325,18 +325,6 @@ fi
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
 ${CP} ${STATIC_DATA}/namelists/namelist.wps .
 
-# Create patterns for updating the wps namelist (case independent)
-equal=[[:blank:]]*=[[:blank:]]*
-start=[Ss][Tt][Aa][Rr][Tt]
-end=[Ee][Nn][Dd]
-date=[Dd][Aa][Tt][Ee]
-interval=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
-seconds=[Ss][Ee][Cc][Oo][Nn][Dd][Ss]
-prefix=[Pp][Rr][Ee][Ff][Ii][Xx]
-fg_name=[Ff][Gg][_][Nn][Aa][Mm][Ee]
-constants_name=[Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][Ss][_][Nn][Aa][Mm][Ee]
-yyyymmdd_hhmmss='[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}_[[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\}'
-
 # define start / end time patterns for namelist.wps
 start_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${start_time}"`
 end_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${end_time}"`

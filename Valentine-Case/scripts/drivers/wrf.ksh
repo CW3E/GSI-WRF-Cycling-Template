@@ -268,13 +268,24 @@ ${RM} -f wrfout_*
 dmn=1
 while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
   wrfinput_name=wrfinput_d0${dmn}
+  # if cycling AND analyzing this domain, get initial conditions from last analysis
   if [[ ${IF_CYCLING} = ${YES} && ${dmn} -le ${MAX_GSI_DOM} ]]; then
-    # if cycling AND analyzing this domain, get initial conditions from last analysis
-    gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl.d0${dmn}_${START_TIME}
-    ${LN} -sf ${gsi_outname} ./${wrfinput_name}
-    if [ ! -r ./${wrfinput_name} ]; then
-      ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
-      exit 1
+    if [[ ${dmn} = 1 ]]; then
+      # obtain the input and boundary files from the lateral boundary update by WRFDA 
+      wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/lateral_bdy_update/wrfvar_out 
+      ${LN} -sf ${wrfda_outname} ./${wrfinput_name}
+      if [ ! -r ./${wrfinput_name} ]; then
+        ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${wrfda_outname}"
+        exit 1
+      fi
+    else
+      # Nested domains have boundary conditions defined by parent, link from GSI analysis
+      gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl.d0${dmn}_${START_TIME}
+      ${LN} -sf ${gsi_outname} ./${wrfinput_name}
+      if [ ! -r ./${wrfinput_name} ]; then
+        ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
+        exit 1
+      fi
     fi
   else
     # else get initial conditions from real.exe
@@ -285,7 +296,7 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
       exit 1
     fi
   fi
-  # NOTE: THIS CURRENTLY LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
+  # NOTE: THIS LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
   if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
     wrflowinp_name=wrflowinp_d0${dmn}
     real_outname=${INPUT_DATAROOT}/realprd/${wrflowinp_name}
@@ -297,12 +308,22 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
   (( dmn += 1 ))
 done
 
-# Link the wrfbdy_d01 file from real.exe
-# NOTE: THIS WILL NEED TO BE UPDATED FOR WRFDA LOOP
-${LN} -sf ${INPUT_DATAROOT}/realprd/wrfbdy_d01 ./
-if [ ! -r ${WORK_ROOT}/wrfbdy_d01 ]; then
-  ${ECHO} "ERROR: ${WORK_ROOT}/wrfbdy_d01 does not exist, or is not readable, check source in ${INPUT_DATAROOT}/bkg"
-  exit 1
+if [[ ${IF_CYCLING} = ${YES} ]]; then
+  # Link the wrfbdy_d01 file from the WRFDA updated BCs
+  wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/lateral_bdy_update/wrfbdy_d01
+  ${LN} -sf ${wrfda_outname} ./wrfbdy_d01
+  if [ ! -r ${WORK_ROOT}/wrfbdy_d01 ]; then
+    ${ECHO} "ERROR: ${WORK_ROOT}/wrfbdy_d01 does not exist, or is not readable, check source in ${wrfda_outname}"
+    exit 1
+  fi
+else
+  # Link the wrfbdy_d01 file from real.exe
+  real_outname=${INPUT_DATAROOT}/realprd/wrfbdy_d01
+  ${LN} -sf ${real_outname} ./wrfbdy_01
+  if [ ! -r ${WORK_ROOT}/wrfbdy_d01 ]; then
+    ${ECHO} "ERROR: ${WORK_ROOT}/wrfbdy_d01 does not exist, or is not readable, check source in ${real_outname}"
+    exit 1
+  fi
 fi
 
 # Move existing rsl files to a subdir if there are any
@@ -341,26 +362,6 @@ end_second=`${DATE} +%S -d "${end_time}"`
 (( run_days = FCST_LENGTH / 24 ))
 (( run_hours = FCST_LENGTH % 24 ))
 
-# Create patterns for updating the wrf namelist (case independent)
-run=[Rr][Uu][Nn]
-equal=[[:blank:]]*=[[:blank:]]*
-start=[Ss][Tt][Aa][Rr][Tt]
-end=[Ee][Nn][Dd]
-year=[Yy][Ee][Aa][Rr]
-month=[Mm][Oo][Nn][Tt][Hh]
-day=[Dd][Aa][Yy]
-hour=[Hh][Oo][Uu][Rr]
-minute=[Mm][Ii][Nn][Uu][Tt][Ee]
-second=[Ss][Ee][Cc][Oo][Nn][Dd]
-interval=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
-history=[Hh][Ii][Ss][Tt][Oo][Rr][Yy]
-nio=[Nn][Ii][Oo]
-tasks=[Tt][Aa][Ss][Kk][Ss]
-per=[Pp][Ee][Rr]
-group=[Gg][Rr][Oo][Uu][Pp]
-groups=[Gg][Rr][Oo][Uu][Pp][Ss]
-auxinput=[Aa][Uu][Xx][Ii][Nn][Pp][Uu][Tt]
-
 # Update the run_days in wrf namelist.input
 ${CAT} namelist.input | ${SED} "s/\(${run}_${day}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
    > namelist.input.new
@@ -393,7 +394,7 @@ ${MV} namelist.input.new namelist.input
 
 # Update the quilting settings to the parameters set in the workflow
 ${CAT} namelist.input | ${SED} "s/\(${nio}_${tasks}_${per}_${group}\)${equal}[[:digit:]]\{1,\}/\1 = ${NIO_TASKS_PER_GROUP}/" \
-                      | ${SED} "s/\(${nio}_${groups}\)${equal}[[:digit:]]\{1,\}/\1 = ${NIO_GROUPS}/" \
+                      | ${SED} "s/\(${nio}_${group}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${NIO_GROUPS}/" \
    > namelist.input.new
 ${MV} namelist.input.new namelist.input
 

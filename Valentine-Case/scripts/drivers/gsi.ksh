@@ -206,7 +206,8 @@ fi
 #
 # WORK_ROOT    = Working directory where GSI runs
 # OBS_ROOT     = Path of observations files
-# BKG_ROOT     = Path for root directory of background file and ensemble members
+# BKG_ROOT     = Path for root directory of background files
+# WRFDA_ROOT   = Path for root directory of WRFDA files from BC updates
 # ENS_ROOT     = Path where ensemble background files exist, not required
 #                if not running hybrid EnVAR
 # FIX_ROOT     = Path of fix files
@@ -218,7 +219,9 @@ fi
 
 WORK_ROOT=${INPUT_DATAROOT}/gsiprd
 OBS_ROOT=${INPUT_DATAROOT}/obs
+# NOTE: the background files are taken from the WRFDA outputs when cycling, having updated the lower BCs
 BKG_ROOT=${INPUT_DATAROOT}/bkg
+WRFDA_ROOT=${INPUT_DATAROOT}/wrfdaprd
 ENS_ROOT=${INPUT_DATAROOT}/gfsens
 FIX_ROOT=${GSI_ROOT}/fix
 
@@ -235,7 +238,11 @@ fi
 if [[ ${IF_FIRST_ANAL} = ${NO} ]]; then
   # the background directory must be defined from the last cycle after first analysis
   if [ ! -d "${BKG_ROOT}" ]; then
-    echo "ERROR: BKG_ROOT directory '${BKG_ROOT}' does not exist!"
+    echo "ERROR: \$BKG_ROOT directory '${BKG_ROOT}' does not exist!"
+    exit 1
+  fi
+  if [ ! -d "${WRFDA_ROOT}" ]; then
+    echo "ERROR: \$WRDA_ROOT directory '${WRFDA_ROOT}' does not exist!"
     exit 1
   fi
 fi
@@ -475,7 +482,8 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   if [[ ${IF_FIRST_ANAL} = ${YES} ]]; then
     BKG_FILE=${INPUT_DATAROOT}/realprd/wrfinput_d0${dmn}
   else
-    BKG_FILE=${BKG_ROOT}/wrfout_d0${dmn}_${DATE_STR}
+    BKG_FILE=${WRFDA_ROOT}/lower_bdy_update/wrfout_d0${dmn}_${DATE_STR}
+    # NOTE: THE FOLLOWING MAY NEED TO BE REVISED DUE TO WRFDA STEP
     BKG_FILE_mem=${BKG_ROOT}/wrfarw.mem
   fi
 
@@ -504,6 +512,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     fi
 
     if [[ ${IF_4DENVAR} = ${YES} ]] ; then
+      # NOTE: THE FOLLOWING DIRECTORIES WILL PROBABLY NEED TO BE REVISED DUE TO WRFDA STEP
       BKG_FILE_P1=${BKG_ROOT}/wrfout_d0${dmn}_${datep1}
       BKG_FILE_M1=${BKG_ROOT}/wrfout_d0${dmn}_${datem1}
 

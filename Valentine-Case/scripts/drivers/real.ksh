@@ -309,20 +309,6 @@ end_second=`${DATE} +%S -d "${END_TIME}"`
 (( run_days = FCST_LENGTH / 24 ))
 (( run_hours = FCST_LENGTH % 24 ))
 
-# Create patterns for updating the wrf namelist (case independent)
-run=[Rr][Uu][Nn]
-equal=[[:blank:]]*=[[:blank:]]*
-start=[Ss][Tt][Aa][Rr][Tt]
-end=[Ee][Nn][Dd]
-year=[Yy][Ee][Aa][Rr]
-month=[Mm][Oo][Nn][Tt][Hh]
-day=[Dd][Aa][Yy]
-hour=[Hh][Oo][Uu][Rr]
-minute=[Mm][Ii][Nn][Uu][Tt][Ee]
-second=[Ss][Ee][Cc][Oo][Nn][Dd]
-interval=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
-history=[Hh][Ii][Ss][Tt][Oo][Rr][Yy]
-
 # Update the run_days in wrf namelist.input
 ${CAT} namelist.input | ${SED} "s/\(${run}_${day}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
    > namelist.input.new
@@ -453,4 +439,4 @@ for file in ${WRF_DAT_FILES[@]}; do
     ${RM} -f `${BASENAME} ${file}`
 done
 
-${ECHO} "real_wps.ksh completed successfully at `${DATE}`"
+${ECHO} "real.ksh completed successfully at `${DATE}`"
