@@ -27,7 +27,7 @@
   <!ENTITY WPS_SERIAL_ROOT     "&HOME_SPACE;/WRF_CODE/WPS_serial">
   <!ENTITY WPS_PARALLEL_ROOT   "&HOME_SPACE;/WRF_CODE/WPS_parallel">
   <!ENTITY WRF_ROOT            "&HOME_SPACE;/WRF_CODE/WRF">
-  <!ENTITY WRF_ROOT            "&HOME_SPACE;/WRF_CODE/WRF_DA">
+  <!ENTITY WRFDA_ROOT          "&HOME_SPACE;/WRF_CODE/WRF_DA">
   <!ENTITY GSI_ROOT            "&HOME_SPACE;/comGSIv3.7_EnKFv1.3">
   <!ENTITY CRTM_VERSION        "2.3.0">
   <!-- END SOFTWARE SETTINGS -->
@@ -103,10 +103,10 @@
   <!ENTITY REAL_NODESIZE       "24">
   <!ENTITY REAL_NODES          "2">
   <!ENTITY REAL_WC             "03:00:00">
-  <!ENTITY WRFDA_PROC          "352">
-  <!ENTITY WRFDA_MEM_PER_CPU   "2G">
-  <!ENTITY WRFDA_NODESIZE      "22">
-  <!ENTITY WRFDA_NODES         "16">
+  <!ENTITY WRFDA_PROC          "1">
+  <!ENTITY WRFDA_MEM_PER_CPU   "5G">
+  <!ENTITY WRFDA_NODESIZE      "24">
+  <!ENTITY WRFDA_NODES         "1">
   <!ENTITY WRFDA_WC            "00:45:00">
   <!ENTITY WRF_PROC            "352">
   <!ENTITY WRF_MEM_PER_CPU     "2G">
@@ -543,7 +543,7 @@
     </envar>
     <envar>
       <name>IF_LOWER</name>
-      <value>&LOWER;</value>
+      <value>&LATERAL;</value>
     </envar>
     <envar>
       <name>ANAL_TIME</name>

@@ -272,7 +272,7 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
   if [[ ${IF_CYCLING} = ${YES} && ${dmn} -le ${MAX_GSI_DOM} ]]; then
     if [[ ${dmn} = 1 ]]; then
       # obtain the input and boundary files from the lateral boundary update by WRFDA 
-      wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/lateral_bdy_update/wrfvar_out 
+      wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/lateral_bdy_update/wrfvar_output 
       ${LN} -sf ${wrfda_outname} ./${wrfinput_name}
       if [ ! -r ./${wrfinput_name} ]; then
         ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${wrfda_outname}"

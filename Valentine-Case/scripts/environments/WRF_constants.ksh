@@ -86,7 +86,6 @@ file=[Ff][Ii][Ll][Ee]
 wrf=[Ww][Rr][Ff]
 input=[Ii][Nn][Pp][Uu][Tt]
 
-
 # Set up paths to shell commands
 AWK="/bin/gawk --posix"
 BASENAME=/bin/basename
