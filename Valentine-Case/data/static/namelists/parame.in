@@ -1,8 +1,8 @@
 &control_param
- da_file            = 'foo'
- wrf_input          = 'foo'
- wrf_bdy_file       = 'foo'
- domain_id          = 42
+ da_file            = './wrfout_'
+ wrf_input          = './wrfvar_out'
+ wrf_bdy_file       = './wrfinput_d01'
+ domain_id          = 1
  debug              = .true.
  update_lateral_bdy = .false.
  update_low_bdy     = .false.

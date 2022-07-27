@@ -110,7 +110,6 @@ fi
 #                  grib data, geogrid data, etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd
-# MPIRUN         = MPI Command to execute REAL
 #
 #####################################################
 
@@ -134,11 +133,6 @@ if [ ! -d ${INPUT_DATAROOT} ]; then
   exit 1
 fi
 
-if [ ! "${MPIRUN}" ]; then
-  echo "ERROR: \$MPIRUN is not defined!"
-  exit 1
-fi
-
 #####################################################
 # Begin pre-WRFDA setup
 #####################################################
@@ -155,12 +149,14 @@ fi
 WORK_ROOT=${INPUT_DATAROOT}/wrfdaprd
 GSI_DIR=${INPUT_DATAROOT}/gsiprd
 REAL_DIR=${INPUT_DATAROOT}/realprd
-BKG_DIR=${INPUT_DATAROOT}/wrfprd
+BKG_DIR=${INPUT_DATAROOT}/bkg
 UPDATE_BC_EXE=${WRFDA_ROOT}/var/da/da_update_bc.exe
 
-if [ ! -d ${GSI_DIR} ]; then
-  ${ECHO} "ERROR: \$GSI_DIR directory ${GSI_DIR} does not exist"
-  exit 1
+if [[ ${IF_LOWER} = ${NO} ]]; then
+  if [ ! -d ${GSI_DIR} ]; then
+    ${ECHO} "ERROR: \$GSI_DIR directory ${GSI_DIR} does not exist"
+    exit 1
+  fi
 fi
 
 if [ ! -d ${REAL_DIR} ]; then
@@ -198,14 +194,14 @@ if [[ ${IF_LOWER} = ${YES} ]]; then
     wrfout=wrfout_d0${dmn}_${DATE_STR}
     wrfinput=wrfinput_d0${dmn}
 
-    if [ ! -r "${wrfout}" ]; then
+    if [ ! -r "${BKG_DIR}/${wrfout}" ]; then
       echo "ERROR: Input file '${wrfout}' is missing"
       exit 1
     else
       ${CP} ${BKG_DIR}/${wrfout} ./
     fi
 
-    if [ ! -r "${wrfnput}" ]; then
+    if [ ! -r "${REAL_DIR}/${wrfnput}" ]; then
       echo "ERROR: Input file '${wrfinput}' is missing"
       exit 1
     else
@@ -272,7 +268,6 @@ if [[ ${IF_LOWER} = ${YES} ]]; then
     ${MV} ${wrfout} ${lower_bdy_data}/${wrfout}
     ${MV} ${wrfinput} ${lower_bdy_data}/${wrfinput}
     ${MV} parame.in ${lower_bdy_data}/parame.in_d0${dmn} 
-    ${MV} fort.* ${lower_bdy_data}/
 
     # move forward through domains
     (( dmn += 1 ))

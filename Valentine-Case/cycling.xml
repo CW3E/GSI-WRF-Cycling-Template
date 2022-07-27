@@ -352,10 +352,6 @@
       <name>INPUT_DATAROOT</name>
       <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
     </envar>
-    <envar>
-      <name>MPIRUN</name>
-      <value>&MPIRUN;</value>
-    </envar>
     <dependency> 
       <taskdep task="real" state="SUCCEEDED"/>
     </dependency>
