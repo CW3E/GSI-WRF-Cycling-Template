@@ -13,7 +13,7 @@
   <!-- END USER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
-  <!ENTITY PROJ_HOME           "&HOME_SPACE;/GSI-WRF-Cycling-Template/Valentine-Case">
+  <!ENTITY PROJ_HOME           "&HOME_SPACE;/GSI-WRF-Cycling-Template/Valentine-Case/3D-VAR">
   <!ENTITY SCRIPTS             "&PROJ_HOME;/scripts">
   <!ENTITY DRIVERS             "&SCRIPTS;/drivers">
   <!ENTITY ENVIRONMENTS        "&SCRIPTS;/environments">

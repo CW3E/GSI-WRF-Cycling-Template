@@ -24,14 +24,14 @@ import os
 
 # path to .xml workflow
 pathnam = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\
-           'GSI-WRF-Cycling-Template/Valentine-Case'
+           'GSI-WRF-Cycling-Template/Valentine-Case/3D-VAR'
 
 # name of .xml workflow WITHOUT the extension
 wrknam = 'cycling'
 
 # path to database
 outnam = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\
-         'GSI-WRF-Cycling-Template/Valentine-Case/data'
+         'GSI-WRF-Cycling-Template/Valentine-Case/3D-VAR/data'
 
 # path to rocoto binary root directory
 pathroc = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/rocoto'
