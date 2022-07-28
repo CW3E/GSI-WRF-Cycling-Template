@@ -298,63 +298,67 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 
   echo " Link observation bufr to working directory"
 
-  # Link to the prepbufr data
+  # Link to the prepbufr conventional data
   ln -s ${PREPBUFR} ./prepbufr
-  # ln -s ${OBS_ROOT}/gdas1.t${HH}z.sptrmm.tm00.bufr_d tmirrbufr
 
-  # Link to the radiance data
+  # Link to satellite data
   ii=1
-  if [[ ${IF_SATRAD} = ${YES} ]] ; then
-     srcobsfile[1]=${OBS_ROOT}/gdas1.t${HH}z.satwnd.tm00.bufr_d
-     gsiobsfile[1]=satwnd
-     srcobsfile[2]=${OBS_ROOT}/gdas1.t${HH}z.1bamua.tm00.bufr_d
-     gsiobsfile[2]=amsuabufr
-     srcobsfile[3]=${OBS_ROOT}/gdas1.t${HH}z.1bhrs4.tm00.bufr_d
-     gsiobsfile[3]=hirs4bufr
-     srcobsfile[4]=${OBS_ROOT}/gdas1.t${HH}z.1bmhs.tm00.bufr_d
-     gsiobsfile[4]=mhsbufr
-     srcobsfile[5]=${OBS_ROOT}/gdas1.t${HH}z.1bamub.tm00.bufr_d
-     gsiobsfile[5]=amsubbufr
-     srcobsfile[6]=${OBS_ROOT}/gdas1.t${HH}z.ssmisu.tm00.bufr_d
-     gsiobsfile[6]=ssmirrbufr
-     srcobsfile[7]=${OBS_ROOT}/gdas1.t${HH}z.airsev.tm00.bufr_d
-     gsiobsfile[7]=airsbufr
-     srcobsfile[8]=${OBS_ROOT}/gdas1.t${HH}z.sevcsr.tm00.bufr_d
-     gsiobsfile[8]=seviribufr
-     srcobsfile[9]=${OBS_ROOT}/gdas1.t${HH}z.iasidb.tm00.bufr_d
-     gsiobsfile[9]=iasibufr
-     srcobsfile[10]=${OBS_ROOT}/gdas1.t${HH}z.gpsro.tm00.bufr_d
-     gsiobsfile[10]=gpsrobufr
-     srcobsfile[11]=${OBS_ROOT}/gdas1.t${HH}z.amsr2.tm00.bufr_d
-     gsiobsfile[11]=amsrebufr
-     srcobsfile[12]=${OBS_ROOT}/gdas1.t${HH}z.atms.tm00.bufr_d
-     gsiobsfile[12]=atmsbufr
-     srcobsfile[13]=${OBS_ROOT}/gdas1.t${HH}z.geoimr.tm00.bufr_d
-     gsiobsfile[13]=gimgrbufr
-     srcobsfile[14]=${OBS_ROOT}/gdas1.t${HH}z.gome.tm00.bufr_d
-     gsiobsfile[14]=gomebufr
-     srcobsfile[15]=${OBS_ROOT}/gdas1.t${HH}z.omi.tm00.bufr_d
-     gsiobsfile[15]=omibufr
-     srcobsfile[16]=${OBS_ROOT}/gdas1.t${HH}z.osbuv8.tm00.bufr_d
-     gsiobsfile[16]=sbuvbufr
-     srcobsfile[17]=${OBS_ROOT}/gdas1.t${HH}z.eshrs3.tm00.bufr_d
-     gsiobsfile[17]=hirs3bufrears
-     srcobsfile[18]=${OBS_ROOT}/gdas1.t${HH}z.esamua.tm00.bufr_d
-     gsiobsfile[18]=amsuabufrears
-     srcobsfile[19]=${OBS_ROOT}/gdas1.t${HH}z.esmhs.tm00.bufr_d
-     gsiobsfile[19]=mhsbufrears
-     srcobsfile[20]=${OBS_ROOT}/rap.t${HH}z.nexrad.tm00.bufr_d
-     gsiobsfile[20]=l2rwbufr
-     srcobsfile[21]=${OBS_ROOT}/rap.t${HH}z.lgycld.tm00.bufr_d
-     gsiobsfile[21]=larcglb
-     srcobsfile[22]=${OBS_ROOT}/gdas1.t${HH}z.glm.tm00.bufr_d
-     gsiobsfile[22]=
 
-     while [[ $ii -le 21 ]]; do
-        if [ -r "${srcobsfile[$ii]}" ]; then
-           ln -s ${srcobsfile[$ii]}  ${gsiobsfile[$ii]}
-           echo "link source obs file ${srcobsfile[$ii]}"
-        fi
+  if [[ ${IF_SATRAD} = ${YES} ]] ; then
+     srctarfile[1]=${OBS_ROO}/1bamua.${ANAL_DATE}.tar.gz
+     srcobsfile[1]=${OBS_ROOT}/${ANAL_DATE}.1bamua/gdas.1bamua.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[1]=amsuabufr
+     srctarfile[2]=${OBS_ROO}/1bhrs4.${ANAL_DATE}.tar.gz
+     srcobsfile[2]=${OBS_ROOT}/${ANAL_DATE}.1bhrs4/gdas.1bhrs4.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[2]=hirs4bufr
+     srctarfile[3]=${OBS_ROO}/1bmhs.${ANAL_DATE}.tar.gz
+     srcobsfile[3]=${OBS_ROOT}/${ANAL_DATE}.1bmhs/gdas.1bmhs.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[3]=mhsbufr
+     srctarfile[4]=${OBS_ROO}/airsev.${ANAL_DATE}.tar.gz
+     srcobsfile[4]=${OBS_ROOT}/${ANAL_DATE}.airsev/gdas.airsev.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[4]=airsbufr
+     srctarfile[5]=${OBS_ROO}/atms.${ANAL_DATE}.tar.gz
+     srcobsfile[5]=${OBS_ROOT}/${ANAL_DATE}.atms/gdas.atms.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[5]=atmsbufr
+     srctarfile[6]=${OBS_ROO}/eshrs3.${ANAL_DATE}.tar.gz
+     srcobsfile[6]=${OBS_ROOT}/${ANAL_DATE}.eshrs3/gdas.eshrs3.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[6]=hirs3bufrears
+     srctarfile[7]=${OBS_ROO}/esmhs.${ANAL_DATE}.tar.gz
+     srcobsfile[7]=${OBS_ROOT}/${ANAL_DATE}.esmhs/gdas.esmhs.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[7]=mhsbufrears
+     srctarfile[8]=${OBS_ROO}/gome.${ANAL_DATE}.tar.gz
+     srcobsfile[8]=${OBS_ROOT}/${ANAL_DATE}.gome/gdas.gome.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[8]=gomebufr
+     srctarfile[9]=${OBS_ROO}/gpsro.${ANAL_DATE}.tar.gz
+     srcobsfile[9]=${OBS_ROOT}/${ANAL_DATE}.gpsro/gdas.gpsro.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[9]=gpsrobufr
+     srctarfile[10]=${OBS_ROO}/mtiasi.${ANAL_DATE}.tar.gz
+     srcobsfile[10]=${OBS_ROOT}/${ANAL_DATE}.iasidb/gdas.mtiasi.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[10]=iasibufr
+     srctarfile[11]=${OBS_ROO}/osbuv8.${ANAL_DATE}.tar.gz
+     srcobsfile[11]=${OBS_ROOT}/${ANAL_DATE}.osbuv8/gdas.osbuv8.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[11]=sbuvbufr
+     srctarfile[12]=${OBS_ROO}/satwnd.${ANAL_DATE}.tar.gz
+     srcobsfile[12]=${OBS_ROOT}/${ANAL_DATE}.satwnd/gdas.satwnd.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[12]=satwndbufr
+     srctarfile[13]=${OBS_ROO}/ssmisu.${ANAL_DATE}.tar.gz
+     srcobsfile[13]=${OBS_ROOT}/${ANAL_DATE}.ssmisu/gdas.ssmisu.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[13]=ssmirrbufr
+     srctarfile[14]=${OBS_ROO}/sevcsr.${ANAL_DATE}.tar.gz
+     srcobsfile[14]=${OBS_ROOT}/${ANAL_DATE}.sevcsr/gdas.sevcsr.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[14]=seviribufr
+     srctarfile[15]=${OBS_ROO}/geoimr.${ANAL_DATE}.tar.gz
+     srcobsfile[15]=${OBS_ROOT}/${ANAL_DATE}.geoimr/gdas.geoimr.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[15]=gimgrbufr
+
+     while [[ $ii -le 15 ]]; do
+	if [ -r "${srctarfile[$ii]}" ]; then
+	  ${TAR} -xvf ${srctarfile[$ii]}
+          if [ -r "${srcobsfile[$ii]}" ]; then
+             echo "link source obs file ${srcobsfile[$ii]}"
+             ln -s ${srcobsfile[$ii]}  ${gsiobsfile[$ii]}
+          fi
+	fi
         (( ii += 1 ))
      done
   fi
