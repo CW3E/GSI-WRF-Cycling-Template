@@ -155,6 +155,8 @@ fi
 # ANAL_TIME      = Analysis time YYYYMMDDHH
 # GSI_ROOT       = Directory for clean GSI build
 # CRTM_VERSION   = Version number of CRTM to specify path to binaries
+# STATIC_DATA    = Root directory containing sub-directories for constants, namelists
+#                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Analysis time named directory for input data, containing
 #                  subdirectories obs, bkg, gfsens, wrfprd, realprd, wpsprd
 # MPIRUN         = MPI Command to execute GSI
@@ -191,6 +193,18 @@ if [ -z "${CRTM_VERSION}" ]; then
   exit 1
 fi
 
+
+if [ ! ${STATIC_DATA} ]; then
+  echo "ERROR: \$STATIC_DATA is not defined!"
+  exit 1
+fi
+
+
+if [ ! -d ${STATIC_DATA} ]; then
+  ${ECHO} "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
+  exit 1
+fi
+
 if [ ! "${INPUT_DATAROOT}" ]; then
   echo "ERROR: \$INPUT_DATAROOT is not defined!"
   exit 1
@@ -218,7 +232,7 @@ fi
 #####################################################
 
 WORK_ROOT=${INPUT_DATAROOT}/gsiprd
-OBS_ROOT=${INPUT_DATAROOT}/obs
+OBS_ROOT=${STATIC_DATA}/obs_data
 # NOTE: the background files are taken from the WRFDA outputs when cycling, having updated the lower BCs
 BKG_ROOT=${INPUT_DATAROOT}/bkg
 WRFDA_ROOT=${INPUT_DATAROOT}/wrfdaprd
@@ -228,7 +242,8 @@ FIX_ROOT=${GSI_ROOT}/fix
 GSI_EXE=${GSI_ROOT}/build/bin/gsi.x
 GSI_NAMELIST=${GSI_ROOT}/ush/comgsi_namelist.sh
 CRTM_ROOT=${GSI_ROOT}/CRTM_v${CRTM_VERSION}
-PREPBUFR=${OBS_ROOT}/prepbufr.gdas.${ANAL_DATE}.t${HH}z.nr
+PREPBUFR_TAR=${OBS_ROOT}/prepbufr.${ANAL_DATE}.nr.tar.gz
+PREPBUFR=${OBS_ROOT}/${ANAL_DATE}.nr/prepbufr.gdas.${ANAL_DATE}.t${HH}z.nr
 
 if [ ! -d "${OBS_ROOT}" ]; then
   echo "ERROR: OBS_ROOT directory '${OBS_ROOT}' does not exist!"
@@ -275,6 +290,14 @@ if [ ! -d "${CRTM_ROOT}" ]; then
   exit 1
 fi
 
+if [ ! -r "${PREPBUFR_TAR}" ]; then
+  echo "ERROR: file '${PREPBUFR_TAR}' does not exist!"
+  exit 1
+else
+  cd ${OBS_ROOT}
+  ${TAR} -xvf `${BASENAME} ${PREPBUFR_TAR}`
+fi
+
 if [ ! -r "${PREPBUFR}" ]; then
   echo "ERROR: file '${PREPBUFR}' does not exist!"
   exit 1
@@ -305,64 +328,73 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   ii=1
 
   if [[ ${IF_SATRAD} = ${YES} ]] ; then
-     srctarfile[1]=${OBS_ROO}/1bamua.${ANAL_DATE}.tar.gz
-     srcobsfile[1]=${OBS_ROOT}/${ANAL_DATE}.1bamua/gdas.1bamua.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[1]=amsuabufr
-     srctarfile[2]=${OBS_ROO}/1bhrs4.${ANAL_DATE}.tar.gz
-     srcobsfile[2]=${OBS_ROOT}/${ANAL_DATE}.1bhrs4/gdas.1bhrs4.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[2]=hirs4bufr
-     srctarfile[3]=${OBS_ROO}/1bmhs.${ANAL_DATE}.tar.gz
-     srcobsfile[3]=${OBS_ROOT}/${ANAL_DATE}.1bmhs/gdas.1bmhs.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[3]=mhsbufr
-     srctarfile[4]=${OBS_ROO}/airsev.${ANAL_DATE}.tar.gz
-     srcobsfile[4]=${OBS_ROOT}/${ANAL_DATE}.airsev/gdas.airsev.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[4]=airsbufr
-     srctarfile[5]=${OBS_ROO}/atms.${ANAL_DATE}.tar.gz
-     srcobsfile[5]=${OBS_ROOT}/${ANAL_DATE}.atms/gdas.atms.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[5]=atmsbufr
-     srctarfile[6]=${OBS_ROO}/eshrs3.${ANAL_DATE}.tar.gz
-     srcobsfile[6]=${OBS_ROOT}/${ANAL_DATE}.eshrs3/gdas.eshrs3.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[6]=hirs3bufrears
-     srctarfile[7]=${OBS_ROO}/esmhs.${ANAL_DATE}.tar.gz
-     srcobsfile[7]=${OBS_ROOT}/${ANAL_DATE}.esmhs/gdas.esmhs.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[7]=mhsbufrears
-     srctarfile[8]=${OBS_ROO}/geoimr.${ANAL_DATE}.tar.gz
-     srcobsfile[8]=${OBS_ROOT}/${ANAL_DATE}.geoimr/gdas.geoimr.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[8]=gimgrbufr
-     srctarfile[9]=${OBS_ROO}/gome.${ANAL_DATE}.tar.gz
-     srcobsfile[9]=${OBS_ROOT}/${ANAL_DATE}.gome/gdas.gome.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[9]=gomebufr
-     srctarfile[10]=${OBS_ROO}/gpsro.${ANAL_DATE}.tar.gz
-     srcobsfile[10]=${OBS_ROOT}/${ANAL_DATE}.gpsro/gdas.gpsro.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[10]=gpsrobufr
-     srctarfile[11]=${OBS_ROO}/mtiasi.${ANAL_DATE}.tar.gz
-     srcobsfile[11]=${OBS_ROOT}/${ANAL_DATE}.iasidb/gdas.mtiasi.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[11]=iasibufr
-     srctarfile[12]=${OBS_ROO}/osbuv8.${ANAL_DATE}.tar.gz
-     srcobsfile[12]=${OBS_ROOT}/${ANAL_DATE}.osbuv8/gdas.osbuv8.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[12]=sbuvbufr
-     srctarfile[13]=${OBS_ROO}/satwnd.${ANAL_DATE}.tar.gz
-     srcobsfile[13]=${OBS_ROOT}/${ANAL_DATE}.satwnd/gdas.satwnd.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[13]=satwndbufr
-     srctarfile[14]=${OBS_ROO}/ssmisu.${ANAL_DATE}.tar.gz
-     srcobsfile[14]=${OBS_ROOT}/${ANAL_DATE}.ssmisu/gdas.ssmisu.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[14]=ssmirrbufr
-     srctarfile[15]=${OBS_ROO}/sevcsr.${ANAL_DATE}.tar.gz
-     srcobsfile[15]=${OBS_ROOT}/${ANAL_DATE}.sevcsr/gdas.sevcsr.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[15]=seviribufr
+     srcobsfile=()
+     gsiobsfile=()
 
-     while [[ $ii -le 15 ]]; do
-	if [ -r "${srctarfile[$ii]}" ]; then
-	  ${TAR} -xvf ${srctarfile[$ii]}
-          if [ -r "${srcobsfile[$ii]}" ]; then
-             echo "link source obs file ${srcobsfile[$ii]}"
-             ln -s ${srcobsfile[$ii]}  ${gsiobsfile[$ii]}
+     #srcobsfile+=("1bamua")
+     #gsiobsfile+=("amsuabufr")
+
+     #srcobsfile+=("1bhrs4")
+     #gsiobsfile+=("hirs4bufr")
+
+     #srcobsfile+=("1bmhs")
+     #gsiobsfile+=("mhsbufr")
+
+     #srcobsfile+=("airsev")
+     #gsiobsfile+=("airsbufr")
+
+     #srcobsfile+=("atms")
+     #gsiobsfile+=("atmsbufr")
+
+     #srcobsfile+=("eshrs3")
+     #gsiobsfile+=("hirs3bufrears")
+
+     #srcobsfile+=("esmhs")
+     #gsiobsfile+=("mhsbufrears")
+
+     #srcobsfile+=("geoimr")
+     #gsiobsfile+=("gimgrbufr")
+
+     #srcobsfile+=("gome")
+     #gsiobsfile+=("gomebufr")
+
+     srcobsfile+=("gpsro")
+     gsiobsfile+=("gpsrobufr")
+
+     #srcobsfile+=("mtiasi")
+     #gsiobsfile+=("iasibufr")
+
+     #srcobsfile+=("osbuv8")
+     #gsiobsfile+=("sbuvbufr")
+
+     srcobsfile+=("satwnd")
+     gsiobsfile+=("satwndbufr")
+
+     #srcobsfile+=("ssmisu")
+     #gsiobsfile+=("ssmirrbufr")
+
+     #srcobsfile+=("sevcsr")
+     #gsiobsfile+=("seviribufr")
+
+     len=${#srcobsfile[@]}
+
+     while [[ $ii -le ${len} ]]; do
+	tar_file=${OBS_ROOT}/${srcobsfile[$ii]}.${ANAL_DATE}.tar.gz
+	if [ -r "${tar_file}" ]; then
+	  cd ${OBS_ROOT}
+	  ${TAR} -xvf `${BASENAME} ${tar_file}`
+	  obs_file=${OBS_ROOT}/${ANAL_DATE}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${HH}z.${ANAL_DATE}.bufr
+          if [ -r "${obs_file}" ]; then
+             echo "link source obs file ${obs_file}"
+	     cd ${workdir}
+             ${LN} -sf ${obs_file} ./${gsiobsfile[$ii]}
 	  else
-             echo "Source obs file ${srcobsfile[$ii]} not found, skipping ${gsiobsfile[$ii]}"
+             echo "Source obs file ${srcobsfile[$ii]} not found, skipping ${gsiobsfile[$ii]} data"
           fi
 	else
 	  echo "${srctarfile[$ii]} not found, skipping ${gisobsfile[$ii]} data"
 	fi
+	cd ${workdir}
         (( ii += 1 ))
      done
   fi

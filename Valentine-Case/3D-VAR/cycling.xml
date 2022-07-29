@@ -417,6 +417,10 @@
       <value>&IF_ONEOB;</value>
     </envar>
     <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
       <name>INPUT_DATAROOT</name>
       <value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
@@ -495,6 +499,10 @@
     <envar>
       <name>IF_ONEOB</name>
       <value>&IF_ONEOB;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
     </envar>
     <envar>
       <name>INPUT_DATAROOT</name>
