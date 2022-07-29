@@ -77,7 +77,7 @@ fi
 # Options below are defined in cycling.xml (case insensitive)
 #
 # MAX_DOM       = INT   : GSI analyzes the domain d0${dmn} for dmn -le ${MAX_DOM}
-# IF_FIRST_ANAL = Yes   : GSI analyzes wrfinput_d0${dmn} file instead
+# IF_COLD_START = Yes   : GSI analyzes wrfinput_d0${dmn} file instead
 #                         of wrfout_d0${dmn} file to start first DA cycle
 # IF_SATRAD     = Yes   : GSI uses conventional data from prepbufr,
 #                         satellite radiances, gpsro and radar data
@@ -99,8 +99,8 @@ if [ ! ${MAX_DOM} ]; then
   exit 1
 fi
 
-if [[ ${IF_FIRST_ANAL} != ${YES} && ${IF_FIRST_ANAL} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_FIRST_ANAL must equal 'Yes' or 'No' (case insensitive)"
+if [[ ${IF_COLD_START} != ${YES} && ${IF_COLD_START} != ${NO} ]]; then
+  ${ECHO} "ERROR: \$IF_COLD_START must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
@@ -158,7 +158,7 @@ fi
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
 #                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Analysis time named directory for input data, containing
-#                  subdirectories obs, bkg, gfsens, wrfprd, realprd, wpsprd
+#                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 # MPIRUN         = MPI Command to execute GSI
 #
 # Below variables are derived by cycling.xml variables for convenience
@@ -250,7 +250,7 @@ if [ ! -d "${OBS_ROOT}" ]; then
   exit 1
 fi
 
-if [[ ${IF_FIRST_ANAL} = ${NO} ]]; then
+if [[ ${IF_COLD_START} = ${NO} ]]; then
   # the background directory must be defined from the last cycle after first analysis
   if [ ! -d "${BKG_ROOT}" ]; then
     echo "ERROR: \$BKG_ROOT directory '${BKG_ROOT}' does not exist!"
@@ -523,7 +523,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   #####################################################
 
 
-  if [[ ${IF_FIRST_ANAL} = ${YES} ]]; then
+  if [[ ${IF_COLD_START} = ${YES} ]]; then
     BKG_FILE=${INPUT_DATAROOT}/realprd/wrfinput_d0${dmn}
   else
     BKG_FILE=${WRFDA_ROOT}/lower_bdy_update/wrfout_d0${dmn}_${DATE_STR}
@@ -670,7 +670,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   #####################################################
   # Print run parameters
   ${ECHO}
-  ${ECHO} "IF_FIRST_ANAL  = ${IF_FIRST_ANAL}"
+  ${ECHO} "IF_COLD_START  = ${IF_COLD_START}"
   ${ECHO} "IF_SATRAD      = ${IF_SATRAD}"
   ${ECHO} "IF_OBSERVER    = ${IF_OBSERVER}"
   ${ECHO} "NO_MEMBER      = ${NO_MEMBER}"

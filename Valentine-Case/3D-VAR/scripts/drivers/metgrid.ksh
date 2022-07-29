@@ -172,9 +172,9 @@ fi
 #
 # WPS_ROOT       = Root directory of a "clean" WPS build
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
-#                  grib data, geogrid data, etc.
+#                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
-#                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd
+#                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 # MPIRUN         = MPI Command to execute METGRID
 #
 #####################################################

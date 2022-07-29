@@ -126,7 +126,7 @@ fi
 # START_TIME = Simulation start time in YYMMDDHH
 # MAX_WRF_DOM = Max number of domains to use in namelist settings
 # MAX_GSI_DOM = Number of domains GSI analyzes when cycling
-# IF_CYCLING = Yes / No: whether to use ICs from GSI analysis or real.exe, case insensitive
+# IF_CYCLING = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis or real.exe, case insensitive
 #
 #####################################################
 
@@ -188,9 +188,9 @@ fi
 # WRF_ROOT       = Root directory of a "clean" WRF build WRF/run directory
 # WRF_PROC       = The total number of processes to run WRF with MPI
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
-#                  grib data, geogrid data, etc.
+#                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
-#                  subdirectories obs, bkg, gfsens, wpsprd, realprd, wrfprd, gsiprd
+#                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 # MPIRUN         = MPI Command to execute WRF
 #
 #####################################################
