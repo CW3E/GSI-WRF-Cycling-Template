@@ -247,8 +247,6 @@ fi
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# OBS_ROOT       = Diretory to which obs are un-tared at the begining of the cycle
-# OBS_SRC        = Directory from which obs tar files are obtained
 # WORK_ROOT      = Working directory where UNGRIB_EXE runs and outputs
 # WPS_DAT_FILES  = All file contents of clean WPS directory
 #                  namelists and input data will be linked from other sources
@@ -257,24 +255,6 @@ fi
 # GRIB_DATAROOT  = Path to the raw data to be processed
 #
 #####################################################
-
-# prep the obs directory for future tasks
-OBS_ROOT=${INPUT_DATAROOT}/obs
-OBS_SRC=${STATIC_DATA}/obs_data
-OBS_DATE=`echo $START_TIME | cut -c1-8`
-OBS_HH=`echo $START_TIME | cut -c9-10`
-
-cd ${OBS_SRC}
-${TAR} -xvf prepbufr.${OBS_DATE}.nr.tar.gz
-PREPBUFR=${OBS_SRC}/${OBS_DATE}.nr/prepbufr.gdas.${OBS_DATE}.t${OBS_HH}z.nr
-if [ ! -r ${PREPBUFR} ]; then
-  ${ECHO} "ERROR: ${PREPBUFR} does not exist, or is not readable"
-  exit 1
-fi
-
-${MKDIR} -p ${OBS_ROOT}
-cd ${OBS_ROOT}
-${LN} -sf ${PREPBUFR} ./
 
 WORK_ROOT=${INPUT_DATAROOT}/wpsprd
 ${MKDIR} -p ${WORK_ROOT}

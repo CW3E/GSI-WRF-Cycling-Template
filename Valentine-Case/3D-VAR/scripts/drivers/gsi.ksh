@@ -383,7 +383,11 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 	if [ -r "${tar_file}" ]; then
 	  cd ${OBS_ROOT}
 	  ${TAR} -xvf `${BASENAME} ${tar_file}`
-	  obs_file=${OBS_ROOT}/${ANAL_DATE}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${HH}z.${ANAL_DATE}.bufr
+	  if [[ ${srcobsfile[$ii]} = "satwnd" ]]; then
+	    obs_file=${OBS_ROOT}/${ANAL_DATE}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${HH}z.${ANAL_DATE}.txt
+	  else
+	    obs_file=${OBS_ROOT}/${ANAL_DATE}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${HH}z.${ANAL_DATE}.bufr
+	  fi
           if [ -r "${obs_file}" ]; then
              echo "link source obs file ${obs_file}"
 	     cd ${workdir}
