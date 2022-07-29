@@ -196,6 +196,9 @@ fi
 start_time=`${DATE} -d "${start_time}"`
 end_time=`${DATE} -d "${start_time} ${FCST_LENGTH} hours"`
 
+# define date string wihtout HH
+START_DATE=`echo $START_TIME | cut -c1-8`
+
 if [ ! ${MAX_DOM} ]; then
   ${ECHO} "ERROR: \$MAX_DOM is not defined!"
   exit 1
@@ -317,7 +320,7 @@ if [ -z `${LS} -A ${GRIB_DATAROOT}`]; then
 fi
 
 # link the grib data to the working directory
-./link_grib.csh ${GRIB_DATAROOT}/*
+./link_grib.csh ${GRIB_DATAROOT}/${START_DATE}/gfs.0p25.${START_TIME}.f*
 
 #####################################################
 #  Build WPS namelist

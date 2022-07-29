@@ -326,30 +326,30 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
      srctarfile[7]=${OBS_ROO}/esmhs.${ANAL_DATE}.tar.gz
      srcobsfile[7]=${OBS_ROOT}/${ANAL_DATE}.esmhs/gdas.esmhs.t${HH}z.${ANAL_DATE}.bufr
      gsiobsfile[7]=mhsbufrears
-     srctarfile[8]=${OBS_ROO}/gome.${ANAL_DATE}.tar.gz
-     srcobsfile[8]=${OBS_ROOT}/${ANAL_DATE}.gome/gdas.gome.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[8]=gomebufr
-     srctarfile[9]=${OBS_ROO}/gpsro.${ANAL_DATE}.tar.gz
-     srcobsfile[9]=${OBS_ROOT}/${ANAL_DATE}.gpsro/gdas.gpsro.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[9]=gpsrobufr
-     srctarfile[10]=${OBS_ROO}/mtiasi.${ANAL_DATE}.tar.gz
-     srcobsfile[10]=${OBS_ROOT}/${ANAL_DATE}.iasidb/gdas.mtiasi.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[10]=iasibufr
-     srctarfile[11]=${OBS_ROO}/osbuv8.${ANAL_DATE}.tar.gz
-     srcobsfile[11]=${OBS_ROOT}/${ANAL_DATE}.osbuv8/gdas.osbuv8.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[11]=sbuvbufr
-     srctarfile[12]=${OBS_ROO}/satwnd.${ANAL_DATE}.tar.gz
-     srcobsfile[12]=${OBS_ROOT}/${ANAL_DATE}.satwnd/gdas.satwnd.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[12]=satwndbufr
-     srctarfile[13]=${OBS_ROO}/ssmisu.${ANAL_DATE}.tar.gz
-     srcobsfile[13]=${OBS_ROOT}/${ANAL_DATE}.ssmisu/gdas.ssmisu.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[13]=ssmirrbufr
-     srctarfile[14]=${OBS_ROO}/sevcsr.${ANAL_DATE}.tar.gz
-     srcobsfile[14]=${OBS_ROOT}/${ANAL_DATE}.sevcsr/gdas.sevcsr.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[14]=seviribufr
-     srctarfile[15]=${OBS_ROO}/geoimr.${ANAL_DATE}.tar.gz
-     srcobsfile[15]=${OBS_ROOT}/${ANAL_DATE}.geoimr/gdas.geoimr.t${HH}z.${ANAL_DATE}.bufr
-     gsiobsfile[15]=gimgrbufr
+     srctarfile[8]=${OBS_ROO}/geoimr.${ANAL_DATE}.tar.gz
+     srcobsfile[8]=${OBS_ROOT}/${ANAL_DATE}.geoimr/gdas.geoimr.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[8]=gimgrbufr
+     srctarfile[9]=${OBS_ROO}/gome.${ANAL_DATE}.tar.gz
+     srcobsfile[9]=${OBS_ROOT}/${ANAL_DATE}.gome/gdas.gome.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[9]=gomebufr
+     srctarfile[10]=${OBS_ROO}/gpsro.${ANAL_DATE}.tar.gz
+     srcobsfile[10]=${OBS_ROOT}/${ANAL_DATE}.gpsro/gdas.gpsro.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[10]=gpsrobufr
+     srctarfile[11]=${OBS_ROO}/mtiasi.${ANAL_DATE}.tar.gz
+     srcobsfile[11]=${OBS_ROOT}/${ANAL_DATE}.iasidb/gdas.mtiasi.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[11]=iasibufr
+     srctarfile[12]=${OBS_ROO}/osbuv8.${ANAL_DATE}.tar.gz
+     srcobsfile[12]=${OBS_ROOT}/${ANAL_DATE}.osbuv8/gdas.osbuv8.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[12]=sbuvbufr
+     srctarfile[13]=${OBS_ROO}/satwnd.${ANAL_DATE}.tar.gz
+     srcobsfile[13]=${OBS_ROOT}/${ANAL_DATE}.satwnd/gdas.satwnd.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[13]=satwndbufr
+     srctarfile[14]=${OBS_ROO}/ssmisu.${ANAL_DATE}.tar.gz
+     srcobsfile[14]=${OBS_ROOT}/${ANAL_DATE}.ssmisu/gdas.ssmisu.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[14]=ssmirrbufr
+     srctarfile[15]=${OBS_ROO}/sevcsr.${ANAL_DATE}.tar.gz
+     srcobsfile[15]=${OBS_ROOT}/${ANAL_DATE}.sevcsr/gdas.sevcsr.t${HH}z.${ANAL_DATE}.bufr
+     gsiobsfile[15]=seviribufr
 
      while [[ $ii -le 15 ]]; do
 	if [ -r "${srctarfile[$ii]}" ]; then
@@ -357,7 +357,11 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
           if [ -r "${srcobsfile[$ii]}" ]; then
              echo "link source obs file ${srcobsfile[$ii]}"
              ln -s ${srcobsfile[$ii]}  ${gsiobsfile[$ii]}
+	  else
+             echo "Source obs file ${srcobsfile[$ii]} not found, skipping ${gsiobsfile[$ii]}"
           fi
+	else
+	  echo "${srctarfile[$ii]} not found, skipping ${gisobsfile[$ii]} data"
 	fi
         (( ii += 1 ))
      done
