@@ -319,7 +319,7 @@ if [[ ${IF_CYCLING} = ${YES} ]]; then
 else
   # Link the wrfbdy_d01 file from real.exe
   real_outname=${INPUT_DATAROOT}/realprd/wrfbdy_d01
-  ${LN} -sf ${real_outname} ./wrfbdy_01
+  ${LN} -sf ${real_outname} ./wrfbdy_d01
   if [ ! -r ${WORK_ROOT}/wrfbdy_d01 ]; then
     ${ECHO} "ERROR: ${WORK_ROOT}/wrfbdy_d01 does not exist, or is not readable, check source in ${real_outname}"
     exit 1

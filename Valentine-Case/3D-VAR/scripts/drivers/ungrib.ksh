@@ -162,11 +162,13 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# FCST_LENGTH   = Total length of WRF forecast simulation in HH
-# DATA_INTERVAL = Interval of input data in HH
-# START_TIME    = Simulation start time in YYMMDDHH
-# MAX_DOM       = Max number of domains to use in namelist settings
-# IF_ECMWF_ML   = "Yes" or "No" switch to compute ECMWF coefficients for
+# FCST_LENGTH    = Total length of WRF forecast simulation in HH
+# DATA_INTERVAL  = Interval of input data in HH
+# START_TIME     = Simulation start time in YYMMDDHH
+# BKG_START_TIME = Background simulation start time in YYMMDDHH
+# BKG_FCST_HH    = Simulation start time in YYMMDDHH
+# MAX_DOM        = Max number of domains to use in namelist settings
+# IF_ECMWF_ML    = "Yes" or "No" switch to compute ECMWF coefficients for
 #                  initializing with model level data, case insensitive
 #
 #####################################################

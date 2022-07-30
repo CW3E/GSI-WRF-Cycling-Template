@@ -331,8 +331,8 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
      srcobsfile=()
      gsiobsfile=()
 
-     #srcobsfile+=("1bamua")
-     #gsiobsfile+=("amsuabufr")
+     srcobsfile+=("1bamua")
+     gsiobsfile+=("amsuabufr")
 
      #srcobsfile+=("1bhrs4")
      #gsiobsfile+=("hirs4bufr")
