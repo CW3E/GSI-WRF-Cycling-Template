@@ -37,7 +37,7 @@
   <!ENTITY CYCLE_END           "201902091200">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY SECOND_CYCLE        "201902090600">
-  <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without any GSI or WRFDA analysis updates -->
+  <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without GSI or WRFDA analysis updates -->
   <!ENTITY COLD_START_MODE     "No"> <!-- Set to "Yes" to make every GSI analysis from real.exe outputs -->
   <!-- END CYCLING SETTINGS -->
 
