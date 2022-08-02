@@ -65,11 +65,6 @@
   <!ENTITY NIO_GROUPS          "4"> 
   <!-- END WRF SETTINGS -->
 
-  <!-- WRFDA SETTINGS -->
-  <!ENTITY LOWER               "Yes"> <!-- setting for lower boundary update setting IF_LOWER -->
-  <!ENTITY LATERAL             "No"> <!-- setting for lateral boundary update setting IF_LOWER -->
-  <!-- END WRFDA SETTINGS -->
-
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
   <!ENTITY MAX_GSI_DOM         "2">
@@ -333,7 +328,7 @@
     </envar>
     <envar>
       <name>IF_LOWER</name>
-      <value>&LOWER;</value>
+      <value>Yes</value>
     </envar>
     <envar>
       <name>ANAL_TIME</name>
@@ -562,7 +557,7 @@
     </envar>
     <envar>
       <name>IF_LOWER</name>
-      <value>&LATERAL;</value>
+      <value>No</value>
     </envar>
     <envar>
       <name>ANAL_TIME</name>
