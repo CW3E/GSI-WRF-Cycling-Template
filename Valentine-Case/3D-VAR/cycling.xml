@@ -142,7 +142,7 @@
     </envar>
     <envar>
       <name>START_TIME</name>
-      <value><cyclestr>@Ym@d@H</cyclestr></value>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
       <name>BKG_START_TIME</name>
