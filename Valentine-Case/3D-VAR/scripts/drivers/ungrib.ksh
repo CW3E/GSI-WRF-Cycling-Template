@@ -166,7 +166,6 @@ fi
 # DATA_INTERVAL  = Interval of input data in HH
 # START_TIME     = Simulation start time in YYMMDDHH
 # BKG_START_TIME = Background simulation start time in YYMMDDHH
-# BKG_FCST_HH    = Simulation start time in YYMMDDHH
 # MAX_DOM        = Max number of domains to use in namelist settings
 # IF_ECMWF_ML    = "Yes" or "No" switch to compute ECMWF coefficients for
 #                  initializing with model level data, case insensitive
@@ -188,6 +187,11 @@ if [ ! "${START_TIME}" ]; then
   exit 1
 fi
 
+if [ ! "${BKG_START_TIME}" ]; then
+  ${ECHO} "ERROR: \$BKG_START_TIME is not defined!"
+  exit 1
+fi
+
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
 if [ `${ECHO} "${START_TIME}" | ${AWK} '/^[[:digit:]]{10}$/'` ]; then
   start_time=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
@@ -198,8 +202,11 @@ fi
 start_time=`${DATE} -d "${start_time}"`
 end_time=`${DATE} -d "${start_time} ${FCST_LENGTH} hours"`
 
-# define date string wihtout HH
+# define START_TIME date string wihtout HH
 START_DATE=`echo $START_TIME | cut -c1-8`
+
+# define BKG_START_TIME date string wihtout HH
+BKG_START_DATE=`echo $BKG_START_TIME | cut -c1-8`
 
 if [ ! ${MAX_DOM} ]; then
   ${ECHO} "ERROR: \$MAX_DOM is not defined!"
@@ -302,7 +309,7 @@ if [ -z `${LS} -A ${GRIB_DATAROOT}`]; then
 fi
 
 # link the grib data to the working directory
-./link_grib.csh ${GRIB_DATAROOT}/${START_DATE}/gfs.0p25.${START_TIME}.f*
+./link_grib.csh ${GRIB_DATAROOT}/${BKG_START_DATE}/gfs.0p25.${BKG_START_TIME}.f*
 
 #####################################################
 #  Build WPS namelist

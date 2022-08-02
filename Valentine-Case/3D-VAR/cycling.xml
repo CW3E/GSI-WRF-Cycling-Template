@@ -34,11 +34,11 @@
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902090000">
-  <!ENTITY CYCLE_END           "201902090600">
+  <!ENTITY CYCLE_END           "201902091200">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY SECOND_CYCLE        "201902090600">
+  <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without any GSI or WRFDA analysis updates -->
   <!ENTITY COLD_START_MODE     "No"> <!-- Set to "Yes" to make every GSI analysis from real.exe outputs -->
-  <!ENTITY DA_MODE             "No"> <!-- Set to "No" to run WRF on cycle without any GSI or WRFDA analysis updates -->
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
@@ -152,10 +152,6 @@
     <envar>
       <name>BKG_START_TIME</name>
       <value><cyclestr cycle_offset="-&CYCLE_INTV;">@Y@m@d@H</cyclestr></value>
-    </envar>
-    <envar>
-      <name>BKG_FCST_HH</name>
-      <value>&CYCLE_INTV;</value>
     </envar>
     <envar>
       <name>FCST_LENGTH</name>
