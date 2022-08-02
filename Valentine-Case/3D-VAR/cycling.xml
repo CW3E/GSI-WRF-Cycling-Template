@@ -146,7 +146,7 @@
     </envar>
     <envar>
       <name>BKG_START_TIME</name>
-      <value><cyclestr cycle_offset="-&CYCLE_INTV;">@Y@m@d@H</cyclestr></value>
+      <value><cyclestr offset="-&CYCLE_INTV;">@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
       <name>FCST_LENGTH</name>
