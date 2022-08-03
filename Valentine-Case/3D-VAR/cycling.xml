@@ -38,7 +38,7 @@
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY SECOND_CYCLE        "201902090600">
   <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without GSI or WRFDA analysis updates -->
-  <!ENTITY COLD_START_MODE     "Yes"> <!-- Set to "Yes" to make every GSI analysis from real.exe outputs -->
+  <!ENTITY COLD_START_MODE     "No"> <!-- Set to "Yes" to make every GSI analysis from real.exe outputs -->
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
@@ -57,7 +57,7 @@
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY MAX_WRF_DOM         "2">
-  <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
+  <!ENTITY FCST_LENGTH         "12"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "03"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY IF_SST_UPDATE       "Yes"> <!-- This setting is applied to both WRF and real.exe runs -->
@@ -358,7 +358,7 @@
     </dependency>
   </task>
 
-  <task name="gsi_cold_start_Yes" maxtries="1" cycledefs="first_cycle">
+  <task name="gsi_cold_start_yes" maxtries="1" cycledefs="first_cycle">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
@@ -587,6 +587,7 @@
       <and>
 	<streq><left>&DA_MODE;</left><right>Yes</right></streq>
         <or>
+          <taskdep task="gsi_cold_start_yes" state="SUCCEEDED"/>
           <taskdep task="gsi_cold_start_Yes" state="SUCCEEDED"/>
           <taskdep task="gsi_cold_start_No" state="SUCCEEDED"/>
         </or>
