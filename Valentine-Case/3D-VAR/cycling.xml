@@ -587,8 +587,8 @@
       <and>
 	<streq><left>&DA_MODE;</left><right>Yes</right></streq>
         <or>
-          <taskdep task="gsi" state="SUCCEEDED"/>
-          <taskdep task="first_gsi" state="SUCCEEDED"/>
+          <taskdep task="gsi_cold_start_Yes" state="SUCCEEDED"/>
+          <taskdep task="gsi_cold_start_No" state="SUCCEEDED"/>
         </or>
       </and>
     </dependency>
