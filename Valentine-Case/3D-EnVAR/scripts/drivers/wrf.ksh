@@ -120,6 +120,7 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
+# ENS_N       = Ensemble index (00 for control)
 # FCST_LENGTH = Total length of WRF forecast simulation in HH
 # FCST_INTERVAL = Interval of wrfout.d01 in HH
 # DATA_INTERVAL = Interval of input data in HH
@@ -129,6 +130,14 @@ fi
 # IF_CYCLING = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis or real.exe, case insensitive
 #
 #####################################################
+
+if [ ! "${ENS_N}" ]; then
+  echo "ERROR: \$N_ENSE is not defined!"
+  exit 1
+fi
+
+# ensure padding to two digits is included
+ens_n=`printf %02d ${ENS_N}`
 
 if [ ! ${FCST_LENGTH} ]; then
   ${ECHO} "ERROR: \$FCST_LENGTH is not defined!"
@@ -243,7 +252,7 @@ fi
 #
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/wrfprd
+WORK_ROOT=${INPUT_DATAROOT}/wrfprd/ens_${ens_n}
 set -A WRF_DAT_FILES ${WRF_ROOT}/run/*
 WRF_EXE=${WRF_ROOT}/main/wrf.exe
 
@@ -482,10 +491,10 @@ if [[ ${IF_CYCLING} = ${YES} ]]; then
   # ensure that the cycle_io/date/bkg directory exists for starting next cycle
   cycle_intv=`${DATE} +%H -d "${CYCLE_INTV}"`
   datestr=`${DATE} +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
-  new_bkg=${datestr}/bkg
+  new_bkg=${datestr}/bkg/ens_${ens_n}
   ${MKDIR} -p ../../${new_bkg}
 else
-  current_bkg=${INPUT_DATAROOT}/bkg
+  current_bkg=${INPUT_DATAROOT}/bkg/ens_${ens_n}
   ${MKDIR} -p ${current_bkg}
 fi
 

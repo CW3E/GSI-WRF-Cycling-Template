@@ -162,7 +162,8 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ENS_N          = Ensemble ID index, 0 for control, i > 0 for perturbation
+# BKG_DATA       = String case variable for supported inputs: GFS, GEFS currently
+# ENS_N          = Ensemble ID index, 00 for control, i > 0 for perturbation
 # FCST_LENGTH    = Total length of WRF forecast simulation in HH
 # DATA_INTERVAL  = Interval of input data in HH
 # START_TIME     = Simulation start time in YYMMDDHH
@@ -173,10 +174,23 @@ fi
 #
 #####################################################
 
+if [ ! "${BKG_DATA}"  ]; then
+  ${ECHO} "ERROR: \$BKG_DATA is not defined"
+  exit 1
+fi
+
+if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
+  ${ECHO} "ERROR: \${BKG_DATA} must equal \"GFS\" or \"GEFS\" as currently supported inputs."
+  exit 1
+fi
+
 if [ ! "${ENS_N}"  ]; then
   ${ECHO} "ERROR: \$ENS_N is not defined"
   exit 1
 fi
+
+# ensure padding to two digits is included
+ens_n=`printf %02d ${ENS_N}`
 
 if [ ! "${FCST_LENGTH}" ]; then
   ${ECHO} "ERROR: \$FCST_LENGTH is not defined"
@@ -209,10 +223,10 @@ start_time=`${DATE} -d "${start_time}"`
 end_time=`${DATE} -d "${start_time} ${FCST_LENGTH} hours"`
 
 # define START_TIME date string wihtout HH
-START_DATE=`echo $START_TIME | cut -c1-8`
+START_DATE=`${ECHO} $START_TIME | cut -c1-8`
 
 # define BKG_START_TIME date string wihtout HH
-BKG_START_DATE=`echo $BKG_START_TIME | cut -c1-8`
+BKG_START_DATE=`${ECHO} $BKG_START_TIME | cut -c1-8`
 
 if [ ! ${MAX_DOM} ]; then
   ${ECHO} "ERROR: \$MAX_DOM is not defined!"
@@ -271,7 +285,7 @@ fi
 #
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/wpsprd/ens_${ENS_N}
+WORK_ROOT=${INPUT_DATAROOT}/wpsprd/ens_${ens_n}
 ${MKDIR} -p ${WORK_ROOT}
 cd ${WORK_ROOT}
 
@@ -314,15 +328,23 @@ if [ -z `${LS} -A ${GRIB_DATAROOT}`]; then
   exit 1
 fi
 
+link_cmnd="./link_grib.csh ${GRIB_DATAROOT}/${BKG_START_DATE}"
 # link the grib data to the working directory
-if [ ${ENS_N} = "00" ]; then
-  # 00 perturbation is the control forecast
-  fnames="gec${ENS_N}.t${BKG_START_TIME}z.pgrb2af*"
-else
-  # all other are control forecast perturbations
-  fnames="gep${ENS_N}.t${BKG_START_TIME}z.pgrb2af*"
+if [ ${BKG_DATA} = "GFS"]; then
+  # GFS has single control trajectory
+  fnames="gfs.0p25.${BKG_START_TIME}.f*"
+elif [ ${BKG_DATA} = "GEFS"]; then
+  if [ ${ens_n} = "00" ]; then
+    # 00 perturbation is the control forecast
+    fnames="gec${ens_n}.t${BKG_START_TIME}z.pgrb2af*"
+  else
+    # all other are control forecast perturbations
+    fnames="gep${ens_n}.t${BKG_START_TIME}z.pgrb2af*"
+  fi
 fi
-./link_grib.csh ${GRIB_DATAROOT}/${BKG_START_DATE}/${fnames}
+
+# link gribbed forecast data
+`${link_comdand}/${fnames}`
 
 #####################################################
 #  Build WPS namelist
@@ -351,6 +373,7 @@ ${MV} namelist.wps.new namelist.wps
 #####################################################
 # Print run parameters
 ${ECHO}
+${ECHO} "BKG_DATA       = ${BKG_DATA}"
 ${ECHO} "ENS_N          = ${ENS_N}"
 ${ECHO} "WPS_ROOT       = ${WPS_ROOT}"
 ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
@@ -392,7 +415,7 @@ fcst=0
 while [ ${fcst} -le ${FCST_LENGTH} ]; do
   filename=FILE:`${DATE} +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
   if [ ! -s ${filename} ]; then
-    echo "ERROR: ${filename} is missing"
+    ${ECHO} "ERROR: ${filename} is missing"
     exit 1
   fi
   (( fcst += DATA_INTERVAL ))
@@ -408,7 +431,7 @@ if [[ ${IF_ECMWF_ML} = ${YES} ]]; then
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
     filename=PRES:`${DATE} +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
     if [ ! -s ${filename} ]; then
-      echo "ERROR: ${filename} is missing"
+      ${ECHO} "ERROR: ${filename} is missing"
       exit 1
     fi
     (( fcst += DATA_INTERVAL ))

@@ -126,7 +126,7 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ENS_N         = Ensemble ID index, 0 for control, i > 0 for perturbation
+# ENS_N         = Ensemble ID index, 00 for control, i > 0 for perturbation
 # FCST_LENGTH   = Total length of WRF forecast simulation in HH
 # DATA_INTERVAL = Interval of input data in HH
 # START_TIME    = Simulation start time in YYMMDDHH
@@ -140,6 +140,10 @@ if [ ! "${ENS_N}"  ]; then
   ${ECHO} "ERROR: \$ENS_N is not defined"
   exit 1
 fi
+
+# ensure padding to two digits is included
+ens_n=`printf %02d ${ENS_N}`
+
 
 if [ ! "${FCST_LENGTH}" ]; then
   ${ECHO} "ERROR: \$FCST_LENGTH is not defined"
@@ -222,7 +226,7 @@ if [ ! -d ${INPUT_DATAROOT} ]; then
 fi
 
 if [ ! "${MPIRUN}" ]; then
-  echo "ERROR: \$MPIRUN is not defined!"
+  ${ECHO} "ERROR: \$MPIRUN is not defined!"
   exit 1
 fi
 
@@ -239,7 +243,7 @@ fi
 #
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/realprd/ens_${ENS_N}
+WORK_ROOT=${INPUT_DATAROOT}/realprd/ens_${ens_n}
 set -A WRF_DAT_FILES ${WRF_ROOT}/run/*
 REAL_EXE=${WRF_ROOT}/main/real.exe
 
@@ -270,7 +274,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     time_str=`${DATE} "+%Y-%m-%d_%H:%M:%S" -d "${START_TIME} ${fcst} hours"`
     realinput_name=${real_prefix}.d0${dmn}.${time_str}${real_suffix}
     if [ ! -r "${INPUT_DATAROOT}/wpsprd/${realinput_name}" ]; then
-      echo "ERROR: Input file '${INPUT_DATAROOT}/${realinput_name}' is missing"
+      ${ECHO} "ERROR: Input file '${INPUT_DATAROOT}/${realinput_name}' is missing"
       exit 1
     fi
     ${LN} -sf ${INPUT_DATAROOT}/wpsprd/${realinput_name} ./

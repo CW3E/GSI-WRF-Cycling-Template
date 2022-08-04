@@ -399,7 +399,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
      srcobsfile+=("gpsro")
      gsiobsfile+=("gpsrobufr")
 
-     # available, not tested
+     # tested
      srcobsfile+=("mtiasi")
      gsiobsfile+=("iasibufr")
 

@@ -63,6 +63,7 @@ fi
 # Options below are defined in cycling.xml
 #
 # ANAL_TIME     = Analysis time YYYYMMDDHH
+# N_ENS         = Max ensemble index (use 00 for control alone)
 # IF_LOWER      = 'Yes' if updating lower boundary conditions 
 #                 'No' if updating lateral boundary conditions
 # MAX_DOM       = Max number of domains to update lower boundary conditions 
@@ -77,6 +78,11 @@ fi
 
 if [ ! "${ANAL_TIME}" ]; then
   echo "ERROR: \$ANAL_TIME is not defined!"
+  exit 1
+fi
+
+if [ ! "${N_ENS}" ]; then
+  echo "ERROR: \$N_ENSE is not defined!"
   exit 1
 fi
 
@@ -139,222 +145,245 @@ fi
 # The following paths are relative to cycling.xml supplied root paths
 #
 # WORK_ROOT      = Working directory where da_update_bc.exe runs and outputs updated files
-# GSI_DIR        = Working directory where GSI runs and outputs analysis files for the current cycle
+# GSI_DIR        = Working directory where GSI produces control analysis in the current cycle
+# ENKF_DIR       = Working directory where EnKF produces the analysis ensemble perturbations
 # REAL_DIR       = Working directory real.exe runs and outputs IC and BC files for the current cycle
 # BKG_DIR        = Working directory with forecast data from WRF linked for the current cycle
 # UPDATE_BC_EXE  = Path and name of the update executable
 #
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/wrfdaprd
-GSI_DIR=${INPUT_DATAROOT}/gsiprd
-REAL_DIR=${INPUT_DATAROOT}/realprd
-BKG_DIR=${INPUT_DATAROOT}/bkg
-UPDATE_BC_EXE=${WRFDA_ROOT}/var/da/da_update_bc.exe
+ens_n=0
 
-if [[ ${IF_LOWER} = ${NO} ]]; then
-  if [ ! -d ${GSI_DIR} ]; then
-    ${ECHO} "ERROR: \$GSI_DIR directory ${GSI_DIR} does not exist"
-    exit 1
-  fi
-fi
+while [ ${ens_n} -le ${N_ENS} ]; do
+  # define two zero padded string for GEFS 
+  iimem=`printf %02d ${ens_n}`
 
-if [ ! -d ${REAL_DIR} ]; then
-  ${ECHO} "ERROR: \$REAL_DIR directory ${REAL_DIR} does not exist"
-  exit 1
-fi
-
-if [[ ${IF_LOWER} = ${YES} ]]; then
-  if [ ! -d ${BKG_DIR} ]; then
-    ${ECHO} "ERROR: \$BKG_DIR directory ${INPUT_DATAROOT} does not exist"
-    exit 1
-  fi
-fi
-
-if [ ! -x ${UPDATE_BC_EXE} ]; then
-  ${ECHO} "ERROR: ${UPDATE_BC_EXE} does not exist, or is not executable"
-  exit 1
-fi
-
-# create working directory and cd into it
-${MKDIR} -p ${WORK_ROOT}
-cd ${WORK_ROOT}
-
-# Remove IC/BC in the directory if old data present
-${RM} -f wrfout_*
-${RM} -f wrfinput_d0*
-${RM} -f wrfbdy_d01
-
-# define domain variable to iterate on in lower boundary, fixed in lateral
-dmn=1
-
-if [[ ${IF_LOWER} = ${YES} ]]; then 
-  # Check to make sure the input files are available and copy them
-  while [ ${dmn} -le ${MAX_DOM} ]; do
-    wrfout=wrfout_d0${dmn}_${DATE_STR}
-    wrfinput=wrfinput_d0${dmn}
-
-    if [ ! -r "${BKG_DIR}/${wrfout}" ]; then
-      echo "ERROR: Input file '${wrfout}' is missing"
-      exit 1
-    else
-      ${CP} ${BKG_DIR}/${wrfout} ./
-    fi
-
-    if [ ! -r "${REAL_DIR}/${wrfnput}" ]; then
-      echo "ERROR: Input file '${wrfinput}' is missing"
-      exit 1
-    else
-      ${CP} ${REAL_DIR}/${wrfinput} ./
-    fi
-
-    #####################################################
-    #  Build da_update_bc namelist
-    #####################################################
-    # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-    ${CP} ${STATIC_DATA}/namelists/parame.in ./
-
-    # Update the namelist for the domain id 
-    ${CAT} parame.in | ${SED} "s/\(${da}_${file}\)${equal}.*/\1 = '\.\/${wrfout}'/" \
-       > parame.in.new
-    ${MV} parame.in.new parame.in
-
-    ${CAT} parame.in | ${SED} "s/\(${wrf}_${input}\)${equal}.*/\1 = '\.\/${wrfinput}'/" \
-       > parame.in.new
-    ${MV} parame.in.new parame.in
-
-    ${CAT} parame.in | ${SED} "s/\(${domain}_${id}\)${equal}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
-       > parame.in.new
-    ${MV} parame.in.new parame.in
-
-    # Update the namelist for lower boundary update 
-    ${CAT} parame.in | ${SED} "s/\(${update}_${low}_${bdy}\)${equal}.*/\1 = \.true\./" \
-       > parame.in.new
-    ${MV} parame.in.new parame.in
-
-    ${CAT} parame.in | ${SED} "s/\(${update}_${lateral}_${bdy}\)${equal}.*/\1 = \.false\./" \
-       > parame.in.new
-    ${MV} parame.in.new parame.in
-
-    #####################################################
-    # Run UPDATE_BC_EXE
-    #####################################################
-    # Print run parameters
-    ${ECHO}
-    ${ECHO} "WRFDA_ROOT     = ${WRFDA_ROOT}"
-    ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
-    ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
-    ${ECHO}
-    ${ECHO} "IF_LOWER       = ${IF_LOWER}"
-    ${ECHO} "DOMAIN         = ${dmn}"
-    ${ECHO}
-    now=`${DATE} +%Y%m%d%H%M%S`
-    ${ECHO} "da_update_bc.exe started at ${now}"
-    ${UPDATE_BC_EXE}
-
-    #####################################################
-    # Run time error check
-    #####################################################
-    error=$?
-    
-    if [ ${error} -ne 0 ]; then
-      ${ECHO} "ERROR: ${UNGRIB} exited with status: ${error}"
-      exit ${error}
-    fi
-
-    # save the files where they can be accessed for GSI analysis
-    lower_bdy_data=${WORK_ROOT}/lower_bdy_update
-    ${MKDIR} -p ${lower_bdy_data}
-    ${MV} ${wrfout} ${lower_bdy_data}/${wrfout}
-    ${MV} ${wrfinput} ${lower_bdy_data}/${wrfinput}
-    ${MV} parame.in ${lower_bdy_data}/parame.in_d0${dmn} 
-
-    # move forward through domains
-    (( dmn += 1 ))
-  done
-
-else
-  wrfanl=${GSI_DIR}/d01/wrfanl.d01_${ANAL_TIME}
-  wrfbdy=${REAL_DIR}/wrfbdy_d01
-  wrfvar_outname=wrfvar_output
-  wrfbdy_name=wrfbdy_d01
-
-  if [ ! -r "${wrfanl}" ]; then
-    echo "ERROR: Input file '${wrfanl}' is missing"
-    exit 1
-  else
-    ${CP} ${wrfanl} ${wrfvar_outname}
-  fi
-
-  if [ ! -r "${wrfbdy}" ]; then
-    echo "ERROR: Input file '${wrfbdy}' is missing"
-    exit 1
-  else
-    ${CP} ${wrfbdy} ${wrfbdy_name} 
-  fi
-
-  #####################################################
-  #  Build da_update_bc namelist
-  #####################################################
-  # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-  ${CP} ${STATIC_DATA}/namelists/parame.in ./
-
-  # Update the namelist for the domain id 
-  ${CAT} parame.in | ${SED} "s/\(${da}_${file}\)${equal}.*/\1 = '\.\/${wrfvar_outname}'/" \
-     > parame.in.new
-  ${MV} parame.in.new parame.in
-
-  ${CAT} parame.in | ${SED} "s/\(${domain}_${id}\)${equal}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
-     > parame.in.new
-  ${MV} parame.in.new parame.in
-
-  # Update the namelist for lower boundary update 
-  ${CAT} parame.in | ${SED} "s/\(${wrf}_${bdy}_${file}\)${equal}.*/\1 = '\.\/${wrfbdy_name}'/" \
-     > parame.in.new
-  ${MV} parame.in.new parame.in
-
-  ${CAT} parame.in | ${SED} "s/\(${update}_${low}_${bdy}\)${equal}.*/\1 = \.false\./" \
-     > parame.in.new
-  ${MV} parame.in.new parame.in
-
-  ${CAT} parame.in | ${SED} "s/\(${update}_${lateral}_${bdy}\)${equal}.*/\1 = \.true\./" \
-     > parame.in.new
-  ${MV} parame.in.new parame.in
-
-  #####################################################
-  # Run UPDATE_BC_EXE
-  #####################################################
-  # Print run parameters
-  ${ECHO}
-  ${ECHO} "WRFDA_ROOT     = ${WRFDA_ROOT}"
-  ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
-  ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
-  ${ECHO}
-  ${ECHO} "IF_LOWER       = ${IF_LOWER}"
-  ${ECHO} "DOMAIN         = ${dmn}"
-  ${ECHO}
-  now=`${DATE} +%Y%m%d%H%M%S`
-  ${ECHO} "da_update_bc.exe started at ${now}"
-  ${UPDATE_BC_EXE}
-
-  #####################################################
-  # Run time error check
-  #####################################################
-  error=$?
+  # define three zero padded string for GSI
+  iiimem=`printf %03d ${ens_n}`
   
-  if [ ${error} -ne 0 ]; then
-    ${ECHO} "ERROR: ${UNGRIB} exited with status: ${error}"
-    exit ${error}
+  WORK_ROOT=${INPUT_DATAROOT}/wrfdaprd/ens_${iimem}
+  GSI_DIR=${INPUT_DATAROOT}/gsiprd/
+  ENKF_DIR=${INPUT_DATAROOT}/enkfprd/
+  REAL_DIR=${INPUT_DATAROOT}/realprd/ens_${iimem}
+  BKG_DIR=${INPUT_DATAROOT}/bkg/ens_${iimem}
+  UPDATE_BC_EXE=${WRFDA_ROOT}/var/da/da_update_bc.exe
+  
+  if [ ! -d ${REAL_DIR} ]; then
+    ${ECHO} "ERROR: \$REAL_DIR directory ${REAL_DIR} does not exist"
+    exit 1
+  fi
+  
+  if [ ! -x ${UPDATE_BC_EXE} ]; then
+    ${ECHO} "ERROR: ${UPDATE_BC_EXE} does not exist, or is not executable"
+    exit 1
+  fi
+  
+  # create working directory and cd into it
+  ${MKDIR} -p ${WORK_ROOT}
+  cd ${WORK_ROOT}
+  
+  # Remove IC/BC in the directory if old data present
+  ${RM} -f wrfout_*
+  ${RM} -f wrfinput_d0*
+  ${RM} -f wrfbdy_d01
+  
+  # define domain variable to iterate on in lower boundary, fixed in lateral
+  dmn=1
+  
+  if [[ ${IF_LOWER} = ${YES} ]]; then 
+
+    if [ ! -d ${BKG_DIR} ]; then
+      ${ECHO} "ERROR: \$BKG_DIR directory ${INPUT_DATAROOT} does not exist"
+      exit 1
+    fi
+
+    # Check to make sure the input files are available and copy them
+    while [ ${dmn} -le ${MAX_DOM} ]; do
+      wrfout=wrfout_d0${dmn}_${DATE_STR}
+      wrfinput=wrfinput_d0${dmn}
+  
+      if [ ! -r "${BKG_DIR}/${wrfout}" ]; then
+        echo "ERROR: Input file '${wrfout}' is missing"
+        exit 1
+      else
+        ${CP} ${BKG_DIR}/${wrfout} ./
+      fi
+  
+      if [ ! -r "${REAL_DIR}/${wrfnput}" ]; then
+        echo "ERROR: Input file '${wrfinput}' is missing"
+        exit 1
+      else
+        ${CP} ${REAL_DIR}/${wrfinput} ./
+      fi
+  
+      #####################################################
+      #  Build da_update_bc namelist
+      #####################################################
+      # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
+      ${CP} ${STATIC_DATA}/namelists/parame.in ./
+  
+      # Update the namelist for the domain id 
+      ${CAT} parame.in | ${SED} "s/\(${da}_${file}\)${equal}.*/\1 = '\.\/${wrfout}'/" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      ${CAT} parame.in | ${SED} "s/\(${wrf}_${input}\)${equal}.*/\1 = '\.\/${wrfinput}'/" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      ${CAT} parame.in | ${SED} "s/\(${domain}_${id}\)${equal}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      # Update the namelist for lower boundary update 
+      ${CAT} parame.in | ${SED} "s/\(${update}_${low}_${bdy}\)${equal}.*/\1 = \.true\./" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      ${CAT} parame.in | ${SED} "s/\(${update}_${lateral}_${bdy}\)${equal}.*/\1 = \.false\./" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      #####################################################
+      # Run UPDATE_BC_EXE
+      #####################################################
+      # Print run parameters
+      ${ECHO}
+      ${ECHO} "ENS_N          = ${iimem}"
+      ${ECHO} "WRFDA_ROOT     = ${WRFDA_ROOT}"
+      ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
+      ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+      ${ECHO}
+      ${ECHO} "IF_LOWER       = ${IF_LOWER}"
+      ${ECHO} "DOMAIN         = ${dmn}"
+      ${ECHO}
+      now=`${DATE} +%Y%m%d%H%M%S`
+      ${ECHO} "da_update_bc.exe started at ${now}"
+      ${UPDATE_BC_EXE}
+  
+      #####################################################
+      # Run time error check
+      #####################################################
+      error=$?
+      
+      if [ ${error} -ne 0 ]; then
+        ${ECHO} "ERROR: ${UNGRIB} exited with status: ${error}"
+        exit ${error}
+      fi
+  
+      # save the files where they can be accessed for GSI analysis
+      lower_bdy_data=${WORK_ROOT}/lower_bdy_update
+      ${MKDIR} -p ${lower_bdy_data}
+      ${MV} ${wrfout} ${lower_bdy_data}/${wrfout}
+      ${MV} ${wrfinput} ${lower_bdy_data}/${wrfinput}
+      ${MV} parame.in ${lower_bdy_data}/parame.in_d0${dmn} 
+  
+      # move forward through domains
+      (( dmn += 1 ))
+    done
+  
+  else
+
+    if [ ! -d ${GSI_DIR} ]; then
+      ${ECHO} "ERROR: \$GSI_DIR directory ${GSI_DIR} does not exist"
+      exit 1
+    fi
+
+    if [ ${ens_n} -eq 0 ]; then
+      wrfanl=${GSI_DIR}/d01/wrfanl.d01_${ANAL_TIME}
+      wrfbdy=${REAL_DIR}/wrfbdy_d01
+      wrfvar_outname=wrfvar_output
+      wrfbdy_name=wrfbdy_d01
+  
+      if [ ! -r "${wrfanl}" ]; then
+        echo "ERROR: Input file '${wrfanl}' is missing"
+        exit 1
+      else
+        ${CP} ${wrfanl} ${wrfvar_outname}
+      fi
+  
+      if [ ! -r "${wrfbdy}" ]; then
+        echo "ERROR: Input file '${wrfbdy}' is missing"
+        exit 1
+      else
+        ${CP} ${wrfbdy} ${wrfbdy_name} 
+      fi
+  
+      #####################################################
+      #  Build da_update_bc namelist
+      #####################################################
+      # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
+      ${CP} ${STATIC_DATA}/namelists/parame.in ./
+  
+      # Update the namelist for the domain id 
+      ${CAT} parame.in | ${SED} "s/\(${da}_${file}\)${equal}.*/\1 = '\.\/${wrfvar_outname}'/" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      ${CAT} parame.in | ${SED} "s/\(${domain}_${id}\)${equal}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      # Update the namelist for lower boundary update 
+      ${CAT} parame.in | ${SED} "s/\(${wrf}_${bdy}_${file}\)${equal}.*/\1 = '\.\/${wrfbdy_name}'/" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      ${CAT} parame.in | ${SED} "s/\(${update}_${low}_${bdy}\)${equal}.*/\1 = \.false\./" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      ${CAT} parame.in | ${SED} "s/\(${update}_${lateral}_${bdy}\)${equal}.*/\1 = \.true\./" \
+         > parame.in.new
+      ${MV} parame.in.new parame.in
+  
+      #####################################################
+      # Run UPDATE_BC_EXE
+      #####################################################
+      # Print run parameters
+      ${ECHO}
+      ${ECHO} "WRFDA_ROOT     = ${WRFDA_ROOT}"
+      ${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
+      ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+      ${ECHO}
+      ${ECHO} "IF_LOWER       = ${IF_LOWER}"
+      ${ECHO} "DOMAIN         = ${dmn}"
+      ${ECHO}
+      now=`${DATE} +%Y%m%d%H%M%S`
+      ${ECHO} "da_update_bc.exe started at ${now}"
+      ${UPDATE_BC_EXE}
+  
+      #####################################################
+      # Run time error check
+      #####################################################
+      error=$?
+      
+      if [ ${error} -ne 0 ]; then
+        ${ECHO} "ERROR: ${UNGRIB} exited with status: ${error}"
+        exit ${error}
+      fi
+  
+      # save the files where they can be accessed for new WRF forecast
+      lateral_bdy_data=${WORK_ROOT}/lateral_bdy_update
+      ${MKDIR} -p ${lateral_bdy_data}
+      ${MV} wrfvar_output ${lateral_bdy_data}/
+      ${MV} wrfbdy_d01 ${lateral_bdy_data}/
+      ${MV} parame.in ${lateral_bdy_data}/parame.in_d0${dmn} 
+      ${MV} fort.* ${lateral_bdy_data}/
+
+    else
+      # NOTE: this section needs revision for EnKF step
+      if [ ! -d ${ENKF_DIR} ]; then
+        ${ECHO} "ERROR: \$ENKF_DIR directory ${ENKF_DIR} does not exist"
+        exit 1
+      fi
+
+
+    fi
   fi
 
-  # save the files where they can be accessed for new WRF forecast
-  lateral_bdy_data=${WORK_ROOT}/lateral_bdy_update
-  ${MKDIR} -p ${lateral_bdy_data}
-  ${MV} wrfvar_output ${lateral_bdy_data}/
-  ${MV} wrfbdy_d01 ${lateral_bdy_data}/
-  ${MV} parame.in ${lateral_bdy_data}/parame.in_d0${dmn} 
-  ${MV} fort.* ${lateral_bdy_data}/
-
-fi
+  (( ens_n += 1 ))
+done
 
 ${ECHO} "wrfda.ksh completed successfully at `${DATE}`"
