@@ -115,7 +115,7 @@
   <!-- END JOB SETTINGS -->
 ]>
 
-<workflow realtime="F" scheduler="&SCHED;" cyclethrottle="31">
+<workflow realtime="F" scheduler="&SCHED;">
   <cycledef group="first_cycle">&CYCLE_START; &CYCLE_START; &CYCLE_INTV;</cycledef>
   <cycledef group="q_daily">&SECOND_CYCLE; &CYCLE_END; &CYCLE_INTV;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
