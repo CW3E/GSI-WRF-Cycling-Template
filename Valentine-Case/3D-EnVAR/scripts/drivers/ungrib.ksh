@@ -222,11 +222,9 @@ fi
 start_time=`${DATE} -d "${start_time}"`
 end_time=`${DATE} -d "${start_time} ${FCST_LENGTH} hours"`
 
-# define START_TIME date string wihtout HH
-START_DATE=`${ECHO} $START_TIME | cut -c1-8`
-
 # define BKG_START_TIME date string wihtout HH
-BKG_START_DATE=`${ECHO} $BKG_START_TIME | cut -c1-8`
+bkg_start_date=`${ECHO} ${BKG_START_TIME} | ${CUT} -c1-8`
+bkg_start_hh=`${ECHO} ${BKG_START_TIME} | ${CUT} -c9-10`
 
 if [ ! ${MAX_DOM} ]; then
   ${ECHO} "ERROR: \$MAX_DOM is not defined!"
@@ -328,23 +326,23 @@ if [ -z `${LS} -A ${GRIB_DATAROOT}`]; then
   exit 1
 fi
 
-link_cmnd="./link_grib.csh ${GRIB_DATAROOT}/${BKG_START_DATE}"
+link_cmnd="./link_grib.csh ${GRIB_DATAROOT}/${bkg_start_date}"
 # link the grib data to the working directory
-if [ ${BKG_DATA} = "GFS"]; then
+if [[ ${BKG_DATA} = "GFS" ]]; then
   # GFS has single control trajectory
   fnames="gfs.0p25.${BKG_START_TIME}.f*"
-elif [ ${BKG_DATA} = "GEFS"]; then
-  if [ ${ens_n} = "00" ]; then
+elif [[ ${BKG_DATA} = "GEFS" ]]; then
+  if [[ ${ens_n} = "00" ]]; then
     # 00 perturbation is the control forecast
-    fnames="gec${ens_n}.t${BKG_START_TIME}z.pgrb2af*"
+    fnames="gec${ens_n}.t${bkg_start_hh}z.pgrb*"
   else
     # all other are control forecast perturbations
-    fnames="gep${ens_n}.t${BKG_START_TIME}z.pgrb2af*"
+    fnames="gep${ens_n}.t${bkg_start_hh}z.pgrb*"
   fi
 fi
 
 # link gribbed forecast data
-`${link_comdand}/${fnames}`
+`${link_cmnd}/${fnames}`
 
 #####################################################
 #  Build WPS namelist

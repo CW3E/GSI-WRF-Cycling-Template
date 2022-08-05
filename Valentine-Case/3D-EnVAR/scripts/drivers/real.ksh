@@ -273,11 +273,12 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
     time_str=`${DATE} "+%Y-%m-%d_%H:%M:%S" -d "${START_TIME} ${fcst} hours"`
     realinput_name=${real_prefix}.d0${dmn}.${time_str}${real_suffix}
-    if [ ! -r "${INPUT_DATAROOT}/wpsprd/${realinput_name}" ]; then
+    wps_dir=${INPUT_DATAROOT}/wpsprd/ens_${ENS_N}
+    if [ ! -r "${wps_dir}/${realinput_name}" ]; then
       ${ECHO} "ERROR: Input file '${INPUT_DATAROOT}/${realinput_name}' is missing"
       exit 1
     fi
-    ${LN} -sf ${INPUT_DATAROOT}/wpsprd/${realinput_name} ./
+    ${LN} -sf ${wps_dir}/${realinput_name} ./
     (( fcst += DATA_INTERVAL ))
   done
   (( dmn += 1 ))

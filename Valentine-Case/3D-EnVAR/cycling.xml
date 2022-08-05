@@ -34,7 +34,7 @@
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902090000">
-  <!ENTITY CYCLE_END           "201902090000">
+  <!ENTITY CYCLE_END           "201902090600">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY SECOND_CYCLE        "201902090600">
   <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without GSI or WRFDA analysis updates -->
@@ -123,7 +123,7 @@
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
 
   <metatask name="ensemble_pre_proc">
-    <var name="ENS_N">&ENS;</ENS_N>  
+    <var name="ENS_N">&ENS;</var>  
     <task name="ungrib" maxtries="1" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
@@ -257,7 +257,7 @@
       </dependency>
     </task>
 
-    <task name="real" maxtries="1" cycledefs="first_cycle,q_daily">
+    <task name="real" maxtries="2" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/real.ksh</command>
       <cores>&REAL_PROC;</cores>
       <nodesize>&REAL_NODESIZE;</nodesize>
@@ -377,7 +377,7 @@
     </envar>
     <dependency> 
       <and>
-        <metataskdep task="ensemble_pre_proc" state="SUCCEEDED"/>
+        <metataskdep metatask="ensemble_pre_proc"/>
 	<streq><left>&DA_MODE;</left><right>Yes</right></streq>
       </and>
     </dependency>
@@ -468,7 +468,7 @@
     </envar>
     <dependency> 
       <and>
-        <metataskdep task="ensemble_pre_proc" state="SUCCEEDED"/> 
+        <metataskdep metatask="ensemble_pre_proc"/> 
         <streq><left>&DA_MODE;</left><right>Yes</right></streq>
       </and>
     </dependency>
@@ -557,7 +557,7 @@
       <or>
         <taskdep task="wrfda_lowbc" state="SUCCEEDED"/> 
         <and>
-          <metataskdep task="ensemble_pre_proc" state="SUCCEEDED"/> 
+          <metataskdep metatask="ensemble_pre_proc"/> 
           <streq><left>&COLD_START_MODE;</left><right>Yes</right></streq>
         </and>
       </or>
@@ -618,20 +618,11 @@
     </envar>
     <dependency> 
       <and>
-	<streq><left>&DA_MODE;</left><right>Yes</right></streq>
+        <streq><left>&IF_HYBRID;</left><right>No</right></streq>
         <or>
-	  <and>
-            <streq><left>&IF_HYBRID;</left><right>No</right><streq>
-	    <or>
-              <taskdep task="gsi_cold_start_yes" state="SUCCEEDED"/>
-              <taskdep task="gsi_cold_start_Yes" state="SUCCEEDED"/>
-              <taskdep task="gsi_cold_start_No" state="SUCCEEDED"/>
-	    </or>
-	  </and>
-	  <and>
-	    <streq><left>&IF_HYBRID;</left><right>Yes</right>
-	    <taskdep task="enkf" state="SUCCEEDED">
-          </and>
+          <taskdep task="gsi_cold_start_yes" state="SUCCEEDED"/>
+          <taskdep task="gsi_cold_start_Yes" state="SUCCEEDED"/>
+          <taskdep task="gsi_cold_start_No" state="SUCCEEDED"/>
         </or>
       </and>
     </dependency>

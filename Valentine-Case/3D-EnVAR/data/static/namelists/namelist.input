@@ -71,8 +71,11 @@
  p_top_requested                     = 1000,
  !! GFS setting !!
  num_metgrid_levels                  = 32,
+ !! GEFS setting !!
+ num_metgrid_levels                  = 27,
  !! ERA5 setting !!
  !num_metgrid_levels                  = 138,
+ !! Default value, works for GFS and ERA5 !!
  num_metgrid_soil_levels             = 4,
  dx                                  = 9000, 3000,
  dy                                  = 9000, 3000,

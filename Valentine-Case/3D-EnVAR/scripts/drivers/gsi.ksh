@@ -182,8 +182,8 @@ if [ ! "${ANAL_TIME}" ]; then
 fi
 
 # Define directory path name variable DATE_STR=YYMMDDHH from ANAL_TIME
-HH=`${ECHO} $ANAL_TIME | cut -c9-10`
-ANAL_DATE=`${ECHO} $ANAL_TIME | cut -c1-8`
+HH=`${ECHO} ${ANAL_TIME} | ${CUT} -c9-10`
+ANAL_DATE=`${ECHO} ${ANAL_TIME} | ${CUT} -c1-8`
 DATE_STR=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${ANAL_DATE} $HH hours"`
 
 if [ -z "${DATE_STR}"]; then
@@ -597,10 +597,10 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   if [[ ${IF_HYBRID} = ${YES} ]] ; then
     ifhyb=.true.
     ${ECHO} " GSI hybrid uses n_ens=${N_ENS} ensemble perturbations"
-    PDYa=`${ECHO} $ANAL_TIME | cut -c1-8`
-    cyca=`${ECHO} $ANAL_TIME | cut -c9-10`
+    PDYa=`${ECHO} $ANAL_TIME | ${CUT} -c1-8`
+    cyca=`${ECHO} $ANAL_TIME | ${CUT} -c9-10`
     gdate=`${DATE} -u -d "$PDYa $cyca -6 hour" +%Y%m%d%H` #guess date is 6hr ago
-    gHH=`${ECHO} $gdate |cut -c9-10`
+    gHH=`${ECHO} $gdate |${CUT} -c9-10`
     datem1=`${DATE} -u -d "$PDYa $cyca -1 hour" +%Y-%m-%d_%H:%M:%S` #1hr ago
     datep1=`${DATE} -u -d "$PDYa $cyca 1 hour"  +%Y-%m-%d_%H:%M:%S`  #1hr later
     if [[ ${IF_NEMSIO} = ${YES} ]]; then
@@ -806,7 +806,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     #          hirs4_metop_b hirs4_n19 amusa_n19 mhs_n19 goes_glm_16"
     #####################################################
 
-    listall=`${LS} pe* | cut -f2 -d"." | ${AWK} '{print substr($0, 0, length($0)-3)}' | ${SORT} | uniq `
+    listall=`${LS} pe* | ${CUT} -f2 -d"." | ${AWK} '{print substr($0, 0, length($0)-3)}' | ${SORT} | uniq `
     for type in ${listall}; do
        count=`${LS} pe*${type}_${loop}* | ${WC} -l`
        if [[ ${count} -gt 0 ]]; then
