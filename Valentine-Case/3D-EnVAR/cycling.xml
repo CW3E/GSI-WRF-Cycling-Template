@@ -422,8 +422,8 @@
       <value>No</value>
     </envar>
     <envar>
-      <name>NO_MEMBER</name>
-      <value>&NO_MEMBER;</value>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
     </envar>
     <envar>
       <name>IF_HYBRID</name>
@@ -513,8 +513,8 @@
       <value>No</value>
     </envar>
     <envar>
-      <name>NO_MEMBER</name>
-      <value>&NO_MEMBER;</value>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
     </envar>
     <envar>
       <name>IF_HYBRID</name>
