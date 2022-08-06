@@ -49,6 +49,8 @@
 # if_clean    = clean  : delete temporal files in working directory (default)
 #               no     : leave running directory as is (this is for debug only)
 # BYTE_ORDER  = Big_Endian or Little_Endian
+# ens_prfx    = Prefix for the local links for ensemble member names of the form
+#               ${ens_prfx}XX
 #
 #####################################################
 
@@ -59,6 +61,7 @@ bk_core=ARW
 bkcv_option=NAM
 if_clean=clean
 BYTE_ORDER=Big_Endian
+ens_prfx=wrf_en
 
 #####################################################
 # Read in GSI constants for local environment
@@ -254,7 +257,7 @@ fi
 FIX_ROOT=${GSI_ROOT}/fix
 
 GSI_EXE=${GSI_ROOT}/build/bin/gsi.x
-GSI_NAMELIST=${GSI_ROOT}/ush/comgsi_namelist.sh
+GSI_NAMELIST=${STATIC_DATA}/namelists/comgsi_namelist.sh
 CRTM_ROOT=${GSI_ROOT}/CRTM_v${CRTM_VERSION}
 PREPBUFR_TAR=${OBS_ROOT}/prepbufr.${ANAL_DATE}.nr.tar.gz
 PREPBUFR=${OBS_ROOT}/${ANAL_DATE}.nr/prepbufr.gdas.${ANAL_DATE}.t${HH}z.nr
@@ -646,18 +649,26 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
         ${ECHO} "ERROR: ensemble file ${ENS_FILE} does not exist!"
         exit 1
       else
-        ${LN} -sf ${ENS_FILE} ./wrf_en${iiimem}
+        ${LN} -sf ${ENS_FILE} ./${ens_prfx}${iiimem}
       fi
       (( ens_n += 1 ))
     done
 
+    ${LS} ./${ens_prfx}* > filelist02
+
     # successfully linked ensemble members, define namelist ensemble size
     nummem=${N_ENS}
 
-    #if [[ ${IF_4DENVAR} = ${YES} ]] ; then
+    #if [[ ${IF_4DENVAR} = ${YES} ]]; then
     #  ${CP} ${BKG_FILE_P1} ./wrf_inou3
     #  ${CP} ${BKG_FILE_M1} ./wrf_inou1
     #fi
+
+    #if [[ ${IF_4DENVAR} = ${YES} ]]; then
+    #  ls ${ENSEMBLE_FILE_mem_p1}* > filelist03
+    #  ls ${ENSEMBLE_FILE_mem_m1}* > filelist01
+    #fi
+
   fi
 
   #####################################################
@@ -862,7 +873,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
         ${RM} wrf_inout
       fi
 
-      ENS_FILE="./wrf_en${iiimem}"
+      ENS_FILE="./${ens_prfx}${iiimem}"
       ${ECHO} ${ENS_FILE}
       ${CP} ${ENS_FILE} wrf_inout
 

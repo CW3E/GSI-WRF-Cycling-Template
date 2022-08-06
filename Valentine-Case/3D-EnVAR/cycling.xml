@@ -70,7 +70,7 @@
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
   <!ENTITY MAX_GSI_DOM         "2">
-  <!ENTITY IF_SATRAD           "Yes">
+  <!ENTITY IF_SATRAD           "No">
   <!ENTITY IF_HYBRID           "Yes">
   <!ENTITY IF_4DENVAR          "No">
   <!ENTITY IF_NEMSIO           "No">
@@ -133,10 +133,6 @@
       <native>--account=&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&UNGRIB_NODES;</native>
-      <native>--mail-type BEGIN</native>
-      <native>--mail-type END</native>
-      <native>--mail-type=FAIL</native>
-      <native>--mail-user=&EMAIL;</native>
       <native>--mem-per-cpu=&UNGRIB_MEM_PER_CPU;</native>
       <envar>
         <name>CONSTANT</name>
@@ -205,10 +201,6 @@
       <native>--account=&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&METGRID_NODES;</native>
-      <native>--mail-type BEGIN</native>
-      <native>--mail-type END</native>
-      <native>--mail-type=FAIL</native>
-      <native>--mail-user=&EMAIL;</native>
       <native>--mem-per-cpu=&METGRID_MEM_PER_CPU;</native>
       <envar>
         <name>CONSTANT</name>
@@ -266,10 +258,6 @@
       <native>--account=&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&REAL_NODES;</native>
-      <native>--mail-type BEGIN</native>
-      <native>--mail-type END</native>
-      <native>--mail-type=FAIL</native>
-      <native>--mail-user=&EMAIL;</native>
       <native>--mem-per-cpu=&REAL_MEM_PER_CPU;</native>
       <envar>
         <name>CONSTANT</name>
@@ -336,11 +324,11 @@
     <native>--account=&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WRFDA_NODES;</native>
+    <native>--mem-per-cpu=&WRFDA_MEM_PER_CPU;</native>
     <native>--mail-type BEGIN</native>
     <native>--mail-type END</native>
     <native>--mail-type=FAIL</native>
     <native>--mail-user=&EMAIL;</native>
-    <native>--mem-per-cpu=&WRFDA_MEM_PER_CPU;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
@@ -472,7 +460,7 @@
     </dependency>
   </task>
 
-  <task name="gsi_cold_start_&COLD_START_MODE;" maxtries="1" cycledefs="q_daily">
+  <task name="gsi_cold_start_&COLD_START_MODE;" maxtries="2" cycledefs="q_daily">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
@@ -573,11 +561,11 @@
     <native>--account=&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WRFDA_NODES;</native>
+    <native>--mem-per-cpu=&WRFDA_MEM_PER_CPU;</native>
     <native>--mail-type BEGIN</native>
     <native>--mail-type END</native>
     <native>--mail-type=FAIL</native>
     <native>--mail-user=&EMAIL;</native>
-    <native>--mem-per-cpu=&WRFDA_MEM_PER_CPU;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
@@ -637,10 +625,6 @@
     <native>--account=&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WRF_NODES;</native>
-    <native>--mail-type BEGIN</native>
-    <native>--mail-type END</native>
-    <native>--mail-type=FAIL</native>
-    <native>--mail-user=&EMAIL;</native>
     <native>--mem-per-cpu=&WRF_MEM_PER_CPU;</native>
     <envar>
       <name>CONSTANT</name>
