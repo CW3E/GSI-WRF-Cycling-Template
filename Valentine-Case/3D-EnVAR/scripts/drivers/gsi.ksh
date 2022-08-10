@@ -3,7 +3,7 @@
 # Description
 #####################################################
 # This driver script is a major fork and rewrite of the standard GSI ksh
-# driver script for 3DVAR used in the GSI tutorial
+# driver script for the GSI tutorial
 # https://dtcenter.ucar.edu/com-GSI/users/tutorial/online_tutorial/index_v3.7.php
 #
 # The purpose of this fork is to work in a Rocoto-based
@@ -246,7 +246,7 @@ else
 fi
 obs_root=${STATIC_DATA}/obs_data
 
-if [[ ${IF_COLDSTART} = ${NO} ]]; then
+if [[ ${IF_COLD_START} = ${NO} ]]; then
   # NOTE: the background files are taken from the WRFDA outputs when cycling, having updated the lower BCs
   bkg_root=${INPUT_DATAROOT}/wrfdaprd
 else
