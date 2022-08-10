@@ -182,6 +182,12 @@
         <name>IF_ECMWF_ML</name>
         <value>&IF_ECMWF_ML;</value>
       </envar>
+      <dependency> 
+        <or>
+          <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
+          <metataskdep metatask="ensemble_fore" cycle_offset="-&CYCLE_INTV;" />
+        </or>
+      </dependency>
     </task>
 
     <task name="metgrid_ens_#ENS_N#" maxtries="1" cycledefs="first_cycle,q_daily">
@@ -305,12 +311,6 @@
         <taskdep task="metgrid_ens_#ENS_N#" state="SUCCEEDED"/>
       </dependency>
     </task>
-    <dependency> 
-      <or>
-        <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
-        <metataskdep metatask="ensemble_fore" cycle_offset="-&CYCLE_INTV;" />
-      </or>
-    </dependency>
   </metatask>
 
   <task name="wrfda_lowbc" maxtries="1" cycledefs="q_daily">
