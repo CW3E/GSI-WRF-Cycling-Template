@@ -59,7 +59,7 @@
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY MAX_WRF_DOM         "2">
-  <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
+  <!ENTITY FCST_LENGTH         "12"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY IF_SST_UPDATE       "Yes"> <!-- This setting is applied to both WRF and real.exe runs -->
@@ -106,7 +106,7 @@
   <!ENTITY WRF_MEM_PER_CPU     "2G">
   <!ENTITY WRF_NODESIZE        "22">
   <!ENTITY WRF_NODES           "16">
-  <!ENTITY WRF_WC              "06:00:00">
+  <!ENTITY WRF_WC              "12:00:00">
   <!ENTITY GSI_PROC            "352">
   <!ENTITY GSI_MEM_PER_CPU     "5G">
   <!ENTITY GSI_NODESIZE        "22">
