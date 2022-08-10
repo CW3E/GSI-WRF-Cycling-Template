@@ -26,11 +26,8 @@
 #     limitations under the License.
 #
 ##########################################################################
-# Usin GMT time zone for time computations
+# Using GMT time zone for time computations
 export TZ="GMT"
-
-# Give other group members write access to the output files
-umask 2
 
 # sets COMET specific environment for intelmpi 2019.5.281
 eval `/bin/modulecmd ksh purge`
@@ -49,57 +46,21 @@ export PNETCDF="/share/apps/compute/netcdf/intel2019/intelmpi"
 export NETCDF="/share/apps/compute/netcdf/intel2019/intelmpi"
 export HDF5="/share/apps/compute/hdf5/intel2019/intelmpi"
 export LD_LIBRARY_PATH=/usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export PATH=${NCARG_ROOT}/bin:${PATH}
 
 # ensure ulimit is set unlimited
 ulimit -s unlimited
 
-# Yes / No case insensitive switch
+# create case insensitive string variables for namelists / switches
+CONSTANTS_NAME=[Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][Ss][_][Nn][Aa][Mm][Ee]
+DATE=[Dd][Aa][Tt][Ee]
+END=[Ee][Nn][Dd]
+EQUAL=[[:blank:]]*=[[:blank:]]*
+FG_NAME=[Ff][Gg][_][Nn][Aa][Mm][Ee]
+INTERVAL=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
+SECONDS=[Ss][Ee][Cc][Oo][Nn][Dd][Ss]
+START=[Ss][Tt][Aa][Rr][Tt]
 NO=[Nn][Oo]
+PREFIX=[Pp][Rr][Ee][Ff][Ii][Xx]
 YES=[Yy][Ee][Ss]
-
-# create case insensitive string variables for updating wps namelists
-equal=[[:blank:]]*=[[:blank:]]*
-start=[Ss][Tt][Aa][Rr][Tt]
-end=[Ee][Nn][Dd]
-date=[Dd][Aa][Tt][Ee]
-interval=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
-seconds=[Ss][Ee][Cc][Oo][Nn][Dd][Ss]
-prefix=[Pp][Rr][Ee][Ff][Ii][Xx]
-fg_name=[Ff][Gg][_][Nn][Aa][Mm][Ee]
-constants_name=[Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][Ss][_][Nn][Aa][Mm][Ee]
-yyyymmdd_hhmmss='[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}_[[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\}'
-
-
-# Set up paths to shell commands
-AWK="/bin/gawk --posix"
-BASENAME=/bin/basename
-BC=/bin/bc
-CAT=/bin/cat
-CHMOD=/bin/chmod
-CONVERT=/bin/convert
-CP=/bin/cp
-CUT=/bin/cut
-DATE=/bin/date
-DIRNAME=/bin/dirname
-ECHO=/bin/echo
-EXPR=/bin/expr
-GREP=/bin/grep
-LN=/bin/ln
-LS=/bin/ls
-MD5SUM=/bin/md5sum
-MKDIR=/bin/mkdir
-MV=/bin/mv
-OD=/bin/od
-PATH=${NCARG_ROOT}/bin:${PATH}
-RM=/bin/rm
-RSYNC=/bin/rsync
-SCP=/bin/scp
-SED=/bin/sed
-SORT=/bin/sort
-SSH=/bin/ssh
-TAIL=/bin/tail
-TAR=/bin/tar
-TIME=/bin/time
-TOUCH=/bin/touch
-TR=/bin/tr
-WC=/bin/wc
+YYYYMMDD_HHMMSS='[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}_[[:digit:]]\{2\}:[[:digit:]]\{2\}:[[:digit:]]\{2\}'

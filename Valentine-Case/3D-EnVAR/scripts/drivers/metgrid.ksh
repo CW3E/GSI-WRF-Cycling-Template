@@ -116,7 +116,7 @@ metgrid_suffix="nc"
 #####################################################
 
 if [ ! -x "${CONSTANT}" ]; then
-  ${ECHO} "ERROR: ${CONSTANT} does not exist or is not executable"
+  echo "ERROR: ${CONSTANT} does not exist or is not executable"
   exit 1
 fi
 
@@ -124,7 +124,7 @@ fi
 . ${CONSTANT}
 
 #####################################################
-# Make checks for METGRID settings
+# Make checks for metgrid settings
 #####################################################
 # Options below are defined in cycling.xml
 #
@@ -137,7 +137,7 @@ fi
 #####################################################
 
 if [ ! "${ENS_N}"  ]; then
-  ${ECHO} "ERROR: \$ENS_N is not defined"
+  echo "ERROR: \$ENS_N is not defined"
   exit 1
 fi
 
@@ -145,37 +145,37 @@ fi
 ens_n=`printf %02d ${ENS_N}`
 
 if [ ! "${FCST_LENGTH}" ]; then
-  ${ECHO} "ERROR: \$FCST_LENGTH is not defined"
+  echo "ERROR: \$FCST_LENGTH is not defined"
   exit 1
 fi
 
 if [ ! "${DATA_INTERVAL}" ]; then
-  ${ECHO} "ERROR: \$DATA_INTERVAL is not defined"
+  echo "ERROR: \$DATA_INTERVAL is not defined"
   exit 1
 fi
 
 if [ ! "${START_TIME}" ]; then
-  ${ECHO} "ERROR: \$START_TIME is not defined!"
+  echo "ERROR: \$START_TIME is not defined!"
   exit 1
 fi
 
-# Convert START_TIME from 'YYYYMMDDHH' format to Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
-if [ `${ECHO} "${START_TIME}" | ${AWK} '/^[[:digit:]]{10}$/'` ]; then
-  START_TIME=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
+# Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
+if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  start_time=`echo "${START_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
-  ${ECHO} "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
-START_TIME=`${DATE} -d "${START_TIME}"`
-END_TIME=`${DATE} -d "${START_TIME} ${FCST_LENGTH} hours"`
+start_time=`date -d "${start_time}"`
+end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
 if [ ! ${MAX_DOM} ]; then
-  ${ECHO} "ERROR: \$MAX_DOM is not defined!"
+  echo "ERROR: \$MAX_DOM is not defined!"
   exit 1
 fi
 
 #####################################################
-# Define METGRID workflow dependencies
+# Define metgrid workflow dependencies
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
@@ -184,67 +184,67 @@ fi
 #                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
-# MPIRUN         = MPI Command to execute METGRID
+# MPIRUN         = MPI Command to execute metgrid
 #
 #####################################################
 
 if [ ! "${WPS_ROOT}" ]; then
-  ${ECHO} "ERROR: \$WPS_ROOT is not defined"
+  echo "ERROR: \$WPS_ROOT is not defined"
   exit 1
 fi
 
 if [ ! -d "${WPS_ROOT}" ]; then
-  ${ECHO} "ERROR: WPS_ROOT directory ${WPS_ROOT} does not exist"
+  echo "ERROR: WPS_ROOT directory ${WPS_ROOT} does not exist"
   exit 1
 fi
 
 if [ ! -d ${STATIC_DATA} ]; then
-  ${ECHO} "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
+  echo "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
   exit 1
 fi
 
 if [ ! -d ${INPUT_DATAROOT} ]; then
-  ${ECHO} "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
+  echo "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
   exit 1
 fi
 
 if [ ! "${MPIRUN}" ]; then
-  ${ECHO} "ERROR: \$MPIRUN is not defined!"
+  echo "ERROR: \$MPIRUN is not defined!"
   exit 1
 fi
 
 #####################################################
-# Begin pre-METGRID setup
+# Begin pre-metgrid setup
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT      = Working directory where METGRID_EXE runs and outputs
-# WPS_DAT_FILES  = All file contents of clean WPS directory
+# work_root      = Working directory where metgrid_exe runs and outputs
+# wps_dat_files  = All file contents of clean WPS directory
 #                  namelists and input data will be linked from other sources
-# METGRID_EXE    = Path and name of working executable
+# metgrid_exe    = Path and name of working executable
 #
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/wpsprd/ens_${ens_n}
-set -A WPS_DAT_FILES ${WPS_ROOT}/*
-METGRID_EXE=${WPS_ROOT}/metgrid.exe
+work_root=${INPUT_DATAROOT}/wpsprd/ens_${ens_n}
+set -A wps_dat_files ${WPS_ROOT}/*
+metgrid_exe=${WPS_ROOT}/metgrid.exe
 
-if [ ! -x ${METGRID_EXE} ]; then
-  ${ECHO} "ERROR: ${METGRID_EXE} does not exist, or is not executable"
+if [ ! -x ${metgrid_exe} ]; then
+  echo "ERROR: ${metgrid_exe} does not exist, or is not executable"
   exit 1
 fi
 
-${MKDIR} -p ${WORK_ROOT}
-cd ${WORK_ROOT}
+mkdir -p ${work_root}
+cd ${work_root}
 
 # Make links to the WPS DAT files
-for file in ${WPS_DAT_FILES[@]}; do
-  ${ECHO} "${LN} -sf ${file}"
-  ${LN} -sf ${file} ./
+for file in ${wps_dat_files[@]}; do
+  echo "ln -sf ${file}"
+  ln -sf ${file} ./
 done
 
 # Remove any previous geogrid static files
-${RM} -f geo_em.d0*
+rm -f geo_em.d0*
 
 # Check to make sure the geogrid input files (e.g. geo_em.d01.nc)
 # are available and make links to them
@@ -252,10 +252,10 @@ dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   geoinput_name=${STATIC_DATA}/geogrid/geo_em.d0${dmn}.nc
   if [ ! -r "${geoinput_name}" ]; then
-    ${ECHO} "ERROR: Input file '${geoinput_name}' is missing"
+    echo "ERROR: Input file '${geoinput_name}' is missing"
     exit 1
   fi
-  ${LN} -sf ${geoinput_name} ./
+  ln -sf ${geoinput_name} ./
   (( dmn += 1 ))
 done
 
@@ -263,47 +263,47 @@ done
 #  Build WPS namelist
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-${CP} ${STATIC_DATA}/namelists/namelist.wps .
+cp ${STATIC_DATA}/namelists/namelist.wps .
 
 # define start / end time patterns for namelist.wps
-start_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${START_TIME}"`
-end_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${END_TIME}"`
+start_yyyymmdd_hhmmss=`date +%Y-%m-%d_%H:%M:%S -d "${start_time}"`
+end_yyyymmdd_hhmmss=`date +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
 
 # Update the start and end date in namelist (propagates settings to three domains)
-${CAT} namelist.wps | ${SED} "s/\(${start}_${date}\)${equal}'${yyyymmdd_hhmmss}'.*/\1 = '${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}'/" \
-                    | ${SED} "s/\(${end}_${date}\)${equal}'${yyyymmdd_hhmmss}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
+cat namelist.wps | sed "s/\(${START}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}'/" \
+                    | sed "s/\(${END}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
                       > namelist.wps.new
-${MV} namelist.wps.new namelist.wps
+mv namelist.wps.new namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
-${CAT} namelist.wps | ${SED} "s/\(${interval}_${seconds}\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
+cat namelist.wps | sed "s/\(${INTERVAL}_${SECONDS}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
                       > namelist.wps.new
-${MV} namelist.wps.new namelist.wps
+mv namelist.wps.new namelist.wps
 
 # Remove pre-existing metgrid files
-${RM} -f ${metgrid_prefix}.d0*.*.${metgrid_suffix}
+rm -f ${metgrid_prefix}.d0*.*.${metgrid_suffix}
 
 #####################################################
-# Run METGRID
+# Run metgrid 
 #####################################################
 # Print run parameters
-${ECHO}
-${ECHO} "ENS_N          = ${ENS_N}"
-${ECHO} "WPS_ROOT       = ${WPS_ROOT}"
-${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
-${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
-${ECHO}
-${ECHO} "FCST LENGTH    = ${FCST_LENGTH}"
-${ECHO} "DATA INTERVAL  = ${DATA_INTERVAL}"
-${ECHO} "MAX_DOM        = ${MAX_DOM}"
-${ECHO}
-${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${START_TIME}"`
-${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${END_TIME}"`
-${ECHO}
-now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "metgrid started at ${now}"
-${MPIRUN} ${METGRID_EXE}
+echo
+echo "ENS_N          = ${ENS_N}"
+echo "WPS_ROOT       = ${WPS_ROOT}"
+echo "STATIC_DATA    = ${STATIC_DATA}"
+echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+echo
+echo "FCST LENGTH    = ${FCST_LENGTH}"
+echo "DATA INTERVAL  = ${DATA_INTERVAL}"
+echo "MAX_DOM        = ${MAX_DOM}"
+echo
+echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
+echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo
+now=`date +%Y%m%d%H%M%S`
+echo "metgrid started at ${now}"
+${MPIRUN} ${metgrid_exe}
 
 #####################################################
 # Run time error check
@@ -312,14 +312,14 @@ error=$?
 
 # save metgrid logs
 log_dir=metgrid_log.${now}
-${MKDIR} ${log_dir}
-${MV} metgrid.log* ${log_dir}
+mkdir ${log_dir}
+mv metgrid.log* ${log_dir}
 
 # save a copy of namelist
-${CP} namelist.wps ${log_dir}
+cp namelist.wps ${log_dir}
 
 if [ ${error} -ne 0 ]; then
-  ${ECHO} "ERROR: ${METGRID} exited with status: ${error}"
+  echo "ERROR: ${metgrid_exe} exited with status: ${error}"
   ${MPIRUN} ${EXIT_CALL} ${error}
   exit
 else
@@ -329,9 +329,9 @@ dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    time_str=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${START_TIME} ${fcst} hours"`
+    time_str=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
     if [ ! -e "${metgrid_prefix}.d0${dmn}.${time_str}.${metgrid_suffix}" ]; then
-      ${ECHO} "${METGRID} for d0${dmn} failed to complete"
+      echo "${metgrid_exe} for d0${dmn} failed to complete"
       ${MPIRUN} ${EXIT_CALL} 1
       exit
     fi
@@ -341,13 +341,13 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 done
 
 # Remove links to the WPS DAT files
-for file in ${WPS_DAT_FILES[@]}; do
-    ${RM} -f `${BASENAME} ${file}`
+for file in ${wps_dat_files[@]}; do
+    rm -f `basename ${file}`
 done
 
 # Remove namelist
-${RM} -f namelist.wps
+rm -f namelist.wps
 
-${ECHO} "metgrid.ksh completed successfully at `${DATE}`"
+echo "metgrid.ksh completed successfully at `date`"
 
 fi

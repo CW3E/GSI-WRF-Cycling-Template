@@ -48,7 +48,7 @@
 #
 # if_clean    = clean  : delete temporal files in working directory (default)
 #               no     : leave running directory as is (this is for debug only)
-# BYTE_ORDER  = Big_Endian or Little_Endian
+# byte_order  = Big_Endian or Little_Endian
 # ens_prfx    = Prefix for the local links for ensemble member names of the form
 #               ${ens_prfx}XX
 #
@@ -60,7 +60,7 @@ set -x
 bk_core=ARW
 bkcv_option=NAM
 if_clean=clean
-BYTE_ORDER=Big_Endian
+byte_order=Big_Endian
 ens_prfx=wrf_en
 
 #####################################################
@@ -68,7 +68,7 @@ ens_prfx=wrf_en
 #####################################################
 
 if [ ! -x "${CONSTANT}" ]; then
-  ${ECHO} "ERROR: \$CONSTANT does not exist or is not executable!"
+  echo "ERROR: \$CONSTANT does not exist or is not executable!"
   exit 1
 fi
 
@@ -98,57 +98,57 @@ fi
 #####################################################
 
 if [ ! ${MAX_DOM} ]; then
-  ${ECHO} "ERROR: \$MAX_DOM is not defined!"
+  echo "ERROR: \$MAX_DOM is not defined!"
   exit 1
 fi
 
 if [[ ${IF_COLD_START} != ${YES} && ${IF_COLD_START} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_COLD_START must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_COLD_START must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 if [[ ${IF_SATRAD} != ${YES} && ${IF_SATRAD} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_SATRAD must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_SATRAD must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 if [[ ${IF_OBSERVER} != ${YES} && ${IF_OBSERVER} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_OBSERVER must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_OBSERVER must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 if [[ ${IF_HYBRID} != ${YES} && ${IF_HYBRID} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_HYBRID must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_HYBRID must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 if [[ ${IF_HYBRID} = ${YES} ]] ; then
   # ensembles are only required for hybrid EnVAR
   if [ ! "${N_ENS}" ]; then
-    ${ECHO} "ERROR: \$N_ENS must be specified to the number of ensemble perturbations!"
+    echo "ERROR: \$N_ENS must be specified to the number of ensemble perturbations!"
     exit 1
   fi
 fi
 
 if [[ ${IF_OBSERVER} = ${YES} ]]; then
   if [[ ! ${IF_HYBRID} = ${YES} ]]; then
-    ${ECHO} "ERROR: \$IF_HYBRID must equal Yes if \$IF_OBSERVER = Yes"
+    echo "ERROR: \$IF_HYBRID must equal Yes if \$IF_OBSERVER = Yes"
     exit 1
   fi
 fi
 
 if [[ ${IF_4DENVAR} != ${YES} && ${IF_4DENVAR} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_4DENVAR must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_4DENVAR must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 if [[ ${IF_NEMSIO} != ${YES} && ${IF_NEMSIO} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_NEMSIO must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_NEMSIO must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 if [[ ${IF_ONEOB} != ${YES} && ${IF_ONEOB} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_ONEOB must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_ONEOB must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
@@ -174,134 +174,133 @@ fi
 #
 # Below variables are derived by cycling.xml variables for convenience
 #
-# DATE_STR       = Defined by the ANAL_TIME variable, to be used as path
+# date_str       = Defined by the ANAL_TIME variable, to be used as path
 #                  name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
 #####################################################
 
 if [ ! "${ANAL_TIME}" ]; then
-  ${ECHO} "ERROR: \$ANAL_TIME is not defined!"
+  echo "ERROR: \$ANAL_TIME is not defined!"
   exit 1
 fi
 
-# Define directory path name variable DATE_STR=YYMMDDHH from ANAL_TIME
-HH=`${ECHO} ${ANAL_TIME} | ${CUT} -c9-10`
-ANAL_DATE=`${ECHO} ${ANAL_TIME} | ${CUT} -c1-8`
-DATE_STR=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${ANAL_DATE} $HH hours"`
+# Define directory path name variable date_str=YYMMDDHH from ANAL_TIME
+hh=`echo ${ANAL_TIME} | cut -c9-10`
+anal_date=`echo ${ANAL_TIME} | cut -c1-8`
+date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} ${hh} hours"`
 
-if [ -z "${DATE_STR}"]; then
-  ${ECHO} "ERROR: \$DATE_STR is not defined correctly, check format of \$ANAL_DATE!"
+if [ -z "${date_str}"]; then
+  echo "ERROR: \$date_str is not defined correctly, check format of \$ANAL_TIME!"
   exit 1
 fi
 
 if [ ! "${GSI_ROOT}" ]; then
-  ${ECHO} "ERROR: \$GSI_ROOT is not defined!"
+  echo "ERROR: \$GSI_ROOT is not defined!"
   exit 1
 fi
 
 if [ -z "${CRTM_VERSION}" ]; then
-  ${ECHO} "ERROR: The variable \$CRTM_VERSION must be set to version number for specifying binary path!"
+  echo "ERROR: The variable \$CRTM_VERSION must be set to version number for specifying binary path!"
   exit 1
 fi
 
 
 if [ ! ${STATIC_DATA} ]; then
-  ${ECHO} "ERROR: \$STATIC_DATA is not defined!"
+  echo "ERROR: \$STATIC_DATA is not defined!"
   exit 1
 fi
 
 
 if [ ! -d ${STATIC_DATA} ]; then
-  ${ECHO} "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
+  echo "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
   exit 1
 fi
 
 if [ ! "${INPUT_DATAROOT}" ]; then
-  ${ECHO} "ERROR: \$INPUT_DATAROOT is not defined!"
+  echo "ERROR: \$INPUT_DATAROOT is not defined!"
   exit 1
 fi
 
 if [ ! "${MPIRUN}" ]; then
-  ${ECHO} "ERROR: \$MPIRUN is not defined!"
+  echo "ERROR: \$MPIRUN is not defined!"
   exit 1
 fi
 
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT    = Working directory where GSI runs, either to analyze the control or to be the observer for EnKF
-# OBS_ROOT     = Path of observations files
-# BKG_ROOT     = Path for root directory of controlm from WRFDA or REAL depending on cycling
-# FIX_ROOT     = Path of fix files
-# GSI_EXE      = Path and name of the gsi.x executable
-# CRTM_ROOT    = Path of the CRTM root directory, contained in GSI_ROOT
-# PREPBUFR     = Path of PreBUFR conventional obs
+# work_root    = Working directory where GSI runs, either to analyze the control or to be the observer for EnKF
+# obs_root     = Path of observations files
+# bkg_root     = Path for root directory of controlm from WRFDA or REAL depending on cycling
+# fix_root     = Path of fix files
+# gsi_exe      = Path and name of the gsi.x executable
+# crtm_root    = Path of the CRTM root directory, contained in GSI_ROOT
+# prepbufr     = Path of PreBUFR conventional obs
 #
 #####################################################
 
 if [[ ${IF_OBSERVER} = ${NO} ]]; then
-  WORK_ROOT=${INPUT_DATAROOT}/gsiprd
+  work_root=${INPUT_DATAROOT}/gsiprd
 else
-  WORK_ROOT=${INPUT_DATAROOT}/enkfprd
+  work_root=${INPUT_DATAROOT}/enkfprd
 fi
-OBS_ROOT=${STATIC_DATA}/obs_data
+obs_root=${STATIC_DATA}/obs_data
 
 if [[ ${IF_COLDSTART} = ${NO} ]]; then
   # NOTE: the background files are taken from the WRFDA outputs when cycling, having updated the lower BCs
-  BKG_ROOT=${INPUT_DATAROOT}/wrfdaprd
+  bkg_root=${INPUT_DATAROOT}/wrfdaprd
 else
   # otherwise, the background files are take from wrfinput generated by real.exe
-  BKG_ROOT=${INPUT_DATAROOT}/realprd
+  bkg_root=${INPUT_DATAROOT}/realprd
 fi
 
-FIX_ROOT=${GSI_ROOT}/fix
+fix_root=${GSI_ROOT}/fix
+gsi_exe=${GSI_ROOT}/build/bin/gsi.x
+gsi_namelist=${STATIC_DATA}/namelists/comgsi_namelist.sh
+crtm_root=${GSI_ROOT}/CRTM_v${CRTM_VERSION}
+prepbufr_tar=${obs_root}/prepbufr.${anal_date}.nr.tar.gz
+prepbufr=${obs_root}/${anal_date}.nr/prepbufr.gdas.${anal_date}.t${hh}z.nr
 
-GSI_EXE=${GSI_ROOT}/build/bin/gsi.x
-GSI_NAMELIST=${STATIC_DATA}/namelists/comgsi_namelist.sh
-CRTM_ROOT=${GSI_ROOT}/CRTM_v${CRTM_VERSION}
-PREPBUFR_TAR=${OBS_ROOT}/prepbufr.${ANAL_DATE}.nr.tar.gz
-PREPBUFR=${OBS_ROOT}/${ANAL_DATE}.nr/prepbufr.gdas.${ANAL_DATE}.t${HH}z.nr
-
-if [ ! -d "${OBS_ROOT}" ]; then
-  ${ECHO} "ERROR: OBS_ROOT directory '${OBS_ROOT}' does not exist!"
+if [ ! -d "${obs_root}" ]; then
+  echo "ERROR: obs_root directory '${obs_root}' does not exist!"
   exit 1
 fi
 
-if [ ! -d "${BKG_ROOT}" ]; then
-  ${ECHO} "ERROR: \$BKG_ROOT directory '${BKG_ROOT}' does not exist!"
+if [ ! -d "${bkg_root}" ]; then
+  echo "ERROR: \$bkg_root directory '${bkg_root}' does not exist!"
   exit 1
 fi
 
-if [ ! -d "${FIX_ROOT}" ]; then
-  ${ECHO} "ERROR: FIX directory '${FIX_ROOT}' does not exist!"
+if [ ! -d "${fix_root}" ]; then
+  echo "ERROR: FIX directory '${fix_root}' does not exist!"
   exit 1
 fi
 
-if [ ! -x "${GSI_EXE}" ]; then
-  ${ECHO} "ERROR: ${GSI_EXE} does not exist!"
+if [ ! -x "${gsi_exe}" ]; then
+  echo "ERROR: ${gsi_exe} does not exist!"
   exit 1
 fi
 
-if [ ! -x "${GSI_NAMELIST}" ]; then
-  ${ECHO} "ERROR: ${GSI_NAMELIST} does not exist!"
+if [ ! -x "${gsi_namelist}" ]; then
+  echo "ERROR: ${gsi_namelist} does not exist!"
   exit 1
 fi
 
-if [ ! -d "${CRTM_ROOT}" ]; then
-  ${ECHO} "ERROR: CRTM directory '${CRTM_ROOT}' does not exist!"
+if [ ! -d "${crtm_root}" ]; then
+  echo "ERROR: CRTM directory '${crtm_root}' does not exist!"
   exit 1
 fi
 
-if [ ! -r "${PREPBUFR_TAR}" ]; then
-  ${ECHO} "ERROR: file '${PREPBUFR_TAR}' does not exist!"
+if [ ! -r "${prepbufr_tar}" ]; then
+  echo "ERROR: file '${prepbufr_tar}' does not exist!"
   exit 1
 else
-  cd ${OBS_ROOT}
-  ${TAR} -xvf `${BASENAME} ${PREPBUFR_TAR}`
+  cd ${obs_root}
+  tar -xvf `basename ${prepbufr_tar}`
 fi
 
-if [ ! -r "${PREPBUFR}" ]; then
-  ${ECHO} "ERROR: file '${PREPBUFR}' does not exist!"
+if [ ! -r "${prepbufr}" ]; then
+  echo "ERROR: file '${prepbufr}' does not exist!"
   exit 1
 fi
 
@@ -314,19 +313,19 @@ dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   # NOTE: Hybrid-VAR uses the control forecast as the EnKF forecast mean, not the control analysis 
   # work directory for GSI is sub-divided based on domain index
-  workdir=${WORK_ROOT}/d0${dmn}
-  ${ECHO} " Create working directory:" ${workdir}
+  workdir=${work_root}/d0${dmn}
+  echo " Create working directory:" ${workdir}
 
   if [ -d "${workdir}" ]; then
-    ${RM} -rf ${workdir}
+    rm -rf ${workdir}
   fi
   mkdir -p ${workdir}
   cd ${workdir}
 
-  ${ECHO} " Link observation bufr to working directory"
+  echo " Link observation bufr to working directory"
 
   # Link to the prepbufr conventional data
-  ${LN} -s ${PREPBUFR} ./prepbufr
+  ln -s ${prepbufr} ./prepbufr
 
   # Link to satellite data
   ii=1
@@ -427,31 +426,31 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
      len=${#srcobsfile[@]}
 
      while [[ $ii -le ${len} ]]; do
-	tar_file=${OBS_ROOT}/${srcobsfile[$ii]}.${ANAL_DATE}.tar.gz
+	tar_file=${obs_root}/${srcobsfile[$ii]}.${anal_date}.tar.gz
 	if [ -r "${tar_file}" ]; then
-	  cd ${OBS_ROOT}
-	  ${TAR} -xvf `${BASENAME} ${tar_file}`
+	  cd ${obs_root}
+	  tar -xvf `basename ${tar_file}`
 	  if [[ ${srcobsfile[$ii]} = "satwnd" ]]; then
-	    obs_file=${OBS_ROOT}/${ANAL_DATE}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${HH}z.${ANAL_DATE}.txt
+	    obs_file=${obs_root}/${anal_date}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${hh}z.${anal_date}.txt
 	  else
-	    obs_file=${OBS_ROOT}/${ANAL_DATE}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${HH}z.${ANAL_DATE}.bufr
+	    obs_file=${obs_root}/${anal_date}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${hh}z.${anal_date}.bufr
 	  fi
           if [ -r "${obs_file}" ]; then
-             ${ECHO} "link source obs file ${obs_file}"
+             echo "link source obs file ${obs_file}"
 	     cd ${workdir}
-             ${LN} -sf ${obs_file} ./${gsiobsfile[$ii]}
+             ln -sf ${obs_file} ./${gsiobsfile[$ii]}
 	  else
-             ${ECHO} "Source obs file ${srcobsfile[$ii]} not found, skipping ${gsiobsfile[$ii]} data"
+             echo "Source obs file ${srcobsfile[$ii]} not found, skipping ${gsiobsfile[$ii]} data"
           fi
 	else
-	  ${ECHO} "${srctarfile[$ii]} not found, skipping ${gisobsfile[$ii]} data"
+	  echo "${srctarfile[$ii]} not found, skipping ${gisobsfile[$ii]} data"
 	fi
 	cd ${workdir}
         (( ii += 1 ))
      done
   fi
 
-  ${ECHO} " Copy fixed files and link CRTM coefficient files to working directory"
+  echo " Copy fixed files and link CRTM coefficient files to working directory"
 
   #####################################################
   # Set fixed files
@@ -474,120 +473,120 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   #####################################################
 
   if [ ${bkcv_option} = GLOBAL ] ; then
-    ${ECHO} ' Use global background error covariance'
-    BERROR=${FIX_ROOT}/${BYTE_ORDER}/nam_glb_berror.f77.gcv
-    OBERROR=${FIX_ROOT}/prepobs_errtable.global
+    echo ' Use global background error covariance'
+    berror=${fix_root}/${byte_order}/nam_glb_berror.f77.gcv
+    oberror=${fix_root}/prepobs_errtable.global
     if [ ${bk_core} = NMM ] ; then
-       ANAVINFO=${FIX_ROOT}/anavinfo_ndas_netcdf_glbe
+       anavinfo=${fix_root}/anavinfo_ndas_netcdf_glbe
     fi
     if [ ${bk_core} = ARW ] ; then
-      ANAVINFO=${FIX_ROOT}/anavinfo_arw_netcdf_glbe
+      anavinfo=${fix_root}/anavinfo_arw_netcdf_glbe
     fi
     if [ ${bk_core} = NMMB ] ; then
-      ANAVINFO=${FIX_ROOT}/anavinfo_nems_nmmb_glb
+      anavinfo=${fix_root}/anavinfo_nems_nmmb_glb
     fi
   else
-    ${ECHO} ' Use NAM background error covariance'
-    BERROR=${FIX_ROOT}/${BYTE_ORDER}/nam_nmmstat_na.gcv
-    OBERROR=${FIX_ROOT}/nam_errtable.r3dv
+    echo ' Use NAM background error covariance'
+    berror=${fix_root}/${byte_order}/nam_nmmstat_na.gcv
+    oberror=${fix_root}/nam_errtable.r3dv
     if [ ${bk_core} = NMM ] ; then
-       ANAVINFO=${FIX_ROOT}/anavinfo_ndas_netcdf
+       anavinfo=${fix_root}/anavinfo_ndas_netcdf
     fi
     if [ ${bk_core} = ARW ] ; then
-       ANAVINFO=${FIX_ROOT}/anavinfo_arw_netcdf
+       anavinfo=${fix_root}/anavinfo_arw_netcdf
     fi
     if [ ${bk_core} = NMMB ] ; then
-       ANAVINFO=${FIX_ROOT}/anavinfo_nems_nmmb
+       anavinfo=${fix_root}/anavinfo_nems_nmmb
     fi
   fi
 
-  SATANGL=${FIX_ROOT}/global_satangbias.txt
-  SATINFO=${FIX_ROOT}/global_satinfo.txt
-  CONVINFO=${FIX_ROOT}/global_convinfo.txt
-  OZINFO=${FIX_ROOT}/global_ozinfo.txt
-  PCPINFO=${FIX_ROOT}/global_pcpinfo.txt
-  LIGHTINFO=${FIX_ROOT}/global_lightinfo.txt
+  satangl=${fix_root}/global_satangbias.txt
+  satinfo=${fix_root}/global_satinfo.txt
+  convinfo=${fix_root}/global_convinfo.txt
+  ozinfo=${fix_root}/global_ozinfo.txt
+  pcpinfo=${fix_root}/global_pcpinfo.txt
+  lightinfo=${fix_root}/global_lightinfo.txt
 
   # copy Fixed fields to working directory
-  ${CP} $ANAVINFO anavinfo
-  ${CP} $BERROR   berror_stats
-  ${CP} $SATANGL  satbias_angle
-  ${CP} $SATINFO  satinfo
-  ${CP} $CONVINFO convinfo
-  ${CP} $OZINFO   ozinfo
-  ${CP} $PCPINFO  pcpinfo
-  ${CP} $LIGHTINFO lightinfo
-  ${CP} $OBERROR  errtable
+  cp ${anavinfo} anavinfo
+  cp ${berror}   berror_stats
+  cp ${satangl}  satbias_angle
+  cp ${satinfo}  satinfo
+  cp ${convinfo} convinfo
+  cp ${ozinfo}   ozinfo
+  cp ${pcpinfo}  pcpinfo
+  cp ${lightinfo} lightinfo
+  cp ${oberror}  errtable
 
   # CRTM Spectral and Transmittance coefficients
-  CRTM_ROOT_ORDER=${CRTM_ROOT}/${BYTE_ORDER}
-  emiscoef_IRwater=${CRTM_ROOT_ORDER}/Nalli.IRwater.EmisCoeff.bin
-  emiscoef_IRice=${CRTM_ROOT_ORDER}/NPOESS.IRice.EmisCoeff.bin
-  emiscoef_IRland=${CRTM_ROOT_ORDER}/NPOESS.IRland.EmisCoeff.bin
-  emiscoef_IRsnow=${CRTM_ROOT_ORDER}/NPOESS.IRsnow.EmisCoeff.bin
-  emiscoef_VISice=${CRTM_ROOT_ORDER}/NPOESS.VISice.EmisCoeff.bin
-  emiscoef_VISland=${CRTM_ROOT_ORDER}/NPOESS.VISland.EmisCoeff.bin
-  emiscoef_VISsnow=${CRTM_ROOT_ORDER}/NPOESS.VISsnow.EmisCoeff.bin
-  emiscoef_VISwater=${CRTM_ROOT_ORDER}/NPOESS.VISwater.EmisCoeff.bin
-  emiscoef_MWwater=${CRTM_ROOT_ORDER}/FASTEM6.MWwater.EmisCoeff.bin
-  aercoef=${CRTM_ROOT_ORDER}/AerosolCoeff.bin
-  cldcoef=${CRTM_ROOT_ORDER}/CloudCoeff.bin
+  crtm_root_order=${crtm_root}/${byte_order}
+  emiscoef_IRwater=${crtm_root_order}/Nalli.IRwater.EmisCoeff.bin
+  emiscoef_IRice=${crtm_root_order}/NPOESS.IRice.EmisCoeff.bin
+  emiscoef_IRland=${crtm_root_order}/NPOESS.IRland.EmisCoeff.bin
+  emiscoef_IRsnow=${crtm_root_order}/NPOESS.IRsnow.EmisCoeff.bin
+  emiscoef_VISice=${crtm_root_order}/NPOESS.VISice.EmisCoeff.bin
+  emiscoef_VISland=${crtm_root_order}/NPOESS.VISland.EmisCoeff.bin
+  emiscoef_VISsnow=${crtm_root_order}/NPOESS.VISsnow.EmisCoeff.bin
+  emiscoef_VISwater=${crtm_root_order}/NPOESS.VISwater.EmisCoeff.bin
+  emiscoef_MWwater=${crtm_root_order}/FASTEM6.MWwater.EmisCoeff.bin
+  aercoef=${crtm_root_order}/AerosolCoeff.bin
+  cldcoef=${crtm_root_order}/CloudCoeff.bin
 
-  ${LN} -s $emiscoef_IRwater ./Nalli.IRwater.EmisCoeff.bin
-  ${LN} -s $emiscoef_IRice ./NPOESS.IRice.EmisCoeff.bin
-  ${LN} -s $emiscoef_IRsnow ./NPOESS.IRsnow.EmisCoeff.bin
-  ${LN} -s $emiscoef_IRland ./NPOESS.IRland.EmisCoeff.bin
-  ${LN} -s $emiscoef_VISice ./NPOESS.VISice.EmisCoeff.bin
-  ${LN} -s $emiscoef_VISland ./NPOESS.VISland.EmisCoeff.bin
-  ${LN} -s $emiscoef_VISsnow ./NPOESS.VISsnow.EmisCoeff.bin
-  ${LN} -s $emiscoef_VISwater ./NPOESS.VISwater.EmisCoeff.bin
-  ${LN} -s $emiscoef_MWwater ./FASTEM6.MWwater.EmisCoeff.bin
-  ${LN} -s $aercoef  ./AerosolCoeff.bin
-  ${LN} -s $cldcoef  ./CloudCoeff.bin
+  ln -s ${emiscoef_IRwater} ./Nalli.IRwater.EmisCoeff.bin
+  ln -s ${emiscoef_IRice} ./NPOESS.IRice.EmisCoeff.bin
+  ln -s ${emiscoef_IRsnow} ./NPOESS.IRsnow.EmisCoeff.bin
+  ln -s ${emiscoef_IRland} ./NPOESS.IRland.EmisCoeff.bin
+  ln -s ${emiscoef_VISice} ./NPOESS.VISice.EmisCoeff.bin
+  ln -s ${emiscoef_VISland} ./NPOESS.VISland.EmisCoeff.bin
+  ln -s ${emiscoef_VISsnow} ./NPOESS.VISsnow.EmisCoeff.bin
+  ln -s ${emiscoef_VISwater} ./NPOESS.VISwater.EmisCoeff.bin
+  ln -s ${emiscoef_MWwater} ./FASTEM6.MWwater.EmisCoeff.bin
+  ln -s ${aercoef}  ./AerosolCoeff.bin
+  ln -s ${cldcoef}  ./CloudCoeff.bin
 
   # Copy CRTM coefficient files based on entries in satinfo file
-  for file in `${AWK} '{if($1!~"!"){print $1}}' ./satinfo | ${SORT} | uniq` ;do
-     ${LN} -s ${CRTM_ROOT_ORDER}/${file}.SpcCoeff.bin ./
-     ${LN} -s ${CRTM_ROOT_ORDER}/${file}.TauCoeff.bin ./
+  for file in `awk '{if($1!~"!"){print $1}}' ./satinfo | sort | uniq` ;do
+     ln -s ${crtm_root_order}/${file}.SpcCoeff.bin ./
+     ln -s ${crtm_root_order}/${file}.TauCoeff.bin ./
   done
 
   # NOTE: manual linking taken from Minghua's example driver, IASI CRTM coefficients do not follow
   # the above dynamic linking pattern and must be set manually, airs linking below doesn't exist in
   # standard CRTM, may need to follow up later
-  #${LN} -sf ${CRTM_ROOT_ORDER}/airs281SUBSET_aqua.SpcCoeff.bin ./airs_aqua.SpcCoeff.bin    
-  #${LN} -sf ${CRTM_ROOT_ORDER}/airs281SUBSET_aqua.TauCoeff.bin ./airs_aqua.TauCoeff.bin
-  ${LN} -sf ${CRTM_ROOT_ORDER}/iasi616_metop-a.SpcCoeff.bin ./iasi_metop-a.SpcCoeff.bin
-  ${LN} -sf ${CRTM_ROOT_ORDER}/iasi616_metop-a.TauCoeff.bin ./iasi_metop-a.TauCoeff.bin
-  ${LN} -sf ${CRTM_ROOT_ORDER}/iasi616_metop-b.SpcCoeff.bin ./iasi_metop-b.SpcCoeff.bin
-  ${LN} -sf ${CRTM_ROOT_ORDER}/iasi616_metop-b.TauCoeff.bin ./iasi_metop-b.TauCoeff.bin
+  #ln -sf ${crtm_root_order}/airs281SUBSET_aqua.SpcCoeff.bin ./airs_aqua.SpcCoeff.bin    
+  #ln -sf ${crtm_root_order}/airs281SUBSET_aqua.TauCoeff.bin ./airs_aqua.TauCoeff.bin
+  ln -sf ${crtm_root_order}/iasi616_metop-a.SpcCoeff.bin ./iasi_metop-a.SpcCoeff.bin
+  ln -sf ${crtm_root_order}/iasi616_metop-a.TauCoeff.bin ./iasi_metop-a.TauCoeff.bin
+  ln -sf ${crtm_root_order}/iasi616_metop-b.SpcCoeff.bin ./iasi_metop-b.SpcCoeff.bin
+  ln -sf ${crtm_root_order}/iasi616_metop-b.TauCoeff.bin ./iasi_metop-b.TauCoeff.bin
 
   # Only need this file for single obs test
-  bufrtable=${FIX_ROOT}/prepobs_prep.bufrtable
-  ${CP} $bufrtable ./prepobs_prep.bufrtable
+  bufrtable=${fix_root}/prepobs_prep.bufrtable
+  cp $bufrtable ./prepobs_prep.bufrtable
 
   # for satellite bias correction
   # NOTE: may need to use own satbias files for appropriate bias correction
-  ${CP} ${GSI_ROOT}/fix/comgsi_satbias_in ./satbias_in
-  ${CP} ${GSI_ROOT}/fix/comgsi_satbias_pc_in ./satbias_pc_in
+  cp ${GSI_ROOT}/fix/comgsi_satbias_in ./satbias_in
+  cp ${GSI_ROOT}/fix/comgsi_satbias_pc_in ./satbias_pc_in
 
   #####################################################
   # Set background depending on the first analysis or cycling and analysis domain
   #####################################################
   # Below are defined depending on the ${dmn} -le ${MAX_DOM}
   #
-  # BKG_FILE     = Path and name of background file
+  # bkg_file     = Path and name of background file
   #
   #####################################################
 
 
   if [[ ${IF_COLD_START} = ${NO} ]]; then
-    BKG_FILE=${BKG_ROOT}/ens_00/lower_bdy_update/wrfout_d0${dmn}_${DATE_STR}
+    bkg_file=${bkg_root}/ens_00/lower_bdy_update/wrfout_d0${dmn}_${date_str}
   else
-    BKG_FILE=${BKG_ROOT}/ens_00/wrfinput_d0${dmn}
+    bkg_file=${bkg_root}/ens_00/wrfinput_d0${dmn}
   fi
 
-  if [ ! -r "${BKG_FILE}" ]; then
-    ${ECHO} "ERROR: background file ${BKG_FILE} does not exist!"
+  if [ ! -r "${bkg_file}" ]; then
+    echo "ERROR: background file ${bkg_file} does not exist!"
     exit 1
   fi
 
@@ -599,13 +598,13 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 
   if [[ ${IF_HYBRID} = ${YES} ]] ; then
     ifhyb=.true.
-    ${ECHO} " GSI hybrid uses n_ens=${N_ENS} ensemble perturbations"
-    PDYa=`${ECHO} $ANAL_TIME | ${CUT} -c1-8`
-    cyca=`${ECHO} $ANAL_TIME | ${CUT} -c9-10`
-    gdate=`${DATE} -u -d "$PDYa $cyca -6 hour" +%Y%m%d%H` #guess date is 6hr ago
-    gHH=`${ECHO} $gdate |${CUT} -c9-10`
-    datem1=`${DATE} -u -d "$PDYa $cyca -1 hour" +%Y-%m-%d_%H:%M:%S` #1hr ago
-    datep1=`${DATE} -u -d "$PDYa $cyca 1 hour"  +%Y-%m-%d_%H:%M:%S`  #1hr later
+    echo " GSI hybrid uses n_ens=${N_ENS} ensemble perturbations"
+    PDYa=`echo ${ANAL_TIME} | cut -c1-8`
+    cyca=`echo ${ANAL_TIME} | cut -c9-10`
+    gdate=`date -u -d "${PDYa} ${cyca} -6 hour" +%Y%m%d%H` #guess date is 6hr ago
+    gHH=`echo ${gdate} |cut -c9-10`
+    datem1=`date -u -d "${PDYa} ${cyca} -1 hour" +%Y-%m-%d_%H:%M:%S` #1hr ago
+    datep1=`date -u -d "${PDYa} ${cyca} 1 hour"  +%Y-%m-%d_%H:%M:%S`  #1hr later
     if [[ ${IF_NEMSIO} = ${YES} ]]; then
       if_gfs_nemsio='.true.'
     else
@@ -614,8 +613,8 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 
     #if [[ ${IF_4DENVAR} = ${YES} ]] ; then
     #  # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
-    #  BKG_FILE_P1=${BKG_ROOT}/wrfout_d0${dmn}_${datep1}
-    #  BKG_FILE_M1=${BKG_ROOT}/wrfout_d0${dmn}_${datem1}
+    #  bkg_file_P1=${bkg_root}/wrfout_d0${dmn}_${datep1}
+    #  bkg_file_M1=${bkg_root}/wrfout_d0${dmn}_${datem1}
     #fi
   fi
 
@@ -624,12 +623,12 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   #  if4d=.true.
   #fi
 
-  ${ECHO} " Copy background file(s) to working directory"
+  echo " Copy background file(s) to working directory"
   # Copy over background field -- THIS IS MODIFIED BY GSI DO NOT LINK TO IT
-  ${CP} ${BKG_FILE} ./wrf_inout
+  cp ${bkg_file} ./wrf_inout
 
   if [[ ${IF_HYBRID} = ${YES} ]]; then
-    ${ECHO} " Copy ensemble perturbations to working directory"
+    echo " Copy ensemble perturbations to working directory"
     ens_n=1
 
     while [ ${ens_n} -le ${N_ENS} ]; do
@@ -640,28 +639,28 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       iiimem=`printf %03d ${ens_n}`
 
       if [[ ${IF_COLD_START} = ${NO} ]]; then
-        ENS_FILE=${BKG_ROOT}/ens_${iimem}/lower_bdy_update/wrfout_d0${dmn}_${DATE_STR}
+        ens_file=${bkg_root}/ens_${iimem}/lower_bdy_update/wrfout_d0${dmn}_${date_str}
       else
-        ENS_FILE=${BKG_ROOT}/ens_${iimem}/wrfinput_d0${dmn}
+        ens_file=${bkg_root}/ens_${iimem}/wrfinput_d0${dmn}
       fi
 
-      if [ ! -r "${ENS_FILE}" ]; then
-        ${ECHO} "ERROR: ensemble file ${ENS_FILE} does not exist!"
+      if [ ! -r "${ens_file}" ]; then
+        echo "ERROR: ensemble file ${ens_file} does not exist!"
         exit 1
       else
-        ${LN} -sf ${ENS_FILE} ./${ens_prfx}${iiimem}
+        ln -sf ${ens_file} ./${ens_prfx}${iiimem}
       fi
       (( ens_n += 1 ))
     done
 
-    ${LS} ./${ens_prfx}* > filelist02
+    ls ./${ens_prfx}* > filelist02
 
     # successfully linked ensemble members, define namelist ensemble size
     nummem=${N_ENS}
 
     #if [[ ${IF_4DENVAR} = ${YES} ]]; then
-    #  ${CP} ${BKG_FILE_P1} ./wrf_inou3
-    #  ${CP} ${BKG_FILE_M1} ./wrf_inou1
+    #  cp ${bkg_file_P1} ./wrf_inou3
+    #  cp ${bkg_file_M1} ./wrf_inou1
     #fi
 
     #if [[ ${IF_4DENVAR} = ${YES} ]]; then
@@ -674,7 +673,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   #####################################################
   # Build GSI namelist
   #####################################################
-  ${ECHO} " Build the namelist "
+  echo " Build the namelist "
 
   # default is NAM
   #   as_op='1.0,1.0,0.5 ,0.7,0.7,0.5,1.0,1.0,'
@@ -722,40 +721,40 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   fi
 
   # Build the GSI namelist on-the-fly
-  . $GSI_NAMELIST
+  . ${gsi_namelist}
 
   # modify the anavinfo vertical levels based on wrf_inout for WRF ARW and NMM
   if [ ${bk_core} = ARW ] || [ ${bk_core} = NMM ] ; then
-    bklevels=`ncdump -h wrf_inout | ${GREP} "bottom_top =" | ${AWK} '{print $3}' `
-    bklevels_stag=`ncdump -h wrf_inout | ${GREP} "bottom_top_stag =" | ${AWK} '{print $3}' `
-    anavlevels=`${CAT} anavinfo | ${GREP} ' sf ' | ${TAIL} -1 | ${AWK} '{print $2}' ` # levels of sf, vp, u, v, t...
-    anavlevels_stag=`${CAT} anavinfo | ${GREP} ' prse ' | ${TAIL} -1 | ${AWK} '{print $2}' `  # levels of prse
-    ${SED} -i 's/ '$anavlevels'/ '$bklevels'/g' anavinfo
-    ${SED} -i 's/ '$anavlevels_stag'/ '$bklevels_stag'/g' anavinfo
+    bklevels=`ncdump -h wrf_inout | grep "bottom_top =" | awk '{print $3}' `
+    bklevels_stag=`ncdump -h wrf_inout | grep "bottom_top_stag =" | awk '{print $3}' `
+    anavlevels=`cat anavinfo | grep ' sf ' | tail -1 | awk '{print $2}' ` # levels of sf, vp, u, v, t...
+    anavlevels_stag=`cat anavinfo | grep ' prse ' | tail -1 | awk '{print $2}' `  # levels of prse
+    sed -i 's/ '${anavlevels}'/ '${bklevels}'/g' anavinfo
+    sed -i 's/ '${anavlevels_stag}'/ '${bklevels_stag}'/g' anavinfo
   fi
 
   #####################################################
   # Run GSI
   #####################################################
   # Print run parameters
-  ${ECHO}
-  ${ECHO} "IF_COLD_START  = ${IF_COLD_START}"
-  ${ECHO} "IF_SATRAD      = ${IF_SATRAD}"
-  ${ECHO} "IF_HYBRID      = ${IF_HYBRID}"
-  ${ECHO} "N_ENS          = ${N_ENS}"
-  ${ECHO} "IF_OBSERVER    = ${IF_OBSERVER}"
-  ${ECHO} "IF_4DENVAR     = ${IF_4DENVAR}"
-  ${ECHO} "IF_NEMSIO      = ${IF_NEMSIO}"
-  ${ECHO} "IF_ONEOB       = ${IF_ONEOB}"
-  ${ECHO}
-  ${ECHO} "ANAL_TIME      = ${ANAL_TIME}"
-  ${ECHO} "GSI_ROOT       = ${GSI_ROOT}"
-  ${ECHO} "CRTM_VERSION   = ${CRTM_VERSION}"
-  ${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
-  ${ECHO}
-  now=`${DATE} +%Y%m%d%H%M%S`
-  ${ECHO} "gsi started at ${now} with ${bk_core} background on domain d0${dmn}"
-  ${MPIRUN} ${GSI_EXE} > stdout_ens_00.anl.d0${dmn}_${ANAL_TIME} 2>&1
+  echo
+  echo "IF_COLD_START  = ${IF_COLD_START}"
+  echo "IF_SATRAD      = ${IF_SATRAD}"
+  echo "IF_HYBRID      = ${IF_HYBRID}"
+  echo "N_ENS          = ${N_ENS}"
+  echo "IF_OBSERVER    = ${IF_OBSERVER}"
+  echo "IF_4DENVAR     = ${IF_4DENVAR}"
+  echo "IF_NEMSIO      = ${IF_NEMSIO}"
+  echo "IF_ONEOB       = ${IF_ONEOB}"
+  echo
+  echo "ANAL_TIME      = ${ANAL_TIME}"
+  echo "GSI_ROOT       = ${GSI_ROOT}"
+  echo "CRTM_VERSION   = ${CRTM_VERSION}"
+  echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+  echo
+  now=`date +%Y%m%d%H%M%S`
+  echo "gsi started at ${now} with ${bk_core} background on domain d0${dmn}"
+  ${MPIRUN} ${gsi_exe} > stdout_ens_00.anl.d0${dmn}_${ANAL_TIME} 2>&1
 
   #####################################################
   # Run time error check
@@ -763,7 +762,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   error=$?
 
   if [ ${error} -ne 0 ]; then
-    ${ECHO} "ERROR: ${GSI} crashed  Exit status=${error}"
+    echo "ERROR: ${GSI} crashed  Exit status=${error}"
     exit ${error}
   fi
 
@@ -773,12 +772,12 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   # GSI updating satbias_in (only for cycling assimilation)
 
   # Rename the output to more understandable names
-  ${CP} wrf_inout   wrfanl_ens_00.d0${dmn}_${ANAL_TIME}
-  ${CP} fort.201    fit_p1_ens_00.d0${dmn}_${ANAL_TIME}
-  ${CP} fort.202    fit_w1_ens_00.d0${dmn}_${ANAL_TIME}
-  ${CP} fort.203    fit_t1_ens_00.d0${dmn}_${ANAL_TIME}
-  ${CP} fort.204    fit_q1_ens_00.d0${dmn}_${ANAL_TIME}
-  ${CP} fort.207    fit_rad1_ens_00.d0${dmn}_${ANAL_TIME}
+  cp wrf_inout   wrfanl_ens_00.d0${dmn}_${ANAL_TIME}
+  cp fort.201    fit_p1_ens_00.d0${dmn}_${ANAL_TIME}
+  cp fort.202    fit_w1_ens_00.d0${dmn}_${ANAL_TIME}
+  cp fort.203    fit_t1_ens_00.d0${dmn}_${ANAL_TIME}
+  cp fort.204    fit_q1_ens_00.d0${dmn}_${ANAL_TIME}
+  cp fort.207    fit_rad1_ens_00.d0${dmn}_${ANAL_TIME}
 
   #####################################################
   # Loop over first and last outer loops to generate innovation
@@ -817,25 +816,25 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     #          hirs4_metop_b hirs4_n19 amusa_n19 mhs_n19 goes_glm_16"
     #####################################################
 
-    listall=`${LS} pe* | ${CUT} -f2 -d"." | ${AWK} '{print substr($0, 0, length($0)-3)}' | ${SORT} | uniq `
+    listall=`ls pe* | cut -f2 -d"." | awk '{print substr($0, 0, length($0)-3)}' | sort | uniq `
     for type in ${listall}; do
-       count=`${LS} pe*${type}_${loop}* | ${WC} -l`
+       count=`ls pe*${type}_${loop}* | wc -l`
        if [[ ${count} -gt 0 ]]; then
-          ${CAT} pe*${type}_${loop}* > diag_${type}_${string}.d0${dmn}_${ANAL_TIME}
+          cat pe*${type}_${loop}* > diag_${type}_${string}.d0${dmn}_${ANAL_TIME}
        fi
     done
   done
 
   #  Clean working directory to save only important files
-  ${LS} -l * > list_run_directory
+  ls -l * > list_run_directory
 
   if [[ ${if_clean} = clean && ${IF_OBSERVER} != ${YES} ]]; then
-    ${ECHO} ' Clean working directory after GSI run'
-    ${RM} -f *Coeff.bin     # all CRTM coefficient files
-    ${RM} -f pe0*           # diag files on each processor
-    ${RM} -f obs_input.*    # observation middle files
-    ${RM} -f siganl sigf0?  # background middle files
-    ${RM} -f fsize_*        # delete temperal file for bufr size
+    echo ' Clean working directory after GSI run'
+    rm -f *Coeff.bin     # all CRTM coefficient files
+    rm -f pe0*           # diag files on each processor
+    rm -f obs_input.*    # observation middle files
+    rm -f siganl sigf0?  # background middle files
+    rm -f fsize_*        # delete temperal file for bufr size
   fi
 
   #####################################################
@@ -847,55 +846,55 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     for type in $listall; do
       count=0
       if [[ -f diag_${type}_${string}.${ANAL_TIME} ]]; then
-         ${MV} diag_${type}_${string}.${ANAL_TIME} diag_${type}_${string}.ensmean
+         mv diag_${type}_${string}.${ANAL_TIME} diag_${type}_${string}.ensmean
       fi
     done
-    ${MV} wrf_inout wrf_inout_ensmean
+    mv wrf_inout wrf_inout_ensmean
 
     # Build the GSI namelist on-the-fly for each member
     nummiter=0
     if_read_obs_save='.false.'
     if_read_obs_skip='.true.'
-    . $GSI_NAMELIST
+    . ${gsi_namelist}
 
     # Loop through each member
     loop="01"
     ens_n=1
 
     while [[ ${ens_n} -le ${N_ENS} ]]; do
-      ${RM} pe0*
+      rm pe0*
       print "\$ens_n is ${ens_n}"
       iimem=`printf %02d ${ens_n}`
       iiimem=`printf %03d ${ens_n}`
 
       # get new background for each member
       if [[ -f wrf_inout ]]; then
-        ${RM} wrf_inout
+        rm wrf_inout
       fi
 
-      ENS_FILE="./${ens_prfx}${iiimem}"
-      ${ECHO} ${ENS_FILE}
-      ${CP} ${ENS_FILE} wrf_inout
+      ens_file="./${ens_prfx}${iiimem}"
+      echo ${ens_file}
+      cp ${ens_file} wrf_inout
 
       # run GSI
-      ${ECHO} " Run GSI observer with ${bk_core} for member ${iiimem}"
-      ${MPIRUN} ${GSI_EXE} > stdout_ens_${iimem}.anl.d0${dmn}_${ANAL_TIME} 2>&1
+      echo " Run GSI observer with ${bk_core} for member ${iiimem}"
+      ${MPIRUN} ${gsi_exe} > stdout_ens_${iimem}.anl.d0${dmn}_${ANAL_TIME} 2>&1
 
       # run time error check and save run time file status
       error=$?
 
       if [ ${error} -ne 0 ]; then
-        ${ECHO} "ERROR: ${GSI} crashed for member ${iiimem} Exit status=${error}"
+        echo "ERROR: ${gsi_exe} crashed for member ${iiimem} Exit status=${error}"
         exit ${error}
       fi
 
-      ${LS} -l * > list_run_directory_mem${iimem}
+      ls -l * > list_run_directory_mem${iimem}
       # generate diag files
 
       for type in ${listall}; do
-            count=`${LS} pe*${type}_${loop}* | ${WC} -l`
+            count=`ls pe*${type}_${loop}* | wc -l`
          if [[ ${count} -gt 0 ]]; then
-            ${CAT} pe*${type}_${loop}* > diag_${type}_${string}.mem${ens_n}
+            cat pe*${type}_${loop}* > diag_${type}_${string}.mem${ens_n}
          fi
       done
       # next member
@@ -905,6 +904,6 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   (( dmn += 1 ))
 done
 
-${ECHO} "gsi.ksh completed successfully at `${DATE}`"
+echo "gsi.ksh completed successfully at `date`"
 
 exit 0

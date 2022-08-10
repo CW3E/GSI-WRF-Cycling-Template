@@ -114,7 +114,7 @@ real_suffix=".nc"
 #####################################################
 
 if [ ! -x "${CONSTANT}" ]; then
-  ${ECHO} "ERROR: ${CONSTANT} does not exist or is not executable"
+  echo "ERROR: ${CONSTANT} does not exist or is not executable"
   exit 1
 fi
 
@@ -122,7 +122,7 @@ fi
 . ${CONSTANT}
 
 #####################################################
-# Make checks for REAL settings
+# Make checks for real settings
 #####################################################
 # Options below are defined in cycling.xml
 #
@@ -137,7 +137,7 @@ fi
 #####################################################
 
 if [ ! "${ENS_N}"  ]; then
-  ${ECHO} "ERROR: \$ENS_N is not defined"
+  echo "ERROR: \$ENS_N is not defined"
   exit 1
 fi
 
@@ -146,42 +146,42 @@ ens_n=`printf %02d ${ENS_N}`
 
 
 if [ ! "${FCST_LENGTH}" ]; then
-  ${ECHO} "ERROR: \$FCST_LENGTH is not defined"
+  echo "ERROR: \$FCST_LENGTH is not defined"
   exit 1
 fi
 
 if [ ! "${DATA_INTERVAL}" ]; then
-  ${ECHO} "ERROR: \$DATA_INTERVAL is not defined"
+  echo "ERROR: \$DATA_INTERVAL is not defined"
   exit 1
 fi
 
 if [ ! "${START_TIME}" ]; then
-  ${ECHO} "ERROR: \$START_TIME is not defined!"
+  echo "ERROR: \$START_TIME is not defined!"
   exit 1
 fi
 
-# Convert START_TIME from 'YYYYMMDDHH' format to Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
-if [ `${ECHO} "${START_TIME}" | ${AWK} '/^[[:digit:]]{10}$/'` ]; then
-  START_TIME=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
+# Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
+if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  start_time=`echo "${START_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
-  ${ECHO} "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
-START_TIME=`${DATE} -d "${START_TIME}"`
-END_TIME=`${DATE} -d "${START_TIME} ${FCST_LENGTH} hours"`
+start_time=`date -d "${start_time}"`
+end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
 if [ ! ${MAX_DOM} ]; then
-  ${ECHO} "ERROR: \$MAX_DOM is not defined!"
+  echo "ERROR: \$MAX_DOM is not defined!"
   exit 1
 fi
 
 if [[ ${IF_SST_UPDATE} != ${YES} && ${IF_SST_UPDATE} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 #####################################################
-# Define REAL workflow dependencies
+# Define real workflow dependencies
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
@@ -191,79 +191,79 @@ fi
 #                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
-# MPIRUN         = MPI Command to execute REAL
+# MPIRUN         = MPI Command to execute real 
 #
 #####################################################
 
 if [ ! "${WRF_ROOT}" ]; then
-  ${ECHO} "ERROR: \$WRF_ROOT is not defined"
+  echo "ERROR: \$WRF_ROOT is not defined"
   exit 1
 fi
 
 if [ ! -d "${WRF_ROOT}" ]; then
-  ${ECHO} "ERROR: WRF_ROOT directory ${WRF_ROOT} does not exist"
+  echo "ERROR: WRF_ROOT directory ${WRF_ROOT} does not exist"
   exit 1
 fi
 
 if [ ! "${REAL_PROC}" ]; then
-  ${ECHO} "ERROR: \$REAL_PROC is not defined"
+  echo "ERROR: \$REAL_PROC is not defined"
   exit 1
 fi
 
 if [ -z "${REAL_PROC}" ]; then
-  ${ECHO} "ERROR: The variable \$REAL_PROC must be set to the number of processors to run real"
+  echo "ERROR: The variable \$REAL_PROC must be set to the number of processors to run real"
   exit 1
 fi
 
 if [ ! -d ${STATIC_DATA} ]; then
-  ${ECHO} "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
+  echo "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
   exit 1
 fi
 
 if [ ! -d ${INPUT_DATAROOT} ]; then
-  ${ECHO} "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
+  echo "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
   exit 1
 fi
 
 if [ ! "${MPIRUN}" ]; then
-  ${ECHO} "ERROR: \$MPIRUN is not defined!"
+  echo "ERROR: \$MPIRUN is not defined!"
   exit 1
 fi
 
 #####################################################
-# Begin pre-REAL setup
+# Begin pre-real setup
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT      = Working directory where REAL runs and outputs background files
-# WRF_DAT_FILES  = All file contents of clean WRF/run directory
+# work_root      = Working directory where real runs and outputs background files
+# wrf_dat_files  = All file contents of clean WRF/run directory
 #                  namelists, boundary and input data will be linked
 #                  from other sources
-# REAL_EXE       = Path and name of working executable
+# real_exe       = Path and name of working executable
 #
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/realprd/ens_${ens_n}
-set -A WRF_DAT_FILES ${WRF_ROOT}/run/*
-REAL_EXE=${WRF_ROOT}/main/real.exe
+work_root=${INPUT_DATAROOT}/realprd/ens_${ens_n}
+set -A wrf_dat_files ${WRF_ROOT}/run/*
+real_exe=${WRF_ROOT}/main/real.exe
 
-if [ ! -x ${REAL_EXE} ]; then
-  ${ECHO} "ERROR: ${REAL_EXE} does not exist, or is not executable"
+if [ ! -x ${real_exe} ]; then
+  echo "ERROR: ${real_exe} does not exist, or is not executable"
   exit 1
 fi
 
-${MKDIR} -p ${WORK_ROOT}
-cd ${WORK_ROOT}
+mkdir -p ${work_root}
+cd ${work_root}
 
 # Make links to the WRF DAT files
-for file in ${WRF_DAT_FILES[@]}; do
-  ${ECHO} "${LN} -sf ${file}"
-  ${LN} -sf ${file} ./
+for file in ${wrf_dat_files[@]}; do
+  echo "ln -sf ${file}"
+  ln -sf ${file} ./
 done
 
 # Remove IC/BC in the directory if old data present
-${RM} -f wrfinput_d0*
-${RM} -f wrfbdy_d01
+rm -f wrfinput_d0*
+rm -f wrfbdy_d01
 
 # Check to make sure the real input files (e.g. met_em.d01.*)
 # are available and make links to them
@@ -271,116 +271,116 @@ dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    time_str=`${DATE} "+%Y-%m-%d_%H:%M:%S" -d "${START_TIME} ${fcst} hours"`
+    time_str=`date "+%Y-%m-%d_%H:%M:%S" -d "${start_time} ${fcst} hours"`
     realinput_name=${real_prefix}.d0${dmn}.${time_str}${real_suffix}
-    wps_dir=${INPUT_DATAROOT}/wpsprd/ens_${ENS_N}
+    wps_dir=${INPUT_DATAROOT}/wpsprd/ens_${ens_n}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then
-      ${ECHO} "ERROR: Input file '${INPUT_DATAROOT}/${realinput_name}' is missing"
+      echo "ERROR: Input file '${INPUT_DATAROOT}/${realinput_name}' is missing"
       exit 1
     fi
-    ${LN} -sf ${wps_dir}/${realinput_name} ./
+    ln -sf ${wps_dir}/${realinput_name} ./
     (( fcst += DATA_INTERVAL ))
   done
   (( dmn += 1 ))
 done
 
 # Move existing rsl files to a subdir if there are any
-${ECHO} "Checking for pre-existing rsl files"
+echo "Checking for pre-existing rsl files"
 if [ -f "rsl.out.0000" ]; then
-  rsldir=rsl.`${LS} -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | ${CUT} -d" " -f 7`
-  ${MKDIR} ${rsldir}
-  ${ECHO} "Moving pre-existing rsl files to ${rsldir}"
-  ${MV} rsl.out.* ${rsldir}
-  ${MV} rsl.error.* ${rsldir}
+  rsldir=rsl.`ls -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | cut -d" " -f 7`
+  mkdir ${rsldir}
+  echo "Moving pre-existing rsl files to ${rsldir}"
+  mv rsl.out.* ${rsldir}
+  mv rsl.error.* ${rsldir}
 else
-  ${ECHO} "No pre-existing rsl files were found"
+  echo "No pre-existing rsl files were found"
 fi
 
 #####################################################
-#  Build REAL namelist
+#  Build real namelist
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-${CP} ${STATIC_DATA}/namelists/namelist.input .
+cp ${STATIC_DATA}/namelists/namelist.input .
 
 # Get the start and end time components
-start_year=`${DATE} +%Y -d "${START_TIME}"`
-start_month=`${DATE} +%m -d "${START_TIME}"`
-start_day=`${DATE} +%d -d "${START_TIME}"`
-start_hour=`${DATE} +%H -d "${START_TIME}"`
-start_minute=`${DATE} +%M -d "${START_TIME}"`
-start_second=`${DATE} +%S -d "${START_TIME}"`
-end_year=`${DATE} +%Y -d "${END_TIME}"`
-end_month=`${DATE} +%m -d "${END_TIME}"`
-end_day=`${DATE} +%d -d "${END_TIME}"`
-end_hour=`${DATE} +%H -d "${END_TIME}"`
-end_minute=`${DATE} +%M -d "${END_TIME}"`
-end_second=`${DATE} +%S -d "${END_TIME}"`
+start_year=`date +%Y -d "${start_time}"`
+start_month=`date +%m -d "${start_time}"`
+start_day=`date +%d -d "${start_time}"`
+start_hour=`date +%H -d "${start_time}"`
+start_minute=`date +%M -d "${start_time}"`
+start_second=`date +%S -d "${start_time}"`
+end_year=`date +%Y -d "${end_time}"`
+end_month=`date +%m -d "${end_time}"`
+end_day=`date +%d -d "${end_time}"`
+end_hour=`date +%H -d "${end_time}"`
+end_minute=`date +%M -d "${end_time}"`
+end_second=`date +%S -d "${end_time}"`
 
 # Compute number of days and hours for the run
 (( run_days = FCST_LENGTH / 24 ))
 (( run_hours = FCST_LENGTH % 24 ))
 
 # Update the run_days in wrf namelist.input
-${CAT} namelist.input | ${SED} "s/\(${run}_${day}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
+cat namelist.input | sed "s/\(${RUN}_${DAY}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update the run_hours in wrf namelist
-${CAT} namelist.input | ${SED} "s/\(${run}_${hour}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_hours}/" \
+cat namelist.input | sed "s/\(${RUN}_${HOUR}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_hours}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update the start time in wrf namelist (propagates settings to three domains)
-${CAT} namelist.input | ${SED} "s/\(${start}_${year}\)${equal}[[:digit:]]\{4\}.*/\1 = ${start_year}, ${start_year}, ${start_year}/" \
-   | ${SED} "s/\(${start}_${month}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
-   | ${SED} "s/\(${start}_${day}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_day}, ${start_day}, ${start_day}/" \
-   | ${SED} "s/\(${start}_${hour}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_hour}, ${start_hour}, ${start_hour}/" \
-   | ${SED} "s/\(${start}_${minute}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_minute}, ${start_minute}, ${start_minute}/" \
-   | ${SED} "s/\(${start}_${second}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_second}, ${start_second}, ${start_second}/" \
+cat namelist.input | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${start_year}, ${start_year}, ${start_year}/" \
+   | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
+   | sed "s/\(${START}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_day}, ${start_day}, ${start_day}/" \
+   | sed "s/\(${START}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_hour}, ${start_hour}, ${start_hour}/" \
+   | sed "s/\(${START}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_minute}, ${start_minute}, ${start_minute}/" \
+   | sed "s/\(${START}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_second}, ${start_second}, ${start_second}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update end time in namelist (propagates settings to three domains)
-${CAT} namelist.input | ${SED} "s/\(${end}_${year}\)${equal}[[:digit:]]\{4\}.*/\1 = ${end_year}, ${end_year}, ${end_year}/" \
-   | ${SED} "s/\(${end}_${month}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_month}, ${end_month}, ${end_month}/" \
-   | ${SED} "s/\(${end}_${day}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_day}, ${end_day}, ${end_day}/" \
-   | ${SED} "s/\(${end}_${hour}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_hour}, ${end_hour}, ${end_hour}/" \
-   | ${SED} "s/\(${end}_${minute}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_minute}, ${end_minute}, ${end_minute}/" \
-   | ${SED} "s/\(${end}_${second}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_second}, ${end_second}, ${end_second}/" \
+cat namelist.input | sed "s/\(${END}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${end_year}, ${end_year}, ${end_year}/" \
+   | sed "s/\(${END}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_month}, ${end_month}, ${end_month}/" \
+   | sed "s/\(${END}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_day}, ${end_day}, ${end_day}/" \
+   | sed "s/\(${END}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_hour}, ${end_hour}, ${end_hour}/" \
+   | sed "s/\(${END}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_minute}, ${end_minute}, ${end_minute}/" \
+   | sed "s/\(${END}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_second}, ${end_second}, ${end_second}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
-${CAT} namelist.input | ${SED} "s/\(${interval}_${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
+cat namelist.input | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update the max_dom in namelist
-${CAT} namelist.input | ${SED} "s/\(max_dom\)${equal}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
+cat namelist.input | sed "s/\(max_dom\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 #####################################################
 # Run REAL
 #####################################################
 # Print run parameters
-${ECHO}
-${ECHO} "ENS_N          = ${ENS_N}"
-${ECHO} "WRF_ROOT       = ${WRF_ROOT}"
-${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
-${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
-${ECHO}
-${ECHO} "FCST LENGTH    = ${FCST_LENGTH}"
-${ECHO} "DATA INTERVAL  = ${DATA_INTERVAL}"
-${ECHO} "MAX_DOM        = ${MAX_DOM}"
-${ECHO}
-${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${START_TIME}"`
-${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${END_TIME}"`
-${ECHO}
-now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "real started at ${now}"
-${MPIRUN} ${REAL_EXE}
+echo
+echo "ENS_N          = ${ENS_N}"
+echo "WRF_ROOT       = ${WRF_ROOT}"
+echo "STATIC_DATA    = ${STATIC_DATA}"
+echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+echo
+echo "FCST LENGTH    = ${FCST_LENGTH}"
+echo "DATA INTERVAL  = ${DATA_INTERVAL}"
+echo "MAX_DOM        = ${MAX_DOM}"
+echo
+echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
+echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo
+now=`date +%Y%m%d%H%M%S`
+echo "real started at ${now}"
+${MPIRUN} ${real_exe}
 
 #####################################################
 # Run time error check
@@ -389,17 +389,17 @@ error=$?
 
 # Save a copy of the RSL files
 rsldir=rsl.real.${now}
-${MKDIR} ${rsldir}
-${MV} rsl.out.* ${rsldir}
-${MV} rsl.error.* ${rsldir}
-${CP} namelist.* ${rsldir}
+mkdir ${rsldir}
+mv rsl.out.* ${rsldir}
+mv rsl.error.* ${rsldir}
+cp namelist.* ${rsldir}
 
 # Look for successful completion messages in rsl files
-nsuccess=`${CAT} ${rsldir}/rsl.* | ${AWK} '/SUCCESS COMPLETE REAL/' | ${WC} -l`
+nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE REAL/' | wc -l`
 (( ntotal = REAL_PROC * 2 ))
-${ECHO} "Found ${nsuccess} of ${ntotal} completion messages"
+echo "Found ${nsuccess} of ${ntotal} completion messages"
 if [ ${nsuccess} -ne ${ntotal} ]; then
-  ${ECHO} "ERROR: ${REAL} did not complete sucessfully  Exit status=${error}"
+  echo "ERROR: ${real_exe} did not complete sucessfully  Exit status=${error}"
   if [ ${error} -ne 0 ]; then
     ${MPIRUN} ${EXIT_CALL} ${error}
     exit
@@ -412,7 +412,7 @@ fi
 # check to see if the BC output is generated
 bc_file=wrfbdy_d01
 if [ ! -s ${bc_file} ]; then
-  ${ECHO} "${REAL} failed to generate boundary conditions ${bc_file}"
+  echo "${real_exe} failed to generate boundary conditions ${bc_file}"
   ${MPIRUN} ${EXIT_CALL} 1
   exit
 fi
@@ -422,7 +422,7 @@ dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   ic_file=wrfinput_d0${dmn}
   if [ ! -s ${ic_file} ]; then
-    ${ECHO} "${REAL} failed to generate initial conditions ${ic_file} for domain d0${dmn}"
+    echo "${real_exe} failed to generate initial conditions ${ic_file} for domain d0${dmn}"
     ${MPIRUN} ${EXIT_CALL} 1
     exit
   fi
@@ -435,7 +435,7 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
   while [ ${dmn} -le ${MAX_DOM} ]; do
     sst_file=wrflowinp_d0${dmn}
     if [ ! -s ${sst_file} ]; then
-      ${ECHO} "${REAL} failed to generate SST update file ${sst_file} for domain d0${dmn}"
+      echo "${real_exe} failed to generate SST update file ${sst_file} for domain d0${dmn}"
       ${MPIRUN} ${EXIT_CALL} 1
       exit
     fi
@@ -444,11 +444,11 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
 fi
 
 # Remove the real input files (e.g. met_em.d01.*)
-${RM} -f ./${real_prefix}.*
+rm -f ./${real_prefix}.*
 
 # Remove links to the WRF DAT files
-for file in ${WRF_DAT_FILES[@]}; do
-    ${RM} -f `${BASENAME} ${file}`
+for file in ${wrf_dat_files[@]}; do
+    rm -f `basename ${file}`
 done
 
-${ECHO} "real.ksh completed successfully at `${DATE}`"
+echo "real.ksh completed successfully at `date`"

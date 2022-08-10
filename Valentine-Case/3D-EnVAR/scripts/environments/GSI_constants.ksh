@@ -29,9 +29,6 @@
 # Using GMT time zone for time computations
 export TZ="GMT"
 
-# Give other group members write access to the output files
-umask 2
-
 # set COMET specific environment for intelmpi 2018.1.163, using ksh
 eval `/bin/modulecmd ksh purge`
 export MODULEPATH=/share/apps/compute/modulefiles:$MODULEPATH
@@ -46,8 +43,9 @@ export JASPERLIB="/usr/lib64"
 export JASPERINC="/usr/include"
 export LD_LIBRARY_PATH=/usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 export MODULEPATH=/share/apps/compute/modulefiles/applications:$MODULEPATH
-NETCDF="/opt/netcdf/4.6.1/intel/intelmpi/"
-HDF5="/opt/hdf5/1.10.3/intel/intelmpi/"
+export NETCDF="/opt/netcdf/4.6.1/intel/intelmpi/"
+export HDF5="/opt/hdf5/1.10.3/intel/intelmpi/"
+export PATH=${NCARG_ROOT}/bin:${PATH}
 
 # setup lapack
 eval `/bin/modulecmd ksh load lapack`
@@ -60,37 +58,3 @@ ulimit -s unlimited
 # Yes / No case insensitive switch
 YES=[Yy][Ee][Ss]
 NO=[Nn][Oo]
-
-# Set up paths to shell commands
-AWK="/bin/gawk --posix"
-BASENAME=/bin/basename
-BC=/bin/bc
-CAT=/bin/cat
-CHMOD=/bin/chmod
-CONVERT=/bin/convert
-CP=/bin/cp
-CUT=/bin/cut
-DATE=/bin/date
-DIRNAME=/bin/dirname
-ECHO=/bin/echo
-EXPR=/bin/expr
-GREP=/bin/grep
-LN=/bin/ln
-LS=/bin/ls
-MD5SUM=/bin/md5sum
-MKDIR=/bin/mkdir
-MV=/bin/mv
-OD=/bin/od
-PATH=${NCARG_ROOT}/bin:${PATH}
-RM=/bin/rm
-RSYNC=/bin/rsync
-SCP=/bin/scp
-SED=/bin/sed
-SORT=/bin/sort
-SSH=/bin/ssh
-TAIL=/bin/tail
-TAR=/bin/tar
-TIME=/bin/time
-TOUCH=/bin/touch
-TR=/bin/tr
-WC=/bin/wc

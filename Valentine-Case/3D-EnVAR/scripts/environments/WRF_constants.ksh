@@ -26,11 +26,8 @@
 #     limitations under the License.
 #
 ##########################################################################
-# Usin GMT time zone for time computations
+# Using GMT time zone for time computations
 export TZ="GMT"
-
-# Give other group members write access to the output files
-umask 2
 
 # sets COMET specific environment for intelmpi 2019.5.281
 eval `/bin/modulecmd ksh purge`
@@ -49,73 +46,38 @@ export PNETCDF="/share/apps/compute/netcdf/intel2019/intelmpi"
 export NETCDF="/share/apps/compute/netcdf/intel2019/intelmpi"
 export HDF5="/share/apps/compute/hdf5/intel2019/intelmpi"
 export LD_LIBRARY_PATH=/usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export PATH=${NCARG_ROOT}/bin:${PATH}
 
 # ensure ulimit is set unlimited
 ulimit -s unlimited
 
-# Yes / No case insensitive switch
-YES=[Yy][Ee][Ss]
+# create case insensitive string variables for namelists / switches
+AUXINPUT=[Aa][Uu][Xx][Ii][Nn][Pp][Uu][Tt]
+BDY=[Bb][Dd][Yy]
+DA=[Dd][Aa]
+DAY=[Dd][Aa][Yy]
+DOMAIN=[Dd][Oo][Mm][Aa][Ii][Nn]
+END=[Ee][Nn][Dd]
+EQUAL=[[:blank:]]*=[[:blank:]]*
+FILE=[Ff][Ii][Ll][Ee]
+GROUP=[Gg][Rr][Oo][Uu][Pp]
+HISTORY=[Hh][Ii][Ss][Tt][Oo][Rr][Yy]
+HOUR=[Hh][Oo][Uu][Rr]
+ID=[Ii][Dd]
+INPUT=[Ii][Nn][Pp][Uu][Tt]
+INTERVAL=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
+LATERAL=[Ll][Aa][Tt][Ee][Rr][Aa][Ll]
+LOW=[Ll][Oo][Ww]
+MINUTE=[Mm][Ii][Nn][Uu][Tt][Ee]
+MONTH=[Mm][Oo][Nn][Tt][Hh]
+NIO=[Nn][Ii][Oo]
 NO=[Nn][Oo]
-
-# create case insensitive string variables to update WRF / WRFDA namelists
-run=[Rr][Uu][Nn]
-equal=[[:blank:]]*=[[:blank:]]*
-start=[Ss][Tt][Aa][Rr][Tt]
-end=[Ee][Nn][Dd]
-year=[Yy][Ee][Aa][Rr]
-month=[Mm][Oo][Nn][Tt][Hh]
-day=[Dd][Aa][Yy]
-hour=[Hh][Oo][Uu][Rr]
-minute=[Mm][Ii][Nn][Uu][Tt][Ee]
-second=[Ss][Ee][Cc][Oo][Nn][Dd]
-interval=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
-history=[Hh][Ii][Ss][Tt][Oo][Rr][Yy]
-nio=[Nn][Ii][Oo]
-tasks=[Tt][Aa][Ss][Kk][Ss]
-per=[Pp][Ee][Rr]
-group=[Gg][Rr][Oo][Uu][Pp]
-auxinput=[Aa][Uu][Xx][Ii][Nn][Pp][Uu][Tt]
-domain=[Dd][Oo][Mm][Aa][Ii][Nn]
-id=[Ii][Dd]
-update=[Uu][Pp][Dd][Aa][Tt][Ee]
-lateral=[Ll][Aa][Tt][Ee][Rr][Aa][Ll]
-low=[Ll][Oo][Ww]
-bdy=[Bb][Dd][Yy]
-da=[Dd][Aa]
-file=[Ff][Ii][Ll][Ee]
-wrf=[Ww][Rr][Ff]
-input=[Ii][Nn][Pp][Uu][Tt]
-
-# Set up paths to shell commands
-AWK="/bin/gawk --posix"
-BASENAME=/bin/basename
-BC=/bin/bc
-CAT=/bin/cat
-CHMOD=/bin/chmod
-CONVERT=/bin/convert
-CP=/bin/cp
-CUT=/bin/cut
-DATE=/bin/date
-DIRNAME=/bin/dirname
-ECHO=/bin/echo
-EXPR=/bin/expr
-GREP=/bin/grep
-LN=/bin/ln
-LS=/bin/ls
-MD5SUM=/bin/md5sum
-MKDIR=/bin/mkdir
-MV=/bin/mv
-OD=/bin/od
-PATH=${NCARG_ROOT}/bin:${PATH}
-RM=/bin/rm
-RSYNC=/bin/rsync
-SCP=/bin/scp
-SED=/bin/sed
-SORT=/bin/sort
-SSH=/bin/ssh
-TAIL=/bin/tail
-TAR=/bin/tar
-TIME=/bin/time
-TOUCH=/bin/touch
-TR=/bin/tr
-WC=/bin/wc
+PER=[Pp][Ee][Rr]
+RUN=[Rr][Uu][Nn]
+SECOND=[Ss][Ee][Cc][Oo][Nn][Dd]
+START=[Ss][Tt][Aa][Rr][Tt]
+TASK=[Tt][Aa][Ss][Kk]
+UPDATE=[Uu][Pp][Dd][Aa][Tt][Ee]
+WRF=[Ww][Rr][Ff]
+YEAR=[Yy][Ee][Aa][Rr]
+YES=[Yy][Ee][Ss]

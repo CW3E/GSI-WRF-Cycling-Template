@@ -150,7 +150,7 @@ set -x
 #####################################################
 
 if [ ! -x "${CONSTANT}" ]; then
-  ${ECHO} "ERROR: ${CONSTANT} does not exist or is not executable"
+  echo "ERROR: ${CONSTANT} does not exist or is not executable"
   exit 1
 fi
 
@@ -158,7 +158,7 @@ fi
 . ${CONSTANT}
 
 #####################################################
-# Make checks for UNGRIB settings
+# Make checks for ungrib settings
 #####################################################
 # Options below are defined in cycling.xml
 #
@@ -175,17 +175,17 @@ fi
 #####################################################
 
 if [ ! "${BKG_DATA}"  ]; then
-  ${ECHO} "ERROR: \$BKG_DATA is not defined"
+  echo "ERROR: \$BKG_DATA is not defined"
   exit 1
 fi
 
 if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
-  ${ECHO} "ERROR: \${BKG_DATA} must equal \"GFS\" or \"GEFS\" as currently supported inputs."
+  echo "ERROR: \${BKG_DATA} must equal \"GFS\" or \"GEFS\" as currently supported inputs."
   exit 1
 fi
 
 if [ ! "${ENS_N}"  ]; then
-  ${ECHO} "ERROR: \$ENS_N is not defined"
+  echo "ERROR: \$ENS_N is not defined"
   exit 1
 fi
 
@@ -193,51 +193,51 @@ fi
 ens_n=`printf %02d ${ENS_N}`
 
 if [ ! "${FCST_LENGTH}" ]; then
-  ${ECHO} "ERROR: \$FCST_LENGTH is not defined"
+  echo "ERROR: \$FCST_LENGTH is not defined"
   exit 1
 fi
 
 if [ ! "${DATA_INTERVAL}" ]; then
-  ${ECHO} "ERROR: \$DATA_INTERVAL is not defined"
+  echo "ERROR: \$DATA_INTERVAL is not defined"
   exit 1
 fi
 
 if [ ! "${START_TIME}" ]; then
-  ${ECHO} "ERROR: \$START_TIME is not defined!"
+  echo "ERROR: \$START_TIME is not defined!"
   exit 1
 fi
 
 if [ ! "${BKG_START_TIME}" ]; then
-  ${ECHO} "ERROR: \$BKG_START_TIME is not defined!"
+  echo "ERROR: \$BKG_START_TIME is not defined!"
   exit 1
 fi
 
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
-if [ `${ECHO} "${START_TIME}" | ${AWK} '/^[[:digit:]]{10}$/'` ]; then
-  start_time=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
+if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  start_time=`echo "${START_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
-  ${ECHO} "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
-start_time=`${DATE} -d "${start_time}"`
-end_time=`${DATE} -d "${start_time} ${FCST_LENGTH} hours"`
+start_time=`date -d "${start_time}"`
+end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
 # define BKG_START_TIME date string wihtout HH
-bkg_start_date=`${ECHO} ${BKG_START_TIME} | ${CUT} -c1-8`
-bkg_start_hh=`${ECHO} ${BKG_START_TIME} | ${CUT} -c9-10`
+bkg_start_date=`echo ${BKG_START_TIME} | cut -c1-8`
+bkg_start_hh=`echo ${BKG_START_TIME} | cut -c9-10`
 
 if [ ! ${MAX_DOM} ]; then
-  ${ECHO} "ERROR: \$MAX_DOM is not defined!"
+  echo "ERROR: \$MAX_DOM is not defined!"
   exit 1
 fi
 
 if [[ ${IF_ECMWF_ML} != ${YES} && ${IF_ECMWF_ML} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_ECMWF_ML must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_ECMWF_ML must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 #####################################################
-# Define UNGRIB workflow dependencies
+# Define ungrib workflow dependencies
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
@@ -250,84 +250,84 @@ fi
 #####################################################
 
 if [ ! "${WPS_ROOT}" ]; then
-  ${ECHO} "ERROR: \$WPS_ROOT is not defined"
+  echo "ERROR: \$WPS_ROOT is not defined"
   exit 1
 fi
 
 if [ ! -d "${WPS_ROOT}" ]; then
-  ${ECHO} "ERROR: WPS_ROOT directory ${WPS_ROOT} does not exist"
+  echo "ERROR: WPS_ROOT directory ${WPS_ROOT} does not exist"
   exit 1
 fi
 
 if [ ! -d ${STATIC_DATA} ]; then
-  ${ECHO} "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
+  echo "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
   exit 1
 fi
 
 if [ -z ${INPUT_DATAROOT} ]; then
-  ${ECHO} "ERROR: \$INPUT_DATAROOT directory name is not defined"
+  echo "ERROR: \$INPUT_DATAROOT directory name is not defined"
   exit 1
 fi
 
 #####################################################
-# Begin pre-UNGRIB setup
+# Begin pre-unrib setup
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT      = Working directory where UNGRIB_EXE runs and outputs
-# WPS_DAT_FILES  = All file contents of clean WPS directory
-#                  namelists and input data will be linked from other sources
-# UNGRIB_EXE     = Path and name of working executable
-# VTABLE         = Path and name of variable table
-# GRIB_DATAROOT  = Path to the raw data to be processed
+# work_root     = Working directory where ungrib_exe runs and outputs
+# wps_dat_files = All file contents of clean WPS directory
+#                 namelists and input data will be linked from other sources
+# ungrib_exe    = Path and name of working executable
+# vtable        = Path and name of variable table
+# grib_dataroot = Path to the raw data to be processed
 #
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/wpsprd/ens_${ens_n}
-${MKDIR} -p ${WORK_ROOT}
-cd ${WORK_ROOT}
+work_root=${INPUT_DATAROOT}/wpsprd/ens_${ens_n}
+mkdir -p ${work_root}
+cd ${work_root}
 
-set -A WPS_DAT_FILES ${WPS_ROOT}/*
-UNGRIB_EXE=${WPS_ROOT}/ungrib.exe
+set -A wps_dat_files ${WPS_ROOT}/*
+ungrib_exe=${WPS_ROOT}/ungrib.exe
 
-if [ ! -x ${UNGRIB_EXE} ]; then
-  ${ECHO} "ERROR: ${UNGRIB_EXE} does not exist, or is not executable"
+if [ ! -x ${ungrib_exe} ]; then
+  echo "ERROR: ${ungrib_exe} does not exist, or is not executable"
   exit 1
 fi
 
 # Make links to the WPS DAT files
-for file in ${WPS_DAT_FILES[@]}; do
-  ${ECHO} "${LN} -sf ${file}"
-  ${LN} -sf ${file} ./
+for file in ${wps_dat_files[@]}; do
+  echo "ln -sf ${file}"
+  ln -sf ${file} ./
 done
 
 # Remove any previous Vtables
-${RM} -f Vtable
+rm -f Vtable
 
 # Check to make sure the variable table is available in the static
 # data and make a link to it
-VTABLE=${STATIC_DATA}/variable_tables/Vtable
-if [ ! -r ${VTABLE} ]; then
-  ${ECHO} "ERROR: a 'Vtable' should be provided at location ${VTABLE}, Vtable not found"
+vtable=${STATIC_DATA}/variable_tables/Vtable
+if [ ! -r ${vtable} ]; then
+  echo "ERROR: a 'Vtable' should be provided at location ${vtable}, Vtable not found"
   exit 1
 else
-  ${LN} -sf ${VTABLE} ./
+  ln -sf ${vtable} ./
 fi
 
-# check to make sure the GRIB_DATAROOT exists and is non-empty
-GRIB_DATAROOT=${STATIC_DATA}/gribbed
-if [! -d ${GRIB_DATAROOT} ]; then
-  ${ECHO} "ERROR: the directory ${GRIB_DATAROOT} does not exist"
+# check to make sure the grib_dataroot exists and is non-empty
+grib_dataroot=${STATIC_DATA}/gribbed
+if [! -d ${grib_dataroot} ]; then
+  echo "ERROR: the directory ${grib_dataroot} does not exist"
   exit 1
 fi
 
-if [ -z `${LS} -A ${GRIB_DATAROOT}`]; then
-  ${ECHO} "ERROR: ${GRIB_DATAROOT} is emtpy, put grib data in this location for processing"
+if [ -z `ls -A ${grib_dataroot}`]; then
+  echo "ERROR: ${grib_dataroot} is emtpy, put grib data in this location for processing"
   exit 1
 fi
 
-link_cmnd="./link_grib.csh ${GRIB_DATAROOT}/${bkg_start_date}"
 # link the grib data to the working directory
+link_cmnd="./link_grib.csh ${grib_dataroot}/${bkg_start_date}"
 if [[ ${BKG_DATA} = "GFS" ]]; then
   # GFS has single control trajectory
   fnames="gfs.0p25.${BKG_START_TIME}.f*"
@@ -348,46 +348,46 @@ fi
 #  Build WPS namelist
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-${CP} ${STATIC_DATA}/namelists/namelist.wps .
+cp ${STATIC_DATA}/namelists/namelist.wps .
 
 # define start / end time patterns for namelist.wps
-start_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${start_time}"`
-end_yyyymmdd_hhmmss=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
+start_yyyymmdd_hhmmss=`date +%Y-%m-%d_%H:%M:%S -d "${start_time}"`
+end_yyyymmdd_hhmmss=`date +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
 
 # Update the start and end date in namelist (propagates settings to three domains)
-${CAT} namelist.wps | ${SED} "s/\(${start}_${date}\)${equal}'${yyyymmdd_hhmmss}'.*/\1 = '${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}'/" \
-                    | ${SED} "s/\(${end}_${date}\)${equal}'${yyyymmdd_hhmmss}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
+cat namelist.wps | sed "s/\(${START}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}'/" \
+                    | sed "s/\(${END}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
                       > namelist.wps.new
-${MV} namelist.wps.new namelist.wps
+mv namelist.wps.new namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
-${CAT} namelist.wps | ${SED} "s/\(${interval}_${seconds}\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
+cat namelist.wps | sed "s/\(${INTERVAL}_${SECONDS}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
                       > namelist.wps.new
-${MV} namelist.wps.new namelist.wps
+mv namelist.wps.new namelist.wps
 
 #####################################################
-# Run UNGRIB
+# Run ungrib 
 #####################################################
 # Print run parameters
-${ECHO}
-${ECHO} "BKG_DATA       = ${BKG_DATA}"
-${ECHO} "ENS_N          = ${ENS_N}"
-${ECHO} "WPS_ROOT       = ${WPS_ROOT}"
-${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
-${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
-${ECHO}
-${ECHO} "FCST LENGTH    = ${FCST_LENGTH}"
-${ECHO} "DATA INTERVAL  = ${DATA_INTERVAL}"
-${ECHO} "MAX_DOM        = ${MAX_DOM}"
-${ECHO} "IF_ECMWF_ML    = ${IF_ECMWF_ML}"
-${ECHO}
-${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
-${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
-${ECHO} "BKG_START_TIME = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${BKG_START_TIME}"`
-${ECHO}
-now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "ungrib started at ${now}"
+echo
+echo "BKG_DATA       = ${BKG_DATA}"
+echo "ENS_N          = ${ENS_N}"
+echo "WPS_ROOT       = ${WPS_ROOT}"
+echo "STATIC_DATA    = ${STATIC_DATA}"
+echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+echo
+echo "FCST LENGTH    = ${FCST_LENGTH}"
+echo "DATA INTERVAL  = ${DATA_INTERVAL}"
+echo "MAX_DOM        = ${MAX_DOM}"
+echo "IF_ECMWF_ML    = ${IF_ECMWF_ML}"
+echo
+echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
+echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo "BKG_START_TIME = "`date +"%Y/%m/%d %H:%M:%S" -d "${BKG_START_TIME}"`
+echo
+now=`date +%Y%m%d%H%M%S`
+echo "ungrib started at ${now}"
 ./ungrib.exe
 
 #####################################################
@@ -396,24 +396,24 @@ ${ECHO} "ungrib started at ${now}"
 error=$?
 
 if [ ${error} -ne 0 ]; then
-  ${ECHO} "ERROR: ${UNGRIB} exited with status: ${error}"
+  echo "ERROR: ${ungrib_exe} exited with status: ${error}"
   exit ${error}
 fi
 
 # save ungrib logs
 log_dir=ungrib_log.${now}
-${MKDIR} ${log_dir}
-${MV} ungrib.log ${log_dir}
+mkdir ${log_dir}
+mv ungrib.log ${log_dir}
 
 # save a copy of namelist
-${CP} namelist.wps ${log_dir}
+cp namelist.wps ${log_dir}
 
 # Check to see if we've got all the files we're expecting
 fcst=0
 while [ ${fcst} -le ${FCST_LENGTH} ]; do
-  filename=FILE:`${DATE} +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
+  filename=FILE:`date +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
   if [ ! -s ${filename} ]; then
-    ${ECHO} "ERROR: ${filename} is missing"
+    echo "ERROR: ${filename} is missing"
     exit 1
   fi
   (( fcst += DATA_INTERVAL ))
@@ -422,14 +422,14 @@ done
 # If ungribbing ECMWF model level data, calculate additional coefficients
 # NOTE: namelist.wps should account for the "PRES" file prefixes in fg_names
 if [[ ${IF_ECMWF_ML} = ${YES} ]]; then
-  ${LN} -sf ${STATIC_DATA}/variable_tables/ecmwf_coeffs ./
+  ln -sf ${STATIC_DATA}/variable_tables/ecmwf_coeffs ./
   ./util/calc_ecmwf_p.exe
   # Check to see if we've got all the files we're expecting
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    filename=PRES:`${DATE} +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
+    filename=PRES:`date +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
     if [ ! -s ${filename} ]; then
-      ${ECHO} "ERROR: ${filename} is missing"
+      echo "ERROR: ${filename} is missing"
       exit 1
     fi
     (( fcst += DATA_INTERVAL ))
@@ -437,16 +437,16 @@ if [[ ${IF_ECMWF_ML} = ${YES} ]]; then
 fi
 
 # Remove links to the WPS DAT files
-for file in ${WPS_DAT_FILES[@]}; do
-    ${RM} -f `${BASENAME} ${file}`
+for file in ${wps_dat_files[@]}; do
+    rm -f `basename ${file}`
 done
 
 # remove links to grib files
-${RM} -f GRIBFILE.*
+rm -f GRIBFILE.*
 
 # Remove namelist
-${RM} -f namelist.wps
+rm -f namelist.wps
 
-${ECHO} "ungrib.ksh completed successfully at `${DATE}`"
+echo "ungrib.ksh completed successfully at `date`"
 
 exit 0

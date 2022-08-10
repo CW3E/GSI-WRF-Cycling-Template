@@ -108,7 +108,7 @@ set -x
 #####################################################
 
 if [ ! -x "${CONSTANT}" ]; then
-  ${ECHO} "ERROR: ${CONSTANT} does not exist or is not executable"
+  echo "ERROR: ${CONSTANT} does not exist or is not executable"
   exit 1
 fi
 
@@ -132,7 +132,7 @@ fi
 #####################################################
 
 if [ ! "${ENS_N}" ]; then
-  echo "ERROR: \$N_ENSE is not defined!"
+  echo "ERROR: \$ENS_N is not defined!"
   exit 1
 fi
 
@@ -140,52 +140,52 @@ fi
 ens_n=`printf %02d ${ENS_N}`
 
 if [ ! ${FCST_LENGTH} ]; then
-  ${ECHO} "ERROR: \$FCST_LENGTH is not defined!"
+  echo "ERROR: \$FCST_LENGTH is not defined!"
   exit 1
 fi
 
 if [ ! ${FCST_INTERVAL} ]; then
-  ${ECHO} "ERROR: \$FCST_INTERVAL is not defined!"
+  echo "ERROR: \$FCST_INTERVAL is not defined!"
   exit 1
 fi
 
 if [ ! "${DATA_INTERVAL}" ]; then
-  ${ECHO} "ERROR: \$DATA_INTERVAL is not defined"
+  echo "ERROR: \$DATA_INTERVAL is not defined"
   exit 1
 fi
 
 if [ ! "${START_TIME}" ]; then
-  ${ECHO} "ERROR: \$START_TIME is not defined"
+  echo "ERROR: \$START_TIME is not defined"
   exit 1
 fi
 
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
-if [ `${ECHO} "${START_TIME}" | ${AWK} '/^[[:digit:]]{10}$/'` ]; then
-  start_time=`${ECHO} "${START_TIME}" | ${SED} 's/\([[:digit:]]\{2\}\)$/ \1/'`
+if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  start_time=`echo "${START_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
-  ${ECHO} "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
-start_time=`${DATE} -d "${start_time}"`
-end_time=`${DATE} -d "${start_time} ${FCST_LENGTH} hours"`
+start_time=`date -d "${start_time}"`
+end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
 if [ ! "${MAX_WRF_DOM}" ]; then
-  ${ECHO} "ERROR: \$MAX_WRF_DOM is not defined"
+  echo "ERROR: \$MAX_WRF_DOM is not defined"
   exit 1
 fi
 
 if [ ! "${MAX_GSI_DOM}" ]; then
-  ${ECHO} "ERROR: \$MAX_GSI_DOM is not defined"
+  echo "ERROR: \$MAX_GSI_DOM is not defined"
   exit 1
 fi
 
 if [[ ${IF_CYCLING} != ${YES} && ${IF_CYCLING} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_CYCLING must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_CYCLING must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 if [[ ${IF_SST_UPDATE} != ${YES} && ${IF_SST_UPDATE} != ${NO} ]]; then
-  ${ECHO} "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
@@ -205,32 +205,32 @@ fi
 #####################################################
 
 if [ ! "${WRF_ROOT}" ]; then
-  ${ECHO} "ERROR: \$WRF_ROOT is not defined"
+  echo "ERROR: \$WRF_ROOT is not defined"
   exit 1
 fi
 
 if [ ! -d ${WRF_ROOT} ]; then
-  ${ECHO} "ERROR: \$WRF_ROOT directory ${WRF_ROOT} does not exist"
+  echo "ERROR: \$WRF_ROOT directory ${WRF_ROOT} does not exist"
   exit 1
 fi
 
 if [ ! "${WRF_PROC}" ]; then
-  ${ECHO} "ERROR: \$WRF_PROC is not defined"
+  echo "ERROR: \$WRF_PROC is not defined"
   exit 1
 fi
 
 if [ -z "${WRF_PROC}" ]; then
-  ${ECHO} "ERROR: The variable \$WRF_PROC must be set to the number of processors to run WRF"
+  echo "ERROR: The variable \$WRF_PROC must be set to the number of processors to run WRF"
   exit 1
 fi
 
 if [ ! -d ${STATIC_DATA} ]; then
-  ${ECHO} "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
+  echo "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
   exit 1
 fi
 
 if [ ! -d ${INPUT_DATAROOT} ]; then
-  ${ECHO} "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
+  echo "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
   exit 1
 fi
 
@@ -244,34 +244,34 @@ fi
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT      = Working directory where WRF runs
-# WRF_DAT_FILES  = All file contents of clean WRF/run directory
+# work_root      = Working directory where WRF runs
+# wrf_dat_files  = All file contents of clean WRF/run directory
 #                  namelists, boundary and input data will be linked
 #                  from other sources
-# WRF_EXE        = Path and name of working executable
+# wrf_exe        = Path and name of working executable
 #
 #####################################################
 
-WORK_ROOT=${INPUT_DATAROOT}/wrfprd/ens_${ens_n}
-set -A WRF_DAT_FILES ${WRF_ROOT}/run/*
-WRF_EXE=${WRF_ROOT}/main/wrf.exe
+work_root=${INPUT_DATAROOT}/wrfprd/ens_${ens_n}
+set -A wrf_dat_files ${WRF_ROOT}/run/*
+wrf_exe=${WRF_ROOT}/main/wrf.exe
 
-if [ ! -x ${WRF_EXE} ]; then
-  ${ECHO} "ERROR: ${WRF_EXE} does not exist, or is not executable"
+if [ ! -x ${wrf_exe} ]; then
+  echo "ERROR: ${wrf_exe} does not exist, or is not executable"
   exit 1
 fi
 
-${MKDIR} -p ${WORK_ROOT}
-cd ${WORK_ROOT}
+mkdir -p ${work_root}
+cd ${work_root}
 
 # Make links to the WRF DAT files
-for file in ${WRF_DAT_FILES[@]}; do
-  ${ECHO} "${LN} -sf ${file}"
-  ${LN} -sf ${file} ./
+for file in ${wrf_dat_files[@]}; do
+  echo "ln -sf ${file}"
+  ln -sf ${file} ./
 done
 
 # Remove any old WRF outputs in the directory
-${RM} -f wrfout_*
+rm -f wrfout_*
 
 # Link WRF initial conditions from real.exe or GSI analysis depending on IF_CYCLING switch
 dmn=1
@@ -281,37 +281,37 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
   if [[ ${IF_CYCLING} = ${YES} && ${dmn} -le ${MAX_GSI_DOM} ]]; then
     if [[ ${dmn} = 1 ]]; then
       # obtain the input and boundary files from the lateral boundary update by WRFDA 
-      wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/lateral_bdy_update/wrfvar_output 
-      ${LN} -sf ${wrfda_outname} ./${wrfinput_name}
+      wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}/lateral_bdy_update/wrfvar_output 
+      ln -sf ${wrfda_outname} ./${wrfinput_name}
       if [ ! -r ./${wrfinput_name} ]; then
-        ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${wrfda_outname}"
+        echo "ERROR: ${work_root}/${wrfinput_name} does not exist, or is not readable, check source ${wrfda_outname}"
         exit 1
       fi
     else
       # Nested domains have boundary conditions defined by parent, link from GSI analysis
       gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl.d0${dmn}_${START_TIME}
-      ${LN} -sf ${gsi_outname} ./${wrfinput_name}
+      ln -sf ${gsi_outname} ./${wrfinput_name}
       if [ ! -r ./${wrfinput_name} ]; then
-        ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
+        echo "ERROR: ${work_root}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
         exit 1
       fi
     fi
   else
     # else get initial conditions from real.exe
-    real_outname=${INPUT_DATAROOT}/realprd/${wrfinput_name}
-    ${LN} -sf ${real_outname} ./
+    real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/${wrfinput_name}
+    ln -sf ${real_outname} ./
     if [ ! -r ./${wrfinput_name} ]; then
-      ${ECHO} "ERROR: ${WORK_ROOT}/${wrfinput_name} does not exist, or is not readable, check source ${real_outname}"
+      echo "ERROR: ${work_root}/${wrfinput_name} does not exist, or is not readable, check source ${real_outname}"
       exit 1
     fi
   fi
   # NOTE: THIS LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
   if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
     wrflowinp_name=wrflowinp_d0${dmn}
-    real_outname=${INPUT_DATAROOT}/realprd/${wrflowinp_name}
-    ${LN} -sf ${real_outname} ./
+    real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/${wrflowinp_name}
+    ln -sf ${real_outname} ./
     if [ ! -s ${wrflowinp_name} ]; then
-      ${ECHO} "ERROR: ${WORK_ROOT}/${wrflowinp_name} does not exist, or is not readable, check source ${real_outname}"
+      echo "ERROR: ${work_root}/${wrflowinp_name} does not exist, or is not readable, check source ${real_outname}"
     fi
   fi
   (( dmn += 1 ))
@@ -319,146 +319,136 @@ done
 
 if [[ ${IF_CYCLING} = ${YES} ]]; then
   # Link the wrfbdy_d01 file from the WRFDA updated BCs
-  wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/lateral_bdy_update/wrfbdy_d01
-  ${LN} -sf ${wrfda_outname} ./wrfbdy_d01
-  if [ ! -r ${WORK_ROOT}/wrfbdy_d01 ]; then
-    ${ECHO} "ERROR: ${WORK_ROOT}/wrfbdy_d01 does not exist, or is not readable, check source in ${wrfda_outname}"
+  wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}/lateral_bdy_update/wrfbdy_d01
+  ln -sf ${wrfda_outname} ./wrfbdy_d01
+  if [ ! -r ${work_root}/wrfbdy_d01 ]; then
+    echo "ERROR: ${work_root}/wrfbdy_d01 does not exist, or is not readable, check source in ${wrfda_outname}"
     exit 1
   fi
 else
   # Link the wrfbdy_d01 file from real.exe
-  real_outname=${INPUT_DATAROOT}/realprd/wrfbdy_d01
-  ${LN} -sf ${real_outname} ./wrfbdy_d01
-  if [ ! -r ${WORK_ROOT}/wrfbdy_d01 ]; then
-    ${ECHO} "ERROR: ${WORK_ROOT}/wrfbdy_d01 does not exist, or is not readable, check source in ${real_outname}"
+  real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/wrfbdy_d01
+  ln -sf ${real_outname} ./wrfbdy_d01
+  if [ ! -r ${work_root}/wrfbdy_d01 ]; then
+    echo "ERROR: ${work_root}/wrfbdy_d01 does not exist, or is not readable, check source in ${real_outname}"
     exit 1
   fi
 fi
 
 # Move existing rsl files to a subdir if there are any
-${ECHO} "Checking for pre-existing rsl files"
+echo "Checking for pre-existing rsl files"
 if [ -f "rsl.out.0000" ]; then
-  rsldir=rsl.wrf.`${LS} -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | ${CUT} -d" " -f 6`
-  ${MKDIR} ${rsldir}
-  ${ECHO} "Moving pre-existing rsl files to ${rsldir}"
-  ${MV} rsl.out.* ${rsldir}
-  ${MV} rsl.error.* ${rsldir}
+  rsldir=rsl.wrf.`ls -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | cut -d" " -f 6`
+  mkdir ${rsldir}
+  echo "Moving pre-existing rsl files to ${rsldir}"
+  mv rsl.out.* ${rsldir}
+  mv rsl.error.* ${rsldir}
 else
-  ${ECHO} "No pre-existing rsl files were found"
+  echo "No pre-existing rsl files were found"
 fi
 
 #####################################################
 #  Build WRF namelist
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-${CP} ${STATIC_DATA}/namelists/namelist.input .
+cp ${STATIC_DATA}/namelists/namelist.input .
 
 # Get the start and end time components
-start_year=`${DATE} +%Y -d "${start_time}"`
-start_month=`${DATE} +%m -d "${start_time}"`
-start_day=`${DATE} +%d -d "${start_time}"`
-start_hour=`${DATE} +%H -d "${start_time}"`
-start_minute=`${DATE} +%M -d "${start_time}"`
-start_second=`${DATE} +%S -d "${start_time}"`
-end_year=`${DATE} +%Y -d "${end_time}"`
-end_month=`${DATE} +%m -d "${end_time}"`
-end_day=`${DATE} +%d -d "${end_time}"`
-end_hour=`${DATE} +%H -d "${end_time}"`
-end_minute=`${DATE} +%M -d "${end_time}"`
-end_second=`${DATE} +%S -d "${end_time}"`
+start_year=`date +%Y -d "${start_time}"`
+start_month=`date +%m -d "${start_time}"`
+start_day=`date +%d -d "${start_time}"`
+start_hour=`date +%H -d "${start_time}"`
+start_minute=`date +%M -d "${start_time}"`
+start_second=`date +%S -d "${start_time}"`
+end_year=`date +%Y -d "${end_time}"`
+end_month=`date +%m -d "${end_time}"`
+end_day=`date +%d -d "${end_time}"`
+end_hour=`date +%H -d "${end_time}"`
+end_minute=`date +%M -d "${end_time}"`
+end_second=`date +%S -d "${end_time}"`
 
 # Compute number of days and hours for the run
 (( run_days = FCST_LENGTH / 24 ))
 (( run_hours = FCST_LENGTH % 24 ))
 
 # Update the run_days in wrf namelist.input
-${CAT} namelist.input | ${SED} "s/\(${run}_${day}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
+cat namelist.input | sed "s/\(${RUN}_${DAY}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update the run_hours in wrf namelist
-${CAT} namelist.input | ${SED} "s/\(${run}_${hour}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${run_hours}/" \
+cat namelist.input | sed "s/\(${RUN}_${HOUR}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_hours}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update the start time in wrf namelist (propagates settings to three domains)
-${CAT} namelist.input | ${SED} "s/\(${start}_${year}\)${equal}[[:digit:]]\{4\}.*/\1 = ${start_year}, ${start_year}, ${start_year}/" \
-   | ${SED} "s/\(${start}_${month}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
-   | ${SED} "s/\(${start}_${day}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_day}, ${start_day}, ${start_day}/" \
-   | ${SED} "s/\(${start}_${hour}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_hour}, ${start_hour}, ${start_hour}/" \
-   | ${SED} "s/\(${start}_${minute}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_minute}, ${start_minute}, ${start_minute}/" \
-   | ${SED} "s/\(${start}_${second}\)${equal}[[:digit:]]\{2\}.*/\1 = ${start_second}, ${start_second}, ${start_second}/" \
+cat namelist.input | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${start_year}, ${start_year}, ${start_year}/" \
+   | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
+   | sed "s/\(${START}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_day}, ${start_day}, ${start_day}/" \
+   | sed "s/\(${START}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_hour}, ${start_hour}, ${start_hour}/" \
+   | sed "s/\(${START}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_minute}, ${start_minute}, ${start_minute}/" \
+   | sed "s/\(${START}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_second}, ${start_second}, ${start_second}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update end time in namelist (propagates settings to three domains)
-${CAT} namelist.input | ${SED} "s/\(${end}_${year}\)${equal}[[:digit:]]\{4\}.*/\1 = ${end_year}, ${end_year}, ${end_year}/" \
-   | ${SED} "s/\(${end}_${month}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_month}, ${end_month}, ${end_month}/" \
-   | ${SED} "s/\(${end}_${day}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_day}, ${end_day}, ${end_day}/" \
-   | ${SED} "s/\(${end}_${hour}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_hour}, ${end_hour}, ${end_hour}/" \
-   | ${SED} "s/\(${end}_${minute}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_minute}, ${end_minute}, ${end_minute}/" \
-   | ${SED} "s/\(${end}_${second}\)${equal}[[:digit:]]\{2\}.*/\1 = ${end_second}, ${end_second}, ${end_second}/" \
+cat namelist.input | sed "s/\(${END}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${end_year}, ${end_year}, ${end_year}/" \
+   | sed "s/\(${END}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_month}, ${end_month}, ${end_month}/" \
+   | sed "s/\(${END}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_day}, ${end_day}, ${end_day}/" \
+   | sed "s/\(${END}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_hour}, ${end_hour}, ${end_hour}/" \
+   | sed "s/\(${END}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_minute}, ${end_minute}, ${end_minute}/" \
+   | sed "s/\(${END}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_second}, ${end_second}, ${end_second}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update the quilting settings to the parameters set in the workflow
-${CAT} namelist.input | ${SED} "s/\(${nio}_${tasks}_${per}_${group}\)${equal}[[:digit:]]\{1,\}/\1 = ${NIO_TASKS_PER_GROUP}/" \
-                      | ${SED} "s/\(${nio}_${group}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${NIO_GROUPS}/" \
+cat namelist.input | sed "s/\(${NIO}_${TASK}[Ss]_${PER}_${GROUP}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_TASKS_PER_GROUP}/" \
+                      | sed "s/\(${NIO}_${GROUP}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_GROUPS}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 # Update data interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
-${CAT} namelist.input | ${SED} "s/\(${interval}_${second}[Ss]\)${equal}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
+cat namelist.input | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
+mv namelist.input.new namelist.input
 
 if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
   # update the auxinput4_interval to the DATA_INTERVAL (propagates to three domains)
   (( auxinput4_minutes = DATA_INTERVAL * 60 ))
-  ${CAT} namelist.input | ${SED} "s/\(${auxinput}4_${interval}\)${equal}[[:digit:]]\{1,\}.*/\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}/" \
+  cat namelist.input | sed "s/\(${AUXINPUT}4_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}.*/\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}/" \
      > namelist.input.new
-  ${MV} namelist.input.new namelist.input
+  mv namelist.input.new namelist.input
 fi
 
 # Update the max_dom in namelist
-${CAT} namelist.input | ${SED} "s/\(max_dom\)${equal}[[:digit:]]\{1,\}/\1 = ${MAX_WRF_DOM}/" \
+cat namelist.input | sed "s/\(max_dom\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_WRF_DOM}/" \
    > namelist.input.new
-${MV} namelist.input.new namelist.input
-
-if [ "${WRITE_INPUT}" ]; then
-${CAT} namelist.input | ${SED} "s/\(write_input\)${equal}.false./\1 = .true./" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-(( history_begin_h = FCST_INTERVAL + 1))
-${CAT} namelist.input | ${SED} "s/\(history_begin_h\)${equal}[[:digit:]]\{1,\}/\1 = ${history_begin_h}/" \
-   > namelist.input.new
-${MV} namelist.input.new namelist.input
-fi
+mv namelist.input.new namelist.input
 
 #####################################################
 # Run WRF
 #####################################################
 # Print run parameters
-${ECHO}
-${ECHO} "WRF_ROOT       = ${WRF_ROOT}"
-${ECHO} "STATIC_DATA    = ${STATIC_DATA}"
-${ECHO} "INPUT_DATAROOT = ${INPUT_DATAROOT}"
-${ECHO}
-${ECHO} "FCST LENGTH    = ${FCST_LENGTH}"
-${ECHO} "FCST INTERVAL  = ${FCST_INTERVAL}"
-${ECHO} "MAX_WRF_DOM    = ${MAX_WRF_DOM}"
-${ECHO} "MAX_GSI_DOM    = ${MAX_GSI_DOM}"
-${ECHO} "IF_CYCLING     = ${IF_CYCLING}"
-${ECHO} "IF_SST_UPDATE  = ${IF_SST_UPDATE}"
-${ECHO}
-${ECHO} "START TIME     = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
-${ECHO} "END TIME       = "`${DATE} +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
-${ECHO}
-now=`${DATE} +%Y%m%d%H%M%S`
-${ECHO} "wrf started at ${now}"
+echo
+echo "WRF_ROOT       = ${WRF_ROOT}"
+echo "STATIC_DATA    = ${STATIC_DATA}"
+echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+echo
+echo "FCST LENGTH    = ${FCST_LENGTH}"
+echo "FCST INTERVAL  = ${FCST_INTERVAL}"
+echo "MAX_WRF_DOM    = ${MAX_WRF_DOM}"
+echo "MAX_GSI_DOM    = ${MAX_GSI_DOM}"
+echo "IF_CYCLING     = ${IF_CYCLING}"
+echo "IF_SST_UPDATE  = ${IF_SST_UPDATE}"
+echo
+echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
+echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo
+now=`date +%Y%m%d%H%M%S`
+echo "wrf started at ${now}"
 
-${MPIRUN} ${WRF_EXE}
+${MPIRUN} ${wrf_exe}
 
 #####################################################
 # Run time error check
@@ -467,17 +457,17 @@ error=$?
 
 # Save a copy of the RSL files
 rsldir=rsl.wrf.${now}
-${MKDIR} ${rsldir}
-${MV} rsl.out.* ${rsldir}
-${MV} rsl.error.* ${rsldir}
-${CP} namelist.* ${rsldir}
+mkdir ${rsldir}
+mv rsl.out.* ${rsldir}
+mv rsl.error.* ${rsldir}
+cp namelist.* ${rsldir}
 
 # Look for successful completion messages in rsl files, adjusted for quilting processes
-nsuccess=`${CAT} ${rsldir}/rsl.* | ${AWK} '/SUCCESS COMPLETE WRF/' | ${WC} -l`
+nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE WRF/' | wc -l`
 (( ntotal=(WRF_PROC - NIO_GROUPS * NIO_TASKS_PER_GROUP ) * 2 ))
-${ECHO} "Found ${nsuccess} of ${ntotal} completion messages"
+echo "Found ${nsuccess} of ${ntotal} completion messages"
 if [ ${nsuccess} -ne ${ntotal} ]; then
-  ${ECHO} "ERROR: WRF did not complete sucessfully"
+  echo "ERROR: WRF did not complete sucessfully"
   if [ ${error} -ne 0 ]; then
     ${MPIRUN} ${EXIT_CALL} ${error}
     exit
@@ -489,13 +479,13 @@ fi
 
 if [[ ${IF_CYCLING} = ${YES} ]]; then
   # ensure that the cycle_io/date/bkg directory exists for starting next cycle
-  cycle_intv=`${DATE} +%H -d "${CYCLE_INTV}"`
-  datestr=`${DATE} +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
+  cycle_intv=`date +%H -d "${CYCLE_INTV}"`
+  datestr=`date +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
   new_bkg=${datestr}/bkg/ens_${ens_n}
-  ${MKDIR} -p ../../${new_bkg}
+  mkdir -p ../../${new_bkg}
 else
   current_bkg=${INPUT_DATAROOT}/bkg/ens_${ens_n}
-  ${MKDIR} -p ${current_bkg}
+  mkdir -p ${current_bkg}
 fi
 
 # Check for all wrfout files on FCST_INTERVAL and link files to the appropriate bkg directory
@@ -503,16 +493,16 @@ dmn=1
 while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    datestr=`${DATE} +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
+    datestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
     if [ ! -s "wrfout_d0${dmn}_${datestr}" ]; then
-      ${ECHO} "WRF failed to complete.  wrfout_d0${dmn}_${datestr} is missing or empty!"
+      echo "WRF failed to complete.  wrfout_d0${dmn}_${datestr} is missing or empty!"
       ${MPIRUN} ${EXIT_CALL} 1
       exit
     else
       if [[ ${IF_CYCLING} = ${YES} ]]; then
-        ${LN} -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}/
+        ln -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}/
       else
-        ${LN} -sfr wrfout_d0${dmn}_${datestr} ${current_bkg}/
+        ln -sfr wrfout_d0${dmn}_${datestr} ${current_bkg}/
       fi
     fi
     (( fcst += FCST_INTERVAL ))
@@ -521,10 +511,10 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
 done
 
 # Remove links to the WRF DAT files
-for file in ${WRF_DAT_FILES[@]}; do
-    ${RM} -f `${BASENAME} ${file}`
+for file in ${wrf_dat_files[@]}; do
+    rm -f `${basename} ${file}`
 done
 
-${ECHO} "wrf.ksh completed successfully at `${DATE}`"
+echo "wrf.ksh completed successfully at `date`"
 
 exit 0
