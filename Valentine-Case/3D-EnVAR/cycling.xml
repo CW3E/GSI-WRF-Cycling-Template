@@ -190,7 +190,7 @@
       </dependency>
     </task>
 
-    <task name="metgrid_ens_#ENS_N#" maxtries="1" cycledefs="first_cycle,q_daily">
+    <task name="metgrid_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/metgrid.ksh</command>
       <cores>&METGRID_PROC;</cores>
       <nodesize>&METGRID_NODESIZE;</nodesize>

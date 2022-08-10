@@ -321,7 +321,7 @@ cp namelist.wps ${log_dir}
 if [ ${error} -ne 0 ]; then
   echo "ERROR: ${metgrid_exe} exited with status ${error}"
   exit ${error}
-else
+fi
 
 # Check to see if metgrid outputs are generated
 dmn=1

@@ -394,7 +394,6 @@ mv rsl.out.* ${rsldir}
 mv rsl.error.* ${rsldir}
 cp namelist.* ${rsldir}
 
-
 if [ ${error} -ne 0 ]; then
   echo "ERROR: ${real_exe} exited with status ${error}"
   exit ${error}
