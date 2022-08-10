@@ -122,7 +122,7 @@
   
   <metatask name="ensemble_pre_proc">
     <var name="ENS_N">00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20</var>  
-    <task name="ungrib_ens_#ENS_N#" maxtries="1" cycledefs="first_cycle,q_daily">
+    <task name="ungrib_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
       <nodesize>&UNGRIB_NODESIZE;</nodesize>
@@ -247,7 +247,7 @@
       </dependency>
     </task>
 
-    <task name="real_ens_#ENS_N#" maxtries="1" cycledefs="first_cycle,q_daily">
+    <task name="real_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/real.ksh</command>
       <cores>&REAL_PROC;</cores>
       <nodesize>&REAL_NODESIZE;</nodesize>
@@ -616,7 +616,7 @@
 
   <metatask name="ensemble_fore">
     <var name="ENS_N">00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20</var>
-    <task name="wrf_ens_#ENS_N#" maxtries="1" cycledefs="first_cycle,q_daily">
+    <task name="wrf_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/wrf.ksh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>

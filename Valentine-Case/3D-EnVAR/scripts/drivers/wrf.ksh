@@ -509,7 +509,7 @@ done
 
 # Remove links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
-    rm -f `${basename} ${file}`
+    rm -f `basename ${file}`
 done
 
 echo "wrf.ksh completed successfully at `date`"
