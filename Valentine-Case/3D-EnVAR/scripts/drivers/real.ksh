@@ -394,27 +394,26 @@ mv rsl.out.* ${rsldir}
 mv rsl.error.* ${rsldir}
 cp namelist.* ${rsldir}
 
+
+if [ ${error} -ne 0 ]; then
+  echo "ERROR: ${real_exe} exited with status ${error}"
+  exit ${error}
+fi
+
 # Look for successful completion messages in rsl files
 nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE REAL/' | wc -l`
 (( ntotal = REAL_PROC * 2 ))
 echo "Found ${nsuccess} of ${ntotal} completion messages"
 if [ ${nsuccess} -ne ${ntotal} ]; then
-  echo "ERROR: ${real_exe} did not complete sucessfully  Exit status=${error}"
-  if [ ${error} -ne 0 ]; then
-    ${MPIRUN} ${EXIT_CALL} ${error}
-    exit
-  else
-    ${MPIRUN} ${EXIT_CALL} 1
-    exit
-  fi
+  echo "ERROR: ${real_exe} did not complete sucessfully, missing completion messages in RSL files"
+  exit 1
 fi
 
 # check to see if the BC output is generated
 bc_file=wrfbdy_d01
 if [ ! -s ${bc_file} ]; then
   echo "${real_exe} failed to generate boundary conditions ${bc_file}"
-  ${MPIRUN} ${EXIT_CALL} 1
-  exit
+  exit 1
 fi
 
 # check to see if the IC output is generated
@@ -423,8 +422,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   ic_file=wrfinput_d0${dmn}
   if [ ! -s ${ic_file} ]; then
     echo "${real_exe} failed to generate initial conditions ${ic_file} for domain d0${dmn}"
-    ${MPIRUN} ${EXIT_CALL} 1
-    exit
+    exit 1
   fi
   (( dmn += 1 ))
 done
@@ -436,8 +434,7 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
     sst_file=wrflowinp_d0${dmn}
     if [ ! -s ${sst_file} ]; then
       echo "${real_exe} failed to generate SST update file ${sst_file} for domain d0${dmn}"
-      ${MPIRUN} ${EXIT_CALL} 1
-      exit
+      exit 1
     fi
     (( dmn += 1 ))
   done
@@ -452,3 +449,5 @@ for file in ${wrf_dat_files[@]}; do
 done
 
 echo "real.ksh completed successfully at `date`"
+
+exit 0

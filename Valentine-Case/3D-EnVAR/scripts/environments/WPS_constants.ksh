@@ -58,7 +58,7 @@ END=[Ee][Nn][Dd]
 EQUAL=[[:blank:]]*=[[:blank:]]*
 FG_NAME=[Ff][Gg][_][Nn][Aa][Mm][Ee]
 INTERVAL=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
-SECONDS=[Ss][Ee][Cc][Oo][Nn][Dd][Ss]
+SECOND=[Ss][Ee][Cc][Oo][Nn][Dd]
 START=[Ss][Tt][Aa][Rr][Tt]
 NO=[Nn][Oo]
 PREFIX=[Pp][Rr][Ee][Ff][Ii][Xx]

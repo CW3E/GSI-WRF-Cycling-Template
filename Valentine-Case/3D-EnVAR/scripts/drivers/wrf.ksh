@@ -462,19 +462,17 @@ mv rsl.out.* ${rsldir}
 mv rsl.error.* ${rsldir}
 cp namelist.* ${rsldir}
 
+if [ ${error} -ne 0 ]; then
+  echo "ERROR: ${wrf_exe} exited with status ${error}"
+  exit ${error}
+fi
+
 # Look for successful completion messages in rsl files, adjusted for quilting processes
 nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE WRF/' | wc -l`
 (( ntotal=(WRF_PROC - NIO_GROUPS * NIO_TASKS_PER_GROUP ) * 2 ))
 echo "Found ${nsuccess} of ${ntotal} completion messages"
 if [ ${nsuccess} -ne ${ntotal} ]; then
-  echo "ERROR: WRF did not complete sucessfully"
-  if [ ${error} -ne 0 ]; then
-    ${MPIRUN} ${EXIT_CALL} ${error}
-    exit
-  else
-    ${MPIRUN} ${EXIT_CALL} 1
-    exit
-  fi
+  echo "ERROR: ${wrf_exe} did not complet successfully, missing completion messages in RLS files"
 fi
 
 if [[ ${IF_CYCLING} = ${YES} ]]; then
@@ -496,8 +494,7 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
     datestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
     if [ ! -s "wrfout_d0${dmn}_${datestr}" ]; then
       echo "WRF failed to complete.  wrfout_d0${dmn}_${datestr} is missing or empty!"
-      ${MPIRUN} ${EXIT_CALL} 1
-      exit
+      exit 1
     else
       if [[ ${IF_CYCLING} = ${YES} ]]; then
         ln -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}/

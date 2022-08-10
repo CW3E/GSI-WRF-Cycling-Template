@@ -362,7 +362,7 @@ mv namelist.wps.new namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
-cat namelist.wps | sed "s/\(${INTERVAL}_${SECONDS}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
+cat namelist.wps | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
                       > namelist.wps.new
 mv namelist.wps.new namelist.wps
 
@@ -396,7 +396,7 @@ echo "ungrib started at ${now}"
 error=$?
 
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${ungrib_exe} exited with status: ${error}"
+  echo "ERROR: ${ungrib_exe} exited with status ${error}"
   exit ${error}
 fi
 

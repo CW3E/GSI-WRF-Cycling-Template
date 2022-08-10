@@ -144,12 +144,12 @@ fi
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# WORK_ROOT      = Working directory where da_update_bc.exe runs and outputs updated files
-# GSI_DIR        = Working directory where GSI produces control analysis in the current cycle
-# ENKF_DIR       = Working directory where EnKF produces the analysis ensemble perturbations
-# REAL_DIR       = Working directory real.exe runs and outputs IC and BC files for the current cycle
-# BKG_DIR        = Working directory with forecast data from WRF linked for the current cycle
-# UPDATE_BC_EXE  = Path and name of the update executable
+# work_root      = Working directory where da_update_bc.exe runs and outputs updated files
+# gsi_dir        = Working directory where GSI produces control analysis in the current cycle
+# enkf_dir       = Working directory where EnKF produces the analysis ensemble perturbations
+# real_dir       = Working directory real.exe runs and outputs IC and BC files for the current cycle
+# bkg_dir        = Working directory with forecast data from WRF linked for the current cycle
+# update_bc_exe  = Path and name of the update executable
 #
 #####################################################
 
@@ -162,26 +162,26 @@ while [ ${ens_n} -le ${N_ENS} ]; do
   # define three zero padded string for GSI
   iiimem=`printf %03d ${ens_n}`
   
-  WORK_ROOT=${INPUT_DATAROOT}/wrfdaprd/ens_${iimem}
-  GSI_DIR=${INPUT_DATAROOT}/gsiprd/
-  ENKF_DIR=${INPUT_DATAROOT}/enkfprd/
-  REAL_DIR=${INPUT_DATAROOT}/realprd/ens_${iimem}
-  BKG_DIR=${INPUT_DATAROOT}/bkg/ens_${iimem}
-  UPDATE_BC_EXE=${WRFDA_ROOT}/var/da/da_update_bc.exe
+  work_root=${INPUT_DATAROOT}/wrfdaprd/ens_${iimem}
+  gsi_dir=${INPUT_DATAROOT}/gsiprd/
+  enkf_dir=${INPUT_DATAROOT}/enkfprd/
+  real_dir=${INPUT_DATAROOT}/realprd/ens_${iimem}
+  bkg_dir=${INPUT_DATAROOT}/bkg/ens_${iimem}
+  update_bc_exe=${WRFDA_ROOT}/var/da/da_update_bc.exe
   
-  if [ ! -d ${REAL_DIR} ]; then
-    echo "ERROR: \$REAL_DIR directory ${REAL_DIR} does not exist"
+  if [ ! -d ${real_dir} ]; then
+    echo "ERROR: \$real_dir directory ${real_dir} does not exist"
     exit 1
   fi
   
-  if [ ! -x ${UPDATE_BC_EXE} ]; then
-    echo "ERROR: ${UPDATE_BC_EXE} does not exist, or is not executable"
+  if [ ! -x ${update_bc_exe} ]; then
+    echo "ERROR: ${update_bc_exe} does not exist, or is not executable"
     exit 1
   fi
   
   # create working directory and cd into it
-  mkdir -p ${WORK_ROOT}
-  cd ${WORK_ROOT}
+  mkdir -p ${work_root}
+  cd ${work_root}
   
   # Remove IC/BC in the directory if old data present
   rm -f wrfout_*
@@ -193,8 +193,8 @@ while [ ${ens_n} -le ${N_ENS} ]; do
   
   if [[ ${IF_LOWER} = ${YES} ]]; then 
 
-    if [ ! -d ${BKG_DIR} ]; then
-      echo "ERROR: \$BKG_DIR directory ${INPUT_DATAROOT} does not exist"
+    if [ ! -d ${bkg_dir} ]; then
+      echo "ERROR: \$bkg_dir directory ${bkg_dir} does not exist"
       exit 1
     fi
 
@@ -203,18 +203,18 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       wrfout=wrfout_d0${dmn}_${DATE_STR}
       wrfinput=wrfinput_d0${dmn}
   
-      if [ ! -r "${BKG_DIR}/${wrfout}" ]; then
+      if [ ! -r "${bkg_dir}/${wrfout}" ]; then
         echo "ERROR: Input file '${wrfout}' is missing"
         exit 1
       else
-        cp ${BKG_DIR}/${wrfout} ./
+        cp ${bkg_dir}/${wrfout} ./
       fi
   
-      if [ ! -r "${REAL_DIR}/${wrfnput}" ]; then
+      if [ ! -r "${real_dir}/${wrfnput}" ]; then
         echo "ERROR: Input file '${wrfinput}' is missing"
         exit 1
       else
-        cp ${REAL_DIR}/${wrfinput} ./
+        cp ${real_dir}/${wrfinput} ./
       fi
   
       #####################################################
@@ -246,7 +246,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       mv parame.in.new parame.in
   
       #####################################################
-      # Run UPDATE_BC_EXE
+      # Run update_bc_exe
       #####################################################
       # Print run parameters
       echo
@@ -260,7 +260,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       echo
       now=`date +%Y%m%d%H%M%S`
       echo "da_update_bc.exe started at ${now}"
-      ${UPDATE_BC_EXE}
+      ${update_bc_exe}
   
       #####################################################
       # Run time error check
@@ -268,12 +268,12 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       error=$?
       
       if [ ${error} -ne 0 ]; then
-        echo "ERROR: ${UNGRIB} exited with status: ${error}"
+        echo "ERROR: ${UNGRIB} exited with status ${error}"
         exit ${error}
       fi
   
       # save the files where they can be accessed for GSI analysis
-      lower_bdy_data=${WORK_ROOT}/lower_bdy_update
+      lower_bdy_data=${work_root}/lower_bdy_update
       mkdir -p ${lower_bdy_data}
       mv ${wrfout} ${lower_bdy_data}/${wrfout}
       mv ${wrfinput} ${lower_bdy_data}/${wrfinput}
@@ -285,14 +285,14 @@ while [ ${ens_n} -le ${N_ENS} ]; do
   
   else
 
-    if [ ! -d ${GSI_DIR} ]; then
-      echo "ERROR: \$GSI_DIR directory ${GSI_DIR} does not exist"
+    if [ ! -d ${gsi_dir} ]; then
+      echo "ERROR: \$gsi_dir directory ${gsi_dir} does not exist"
       exit 1
     fi
 
     if [ ${ens_n} -eq 0 ]; then
-      wrfanl=${GSI_DIR}/d01/wrfanl.d01_${ANAL_TIME}
-      wrfbdy=${REAL_DIR}/wrfbdy_d01
+      wrfanl=${gsi_dir}/d01/wrfanl.d01_${ANAL_TIME}
+      wrfbdy=${real_dir}/wrfbdy_d01
       wrfvar_outname=wrfvar_output
       wrfbdy_name=wrfbdy_d01
   
@@ -339,7 +339,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       mv parame.in.new parame.in
   
       #####################################################
-      # Run UPDATE_BC_EXE
+      # Run update_bc_exe
       #####################################################
       # Print run parameters
       echo
@@ -352,7 +352,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       echo
       now=`date +%Y%m%d%H%M%S`
       echo "da_update_bc.exe started at ${now}"
-      ${UPDATE_BC_EXE}
+      ${update_bc_exe}
   
       #####################################################
       # Run time error check
@@ -360,12 +360,12 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       error=$?
       
       if [ ${error} -ne 0 ]; then
-        echo "ERROR: ${UNGRIB} exited with status: ${error}"
+        echo "ERROR: ${UNGRIB} exited with status ${error}"
         exit ${error}
       fi
   
       # save the files where they can be accessed for new WRF forecast
-      lateral_bdy_data=${WORK_ROOT}/lateral_bdy_update
+      lateral_bdy_data=${work_root}/lateral_bdy_update
       mkdir -p ${lateral_bdy_data}
       mv wrfvar_output ${lateral_bdy_data}/
       mv wrfbdy_d01 ${lateral_bdy_data}/
@@ -374,8 +374,8 @@ while [ ${ens_n} -le ${N_ENS} ]; do
 
     else
       # NOTE: this section needs revision for EnKF step
-      if [ ! -d ${ENKF_DIR} ]; then
-        echo "ERROR: \$ENKF_DIR directory ${ENKF_DIR} does not exist"
+      if [ ! -d ${enkf_dir} ]; then
+        echo "ERROR: \$enkf_dir directory ${enkf_dir} does not exist"
         exit 1
       fi
 
@@ -387,3 +387,5 @@ while [ ${ens_n} -le ${N_ENS} ]; do
 done
 
 echo "wrfda.ksh completed successfully at `date`"
+
+exit 0

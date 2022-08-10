@@ -762,7 +762,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   error=$?
 
   if [ ${error} -ne 0 ]; then
-    echo "ERROR: ${GSI} crashed  Exit status=${error}"
+    echo "ERROR: ${GSI} exited with status ${error}"
     exit ${error}
   fi
 

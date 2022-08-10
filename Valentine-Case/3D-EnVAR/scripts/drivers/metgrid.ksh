@@ -277,7 +277,7 @@ mv namelist.wps.new namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
-cat namelist.wps | sed "s/\(${INTERVAL}_${SECONDS}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
+cat namelist.wps | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
                       > namelist.wps.new
 mv namelist.wps.new namelist.wps
 
@@ -319,9 +319,8 @@ mv metgrid.log* ${log_dir}
 cp namelist.wps ${log_dir}
 
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${metgrid_exe} exited with status: ${error}"
-  ${MPIRUN} ${EXIT_CALL} ${error}
-  exit
+  echo "ERROR: ${metgrid_exe} exited with status ${error}"
+  exit ${error}
 else
 
 # Check to see if metgrid outputs are generated
@@ -332,8 +331,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     time_str=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
     if [ ! -e "${metgrid_prefix}.d0${dmn}.${time_str}.${metgrid_suffix}" ]; then
       echo "${metgrid_exe} for d0${dmn} failed to complete"
-      ${MPIRUN} ${EXIT_CALL} 1
-      exit
+      exit 1
     fi
     (( fcst += DATA_INTERVAL ))
   done
@@ -350,4 +348,4 @@ rm -f namelist.wps
 
 echo "metgrid.ksh completed successfully at `date`"
 
-fi
+exit 0
