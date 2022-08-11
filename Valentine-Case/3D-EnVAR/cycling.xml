@@ -39,7 +39,8 @@
   <!ENTITY SECOND_CYCLE        "201902090600">
   <!ENTITY DA_MODE             "No"> <!-- Set to "No" to run WRF cycles without GSI or WRFDA analysis updates -->
   <!ENTITY COLD_START_MODE     "No"> <!-- Set to "Yes" to make every GSI analysis from real.exe outputs -->
-  <!ENTITY N_ENS               "02"> <!-- Must equal the max index the "ENS" var for metatasks above-->
+  <!ENTITY ENS_LIST            "00 01 02">
+  <!ENTITY N_ENS               "02"> <!-- Must equal the max index of the ENS_LIST above -->
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
@@ -122,7 +123,7 @@
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
   
   <metatask name="ensemble_pre_proc">
-    <var name="ENS_N">00 01 02</var>  
+    <var name="ENS_N">&ENS_LIST;</var>  
     <task name="ungrib_ens_#ENS_N#" maxtries="1" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
@@ -616,7 +617,7 @@
   </task>
 
   <metatask name="ensemble_fore">
-    <var name="ENS_N">00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20</var>
+    <var name="ENS_N">&ENS_LIST;</var>
     <task name="wrf_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/wrf.ksh</command>
       <cores>&WRF_PROC;</cores>
