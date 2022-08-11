@@ -63,7 +63,7 @@
   <!ENTITY FCST_LENGTH         "12"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
-  <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting is applied to both WRF and real.exe runs -->
+  <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->
   <!ENTITY IF_FEEDBACK         "No"> <!-- This setting defines 1- or 2-way nesting with WRF domains -->
   <!ENTITY NIO_TASKS_PER_GROUP "0"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
   <!ENTITY NIO_GROUPS          "4"> 
@@ -701,6 +701,10 @@
       <envar>
         <name>IF_SST_UPDATE</name>
         <value>&IF_SST_UPDATE;</value>
+      </envar>
+      <envar>
+        <name>IF_FEEDBACK</name>
+        <value>&IF_FEEDBACK;</value>
       </envar>
       <dependency> 
         <or>
