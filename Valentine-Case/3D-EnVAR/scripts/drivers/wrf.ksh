@@ -120,14 +120,16 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ENS_N       = Ensemble index (00 for control)
-# FCST_LENGTH = Total length of WRF forecast simulation in HH
+# ENS_N         = Ensemble index (00 for control)
+# FCST_LENGTH   = Total length of WRF forecast simulation in HH
 # FCST_INTERVAL = Interval of wrfout.d01 in HH
 # DATA_INTERVAL = Interval of input data in HH
-# START_TIME = Simulation start time in YYMMDDHH
-# MAX_WRF_DOM = Max number of domains to use in namelist settings
-# MAX_GSI_DOM = Number of domains GSI analyzes when cycling
-# IF_CYCLING = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis or real.exe, case insensitive
+# START_TIME    = Simulation start time in YYMMDDHH
+# MAX_WRF_DOM   = Max number of domains to use in namelist settings
+# MAX_GSI_DOM   = Number of domains GSI analyzes when cycling
+# IF_CYCLING    = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis or real.exe, case insensitive
+# IF_SST_UPDATE = Yes / No: whether WRF uses dynamic SST values 
+# IF_FEEBACK    = Yes / No: whether WRF domains use 1- or 2-way nesting
 #
 #####################################################
 
@@ -184,7 +186,23 @@ if [[ ${IF_CYCLING} != ${YES} && ${IF_CYCLING} != ${NO} ]]; then
   exit 1
 fi
 
-if [[ ${IF_SST_UPDATE} != ${YES} && ${IF_SST_UPDATE} != ${NO} ]]; then
+if [[ ${IF_FEEDBACK} = ${YES} ]]; then
+  echo "Two-way WRF nesting is turned on"
+  feedback=1
+elif [[ ${IF_FEEDBACK} = ${NO} ]]; then
+  echo "One-way WRF nesting is turned on"
+  feedback=0
+else
+  echo "ERROR: \$IF_FEEDBACK must equal 'Yes' or 'No' (case insensitive)"
+  exit 1
+fi
+
+if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+  echo "SST Update turned on"
+  sst_update=1
+elif [[ ${IF_SST_UPDATE} = ${NO} ]]; then
+  sst_update=0
+else
   echo "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
@@ -401,6 +419,12 @@ cat namelist.input | sed "s/\(${END}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${
    > namelist.input.new
 mv namelist.input.new namelist.input
 
+
+# Update feedback option for nested domains
+cat namelist.input | sed "s/\(${FEEDBACK}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${feedback}/"\
+  > namelist.input.new
+mv namelist.input.new namelist.input
+
 # Update the quilting settings to the parameters set in the workflow
 cat namelist.input | sed "s/\(${NIO}_${TASK}[Ss]_${PER}_${GROUP}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_TASKS_PER_GROUP}/" \
                       | sed "s/\(${NIO}_${GROUP}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_GROUPS}/" \
@@ -411,6 +435,11 @@ mv namelist.input.new namelist.input
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
 cat namelist.input | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
    > namelist.input.new
+mv namelist.input.new namelist.input
+
+# Update sst_update settings
+cat namelist.input | sed "s/\(${SST}_${UPDATE}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${sst_update}/"\
+  > namelist.input.new
 mv namelist.input.new namelist.input
 
 if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
@@ -431,6 +460,7 @@ mv namelist.input.new namelist.input
 #####################################################
 # Print run parameters
 echo
+echo "ENS_N          = ${ENS_N}"
 echo "WRF_ROOT       = ${WRF_ROOT}"
 echo "STATIC_DATA    = ${STATIC_DATA}"
 echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
@@ -441,6 +471,7 @@ echo "MAX_WRF_DOM    = ${MAX_WRF_DOM}"
 echo "MAX_GSI_DOM    = ${MAX_GSI_DOM}"
 echo "IF_CYCLING     = ${IF_CYCLING}"
 echo "IF_SST_UPDATE  = ${IF_SST_UPDATE}"
+echo "IF_FEEDBACK    = ${IF_FEEDBACK}"
 echo
 echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
 echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`

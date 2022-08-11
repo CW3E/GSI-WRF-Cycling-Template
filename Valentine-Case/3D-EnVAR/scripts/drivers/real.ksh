@@ -175,7 +175,12 @@ if [ ! ${MAX_DOM} ]; then
   exit 1
 fi
 
-if [[ ${IF_SST_UPDATE} != ${YES} && ${IF_SST_UPDATE} != ${NO} ]]; then
+if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+  echo "SST Update turned on"
+  sst_update=1
+elif [[ ${IF_SST_UPDATE} = ${NO} ]]; then
+  sst_update=0
+else
   echo "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
@@ -356,6 +361,19 @@ cat namelist.input | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,
    > namelist.input.new
 mv namelist.input.new namelist.input
 
+# Update sst_update settings
+cat namelist.input | sed "s/\(${SST}_${UPDATE}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${sst_update}/"\
+  > namelist.input.new
+mv namelist.input.new namelist.input
+
+if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+  # update the auxinput4_interval to the DATA_INTERVAL (propagates to three domains)
+  (( auxinput4_minutes = DATA_INTERVAL * 60 ))
+  cat namelist.input | sed "s/\(${AUXINPUT}4_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}.*/\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}/" \
+     > namelist.input.new
+  mv namelist.input.new namelist.input
+fi
+
 # Update the max_dom in namelist
 cat namelist.input | sed "s/\(max_dom\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
    > namelist.input.new
@@ -374,6 +392,7 @@ echo
 echo "FCST LENGTH    = ${FCST_LENGTH}"
 echo "DATA INTERVAL  = ${DATA_INTERVAL}"
 echo "MAX_DOM        = ${MAX_DOM}"
+echo "IF_SST_UPDATE  = ${IF_SST_UPDATE}"
 echo
 echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
 echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
