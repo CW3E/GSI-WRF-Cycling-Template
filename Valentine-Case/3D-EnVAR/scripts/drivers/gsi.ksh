@@ -50,7 +50,7 @@
 #               no     : leave running directory as is (this is for debug only)
 # byte_order  = Big_Endian or Little_Endian
 # ens_prfx    = Prefix for the local links for ensemble member names of the form
-#               ${ens_prfx}XX
+#               ${ens_prfx}xxx
 #
 #####################################################
 
@@ -184,10 +184,15 @@ if [ ! "${ANAL_TIME}" ]; then
   exit 1
 fi
 
-# Define directory path name variable date_str=YYMMDDHH from ANAL_TIME
-hh=`echo ${ANAL_TIME} | cut -c9-10`
-anal_date=`echo ${ANAL_TIME} | cut -c1-8`
-date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} ${hh} hours"`
+if [ `echo "${ANAL_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  # Define directory path name variable date_str=YYMMDDHH from ANAL_TIME
+  hh=`echo ${ANAL_TIME} | cut -c9-10`
+  anal_date=`echo ${ANAL_TIME} | cut -c1-8`
+  date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} ${hh} hours"`
+else
+  echo "ERROR: start time, '${ANAL_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  exit 1
+fi
 
 if [ -z "${date_str}"]; then
   echo "ERROR: \$date_str is not defined correctly, check format of \$ANAL_TIME!"
@@ -204,12 +209,10 @@ if [ -z "${CRTM_VERSION}" ]; then
   exit 1
 fi
 
-
 if [ ! ${STATIC_DATA} ]; then
   echo "ERROR: \$STATIC_DATA is not defined!"
   exit 1
 fi
-
 
 if [ ! -d ${STATIC_DATA} ]; then
   echo "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
@@ -234,6 +237,7 @@ fi
 # bkg_root     = Path for root directory of controlm from WRFDA or REAL depending on cycling
 # fix_root     = Path of fix files
 # gsi_exe      = Path and name of the gsi.x executable
+# gsi_namelist = Path and name of the gsi namelist constructor script
 # crtm_root    = Path of the CRTM root directory, contained in GSI_ROOT
 # prepbufr     = Path of PreBUFR conventional obs
 #
@@ -470,6 +474,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   #   lightinfo = Text file with information about assimilation of GLM lightning data
   #   bufrtable = Text file ONLY needed for single obs test (oneobstest=.true.)
   #   bftab_sst = Bufr table for sst ONLY needed for sst retrieval (retrieval=.true.)
+  #
   #####################################################
 
   if [ ${bkcv_option} = GLOBAL ] ; then
@@ -843,8 +848,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 
   if [[ ${IF_OBSERVER} = ${YES} ]]; then
     string=ges
-    for type in $listall; do
-      count=0
+    for type in ${listall}; do
       if [[ -f diag_${type}_${string}.${ANAL_TIME} ]]; then
          mv diag_${type}_${string}.${ANAL_TIME} diag_${type}_${string}.ensmean
       fi
@@ -884,17 +888,17 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       error=$?
 
       if [ ${error} -ne 0 ]; then
-        echo "ERROR: ${gsi_exe} crashed for member ${iiimem} Exit status=${error}"
+        echo "ERROR: ${gsi_exe} exited with status ${error} for member ${iiimem}"
         exit ${error}
       fi
 
       ls -l * > list_run_directory_mem${iimem}
-      # generate diag files
 
+      # generate diag files
       for type in ${listall}; do
             count=`ls pe*${type}_${loop}* | wc -l`
          if [[ ${count} -gt 0 ]]; then
-            cat pe*${type}_${loop}* > diag_${type}_${string}.mem${ens_n}
+            cat pe*${type}_${loop}* > diag_${type}_${string}.mem${iiimem}
          fi
       done
       # next member

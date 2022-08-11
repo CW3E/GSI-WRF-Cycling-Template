@@ -32,8 +32,8 @@ cat <<EOF > enkf.nml
   lnsigcutoffpssh     = 0.4,
   lnsigcutoffpstr     = 0.4,
   simple_partition    = .true.,
-  nlons               = $NLONS,
-  nlats               = $NLATS,
+  nlons               = $nlons,
+  nlats               = $nlats,
   smoothparm          = -1,
   readin_localization = .false.,
   saterrfact          = 1.0,
@@ -41,8 +41,8 @@ cat <<EOF > enkf.nml
   sprd_tol            = 1.e30,
   paoverpb_thresh     = 0.99,
   reducedgrid         = .false.,
-  nlevs               = $NLEVS,
-  nanals              = $NMEM_ENKF,
+  nlevs               = $nlevs,
+  nanals              = $N_ENS,
   nvars               = 5,
   deterministic       = .true.,
   sortinc             = .true.,
@@ -125,7 +125,7 @@ cat <<EOF > enkf.nml
   sattypes_oz(7)      = 'gome_metop-b',
  /
 &nam_wrf
-  arw                 = $IF_ARW,
-  nmm                 = $IF_NMM,
+  arw                 = $if_arw,
+  nmm                 = $if_nmm,
  / 
 EOF

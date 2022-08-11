@@ -63,7 +63,7 @@
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY IF_SST_UPDATE       "Yes"> <!-- This setting is applied to both WRF and real.exe runs -->
-  <!ENTITY NIO_TASKS_PER_GROUP "22"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
+  <!ENTITY NIO_TASKS_PER_GROUP "0"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
   <!ENTITY NIO_GROUPS          "4"> 
   <!-- END WRF SETTINGS -->
 
@@ -102,9 +102,9 @@
   <!ENTITY WRFDA_NODESIZE      "24">
   <!ENTITY WRFDA_NODES         "1">
   <!ENTITY WRFDA_WC            "00:45:00">
-  <!ENTITY WRF_PROC            "352">
+  <!ENTITY WRF_PROC            "384">
   <!ENTITY WRF_MEM_PER_CPU     "2G">
-  <!ENTITY WRF_NODESIZE        "22">
+  <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
   <!ENTITY WRF_WC              "12:00:00">
   <!ENTITY GSI_PROC            "352">
@@ -122,7 +122,7 @@
   
   <metatask name="ensemble_pre_proc">
     <var name="ENS_N">00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20</var>  
-    <task name="ungrib_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
+    <task name="ungrib_ens_#ENS_N#" maxtries="1" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
       <nodesize>&UNGRIB_NODESIZE;</nodesize>
@@ -185,7 +185,7 @@
       <dependency> 
         <or>
           <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
-          <metataskdep metatask="ensemble_fore" cycle_offset="-&CYCLE_INTV;" />
+          <taskdep task="wrf_ens_#ENS_N#" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/>
         </or>
       </dependency>
     </task>
