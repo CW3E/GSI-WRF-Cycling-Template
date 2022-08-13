@@ -34,7 +34,7 @@
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902090000">
-  <!ENTITY CYCLE_END           "201902090600">
+  <!ENTITY CYCLE_END           "201902091200">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY SECOND_CYCLE        "201902090600">
   <!ENTITY DA_MODE             "No"> <!-- Set to "No" to run WRF cycles without GSI or WRFDA analysis updates -->
@@ -60,7 +60,7 @@
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY MAX_WRF_DOM         "2">
-  <!ENTITY FCST_LENGTH         "12"> <!-- This setting is applied to all WRF preprocessing and WRF -->
+  <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->
@@ -184,12 +184,6 @@
         <name>IF_ECMWF_ML</name>
         <value>&IF_ECMWF_ML;</value>
       </envar>
-      <dependency> 
-        <or>
-          <streq><left><cyclestr>@Y@m@d@H@M</cyclestr></left><right>&CYCLE_START;</right></streq>
-          <taskdep task="wrf_ens_#ENS_N#" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/>
-        </or>
-      </dependency>
     </task>
 
     <task name="metgrid_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
