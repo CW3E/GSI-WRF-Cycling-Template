@@ -176,7 +176,7 @@
         <or>
           <not>
             <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
-          <not> 
+          </not> 
 	  <taskdep task="wrf_ens_#ENS_N#" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED">
         </or>
       </dependency>
@@ -535,8 +535,8 @@
       <or>
         <taskdep task="wrfda_lowbc" state="SUCCEEDED"/> 
         <and>
-          <metataskdep metatask="ensemble_pre_proc"/> 
           <streq><left>&COLD_START_MODE;</left><right>Yes</right></streq>
+          <metataskdep metatask="ensemble_pre_proc"/> 
         </and>
       </or>
     </dependency>
