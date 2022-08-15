@@ -177,7 +177,7 @@
           <not>
             <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
           </not> 
-	  <taskdep task="wrf_ens_#ENS_N#" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED">
+	  <taskdep task="wrf_ens_#ENS_N#" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/>
         </or>
       </dependency>
     </task>
@@ -723,7 +723,7 @@
     </dependency>
   </task>
 
-  <task name="enkf;" maxtries="1" cycledefs="first_cycle,q_daily">
+  <task name="enkf" maxtries="1" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/enkf.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
