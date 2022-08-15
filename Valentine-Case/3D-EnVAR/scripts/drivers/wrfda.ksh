@@ -71,7 +71,7 @@ fi
 #
 # Below variables are derived by cycling.xml variables for convenience
 #
-# DATE_STR      = Defined by the ANAL_TIME variable, to be used as path
+# date_str      = Defined by the ANAL_TIME variable, to be used as path
 #                 name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
 #####################################################
@@ -82,17 +82,16 @@ if [ ! "${ANAL_TIME}" ]; then
 fi
 
 if [ ! "${N_ENS}" ]; then
-  echo "ERROR: \$N_ENSE is not defined!"
+  echo "ERROR: \$N_ENS is not defined!"
   exit 1
 fi
 
-# Define directory path name variable DATE_STR=YYMMDDHH from ANAL_TIME
-HH=`echo $ANAL_TIME | cut -c9-10`
-ANAL_DATE=`echo $ANAL_TIME | cut -c1-8`
-DATE_STR=`date +%Y-%m-%d_%H:%M:%S -d "${ANAL_DATE} $HH hours"`
+hh=`echo ${ANAL_TIME} | cut -c9-10`
+anal_date=`echo ${ANAL_TIME} | cut -c1-8`
+date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} $HH hours"`
 
-if [ -z "${DATE_STR}"]; then
-  echo "ERROR: \$DATE_STR is not defined correctly, check format of \$ANAL_DATE!"
+if [ -z "${date_str}"]; then
+  echo "ERROR: \$date_str is not defined correctly, check format of \$anal_date!"
   exit 1
 fi
 
@@ -200,7 +199,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
 
     # Check to make sure the input files are available and copy them
     while [ ${dmn} -le ${MAX_DOM} ]; do
-      wrfout=wrfout_d0${dmn}_${DATE_STR}
+      wrfout=wrfout_d0${dmn}_${date_str}
       wrfinput=wrfinput_d0${dmn}
   
       if [ ! -r "${bkg_dir}/${wrfout}" ]; then
@@ -257,6 +256,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       echo
       echo "IF_LOWER       = ${IF_LOWER}"
       echo "DOMAIN         = ${dmn}"
+      echo "ENS_N          = ${ens_n}"
       echo
       now=`date +%Y%m%d%H%M%S`
       echo "da_update_bc.exe started at ${now}"
@@ -268,7 +268,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       error=$?
       
       if [ ${error} -ne 0 ]; then
-        echo "ERROR: ${UNGRIB} exited with status ${error}"
+        echo "ERROR: ${update_bc_exe} exited with status ${error}"
         exit ${error}
       fi
   
@@ -284,13 +284,12 @@ while [ ${ens_n} -le ${N_ENS} ]; do
     done
   
   else
-
-    if [ ! -d ${gsi_dir} ]; then
-      echo "ERROR: \$gsi_dir directory ${gsi_dir} does not exist"
-      exit 1
-    fi
-
     if [ ${ens_n} -eq 0 ]; then
+      if [ ! -d ${gsi_dir} ]; then
+        echo "ERROR: \$gsi_dir directory ${gsi_dir} does not exist"
+        exit 1
+      fi
+
       wrfanl=${gsi_dir}/d01/wrfanl.d01_${ANAL_TIME}
       wrfbdy=${real_dir}/wrfbdy_d01
       wrfvar_outname=wrfvar_output
@@ -349,6 +348,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       echo
       echo "IF_LOWER       = ${IF_LOWER}"
       echo "DOMAIN         = ${dmn}"
+      echo "ENS_N          = ${ens_n}"
       echo
       now=`date +%Y%m%d%H%M%S`
       echo "da_update_bc.exe started at ${now}"
@@ -360,7 +360,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       error=$?
       
       if [ ${error} -ne 0 ]; then
-        echo "ERROR: ${UNGRIB} exited with status ${error}"
+        echo "ERROR: ${update_bc_exe} exited with status ${error}"
         exit ${error}
       fi
   
@@ -373,13 +373,92 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       mv fort.* ${lateral_bdy_data}/
 
     else
-      # NOTE: this section needs revision for EnKF step
       if [ ! -d ${enkf_dir} ]; then
         echo "ERROR: \$enkf_dir directory ${enkf_dir} does not exist"
         exit 1
       fi
 
-
+      wrfanl=${enkf_dir}/d01/analysis.${iiimem}
+      wrfbdy=${real_dir}/wrfbdy_d01
+      wrfvar_outname=wrfvar_output
+      wrfbdy_name=wrfbdy_d01
+  
+      if [ ! -r "${wrfanl}" ]; then
+        echo "ERROR: Input file '${wrfanl}' is missing"
+        exit 1
+      else
+        cp ${wrfanl} ${wrfvar_outname}
+      fi
+  
+      if [ ! -r "${wrfbdy}" ]; then
+        echo "ERROR: Input file '${wrfbdy}' is missing"
+        exit 1
+      else
+        cp ${wrfbdy} ${wrfbdy_name} 
+      fi
+  
+      #####################################################
+      #  Build da_update_bc namelist
+      #####################################################
+      # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
+      cp ${STATIC_DATA}/namelists/parame.in ./
+  
+      # Update the namelist for the domain id 
+      cat parame.in | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfvar_outname}'/" \
+         > parame.in.new
+      mv parame.in.new parame.in
+  
+      cat parame.in | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+         > parame.in.new
+      mv parame.in.new parame.in
+  
+      # Update the namelist for lower boundary update 
+      cat parame.in | sed "s/\(${WRF}_${BDY}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfbdy_name}'/" \
+         > parame.in.new
+      mv parame.in.new parame.in
+  
+      cat parame.in | sed "s/\(${UPDATE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
+         > parame.in.new
+      mv parame.in.new parame.in
+  
+      cat parame.in | sed "s/\(${UPDATE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
+         > parame.in.new
+      mv parame.in.new parame.in
+  
+      #####################################################
+      # Run update_bc_exe
+      #####################################################
+      # Print run parameters
+      echo
+      echo "WRFDA_ROOT     = ${WRFDA_ROOT}"
+      echo "STATIC_DATA    = ${STATIC_DATA}"
+      echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+      echo
+      echo "IF_LOWER       = ${IF_LOWER}"
+      echo "DOMAIN         = ${dmn}"
+      echo "ENS_N          = ${ens_n}"
+      echo
+      now=`date +%Y%m%d%H%M%S`
+      echo "da_update_bc.exe started at ${now}"
+      ${update_bc_exe}
+  
+      #####################################################
+      # Run time error check
+      #####################################################
+      error=$?
+      
+      if [ ${error} -ne 0 ]; then
+        echo "ERROR: ${update_bc_exe} exited with status ${error}"
+        exit ${error}
+      fi
+  
+      # save the files where they can be accessed for new WRF forecast
+      lateral_bdy_data=${work_root}/lateral_bdy_update
+      mkdir -p ${lateral_bdy_data}
+      mv wrfvar_output ${lateral_bdy_data}/
+      mv wrfbdy_d01 ${lateral_bdy_data}/
+      mv parame.in ${lateral_bdy_data}/parame.in_d0${dmn} 
+      mv fort.* ${lateral_bdy_data}/
     fi
   fi
 

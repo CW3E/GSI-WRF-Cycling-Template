@@ -325,6 +325,11 @@ end_second=`date +%S -d "${end_time}"`
 (( run_days = FCST_LENGTH / 24 ))
 (( run_hours = FCST_LENGTH % 24 ))
 
+# Update max_dom in namelist
+cat namelist.wps | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
+                      > namelist.wps.new
+mv namelist.wps.new namelist.wps
+
 # Update the run_days in wrf namelist.input
 cat namelist.input | sed "s/\(${RUN}_${DAY}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
    > namelist.input.new
@@ -373,11 +378,6 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
      > namelist.input.new
   mv namelist.input.new namelist.input
 fi
-
-# Update the max_dom in namelist
-cat namelist.input | sed "s/\(max_dom\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
-   > namelist.input.new
-mv namelist.input.new namelist.input
 
 #####################################################
 # Run REAL

@@ -54,10 +54,12 @@ ulimit -s unlimited
 # create case insensitive string variables for namelists / switches
 CONSTANTS_NAME=[Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][Ss][_][Nn][Aa][Mm][Ee]
 DATE=[Dd][Aa][Tt][Ee]
+DOM=[Dd][Oo][Mm]
 END=[Ee][Nn][Dd]
 EQUAL=[[:blank:]]*=[[:blank:]]*
 FG_NAME=[Ff][Gg][_][Nn][Aa][Mm][Ee]
 INTERVAL=[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
+MAX=[Mm][Aa][Xx]
 SECOND=[Ss][Ee][Cc][Oo][Nn][Dd]
 START=[Ss][Tt][Aa][Rr][Tt]
 NO=[Nn][Oo]

@@ -234,10 +234,9 @@ if [ ! -x ${metgrid_exe} ]; then
   exit 1
 fi
 
-mkdir -p ${work_root}
-cd ${work_root}
 
 # Make links to the WPS DAT files
+cd ${work_root}
 for file in ${wps_dat_files[@]}; do
   echo "ln -sf ${file}"
   ln -sf ${file} ./
@@ -264,6 +263,11 @@ done
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
 cp ${STATIC_DATA}/namelists/namelist.wps .
+
+# Update max_dom in namelist
+cat namelist.wps | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
+                      > namelist.wps.new
+mv namelist.wps.new namelist.wps
 
 # define start / end time patterns for namelist.wps
 start_yyyymmdd_hhmmss=`date +%Y-%m-%d_%H:%M:%S -d "${start_time}"`

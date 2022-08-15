@@ -138,8 +138,10 @@ if [ ! "${ENS_N}" ]; then
   exit 1
 fi
 
-# ensure padding to two digits is included
+# Ensure padding to two digits is included
 ens_n=`printf %02d ${ENS_N}`
+# Make three digit padding for GSI conventions
+iiimem=`printf %03d ${ens_n}`
 
 if [ ! ${FCST_LENGTH} ]; then
   echo "ERROR: \$FCST_LENGTH is not defined!"
@@ -306,8 +308,14 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
         exit 1
       fi
     else
-      # Nested domains have boundary conditions defined by parent, link from GSI analysis
-      gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl.d0${dmn}_${START_TIME}
+      # Nested domains have boundary conditions defined by parent, link from GSI / EnKF analysis
+      if [ ${ens_n} -eq 00 ]; then
+	# control solution is indexed 00, analyzed with GSI
+        gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl.d0${dmn}_${START_TIME}
+      else
+	# ensemble perturbations are updated with EnKF step
+        gsi_outname=${INPUT_DATAROOT}/enkfprd/d0${dmn}/analysis.${iiimem}
+      fi
       ln -sf ${gsi_outname} ./${wrfinput_name}
       if [ ! -r ./${wrfinput_name} ]; then
         echo "ERROR: ${work_root}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
@@ -385,6 +393,11 @@ end_hour=`date +%H -d "${end_time}"`
 end_minute=`date +%M -d "${end_time}"`
 end_second=`date +%S -d "${end_time}"`
 
+# Update the max_dom in namelist
+cat namelist.input | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_WRF_DOM}/" \
+   > namelist.input.new
+mv namelist.input.new namelist.input
+
 # Compute number of days and hours for the run
 (( run_days = FCST_LENGTH / 24 ))
 (( run_hours = FCST_LENGTH % 24 ))
@@ -419,7 +432,6 @@ cat namelist.input | sed "s/\(${END}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${
    > namelist.input.new
 mv namelist.input.new namelist.input
 
-
 # Update feedback option for nested domains
 cat namelist.input | sed "s/\(${FEEDBACK}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${feedback}/"\
   > namelist.input.new
@@ -449,11 +461,6 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
      > namelist.input.new
   mv namelist.input.new namelist.input
 fi
-
-# Update the max_dom in namelist
-cat namelist.input | sed "s/\(max_dom\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_WRF_DOM}/" \
-   > namelist.input.new
-mv namelist.input.new namelist.input
 
 #####################################################
 # Run WRF

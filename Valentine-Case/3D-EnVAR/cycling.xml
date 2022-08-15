@@ -34,28 +34,20 @@
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902090000">
-  <!ENTITY CYCLE_END           "201902091200">
-  <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY SECOND_CYCLE        "201902090600">
-  <!ENTITY DA_MODE             "No"> <!-- Set to "No" to run WRF cycles without GSI or WRFDA analysis updates -->
+  <!ENTITY CYCLE_END           "201902090600">
+  <!ENTITY CYCLE_INTV          "06:00:00">
+  <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without GSI or WRFDA analysis updates -->
   <!ENTITY COLD_START_MODE     "No"> <!-- Set to "Yes" to make every GSI analysis from real.exe outputs -->
-  <!ENTITY ENS_LIST            "00 01 02">
-  <!ENTITY N_ENS               "02"> <!-- Must equal the max index of the ENS_LIST above -->
+  <!ENTITY ENS_LIST            "00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20">
+  <!ENTITY N_ENS               "20"> <!-- Must equal the max index of the ENS_LIST above -->
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
   <!ENTITY BKG_DATA            "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
-  <!ENTITY UNGRIB_CONSTANT     "&ENVIRONMENTS;/WPS_constants.ksh">
+  <!ENTITY WPS_CONSTANT        "&ENVIRONMENTS;/WPS_constants.ksh">
   <!ENTITY IF_ECMWF_ML         "No">
   <!-- END UNGRIB SETTINGS -->
-
-  <!-- METGRID SETTINGS -->
-  <!ENTITY METGRID_CONSTANT    "&ENVIRONMENTS;/WPS_constants.ksh">
-  <!-- END METGRID SETTINGS -->
-
-  <!-- REAL SETTINGS -->
-  <!ENTITY REAL_CONSTANT       "&ENVIRONMENTS;/WRF_constants.ksh">
-  <!-- END REAL SETTINGS -->
 
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
@@ -138,7 +130,7 @@
       <native>--mem-per-cpu=&UNGRIB_MEM_PER_CPU;</native>
       <envar>
         <name>CONSTANT</name>
-        <value>&UNGRIB_CONSTANT;</value>
+        <value>&WPS_CONSTANT;</value>
       </envar>
       <envar>
         <name>BKG_DATA</name>
@@ -165,10 +157,6 @@
         <value>&DATA_INTERVAL;</value>
       </envar>
       <envar>
-        <name>MAX_DOM</name>
-        <value>&MAX_WRF_DOM;</value>
-      </envar>
-      <envar>
         <name>WPS_ROOT</name>
         <value>&WPS_SERIAL_ROOT;</value>
       </envar>
@@ -184,6 +172,14 @@
         <name>IF_ECMWF_ML</name>
         <value>&IF_ECMWF_ML;</value>
       </envar>
+      <dependency>
+        <or>
+          <not>
+            <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
+          <not> 
+	  <taskdep task="wrf_ens_#ENS_N#" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED">
+        </or>
+      </dependency>
     </task>
 
     <task name="metgrid_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
@@ -200,7 +196,7 @@
       <native>--mem-per-cpu=&METGRID_MEM_PER_CPU;</native>
       <envar>
         <name>CONSTANT</name>
-        <value>&METGRID_CONSTANT;</value>
+        <value>&WPS_CONSTANT;</value>
       </envar>
       <envar>
         <name>START_TIME</name>
@@ -257,7 +253,7 @@
       <native>--mem-per-cpu=&REAL_MEM_PER_CPU;</native>
       <envar>
         <name>CONSTANT</name>
-        <value>&REAL_CONSTANT;</value>
+        <value>&WRF_CONSTANT;</value>
       </envar>
       <envar>
          <name>ENS_N</name>
@@ -365,13 +361,13 @@
     </dependency>
   </task>
 
-  <task name="gsi_cold_start_yes" maxtries="1" cycledefs="first_cycle">
+  <task name="gsi_analysis_cold_start_yes" maxtries="1" cycledefs="first_cycle">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
     <walltime>&GSI_WC;</walltime>
-    <jobname><cyclestr>gsi_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/gsi/gsi_@Y@m@d@H.log</cyclestr></join>
+    <jobname><cyclestr>gsi_analysis_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/gsi/gsi_analysis_@Y@m@d@H.log</cyclestr></join>
     <native>--partition=&PARTITION;</native>
     <native>--account=&PROJECT;</native>
     <native>--export=ALL</native>
@@ -456,13 +452,13 @@
     </dependency>
   </task>
 
-  <task name="gsi_cold_start_&COLD_START_MODE;" maxtries="1" cycledefs="q_daily">
+  <task name="gsi_analysis_cold_start_&COLD_START_MODE;" maxtries="1" cycledefs="q_daily">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
     <walltime>&GSI_WC;</walltime>
-    <jobname><cyclestr>gsi_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/gsi/gsi_@Y@m@d@H.log</cyclestr></join>
+    <jobname><cyclestr>gsi_analysis_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/gsi/gsi_analysis_@Y@m@d@H.log</cyclestr></join>
     <native>--partition=&PARTITION;</native>
     <native>--account=&PROJECT;</native>
     <native>--export=ALL</native>
@@ -546,6 +542,243 @@
     </dependency>
   </task>
 
+  <task name="gsi_observer_cold_start_yes" maxtries="1" cycledefs="first_cycle">
+    <command>&DRIVERS;/gsi.ksh</command>
+    <nodesize>&GSI_NODESIZE;</nodesize>
+    <cores>&GSI_PROC;</cores>
+    <walltime>&GSI_WC;</walltime>
+    <jobname><cyclestr>gsi_analysis_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/gsi/gsi_observer_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&GSI_NODES;</native>
+    <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type FAIL</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&GSI_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_GSI_DOM;</value>
+    </envar>
+    <envar>
+      <name>ANAL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>IF_COLD_START</name>
+      <value>Yes</value>
+    </envar>
+    <envar>
+      <name>IF_SATRAD</name>
+      <value>&IF_SATRAD;</value>
+    </envar>
+    <envar>
+      <name>IF_OBSERVER</name>
+      <value>Yes</value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>IF_HYBRID</name>
+      <value>&IF_HYBRID;</value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>IF_4DENVAR</name>
+      <value>&IF_4DENVAR;</value>
+    </envar>
+    <envar>
+      <name>IF_NEMSIO</name>
+      <value>&IF_NEMSIO;</value>
+    </envar>
+    <envar>
+      <name>IF_ONEOB</name>
+      <value>&IF_ONEOB;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>GSI_ROOT</name>
+      <value>&GSI_ROOT;</value>
+    </envar>
+    <envar>
+      <name>CRTM_VERSION</name>
+      <value>&CRTM_VERSION;</value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <and>
+        <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
+        <taskdep task="gsi_analysis_cold_start_yes" state="SUCCEEDED"/>
+      </and>
+    </dependency>
+  </task>
+
+  <task name="gsi_observer_cold_start_&COLD_START_MODE;" maxtries="1" cycledefs="q_daily">
+    <command>&DRIVERS;/gsi.ksh</command>
+    <nodesize>&GSI_NODESIZE;</nodesize>
+    <cores>&GSI_PROC;</cores>
+    <walltime>&GSI_WC;</walltime>
+    <jobname><cyclestr>gsi_observer_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/gsi/gsi_observer_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&GSI_NODES;</native>
+    <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type FAIL</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&GSI_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_GSI_DOM;</value>
+    </envar>
+    <envar>
+      <name>ANAL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>IF_COLD_START</name>
+      <value>&COLD_START_MODE;</value>
+    </envar>
+    <envar>
+      <name>IF_SATRAD</name>
+      <value>&IF_SATRAD;</value>
+    </envar>
+    <envar>
+      <name>IF_OBSERVER</name>
+      <value>Yes</value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>IF_HYBRID</name>
+      <value>&IF_HYBRID;</value>
+    </envar>
+    <envar>
+      <name>IF_4DENVAR</name>
+      <value>&IF_4DENVAR;</value>
+    </envar>
+    <envar>
+      <name>IF_NEMSIO</name>
+      <value>&IF_NEMSIO;</value>
+    </envar>
+    <envar>
+      <name>IF_ONEOB</name>
+      <value>&IF_ONEOB;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>GSI_ROOT</name>
+      <value>&GSI_ROOT;</value>
+    </envar>
+    <envar>
+      <name>CRTM_VERSION</name>
+      <value>&CRTM_VERSION;</value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <and>
+        <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
+        <or>
+          <taskdep task="gsi_analysis_cold_start_Yes" state="SUCCEEDED"/>
+          <taskdep task="gsi_analysis_cold_start_No" state="SUCCEEDED"/>
+        </or>
+      </and>
+    </dependency>
+  </task>
+
+  <task name="enkf;" maxtries="1" cycledefs="first_cycle,q_daily">
+    <command>&DRIVERS;/enkf.ksh</command>
+    <nodesize>&GSI_NODESIZE;</nodesize>
+    <cores>&GSI_PROC;</cores>
+    <walltime>&GSI_WC;</walltime>
+    <jobname><cyclestr>enkf_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/gsi/enkf_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&GSI_NODES;</native>
+    <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type FAIL</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&GSI_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&MAX_GSI_DOM;</value>
+    </envar>
+    <envar>
+      <name>ANAL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>GSI_ROOT</name>
+      <value>&GSI_ROOT;</value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <or>
+        <taskdep task="gsi_observer_cold_start_yes" state="SUCCEEDED"/>
+        <taskdep task="gsi_observer_cold_start_Yes" state="SUCCEEDED"/>
+        <taskdep task="gsi_observer_cold_start_No" state="SUCCEEDED"/>
+      </or>
+    </dependency>
+  </task>
+
   <task name="wrfda_latbc" maxtries="1" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/wrfda.ksh</command>
     <cores>&WRFDA_PROC;</cores>
@@ -599,14 +832,20 @@
       <value>&MPIRUN;</value>
     </envar>
     <dependency> 
-      <and>
-        <streq><left>&IF_HYBRID;</left><right>No</right></streq>
-        <or>
-          <taskdep task="gsi_cold_start_yes" state="SUCCEEDED"/>
-          <taskdep task="gsi_cold_start_Yes" state="SUCCEEDED"/>
-          <taskdep task="gsi_cold_start_No" state="SUCCEEDED"/>
-        </or>
-      </and>
+      <or>
+        <and>
+          <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
+          <taskdep task="enkf" state="SUCCEEDED"/>
+	</and>
+        <and>
+          <streq><left>&IF_HYBRID;</left><right>No</right></streq>
+          <or>
+            <taskdep task="gsi_analysis_cold_start_yes" state="SUCCEEDED"/>
+            <taskdep task="gsi_analysis_cold_start_Yes" state="SUCCEEDED"/>
+            <taskdep task="gsi_analysis_cold_start_No" state="SUCCEEDED"/>
+          </or>
+        </and>
+      </or>
     </dependency>
   </task>
 

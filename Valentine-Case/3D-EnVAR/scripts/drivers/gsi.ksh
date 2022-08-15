@@ -82,11 +82,11 @@ fi
 # MAX_DOM       = INT   : GSI analyzes the domain d0${dmn} for dmn -le ${MAX_DOM}
 # IF_COLD_START = Yes   : GSI analyzes wrfinput_d0${dmn} file instead
 #                         of wrfout_d0${dmn} file to start first DA cycle
-# IF_SATRAD     = Yes   : GSI uses conventional data from prepbufr,
-#                         satellite radiances, gpsro and radar data
+# IF_SATRAD     = Yes   : GSI uses satellite radiances, gpsro and radar data
+#                         in addition to conventional data from prepbufr 
 #                 No    : GSI uses conventional data alone
 #
-# IF_HYBRID     = Yes   : Run GSI as 3D/4D EnVar
+# IF_HYBRID     = Yes   : Run GSI as 3D/4D EnVAR
 # IF_OBSERVER   = Yes   : Only used as observation operator for EnKF
 # N_ENS         = INT   : Max ensemble index (00 for control alone) 
 #                         NOTE this must be set when `IF_HYBRID=Yes` and when `IF_OBSERVER=Yes`
@@ -117,17 +117,20 @@ if [[ ${IF_OBSERVER} != ${YES} && ${IF_OBSERVER} != ${NO} ]]; then
   exit 1
 fi
 
-if [[ ${IF_HYBRID} != ${YES} && ${IF_HYBRID} != ${NO} ]]; then
-  echo "ERROR: \$IF_HYBRID must equal 'Yes' or 'No' (case insensitive)"
-  exit 1
-fi
-
-if [[ ${IF_HYBRID} = ${YES} ]] ; then
-  # ensembles are only required for hybrid EnVAR
+if [[ ${IF_HYBRID} = ${YES} ]]; then
+  # ensembles are required for hybrid EnVAR
   if [ ! "${N_ENS}" ]; then
     echo "ERROR: \$N_ENS must be specified to the number of ensemble perturbations!"
     exit 1
   fi
+  echo "GSI performs hybrid ensemble variational DA with ensemble size ${ENS_N}"
+  ifhyb='.true.'
+elif [[ ${IF_HYBRID} = ${NO} ]]; then
+  echo "GSI performs variational DA without ensemble"
+  ifhyb='.false.'
+else
+  echo "ERROR: \$IF_HYBRID must equal 'Yes' or 'No' (case insensitive)"
+  exit 1
 fi
 
 if [[ ${IF_OBSERVER} = ${YES} ]]; then
@@ -137,25 +140,38 @@ if [[ ${IF_OBSERVER} = ${YES} ]]; then
   fi
 fi
 
-if [[ ${IF_4DENVAR} != ${YES} && ${IF_4DENVAR} != ${NO} ]]; then
+if [[ ${IF_4DENVAR} = ${YES} ]]; then
+  if [[ ! ${IF_HYBRID} = ${YES} ]]; then
+    echo "ERROR: \$IF_HYBRID must equal Yes if \$IF_4DENVAR = Yes"
+    exit 1
+  else
+    echo "GSI performs 4D hybrid ensemble variational DA"
+    if4d='.true.'
+  fi
+elif [[ ${IF_4DENVAR} != ${NO} ]]; then
+    if4d='.false.'
+else
   echo "ERROR: \$IF_4DENVAR must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
-if [[ ${IF_NEMSIO} != ${YES} && ${IF_NEMSIO} != ${NO} ]]; then
+if [[ ${IF_NEMSIO} = ${YES} ]]; then
+  if_gfs_nemsio='.true.'
+elif [[ ${IF_NEMSIO} = ${NO} ]]; then 
+  if_gfs_nemsio='.false.'
+else
   echo "ERROR: \$IF_NEMSIO must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
-if [[ ${IF_ONEOB} != ${YES} && ${IF_ONEOB} != ${NO} ]]; then
+if [[ ${IF_ONEOB} = ${YES} ]]; then
+  echo "GSI performs single observation test"
+  if_oneobtest='.true.'
+elif [[ ${IF_ONEOB} = ${NO} ]]; then
+  if_oneobtest='.false.'
+else
   echo "ERROR: \$IF_ONEOB must equal 'Yes' or 'No' (case insensitive)"
   exit 1
-fi
-
-if [[ ${IF_ONEOB} = ${YES} ]]; then
-  if_oneobtest='.true.'
-else
-  if_oneobtest='.false.'
 fi
 
 #####################################################
@@ -166,8 +182,8 @@ fi
 # ANAL_TIME      = Analysis time YYYYMMDDHH
 # GSI_ROOT       = Directory for clean GSI build
 # CRTM_VERSION   = Version number of CRTM to specify path to binaries
-# STATIC_DATA    = Root directory containing sub-directories for constants, namelists
-#                  grib data, geogrid data, obs tar files etc.
+# STATIC_DATA    = Root directory containing sub-directories for constants,
+#                  namelists grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Analysis time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 # MPIRUN         = MPI Command to execute GSI
@@ -234,7 +250,7 @@ fi
 #
 # work_root    = Working directory where GSI runs, either to analyze the control or to be the observer for EnKF
 # obs_root     = Path of observations files
-# bkg_root     = Path for root directory of controlm from WRFDA or REAL depending on cycling
+# bkg_root     = Path for root directory of control from WRFDA or real depending on cycling
 # fix_root     = Path of fix files
 # gsi_exe      = Path and name of the gsi.x executable
 # gsi_namelist = Path and name of the gsi namelist constructor script
@@ -244,8 +260,16 @@ fi
 #####################################################
 
 if [[ ${IF_OBSERVER} = ${NO} ]]; then
+  echo "GSI updates control forecast"
+  nummiter=2
+  if_read_obs_save='.false.'
+  if_read_obs_skip='.false.'
   work_root=${INPUT_DATAROOT}/gsiprd
 else
+  echo "GSI is observer for EnKF ensemble"
+  nummiter=0
+  if_read_obs_save='.true.'
+  if_read_obs_skip='.false.'
   work_root=${INPUT_DATAROOT}/enkfprd
 fi
 obs_root=${STATIC_DATA}/obs_data
@@ -301,11 +325,10 @@ if [ ! -r "${prepbufr_tar}" ]; then
 else
   cd ${obs_root}
   tar -xvf `basename ${prepbufr_tar}`
-fi
-
-if [ ! -r "${prepbufr}" ]; then
-  echo "ERROR: file '${prepbufr}' does not exist!"
-  exit 1
+  if [ ! -r "${prepbufr}" ]; then
+    echo "ERROR: file '${prepbufr}' does not exist!"
+    exit 1
+  fi
 fi
 
 #####################################################
@@ -315,7 +338,7 @@ fi
 dmn=1
 
 while [ ${dmn} -le ${MAX_DOM} ]; do
-  # NOTE: Hybrid-VAR uses the control forecast as the EnKF forecast mean, not the control analysis 
+  # NOTE: Hybrid DA uses the control forecast as the EnKF forecast mean, not the control analysis 
   # work directory for GSI is sub-divided based on domain index
   workdir=${work_root}/d0${dmn}
   echo " Create working directory:" ${workdir}
@@ -565,24 +588,24 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   ln -sf ${crtm_root_order}/iasi616_metop-b.SpcCoeff.bin ./iasi_metop-b.SpcCoeff.bin
   ln -sf ${crtm_root_order}/iasi616_metop-b.TauCoeff.bin ./iasi_metop-b.TauCoeff.bin
 
-  # Only need this file for single obs test
-  bufrtable=${fix_root}/prepobs_prep.bufrtable
-  cp $bufrtable ./prepobs_prep.bufrtable
+  if [[ ${IF_ONEOB} = ${YES} ]]; then
+    # Only need this file for single obs test
+    bufrtable=${fix_root}/prepobs_prep.bufrtable
+    cp ${bufrtable} ./prepobs_prep.bufrtable
+  fi
 
-  # for satellite bias correction
   # NOTE: may need to use own satbias files for appropriate bias correction
   cp ${GSI_ROOT}/fix/comgsi_satbias_in ./satbias_in
   cp ${GSI_ROOT}/fix/comgsi_satbias_pc_in ./satbias_pc_in
 
   #####################################################
-  # Set background depending on the first analysis or cycling and analysis domain
+  # Prep GSI background 
   #####################################################
   # Below are defined depending on the ${dmn} -le ${MAX_DOM}
   #
-  # bkg_file     = Path and name of background file
+  # bkg_file = Path and name of background file
   #
   #####################################################
-
 
   if [[ ${IF_COLD_START} = ${NO} ]]; then
     bkg_file=${bkg_root}/ens_00/lower_bdy_update/wrfout_d0${dmn}_${date_str}
@@ -595,85 +618,63 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     exit 1
   fi
 
-  #####################################################
-  # Prep steps for GSI 3D/4D hybrid EnVAR
-  #####################################################
-
-  ifhyb=.false.
-
-  if [[ ${IF_HYBRID} = ${YES} ]] ; then
-    ifhyb=.true.
-    echo " GSI hybrid uses n_ens=${N_ENS} ensemble perturbations"
-    PDYa=`echo ${ANAL_TIME} | cut -c1-8`
-    cyca=`echo ${ANAL_TIME} | cut -c9-10`
-    gdate=`date -u -d "${PDYa} ${cyca} -6 hour" +%Y%m%d%H` #guess date is 6hr ago
-    gHH=`echo ${gdate} |cut -c9-10`
-    datem1=`date -u -d "${PDYa} ${cyca} -1 hour" +%Y-%m-%d_%H:%M:%S` #1hr ago
-    datep1=`date -u -d "${PDYa} ${cyca} 1 hour"  +%Y-%m-%d_%H:%M:%S`  #1hr later
-    if [[ ${IF_NEMSIO} = ${YES} ]]; then
-      if_gfs_nemsio='.true.'
-    else
-      if_gfs_nemsio='.false.'
-    fi
-
-    #if [[ ${IF_4DENVAR} = ${YES} ]] ; then
-    #  # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
-    #  bkg_file_P1=${bkg_root}/wrfout_d0${dmn}_${datep1}
-    #  bkg_file_M1=${bkg_root}/wrfout_d0${dmn}_${datem1}
-    #fi
-  fi
-
-  if4d=.false.
-  #if [[ ${ifhyb} = .true. && ${IF_4DENVAR} = ${YES} ]] ; then
-  #  if4d=.true.
-  #fi
-
   echo " Copy background file(s) to working directory"
   # Copy over background field -- THIS IS MODIFIED BY GSI DO NOT LINK TO IT
   cp ${bkg_file} ./wrf_inout
 
-  if [[ ${IF_HYBRID} = ${YES} ]]; then
-    echo " Copy ensemble perturbations to working directory"
-    ens_n=1
+  # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
+  #if [[ ${IF_4DENVAR} = ${YES} ]] ; then
+  # PDYa=`echo ${ANAL_TIME} | cut -c1-8`
+  # cyca=`echo ${ANAL_TIME} | cut -c9-10`
+  # gdate=`date -u -d "${PDYa} ${cyca} -6 hour" +%Y%m%d%H` #guess date is 6hr ago
+  # gHH=`echo ${gdate} |cut -c9-10`
+  # datem1=`date -u -d "${PDYa} ${cyca} -1 hour" +%Y-%m-%d_%H:%M:%S` #1hr ago
+  # datep1=`date -u -d "${PDYa} ${cyca} 1 hour"  +%Y-%m-%d_%H:%M:%S`  #1hr later
+  #  bkg_file_p1=${bkg_root}/wrfout_d0${dmn}_${datep1}
+  #  bkg_file_m1=${bkg_root}/wrfout_d0${dmn}_${datem1}
+  #fi
 
-    while [ ${ens_n} -le ${N_ENS} ]; do
-      # two zero padding for GEFS
-      iimem=`printf %02d ${ens_n}`
+  #####################################################
+  # Prep GSI ensemble 
+  #####################################################
 
-      # three zero padding for GSI
-      iiimem=`printf %03d ${ens_n}`
+  echo " Copy ensemble perturbations to working directory"
+  ens_n=1
 
-      if [[ ${IF_COLD_START} = ${NO} ]]; then
-        ens_file=${bkg_root}/ens_${iimem}/lower_bdy_update/wrfout_d0${dmn}_${date_str}
-      else
-        ens_file=${bkg_root}/ens_${iimem}/wrfinput_d0${dmn}
-      fi
+  while [ ${ens_n} -le ${N_ENS} ]; do
+    # two zero padding for GEFS
+    iimem=`printf %02d ${ens_n}`
 
-      if [ ! -r "${ens_file}" ]; then
-        echo "ERROR: ensemble file ${ens_file} does not exist!"
-        exit 1
-      else
-        ln -sf ${ens_file} ./${ens_prfx}${iiimem}
-      fi
-      (( ens_n += 1 ))
-    done
+    # three zero padding for GSI
+    iiimem=`printf %03d ${ens_n}`
 
-    ls ./${ens_prfx}* > filelist02
+    if [[ ${IF_COLD_START} = ${NO} ]]; then
+      ens_file=${bkg_root}/ens_${iimem}/lower_bdy_update/wrfout_d0${dmn}_${date_str}
+    else
+      ens_file=${bkg_root}/ens_${iimem}/wrfinput_d0${dmn}
+    fi
 
-    # successfully linked ensemble members, define namelist ensemble size
-    nummem=${N_ENS}
+    if [ ! -r "${ens_file}" ]; then
+      echo "ERROR: ensemble file ${ens_file} does not exist!"
+      exit 1
+    else
+      ln -sf ${ens_file} ./${ens_prfx}${iiimem}
+    fi
+    (( ens_n += 1 ))
+  done
 
-    #if [[ ${IF_4DENVAR} = ${YES} ]]; then
-    #  cp ${bkg_file_P1} ./wrf_inou3
-    #  cp ${bkg_file_M1} ./wrf_inou1
-    #fi
+  ls ./${ens_prfx}* > filelist02
 
-    #if [[ ${IF_4DENVAR} = ${YES} ]]; then
-    #  ls ${ENSEMBLE_FILE_mem_p1}* > filelist03
-    #  ls ${ENSEMBLE_FILE_mem_m1}* > filelist01
-    #fi
+  # successfully linked ensemble members, define namelist ensemble size
+  nummem=${N_ENS}
 
-  fi
+  # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
+  #if [[ ${IF_4DENVAR} = ${YES} ]]; then
+  #  cp ${bkg_file_p1} ./wrf_inou3
+  #  cp ${bkg_file_m1} ./wrf_inou1
+  #  ls ${ENSEMBLE_FILE_mem_p1}* > filelist03
+  #  ls ${ENSEMBLE_FILE_mem_m1}* > filelist01
+  #fi
 
   #####################################################
   # Build GSI namelist
@@ -713,16 +714,6 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
      bk_core_nmm='.false.'
      bk_core_nmmb='.true.'
      bk_if_netcdf='.false.'
-  fi
-
-  if [[ ${IF_OBSERVER} = ${YES} ]] ; then
-    nummiter=0
-    if_read_obs_save='.true.'
-    if_read_obs_skip='.false.'
-  else
-    nummiter=2
-    if_read_obs_save='.false.'
-    if_read_obs_skip='.false.'
   fi
 
   # Build the GSI namelist on-the-fly
@@ -833,7 +824,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   #  Clean working directory to save only important files
   ls -l * > list_run_directory
 
-  if [[ ${if_clean} = clean && ${IF_OBSERVER} != ${YES} ]]; then
+  if [[ ${if_clean} = clean && ${IF_OBSERVER} = ${NO} ]]; then
     echo ' Clean working directory after GSI run'
     rm -f *Coeff.bin     # all CRTM coefficient files
     rm -f pe0*           # diag files on each processor
@@ -843,7 +834,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   fi
 
   #####################################################
-  # start to calculate diag files for each member
+  # Calculate diag files for each member if EnKF observer
   #####################################################
 
   if [[ ${IF_OBSERVER} = ${YES} ]]; then
@@ -856,7 +847,6 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     mv wrf_inout wrf_inout_ensmean
 
     # Build the GSI namelist on-the-fly for each member
-    nummiter=0
     if_read_obs_save='.false.'
     if_read_obs_skip='.true.'
     . ${gsi_namelist}
@@ -877,7 +867,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       fi
 
       ens_file="./${ens_prfx}${iiimem}"
-      echo ${ens_file}
+      echo "Copying ${ens_file} for GSI observer"
       cp ${ens_file} wrf_inout
 
       # run GSI
@@ -896,10 +886,10 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 
       # generate diag files
       for type in ${listall}; do
-            count=`ls pe*${type}_${loop}* | wc -l`
-         if [[ ${count} -gt 0 ]]; then
-            cat pe*${type}_${loop}* > diag_${type}_${string}.mem${iiimem}
-         fi
+        count=`ls pe*${type}_${loop}* | wc -l`
+        if [[ ${count} -gt 0 ]]; then
+          cat pe*${type}_${loop}* > diag_${type}_${string}.mem${iiimem}
+        fi
       done
       # next member
       (( ens_n += 1 ))

@@ -168,7 +168,6 @@ fi
 # DATA_INTERVAL  = Interval of input data in HH
 # START_TIME     = Simulation start time in YYMMDDHH
 # BKG_START_TIME = Background simulation start time in YYMMDDHH
-# MAX_DOM        = Max number of domains to use in namelist settings
 # IF_ECMWF_ML    = "Yes" or "No" switch to compute ECMWF coefficients for
 #                  initializing with model level data, case insensitive
 #
@@ -225,11 +224,6 @@ end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 # define BKG_START_TIME date string wihtout HH
 bkg_start_date=`echo ${BKG_START_TIME} | cut -c1-8`
 bkg_start_hh=`echo ${BKG_START_TIME} | cut -c9-10`
-
-if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \$MAX_DOM is not defined!"
-  exit 1
-fi
 
 if [[ ${IF_ECMWF_ML} != ${YES} && ${IF_ECMWF_ML} != ${NO} ]]; then
   echo "ERROR: \$IF_ECMWF_ML must equal 'Yes' or 'No' (case insensitive)"
@@ -379,7 +373,6 @@ echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 echo
 echo "FCST LENGTH    = ${FCST_LENGTH}"
 echo "DATA INTERVAL  = ${DATA_INTERVAL}"
-echo "MAX_DOM        = ${MAX_DOM}"
 echo "IF_ECMWF_ML    = ${IF_ECMWF_ML}"
 echo
 echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`

@@ -215,10 +215,10 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   # generate the same list as was given in observer step
   list=`ls pe* | cut -f2 -d"." | awk '{print substr($0, 0, length($0)-3)}' | sort | uniq `
 
-  # define the x-y-z grid for namelist
-  nlons=129
-  nlats=70 
-  nlevs=50
+  # define the x-y-z grid for namelist dynamically based on ensemble mean
+  nlons=`ncdump -h wrf_inout_ensmean | grep "west_east =" | awk '{print $3}' `
+  nlats=`ncdump -h wrf_inout_ensmean | grep "south_north =" | awk '{print $3}' `
+  nlevs=`ncdump -h wrf_inout_ensmean | grep "bottom_top =" | awk '{print $3}' `
 
   # Build the GSI namelist on-the-fly
   . ${enkf_namelist}
@@ -235,7 +235,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   echo
   now=`date +%Y%m%d%H%M%S`
   echo "enkf started at ${now} on domain d0${dmn}"
-  echo ' Run EnKF'
+  echo "Run EnKF"
   
   ${MPIRUN} ./enkf.x < enkf.nml > stdout 2>&1
   
