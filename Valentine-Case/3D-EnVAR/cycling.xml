@@ -64,7 +64,7 @@
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
   <!ENTITY MAX_GSI_DOM         "2">
-  <!ENTITY IF_SATRAD           "No">
+  <!ENTITY IF_SATRAD           "Yes">
   <!ENTITY IF_HYBRID           "Yes">
   <!ENTITY IF_4DENVAR          "No">
   <!ENTITY IF_NEMSIO           "No">
@@ -101,11 +101,11 @@
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
   <!ENTITY WRF_WC              "12:00:00">
-  <!ENTITY GSI_PROC            "352">
+  <!ENTITY GSI_PROC            "384">
   <!ENTITY GSI_MEM_PER_CPU     "5G">
-  <!ENTITY GSI_NODESIZE        "22">
+  <!ENTITY GSI_NODESIZE        "24">
   <!ENTITY GSI_NODES           "16">
-  <!ENTITY GSI_WC              "00:45:00">
+  <!ENTITY GSI_WC              "08:00:00">
   <!-- END JOB SETTINGS -->
 ]>
 
@@ -116,7 +116,7 @@
   
   <metatask name="ensemble_pre_proc">
     <var name="ENS_N">&ENS_LIST;</var>  
-    <task name="ungrib_ens_#ENS_N#" maxtries="1" cycledefs="first_cycle,q_daily">
+    <task name="ungrib_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
       <nodesize>&UNGRIB_NODESIZE;</nodesize>
@@ -547,7 +547,7 @@
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
     <walltime>&GSI_WC;</walltime>
-    <jobname><cyclestr>gsi_analysis_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>gsi_observer_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/gsi/gsi_observer_@Y@m@d@H.log</cyclestr></join>
     <native>--partition=&PARTITION;</native>
     <native>--account=&PROJECT;</native>

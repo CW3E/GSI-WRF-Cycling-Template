@@ -123,7 +123,7 @@ if [[ ${IF_HYBRID} = ${YES} ]]; then
     echo "ERROR: \$N_ENS must be specified to the number of ensemble perturbations!"
     exit 1
   fi
-  echo "GSI performs hybrid ensemble variational DA with ensemble size ${ENS_N}"
+  echo "GSI performs hybrid ensemble variational DA with ensemble size ${N_ENS}"
   ifhyb='.true.'
 elif [[ ${IF_HYBRID} = ${NO} ]]; then
   echo "GSI performs variational DA without ensemble"
@@ -148,7 +148,7 @@ if [[ ${IF_4DENVAR} = ${YES} ]]; then
     echo "GSI performs 4D hybrid ensemble variational DA"
     if4d='.true.'
   fi
-elif [[ ${IF_4DENVAR} != ${NO} ]]; then
+elif [[ ${IF_4DENVAR} = ${NO} ]]; then
     if4d='.false.'
 else
   echo "ERROR: \$IF_4DENVAR must equal 'Yes' or 'No' (case insensitive)"
