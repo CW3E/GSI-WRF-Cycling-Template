@@ -80,22 +80,22 @@
   <!ENTITY UNGRIB_MEM_PER_CPU  "5G">
   <!ENTITY UNGRIB_NODESIZE     "24">
   <!ENTITY UNGRIB_NODES        "1">
-  <!ENTITY UNGRIB_WC           "02:00:00">
+  <!ENTITY UNGRIB_WC           "00:30:00">
   <!ENTITY METGRID_PROC        "24">
   <!ENTITY METGRID_MEM_PER_CPU "5G">
   <!ENTITY METGRID_NODESIZE    "24">
-  <!ENTITY METGRID_NODES       "2">
-  <!ENTITY METGRID_WC          "02:00:00">
+  <!ENTITY METGRID_NODES       "1">
+  <!ENTITY METGRID_WC          "00:30:00">
   <!ENTITY REAL_PROC           "24">
   <!ENTITY REAL_MEM_PER_CPU    "5G">
   <!ENTITY REAL_NODESIZE       "24">
-  <!ENTITY REAL_NODES          "2">
-  <!ENTITY REAL_WC             "03:00:00">
+  <!ENTITY REAL_NODES          "1">
+  <!ENTITY REAL_WC             "00:30:00">
   <!ENTITY WRFDA_PROC          "1">
   <!ENTITY WRFDA_MEM_PER_CPU   "5G">
   <!ENTITY WRFDA_NODESIZE      "24">
   <!ENTITY WRFDA_NODES         "1">
-  <!ENTITY WRFDA_WC            "00:45:00">
+  <!ENTITY WRFDA_WC            "00:30:00">
   <!ENTITY WRF_PROC            "384">
   <!ENTITY WRF_MEM_PER_CPU     "2G">
   <!ENTITY WRF_NODESIZE        "24">
