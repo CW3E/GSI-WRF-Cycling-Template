@@ -39,8 +39,8 @@
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without GSI or WRFDA analysis updates -->
   <!ENTITY COLD_START_MODE     "No"> <!-- Set to "Yes" to make every GSI analysis from real.exe outputs -->
-  <!ENTITY ENS_LIST            "00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20">
-  <!ENTITY N_ENS               "20"> <!-- Must equal the max index of the ENS_LIST above -->
+  <!ENTITY ENS_LIST            "00 01 02 03 04 05">
+  <!ENTITY N_ENS               "05"> <!-- Must equal the max index of the ENS_LIST above -->
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
@@ -105,7 +105,7 @@
   <!ENTITY GSI_MEM_PER_CPU     "5G">
   <!ENTITY GSI_NODESIZE        "24">
   <!ENTITY GSI_NODES           "16">
-  <!ENTITY GSI_WC              "08:00:00">
+  <!ENTITY GSI_WC              "03:00:00">
   <!-- END JOB SETTINGS -->
 ]>
 
