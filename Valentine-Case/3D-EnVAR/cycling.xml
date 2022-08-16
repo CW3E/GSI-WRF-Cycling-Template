@@ -361,7 +361,7 @@
     </dependency>
   </task>
 
-  <task name="gsi_analysis_cold_start_yes" maxtries="1" cycledefs="first_cycle">
+  <task name="gsi_first_analysis" maxtries="1" cycledefs="first_cycle">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
@@ -452,7 +452,7 @@
     </dependency>
   </task>
 
-  <task name="gsi_analysis_cold_start_&COLD_START_MODE;" maxtries="1" cycledefs="q_daily">
+  <task name="gsi_cold_analysis_&COLD_START_MODE;" maxtries="1" cycledefs="q_daily">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
@@ -542,7 +542,7 @@
     </dependency>
   </task>
 
-  <task name="gsi_observer_cold_start_yes" maxtries="1" cycledefs="first_cycle">
+  <task name="gsi_first_observer" maxtries="1" cycledefs="first_cycle">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
@@ -628,12 +628,12 @@
     <dependency> 
       <and>
         <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
-        <taskdep task="gsi_analysis_cold_start_yes" state="SUCCEEDED"/>
+        <taskdep task="gsi_first_analysis" state="SUCCEEDED"/>
       </and>
     </dependency>
   </task>
 
-  <task name="gsi_observer_cold_start_&COLD_START_MODE;" maxtries="1" cycledefs="q_daily">
+  <task name="gsi_cold_observer_&COLD_START_MODE;" maxtries="1" cycledefs="q_daily">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
@@ -716,8 +716,8 @@
       <and>
         <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
         <or>
-          <taskdep task="gsi_analysis_cold_start_Yes" state="SUCCEEDED"/>
-          <taskdep task="gsi_analysis_cold_start_No" state="SUCCEEDED"/>
+          <taskdep task="gsi_cold_analysis_Yes" state="SUCCEEDED"/>
+          <taskdep task="gsi_cold_analysis_No" state="SUCCEEDED"/>
         </or>
       </and>
     </dependency>
@@ -772,9 +772,9 @@
     </envar>
     <dependency> 
       <or>
-        <taskdep task="gsi_observer_cold_start_yes" state="SUCCEEDED"/>
-        <taskdep task="gsi_observer_cold_start_Yes" state="SUCCEEDED"/>
-        <taskdep task="gsi_observer_cold_start_No" state="SUCCEEDED"/>
+        <taskdep task="gsi_first_observer" state="SUCCEEDED"/>
+        <taskdep task="gsi_cold_observer_Yes" state="SUCCEEDED"/>
+        <taskdep task="gsi_cold_observer_No" state="SUCCEEDED"/>
       </or>
     </dependency>
   </task>
@@ -840,9 +840,9 @@
         <and>
           <streq><left>&IF_HYBRID;</left><right>No</right></streq>
           <or>
-            <taskdep task="gsi_analysis_cold_start_yes" state="SUCCEEDED"/>
-            <taskdep task="gsi_analysis_cold_start_Yes" state="SUCCEEDED"/>
-            <taskdep task="gsi_analysis_cold_start_No" state="SUCCEEDED"/>
+            <taskdep task="gsi_first_analysis" state="SUCCEEDED"/>
+            <taskdep task="gsi_cold_analysis_Yes" state="SUCCEEDED"/>
+            <taskdep task="gsi_cold_analysis_No" state="SUCCEEDED"/>
           </or>
         </and>
       </or>

@@ -750,7 +750,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   echo
   now=`date +%Y%m%d%H%M%S`
   echo "gsi started at ${now} with ${bk_core} background on domain d0${dmn}"
-  ${MPIRUN} ${gsi_exe} > stdout_ens_00.anl.d0${dmn}_${ANAL_TIME} 2>&1
+  ${MPIRUN} ${gsi_exe} > stdout_ens_00.anl.${ANAL_TIME} 2>&1
 
   #####################################################
   # Run time error check
@@ -768,12 +768,12 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   # GSI updating satbias_in (only for cycling assimilation)
 
   # Rename the output to more understandable names
-  cp wrf_inout   wrfanl_ens_00.d0${dmn}_${ANAL_TIME}
-  cp fort.201    fit_p1_ens_00.d0${dmn}_${ANAL_TIME}
-  cp fort.202    fit_w1_ens_00.d0${dmn}_${ANAL_TIME}
-  cp fort.203    fit_t1_ens_00.d0${dmn}_${ANAL_TIME}
-  cp fort.204    fit_q1_ens_00.d0${dmn}_${ANAL_TIME}
-  cp fort.207    fit_rad1_ens_00.d0${dmn}_${ANAL_TIME}
+  cp wrf_inout   wrfanl_ens_00.${ANAL_TIME}
+  cp fort.201    fit_p1_ens_00.${ANAL_TIME}
+  cp fort.202    fit_w1_ens_00.${ANAL_TIME}
+  cp fort.203    fit_t1_ens_00.${ANAL_TIME}
+  cp fort.204    fit_q1_ens_00.${ANAL_TIME}
+  cp fort.207    fit_rad1_ens_00.${ANAL_TIME}
 
   #####################################################
   # Loop over first and last outer loops to generate innovation
@@ -816,7 +816,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     for type in ${listall}; do
        count=`ls pe*${type}_${loop}* | wc -l`
        if [[ ${count} -gt 0 ]]; then
-          cat pe*${type}_${loop}* > diag_${type}_${string}.d0${dmn}_${ANAL_TIME}
+          cat pe*${type}_${loop}* > diag_${type}_${string}.${ANAL_TIME}
        fi
     done
   done
@@ -872,7 +872,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 
       # run GSI
       echo " Run GSI observer with ${bk_core} for member ${iiimem}"
-      ${MPIRUN} ${gsi_exe} > stdout_ens_${iimem}.anl.d0${dmn}_${ANAL_TIME} 2>&1
+      ${MPIRUN} ${gsi_exe} > stdout_ens_${iimem}.anl.${ANAL_TIME} 2>&1
 
       # run time error check and save run time file status
       error=$?

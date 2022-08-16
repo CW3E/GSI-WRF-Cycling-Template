@@ -237,7 +237,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   echo "enkf started at ${now} on domain d0${dmn}"
   echo "Run EnKF"
   
-  ${MPIRUN} ./enkf.x < enkf.nml > stdout 2>&1
+  ${MPIRUN} ${enkf_exe} < enkf.nml > stdout 2>&1
   
   ##################################################################
   # Run time error check
