@@ -162,8 +162,8 @@ while [ ${ens_n} -le ${N_ENS} ]; do
   iiimem=`printf %03d ${ens_n}`
   
   work_root=${INPUT_DATAROOT}/wrfdaprd/ens_${iimem}
-  gsi_dir=${INPUT_DATAROOT}/gsiprd/
-  enkf_dir=${INPUT_DATAROOT}/enkfprd/
+  gsi_dir=${INPUT_DATAROOT}/gsiprd
+  enkf_dir=${INPUT_DATAROOT}/enkfprd
   real_dir=${INPUT_DATAROOT}/realprd/ens_${iimem}
   bkg_dir=${INPUT_DATAROOT}/bkg/ens_${iimem}
   update_bc_exe=${WRFDA_ROOT}/var/da/da_update_bc.exe
