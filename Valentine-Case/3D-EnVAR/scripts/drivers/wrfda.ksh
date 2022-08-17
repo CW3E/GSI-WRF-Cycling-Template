@@ -88,7 +88,7 @@ fi
 
 hh=`echo ${ANAL_TIME} | cut -c9-10`
 anal_date=`echo ${ANAL_TIME} | cut -c1-8`
-date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} $HH hours"`
+date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} ${hh} hours"`
 
 if [ -z "${date_str}"]; then
   echo "ERROR: \$date_str is not defined correctly, check format of \$anal_date!"

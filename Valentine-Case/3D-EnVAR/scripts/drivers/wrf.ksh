@@ -518,7 +518,7 @@ if [[ ${IF_CYCLING} = ${YES} ]]; then
   cycle_intv=`date +%H -d "${CYCLE_INTV}"`
   datestr=`date +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
   new_bkg=${datestr}/bkg/ens_${ens_n}
-  mkdir -p ../../${new_bkg}
+  mkdir -p ${INPUT_DATAROOT}/../${new_bkg}
 else
   current_bkg=${INPUT_DATAROOT}/bkg/ens_${ens_n}
   mkdir -p ${current_bkg}
