@@ -779,7 +779,7 @@
     </dependency>
   </task>
 
-  <task name="wrfda_latbc" maxtries="3" cycledefs="first_cycle,q_daily">
+  <task name="wrfda_latbc" maxtries="4" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/wrfda.ksh</command>
     <cores>&WRFDA_PROC;</cores>
     <nodesize>&WRFDA_NODESIZE;</nodesize>

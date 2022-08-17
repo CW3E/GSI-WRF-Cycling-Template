@@ -290,7 +290,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
         exit 1
       fi
 
-      wrfanl=${gsi_dir}/d01/wrfanl.${ANAL_TIME}
+      wrfanl=${gsi_dir}/d01/wrfanl_ens_00.${ANAL_TIME}
       wrfbdy=${real_dir}/wrfbdy_d01
       wrfvar_outname=wrfvar_output
       wrfbdy_name=wrfbdy_d01
@@ -378,7 +378,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
         exit 1
       fi
 
-      wrfanl=${enkf_dir}/d01/analysis.${iiimem}
+      wrfanl=${enkf_dir}/d01/analysis.mem${iiimem}
       wrfbdy=${real_dir}/wrfbdy_d01
       wrfvar_outname=wrfvar_output
       wrfbdy_name=wrfbdy_d01
