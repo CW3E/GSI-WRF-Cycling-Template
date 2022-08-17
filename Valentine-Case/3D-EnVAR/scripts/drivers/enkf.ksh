@@ -207,8 +207,8 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   ens_n=1
   while [[ ${ens_n} -le ${N_ENS} ]]; do
      iiimem=`printf %03d ${ens_n}`
-     ln -sf ${ens_prfx}${iiimem} ./firstguess.${iiimem}
-     cp firstguess.${iiimem} analysis.${iiimem}
+     ln -sf ${ens_prfx}${iiimem} ./firstguess.mem${iiimem}
+     cp firstguess.mem${iiimem} analysis.mem${iiimem}
      (( ens_n += 1 ))
   done
   

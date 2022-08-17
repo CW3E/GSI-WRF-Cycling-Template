@@ -339,7 +339,7 @@
     </envar>
     <envar>
       <name>MAX_DOM</name>
-      <value>&MAX_WRF_DOM;</value>
+      <value>&MAX_GSI_DOM;</value>
     </envar>
     <envar>
       <name>WRFDA_ROOT</name>
@@ -723,7 +723,7 @@
     </dependency>
   </task>
 
-  <task name="enkf" maxtries="1" cycledefs="first_cycle,q_daily">
+  <task name="enkf" maxtries="2" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/enkf.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
@@ -779,7 +779,7 @@
     </dependency>
   </task>
 
-  <task name="wrfda_latbc" maxtries="1" cycledefs="first_cycle,q_daily">
+  <task name="wrfda_latbc" maxtries="2" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/wrfda.ksh</command>
     <cores>&WRFDA_PROC;</cores>
     <nodesize>&WRFDA_NODESIZE;</nodesize>
@@ -813,7 +813,7 @@
     </envar>
     <envar>
       <name>MAX_DOM</name>
-      <value>&MAX_WRF_DOM;</value>
+      <value>&MAX_GSI_DOM;</value>
     </envar>
     <envar>
       <name>WRFDA_ROOT</name>

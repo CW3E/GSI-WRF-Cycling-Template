@@ -290,7 +290,7 @@ while [ ${ens_n} -le ${N_ENS} ]; do
         exit 1
       fi
 
-      wrfanl=${gsi_dir}/d01/wrfanl.d01_${ANAL_TIME}
+      wrfanl=${gsi_dir}/d01/wrfanl.${ANAL_TIME}
       wrfbdy=${real_dir}/wrfbdy_d01
       wrfvar_outname=wrfvar_output
       wrfbdy_name=wrfbdy_d01
