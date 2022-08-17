@@ -535,7 +535,7 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
       exit 1
     else
       if [[ ${IF_CYCLING} = ${YES} ]]; then
-        ln -sfr wrfout_d0${dmn}_${datestr} ../../${new_bkg}/
+        ln -sfr wrfout_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
       else
         ln -sfr wrfout_d0${dmn}_${datestr} ${current_bkg}/
       fi
