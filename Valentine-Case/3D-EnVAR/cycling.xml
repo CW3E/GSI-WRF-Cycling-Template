@@ -63,7 +63,7 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
-  <!ENTITY MAX_GSI_DOM         "2">
+  <!ENTITY MAX_GSI_DOM         "1">
   <!ENTITY IF_SATRAD           "Yes">
   <!ENTITY IF_HYBRID           "Yes">
   <!ENTITY IF_4DENVAR          "No">
