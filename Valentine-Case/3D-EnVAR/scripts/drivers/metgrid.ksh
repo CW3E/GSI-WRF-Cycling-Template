@@ -266,7 +266,7 @@ cp ${STATIC_DATA}/namelists/namelist.wps .
 
 # Update max_dom in namelist
 cat namelist.wps | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
-                      > namelist.wps.new
+  > namelist.wps.new
 mv namelist.wps.new namelist.wps
 
 # define start / end time patterns for namelist.wps
@@ -275,14 +275,14 @@ end_yyyymmdd_hhmmss=`date +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
 
 # Update the start and end date in namelist (propagates settings to three domains)
 cat namelist.wps | sed "s/\(${START}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}'/" \
-                    | sed "s/\(${END}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
-                      > namelist.wps.new
+                 | sed "s/\(${END}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
+  > namelist.wps.new
 mv namelist.wps.new namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
 cat namelist.wps | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
-                      > namelist.wps.new
+  > namelist.wps.new
 mv namelist.wps.new namelist.wps
 
 # Remove pre-existing metgrid files
