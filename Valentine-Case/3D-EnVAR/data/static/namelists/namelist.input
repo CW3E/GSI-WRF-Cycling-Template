@@ -25,7 +25,7 @@
  restart_interval                    = 2880,
  rst_inname                          = "./wrfrst_d<domain>_<date>",
  rst_outname                         = "./wrfrst_d<domain>_<date>",
- io_form_restart                     = 102,
+ io_form_restart                     = 2,
  input_inname                        = "wrfinput_d<domain>",
  input_outname                       = "wrfinput_d<domain>",
  io_form_input                       = 2,

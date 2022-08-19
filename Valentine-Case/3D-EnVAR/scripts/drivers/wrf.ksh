@@ -100,9 +100,16 @@
 # Options below are hard-coded based on the type of experiment
 # (i.e., these not expected to change within DA cycles).
 #
+# io_restart = 2 for regular or 102 for split restart files
+#              (currently only 2 supported)
+#
 #####################################################
 # uncomment to run verbose for debugging / testing
+
 set -x
+
+io_restart=2
+
 #####################################################
 # Read in WRF constants for local environment
 #####################################################
@@ -416,6 +423,11 @@ cat namelist.input | sed "s/\(${RESTART}_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}/
   > namelist.input.new
 mv namelist.input.new namelist.input
 
+# Update the restart I/O form in wrf namelist
+cat namelist.input | sed "s/\(${IO}_${FORM}_${RESTART}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${io_restart}/" \
+  > namelist.input.new
+mv namelist.input.new namelist.input
+
 # Update the start time in wrf namelist (propagates settings to three domains)
 cat namelist.input | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${start_year}, ${start_year}, ${start_year}/" \
   | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
@@ -543,8 +555,21 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
         ln -sfr wrfout_d0${dmn}_${datestr} ${current_bkg}/
       fi
     fi
+
     (( fcst += FCST_INTERVAL ))
   done
+
+  if [ ! -s "wrfrst_d0${dmn}_${datestr}" ]; then
+    echo "WRF failed to complete.  wrfrst_d0${dmn}_${datestr} is missing or empty!"
+    exit 1
+  else
+    if [[ ${IF_CYCLING} = ${YES} ]]; then
+      ln -sfr wrfrst_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
+    else
+      ln -sfr wrfrst_d0${dmn}_${datestr} ${current_bkg}/
+    fi
+  fi
+
   (( dmn += 1 ))
 done
 
