@@ -82,8 +82,8 @@ if [ ! ${MAX_DOM} ]; then
   exit 1
 fi
 
-if [ ! "${N_ENS}" ]; then
-  echo "ERROR: \$N_ENS must be specified to the number of ensemble perturbations!"
+if [ ! ${N_ENS} -ge 03 ]; then
+	echo "ERROR: \$N_ENS must be specified to the number of ensemble perturbations (greater than 2)"
   exit 1
 fi
 

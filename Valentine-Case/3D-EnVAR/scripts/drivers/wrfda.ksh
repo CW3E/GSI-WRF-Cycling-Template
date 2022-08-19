@@ -62,18 +62,17 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ANAL_TIME     = Analysis time YYYYMMDDHH
-# N_ENS         = Max ensemble index (use 00 for control alone)
-# IF_LOWER      = 'Yes' if updating lower boundary conditions 
-#                 'No' if updating lateral boundary conditions
-# MAX_WRF_DOM   = Max number of domains to update lower boundary conditions 
-#                 (lateral boundary conditions for nested domains are always defined by the parent)
-# MAX_GSI_DOM   = Number of domains analyzed by GSI
+# ANAL_TIME   = Analysis time YYYYMMDDHH
+# N_ENS       = Max ensemble index (use 00 for control alone)
+# IF_LOWER    = 'Yes' if updating lower boundary conditions 
+#               'No' if updating lateral boundary conditions
+# WRF_CTR_DOM = Max domain index of control forecast
+# WRF_ENS_DOM = Max domain index of ensemble perturbations
 #
-# Below variables are derived by cycling.xml variables for convenience
+# Below variabs are derived by cycling.xml variables for convenience
 #
-# date_str      = Defined by the ANAL_TIME variable, to be used as path
-#                 name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
+# date_str    = Defined by the ANAL_TIME variable, to be used as path
+#               name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
 #####################################################
 
@@ -96,13 +95,13 @@ if [ -z "${date_str}"]; then
   exit 1
 fi
 
-if [ ! ${MAX_WRF_DOM} ]; then
-  echo "ERROR: \$MAX_WRF_DOM is not defined!"
+if [ ! ${WRF_CTR_DOM} ]; then
+  echo "ERROR: \$WRF_CTR_DOM is not defined!"
   exit 1
 fi
 
-if [ ! ${MAX_GSI_DOM} ]; then
-  echo "ERROR: \$MAX_GSI_DOM is not defined!"
+if [ ! ${WRF_ENS_DOM} ]; then
+  echo "ERROR: \$WRF_ENS_DOM is not defined!"
   exit 1
 fi
 
@@ -202,16 +201,17 @@ while [ ${ens_n} -le ${N_ENS} ]; do
       echo "ERROR: \$bkg_dir directory ${bkg_dir} does not exist"
       exit 1
     fi
+    
+    if [ ${ens_n} -eq 0 ]; then 
+      max_dom=${WRF_CTR_DOM}
+    else
+      max_dom=${WRF_ENS_DOM}
+    fi
 
     # Check to make sure the input files are available and copy them
-    while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
-      if [ ${dmn} -le ${MAX_GSI_DOM} ]; then 
-	# update the lower BC for the output file to pass to GSI
-        wrfout=wrfout_d0${dmn}_${date_str}
-      else
-	# update the lower BC for the restart file, used as the IC for the next forecast directly
-        wrfout=wrfrst_d0${dmn}_${date_str}
-      fi
+    while [ ${dmn} -le ${max_dom} ]; do
+      # update the lower BC for the output file to pass to GSI
+      wrfout=wrfout_d0${dmn}_${date_str}
 
       # wrfinput is always drawn from real step
       wrfinput=wrfinput_d0${dmn}

@@ -125,8 +125,7 @@ fi
 # FCST_INTERVAL = Interval of wrfout.d01 in HH
 # DATA_INTERVAL = Interval of input data in HH
 # START_TIME    = Simulation start time in YYMMDDHH
-# MAX_WRF_DOM   = Max number of domains to use in namelist settings
-# MAX_GSI_DOM   = Number of domains GSI analyzes when cycling
+# MAX_DOM       = Max number of domains to use in namelist settings
 # IF_CYCLING    = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis or real.exe, case insensitive
 # IF_SST_UPDATE = Yes / No: whether WRF uses dynamic SST values 
 # IF_FEEBACK    = Yes / No: whether WRF domains use 1- or 2-way nesting
@@ -173,13 +172,8 @@ fi
 start_time=`date -d "${start_time}"`
 end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
-if [ ! "${MAX_WRF_DOM}" ]; then
-  echo "ERROR: \$MAX_WRF_DOM is not defined"
-  exit 1
-fi
-
-if [ ! "${MAX_GSI_DOM}" ]; then
-  echo "ERROR: \$MAX_GSI_DOM is not defined"
+if [ ! "${MAX_DOM}" ]; then
+  echo "ERROR: \$MAX_DOM is not defined"
   exit 1
 fi
 
@@ -295,10 +289,10 @@ rm -f wrfout_*
 
 # Link WRF initial conditions from real.exe or GSI analysis depending on IF_CYCLING switch
 dmn=1
-while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
+while [ ${dmn} -le ${MAX_DOM} ]; do
   wrfinput_name=wrfinput_d0${dmn}
   # if cycling AND analyzing this domain, get initial conditions from last analysis
-  if [[ ${IF_CYCLING} = ${YES} && ${dmn} -le ${MAX_GSI_DOM} ]]; then
+  if [[ ${IF_CYCLING} = ${YES} ]]; then
     if [[ ${dmn} = 1 ]]; then
       # obtain the input and boundary files from the lateral boundary update by WRFDA 
       wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}/lateral_bdy_update/wrfvar_output 
@@ -398,7 +392,7 @@ end_minute=`date +%M -d "${end_time}"`
 end_second=`date +%S -d "${end_time}"`
 
 # Update the max_dom in namelist
-cat namelist.input | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_WRF_DOM}/" \
+cat namelist.input | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
    > namelist.input.new
 mv namelist.input.new namelist.input
 
@@ -478,8 +472,7 @@ echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 echo
 echo "FCST LENGTH    = ${FCST_LENGTH}"
 echo "FCST INTERVAL  = ${FCST_INTERVAL}"
-echo "MAX_WRF_DOM    = ${MAX_WRF_DOM}"
-echo "MAX_GSI_DOM    = ${MAX_GSI_DOM}"
+echo "MAX_DOM        = ${MAX_DOM}"
 echo "IF_CYCLING     = ${IF_CYCLING}"
 echo "IF_SST_UPDATE  = ${IF_SST_UPDATE}"
 echo "IF_FEEDBACK    = ${IF_FEEDBACK}"
@@ -530,7 +523,7 @@ fi
 
 # Check for all wrfout files on FCST_INTERVAL and link files to the appropriate bkg directory
 dmn=1
-while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
+while [ ${dmn} -le ${MAX_DOM} ]; do
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
     datestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
