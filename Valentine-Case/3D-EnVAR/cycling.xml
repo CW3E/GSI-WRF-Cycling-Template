@@ -63,7 +63,8 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
-  <!ENTITY MAX_GSI_DOM         "1">
+  <!ENTITY MAX_GSI_DOM         "2">
+  <!ENTITY MAX_ENKF_DOM        "1">
   <!ENTITY IF_SATRAD           "Yes">
   <!ENTITY IF_HYBRID           "Yes">
   <!ENTITY IF_4DENVAR          "No">
@@ -563,7 +564,7 @@
     </envar>
     <envar>
       <name>MAX_DOM</name>
-      <value>&MAX_GSI_DOM;</value>
+      <value>&MAX_ENKF_DOM;</value>
     </envar>
     <envar>
       <name>ANAL_TIME</name>
@@ -654,7 +655,7 @@
     </envar>
     <envar>
       <name>MAX_DOM</name>
-      <value>&MAX_GSI_DOM;</value>
+      <value>&MAX_ENKF_DOM;</value>
     </envar>
     <envar>
       <name>ANAL_TIME</name>
@@ -744,7 +745,7 @@
     </envar>
     <envar>
       <name>MAX_DOM</name>
-      <value>&MAX_GSI_DOM;</value>
+      <value>&MAX_ENKF_DOM;</value>
     </envar>
     <envar>
       <name>ANAL_TIME</name>

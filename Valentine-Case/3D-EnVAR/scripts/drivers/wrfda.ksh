@@ -66,8 +66,9 @@ fi
 # N_ENS         = Max ensemble index (use 00 for control alone)
 # IF_LOWER      = 'Yes' if updating lower boundary conditions 
 #                 'No' if updating lateral boundary conditions
-# MAX_DOM       = Max number of domains to update lower boundary conditions 
+# MAX_WRF_DOM   = Max number of domains to update lower boundary conditions 
 #                 (lateral boundary conditions for nested domains are always defined by the parent)
+# MAX_GSI_DOM   = Number of domains analyzed by GSI
 #
 # Below variables are derived by cycling.xml variables for convenience
 #
@@ -95,8 +96,13 @@ if [ -z "${date_str}"]; then
   exit 1
 fi
 
-if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \$MAX_DOM is not defined!"
+if [ ! ${MAX_WRF_DOM} ]; then
+  echo "ERROR: \$MAX_WRF_DOM is not defined!"
+  exit 1
+fi
+
+if [ ! ${MAX_GSI_DOM} ]; then
+  echo "ERROR: \$MAX_GSI_DOM is not defined!"
   exit 1
 fi
 
@@ -198,8 +204,16 @@ while [ ${ens_n} -le ${N_ENS} ]; do
     fi
 
     # Check to make sure the input files are available and copy them
-    while [ ${dmn} -le ${MAX_DOM} ]; do
-      wrfout=wrfout_d0${dmn}_${date_str}
+    while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
+      if [ ${dmn} -le ${MAX_GSI_DOM} ]; then 
+	# update the lower BC for the output file to pass to GSI
+        wrfout=wrfout_d0${dmn}_${date_str}
+      else
+	# update the lower BC for the restart file, used as the IC for the next forecast directly
+        wrfout=wrfrst_d0${dmn}_${date_str}
+      fi
+
+      # wrfinput is always drawn from real step
       wrfinput=wrfinput_d0${dmn}
   
       if [ ! -r "${bkg_dir}/${wrfout}" ]; then

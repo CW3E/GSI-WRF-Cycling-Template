@@ -322,6 +322,10 @@ while [ ${dmn} -le ${MAX_WRF_DOM} ]; do
         exit 1
       fi
     fi
+  elif [[ ${IF_CYCLING} = ${YES} ]]; then
+    # if cycling, but not updating this domain with GSI, get initial conditions from last forecast restart file
+    # with updated lower boundary conditions
+    wrfda_outname=wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}/lower_bdy_update/
   else
     # else get initial conditions from real.exe
     real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/${wrfinput_name}
