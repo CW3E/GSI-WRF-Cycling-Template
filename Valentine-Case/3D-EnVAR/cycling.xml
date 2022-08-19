@@ -427,7 +427,7 @@
       </dependency>
     </task>
 
-    <task name="real_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
+    <task name="real_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/real.ksh</command>
       <cores>&REAL_PROC;</cores>
       <nodesize>&REAL_NODESIZE;</nodesize>
@@ -547,7 +547,7 @@
     </envar>
     <dependency> 
       <and>
-	<taskdep task="real_ens_00" state="SUCCEEDED">
+	<taskdep task="real_ens_00" state="SUCCEEDED"/>
         <metataskdep metatask="ensemble_pre_proc"/>
 	<streq><left>&DA_MODE;</left><right>Yes</right></streq>
       </and>
@@ -1032,7 +1032,7 @@
 
   <metatask name="first_ensemble_fore">
     <var name="ENS_N">&ENS_LIST;</var>
-    <task name="wrf_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle">
+    <task name="first_wrf_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle">
       <command>&DRIVERS;/wrf.ksh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>
@@ -1117,7 +1117,7 @@
         <value>&IF_FEEDBACK;</value>
       </envar>
       <dependency> 
-        <metataskdep metatask="ensemble_pre_proc"/>
+        <taskdep task="real_ens_#ENS_N#" state="SUCCEEDED"/>
       </dependency>
     </task>
   </metatask>

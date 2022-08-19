@@ -326,44 +326,44 @@ end_second=`date +%S -d "${end_time}"`
 (( run_hours = FCST_LENGTH % 24 ))
 
 # Update max_dom in namelist
-cat namelist.wps | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
-                      > namelist.wps.new
-mv namelist.wps.new namelist.wps
+cat namelist.input | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
+  > namelist.input.new
+mv namelist.input.new namelist.input
 
 # Update the run_days in wrf namelist.input
 cat namelist.input | sed "s/\(${RUN}_${DAY}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
-   > namelist.input.new
+  > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update the run_hours in wrf namelist
 cat namelist.input | sed "s/\(${RUN}_${HOUR}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_hours}/" \
-   > namelist.input.new
+  > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update the start time in wrf namelist (propagates settings to three domains)
 cat namelist.input | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${start_year}, ${start_year}, ${start_year}/" \
-   | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
-   | sed "s/\(${START}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_day}, ${start_day}, ${start_day}/" \
-   | sed "s/\(${START}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_hour}, ${start_hour}, ${start_hour}/" \
-   | sed "s/\(${START}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_minute}, ${start_minute}, ${start_minute}/" \
-   | sed "s/\(${START}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_second}, ${start_second}, ${start_second}/" \
-   > namelist.input.new
+  | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
+  | sed "s/\(${START}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_day}, ${start_day}, ${start_day}/" \
+  | sed "s/\(${START}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_hour}, ${start_hour}, ${start_hour}/" \
+  | sed "s/\(${START}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_minute}, ${start_minute}, ${start_minute}/" \
+  | sed "s/\(${START}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_second}, ${start_second}, ${start_second}/" \
+  > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update end time in namelist (propagates settings to three domains)
 cat namelist.input | sed "s/\(${END}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${end_year}, ${end_year}, ${end_year}/" \
-   | sed "s/\(${END}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_month}, ${end_month}, ${end_month}/" \
-   | sed "s/\(${END}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_day}, ${end_day}, ${end_day}/" \
-   | sed "s/\(${END}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_hour}, ${end_hour}, ${end_hour}/" \
-   | sed "s/\(${END}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_minute}, ${end_minute}, ${end_minute}/" \
-   | sed "s/\(${END}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_second}, ${end_second}, ${end_second}/" \
-   > namelist.input.new
+  | sed "s/\(${END}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_month}, ${end_month}, ${end_month}/" \
+  | sed "s/\(${END}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_day}, ${end_day}, ${end_day}/" \
+  | sed "s/\(${END}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_hour}, ${end_hour}, ${end_hour}/" \
+  | sed "s/\(${END}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_minute}, ${end_minute}, ${end_minute}/" \
+  | sed "s/\(${END}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${end_second}, ${end_second}, ${end_second}/" \
+  > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
 cat namelist.input | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
-   > namelist.input.new
+  > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update sst_update settings
@@ -375,7 +375,7 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
   # update the auxinput4_interval to the DATA_INTERVAL (propagates to three domains)
   (( auxinput4_minutes = DATA_INTERVAL * 60 ))
   cat namelist.input | sed "s/\(${AUXINPUT}4_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}.*/\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}/" \
-     > namelist.input.new
+    > namelist.input.new
   mv namelist.input.new namelist.input
 fi
 
