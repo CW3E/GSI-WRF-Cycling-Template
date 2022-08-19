@@ -377,7 +377,7 @@ echo "IF_ECMWF_ML    = ${IF_ECMWF_ML}"
 echo
 echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
 echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
-echo "BKG_START_TIME = "${BKG_START_TIME}"
+echo "BKG_START_TIME = ${BKG_START_TIME}"
 echo
 now=`date +%Y%m%d%H%M%S`
 echo "ungrib started at ${now}"
