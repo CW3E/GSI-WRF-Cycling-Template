@@ -35,7 +35,7 @@
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902090000">
   <!ENTITY SECOND_CYCLE        "201902090600">
-  <!ENTITY CYCLE_END           "201902090600">
+  <!ENTITY CYCLE_END           "201902091200">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without DA, adjust bkg data accordingly -->
   <!ENTITY ENS_LIST            "01 02 03 04 05"> <!-- list of ensemble perturbation indices -->
@@ -173,6 +173,7 @@
           <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
         </not> 
         <taskdep task="wrf_ens_00" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/>
+        <taskdep task="first_wrf_ens_00" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/>
       </or>
     </dependency>
   </task>
