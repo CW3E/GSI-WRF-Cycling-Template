@@ -323,10 +323,6 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
         exit 1
       fi
     fi
-  elif [[ ${IF_CYCLING} = ${YES} ]]; then
-    # if cycling, but not updating this domain with GSI, get initial conditions from last forecast restart file
-    # with updated lower boundary conditions
-    wrfda_outname=wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}/lower_bdy_update/
   else
     # else get initial conditions from real.exe
     real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/${wrfinput_name}
@@ -528,16 +524,11 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
   echo "ERROR: ${wrf_exe} did not complet successfully, missing completion messages in RLS files"
 fi
 
-if [[ ${IF_CYCLING} = ${YES} ]]; then
-  # ensure that the cycle_io/date/bkg directory exists for starting next cycle
-  cycle_intv=`date +%H -d "${CYCLE_INTV}"`
-  datestr=`date +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
-  new_bkg=${datestr}/bkg/ens_${ens_n}
-  mkdir -p ${INPUT_DATAROOT}/../${new_bkg}
-else
-  current_bkg=${INPUT_DATAROOT}/bkg/ens_${ens_n}
-  mkdir -p ${current_bkg}
-fi
+# ensure that the cycle_io/date/bkg directory exists for starting next cycle
+cycle_intv=`date +%H -d "${CYCLE_INTV}"`
+datestr=`date +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
+new_bkg=${datestr}/bkg/ens_${ens_n}
+mkdir -p ${INPUT_DATAROOT}/../${new_bkg}
 
 # Check for all wrfout files on FCST_INTERVAL and link files to the appropriate bkg directory
 dmn=1
@@ -549,11 +540,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       echo "WRF failed to complete.  wrfout_d0${dmn}_${datestr} is missing or empty!"
       exit 1
     else
-      if [[ ${IF_CYCLING} = ${YES} ]]; then
-        ln -sfr wrfout_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
-      else
-        ln -sfr wrfout_d0${dmn}_${datestr} ${current_bkg}/
-      fi
+      ln -sfr wrfout_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
     fi
 
     (( fcst += FCST_INTERVAL ))
@@ -563,11 +550,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     echo "WRF failed to complete.  wrfrst_d0${dmn}_${datestr} is missing or empty!"
     exit 1
   else
-    if [[ ${IF_CYCLING} = ${YES} ]]; then
-      ln -sfr wrfrst_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
-    else
-      ln -sfr wrfrst_d0${dmn}_${datestr} ${current_bkg}/
-    fi
+    ln -sfr wrfrst_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
   fi
 
   (( dmn += 1 ))
