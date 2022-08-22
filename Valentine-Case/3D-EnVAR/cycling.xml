@@ -1141,7 +1141,10 @@
         <value>&IF_FEEDBACK;</value>
       </envar>
       <dependency> 
-        <taskdep task="real_ens_#ENS_N#" state="SUCCEEDED"/>
+        <and>
+          <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
+          <taskdep task="real_ens_#ENS_N#" state="SUCCEEDED"/>
+	</and>
       </dependency>
     </task>
   </metatask>
