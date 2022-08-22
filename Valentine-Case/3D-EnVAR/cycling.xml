@@ -363,15 +363,13 @@
       <dependency>
         <and>
 	  <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
-          <or>
-            <and>
+	  <and>
+            <or>
 	      <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
-              <not>
-                <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
-              </not> 
-            </and>
+              <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
+            </or>
 	    <taskdep task="ungrib_ens_00" state="SUCCEEDED"/>
-          </or>
+	  </and>
 	</and>
       </dependency>
     </task>
