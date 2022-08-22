@@ -33,9 +33,9 @@
   <!-- END SOFTWARE SETTINGS -->
 
   <!-- CYCLING SETTINGS -->
-  <!ENTITY CYCLE_START         "201902090000">
-  <!ENTITY SECOND_CYCLE        "201902090600">
-  <!ENTITY CYCLE_END           "201902091200">
+  <!ENTITY CYCLE_START         "201902071800">
+  <!ENTITY SECOND_CYCLE        "201902080000">
+  <!ENTITY CYCLE_END           "201902080600">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without DA, adjust bkg data accordingly -->
   <!ENTITY ENS_LIST            "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
@@ -331,9 +331,10 @@
         <name>START_TIME</name>
         <value><cyclestr>@Y@m@d@H</cyclestr></value>
       </envar>
+      <!-- IF using IF_ENS_COLD_START BKG_START_TIME should be one cycle behind -->
       <envar>
         <name>BKG_START_TIME</name>
-        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+        <value><cyclestr offset="-&CYCLE_INTV;">@Y@m@d@H</cyclestr></value>
       </envar>
       <envar>
         <name>FCST_LENGTH</name>
@@ -363,9 +364,12 @@
         <and>
 	  <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
           <or>
-            <not>
-              <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
-            </not> 
+            <and>
+	      <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
+              <not>
+                <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
+              </not> 
+            </and>
 	    <taskdep task="ungrib_ens_00" state="SUCCEEDED"/>
           </or>
 	</and>
