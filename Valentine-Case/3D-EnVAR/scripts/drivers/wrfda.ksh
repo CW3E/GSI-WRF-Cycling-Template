@@ -62,22 +62,28 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ANAL_TIME   = Analysis time YYYYMMDDHH
-# N_ENS       = Max ensemble index (use 00 for control alone)
-# IF_LOWER    = 'Yes' if updating lower boundary conditions 
-#               'No' if updating lateral boundary conditions
-# WRF_CTR_DOM = Max domain index of control forecast
-# WRF_ENS_DOM = Max domain index of ensemble perturbations
+# ANAL_TIME         = Analysis time YYYYMMDDHH
+# IF_ENS_COLD_START = Skip lower / lateral BC updates if "Yes"
+# N_ENS             = Max ensemble index (use 00 for control alone)
+# IF_LOWER          = 'Yes' if updating lower boundary conditions 
+#                     'No' if updating lateral boundary conditions
+# WRF_CTR_DOM       = Max domain index of control forecast
+# WRF_ENS_DOM       = Max domain index of ensemble perturbations
 #
 # Below variabs are derived by cycling.xml variables for convenience
 #
-# date_str    = Defined by the ANAL_TIME variable, to be used as path
-#               name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
+# date_str          = Defined by the ANAL_TIME variable, to be used as path
+#                     name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
 #####################################################
 
 if [ ! "${ANAL_TIME}" ]; then
   echo "ERROR: \$ANAL_TIME is not defined!"
+  exit 1
+fi
+
+if [[ ${IF_ENS_COLD_START} != ${YES} && ${IF_ENS_COLD_START} != ${NO} ]]; then
+  echo "ERROR: \$IF_ENS_COLD_START must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
@@ -157,9 +163,17 @@ fi
 #
 #####################################################
 
+if [[ ${IF_ENS_COLD_START} = ${YES} ]]; then
+  # skip the boundary updates for the ensemble, perform on control alone
+  n_ens=0
+else
+  # perform over the entire ensemble
+  n_ens=${N_ENS}
+fi
+
 ens_n=0
 
-while [ ${ens_n} -le ${N_ENS} ]; do
+while [ ${ens_n} -le ${n_ens} ]; do
   # define two zero padded string for GEFS 
   iimem=`printf %02d ${ens_n}`
 

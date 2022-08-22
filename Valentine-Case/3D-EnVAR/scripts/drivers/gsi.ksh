@@ -85,20 +85,21 @@ fi
 #####################################################
 # Options below are defined in cycling.xml (case insensitive)
 #
-# WRF_CTR_DOM   = INT   : GSI analyzes the control domain d0${dmn} for dmn -le ${WRF_CTR_DOM}
-# WRF_ENS_DOM   = INT   : GSI utilizes ensemble perturbatiosn on d0{dmn} for dmn -le ${WRF_ENS_DOM}
-# IF_COLD_START = Yes   : GSI analyzes wrfinput_d0${dmn} file instead
-#                         of wrfout_d0${dmn} file to start first DA cycle
-# IF_SATRAD     = Yes   : GSI uses satellite radiances, gpsro and radar data
-#                         in addition to conventional data from prepbufr 
-#                 No    : GSI uses conventional data alone
+# WRF_CTR_DOM   = INT       : GSI analyzes the control domain d0${dmn} for dmn -le ${WRF_CTR_DOM}
+# WRF_ENS_DOM   = INT       : GSI utilizes ensemble perturbatiosn on d0{dmn} for dmn -le ${WRF_ENS_DOM}
+# IF_CTR_COLD_START = Yes   : GSI analyzes wrfinput_d0${dmn} file instead
+#                              of wrfout_d0${dmn} file to start first DA cycle
+# IF_ENS_COLD_START = Yes   : GSI analyzes control trajectory with perts
+#                             downscaled but not cycled
+# IF_SATRAD     = Yes       : GSI uses satellite radiances, gpsro and radar data
+#                             in addition to conventional data from prepbufr 
+#                 No        : GSI uses conventional data alone
 #
-# IF_HYBRID     = Yes   : Run GSI as 3D/4D EnVAR
-# IF_OBSERVER   = Yes   : Only used as observation operator for EnKF
-# N_ENS         = INT   : Max ensemble index (00 for control alone) 
-#                         NOTE this must be set when `IF_HYBRID=Yes` and when `IF_OBSERVER=Yes`
-# IF_4DENVAR    = Yes   : Run GSI as 4D EnVar
-#                         NOTE set `IF_HYBRID=Yes` first
+# IF_HYBRID     = Yes       : Run GSI as 3D/4D EnVAR
+# IF_OBSERVER   = Yes       : Only used as observation operator for EnKF
+# N_ENS         = INT       : Max ensemble index (00 for control alone) 
+#                             NOTE this must be set when `IF_HYBRID=Yes` and when `IF_OBSERVER=Yes`
+# IF_4DENVAR    = Yes       : Run GSI as 4D EnVar
 #
 #####################################################
 
@@ -112,8 +113,13 @@ if [ ! ${WRF_ENS_DOM} ]; then
   exit 1
 fi
 
-if [[ ${IF_COLD_START} != ${YES} && ${IF_COLD_START} != ${NO} ]]; then
-  echo "ERROR: \$IF_COLD_START must equal 'Yes' or 'No' (case insensitive)"
+if [[ ${IF_CTR_COLD_START} != ${YES} && ${IF_CTR_COLD_START} != ${NO} ]]; then
+  echo "ERROR: \$IF_CTR_COLD_START must equal 'Yes' or 'No' (case insensitive)"
+  exit 1
+fi
+
+if [[ ${IF_ENS_COLD_START} != ${YES} && ${IF_ENS_COLD_START} != ${NO} ]]; then
+  echo "ERROR: \$IF_ENS_COLD_START must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
@@ -286,7 +292,7 @@ else
 fi
 obs_root=${STATIC_DATA}/obs_data
 
-if [[ ${IF_COLD_START} = ${NO} ]]; then
+if [[ ${IF_CTR_COLD_START} = ${NO} ]]; then
   # NOTE: the background files are taken from the WRFDA outputs when cycling, having updated the lower BCs
   bkg_root=${INPUT_DATAROOT}/wrfdaprd
 else
@@ -442,8 +448,8 @@ while [ ${dmn} -le ${max_dom} ]; do
      gsiobsfile+=("gpsrobufr")
 
      # tested
-     srcobsfile+=("mtiasi")
-     gsiobsfile+=("iasibufr")
+     #srcobsfile+=("mtiasi")
+     #gsiobsfile+=("iasibufr")
 
      # available, not tested
      #srcobsfile+=("osbuv8")
@@ -619,7 +625,7 @@ while [ ${dmn} -le ${max_dom} ]; do
   #
   #####################################################
 
-  if [[ ${IF_COLD_START} = ${NO} ]]; then
+  if [[ ${IF_CTR_COLD_START} = ${NO} ]]; then
     bkg_file=${bkg_root}/ens_00/lower_bdy_update/wrfout_d0${dmn}_${date_str}
   else
     bkg_file=${bkg_root}/ens_00/wrfinput_d0${dmn}
@@ -663,10 +669,10 @@ while [ ${dmn} -le ${max_dom} ]; do
         # three zero padding for GSI
         iiimem=`printf %03d ${ens_n}`
 
-        if [[ ${IF_COLD_START} = ${NO} ]]; then
-          ens_file=${bkg_root}/ens_${iimem}/lower_bdy_update/wrfout_d01_${date_str}
+        if [[ ${IF_ENS_COLD_START} = ${NO} ]]; then
+          ens_file=${bkg_root}/ens_${iimem}/lower_bdy_update/wrfout_d0${dmn}_${date_str}
         else
-          ens_file=${bkg_root}/ens_${iimem}/wrfinput_d01
+          ens_file=${bkg_root}/ens_${iimem}/wrfinput_d0${dmn}
         fi
 
         if [ ! -r "${ens_file}" ]; then
@@ -755,17 +761,18 @@ while [ ${dmn} -le ${max_dom} ]; do
   #####################################################
   # Print run parameters
   echo
-  echo "IF_COLD_START  = ${IF_COLD_START}"
-  echo "IF_SATRAD      = ${IF_SATRAD}"
-  echo "IF_HYBRID      = ${IF_HYBRID}"
-  echo "N_ENS          = ${N_ENS}"
-  echo "IF_OBSERVER    = ${IF_OBSERVER}"
-  echo "IF_4DENVAR     = ${IF_4DENVAR}"
+  echo "IF_CTR_COLD_START  = ${IF_CTR_COLD_START}"
+  echo "IF_ENS_COLD_START  = ${IF_ENS_COLD_START}"
+  echo "IF_SATRAD          = ${IF_SATRAD}"
+  echo "IF_HYBRID          = ${IF_HYBRID}"
+  echo "N_ENS              = ${N_ENS}"
+  echo "IF_OBSERVER        = ${IF_OBSERVER}"
+  echo "IF_4DENVAR         = ${IF_4DENVAR}"
   echo
-  echo "ANAL_TIME      = ${ANAL_TIME}"
-  echo "GSI_ROOT       = ${GSI_ROOT}"
-  echo "CRTM_VERSION   = ${CRTM_VERSION}"
-  echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+  echo "ANAL_TIME          = ${ANAL_TIME}"
+  echo "GSI_ROOT           = ${GSI_ROOT}"
+  echo "CRTM_VERSION       = ${CRTM_VERSION}"
+  echo "INPUT_DATAROOT     = ${INPUT_DATAROOT}"
   echo
   now=`date +%Y%m%d%H%M%S`
   echo "gsi started at ${now} with ${bk_core} background on domain d0${dmn}"

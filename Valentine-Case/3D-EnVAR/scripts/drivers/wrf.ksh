@@ -312,7 +312,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       # Nested domains have boundary conditions defined by parent, link from GSI / EnKF analysis
       if [ ${ens_n} -eq 00 ]; then
 	# control solution is indexed 00, analyzed with GSI
-        gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl.${START_TIME}
+        gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl_ens_${ens_n}.${START_TIME}
       else
 	# ensemble perturbations are updated with EnKF step
         gsi_outname=${INPUT_DATAROOT}/enkfprd/d0${dmn}/analysis.${iiimem}

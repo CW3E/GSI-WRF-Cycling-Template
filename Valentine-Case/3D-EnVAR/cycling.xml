@@ -38,8 +38,8 @@
   <!ENTITY CYCLE_END           "201902091200">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without DA, adjust bkg data accordingly -->
-  <!ENTITY ENS_LIST            "01 02 03 04 05"> <!-- list of ensemble perturbation indices -->
-  <!ENTITY N_ENS               "05"> <!-- Must equal the max index of the ENS_LIST above or 00 if not hybrid DA -->
+  <!ENTITY ENS_LIST            "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
+  <!ENTITY N_ENS               "20"> <!-- Must equal the max index of the ENS_LIST above or 00 if not hybrid DA -->
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
@@ -50,7 +50,7 @@
 
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
-  <!ENTITY WRF_CTR_DOM         "2">
+  <!ENTITY WRF_CTR_DOM         "1">
   <!ENTITY WRF_ENS_DOM         "1">
   <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
@@ -63,6 +63,7 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
+  <!ENTITY IF_ENS_COLD_START   "Yes">
   <!ENTITY IF_SATRAD           "Yes">
   <!ENTITY IF_HYBRID           "Yes">
   <!ENTITY IF_4DENVAR          "No">
@@ -97,12 +98,12 @@
   <!ENTITY WRF_MEM_PER_CPU     "2G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
-  <!ENTITY WRF_WC              "12:00:00">
+  <!ENTITY WRF_WC              "01:30:00">
   <!ENTITY GSI_PROC            "384">
   <!ENTITY GSI_MEM_PER_CPU     "5G">
   <!ENTITY GSI_NODESIZE        "24">
   <!ENTITY GSI_NODES           "16">
-  <!ENTITY GSI_WC              "03:00:00">
+  <!ENTITY GSI_WC              "01:30:00">
   <!-- END JOB SETTINGS -->
 ]>
 
@@ -515,6 +516,10 @@
       <value>&WRF_CONSTANT;</value>
     </envar>
     <envar>
+      <name>IF_ENS_COLD_START</name>
+      <value>&IF_ENS_COLD_START;</value>
+    </envar>
+    <envar>
       <name>N_ENS</name>
       <value>&N_ENS;</value>
     </envar>
@@ -587,7 +592,11 @@
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>IF_COLD_START</name>
+      <name>IF_CTR_COLD_START</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>IF_ENS_COLD_START</name>
       <value>No</value>
     </envar>
     <envar>
@@ -667,7 +676,11 @@
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>IF_COLD_START</name>
+      <name>IF_CTR_COLD_START</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>IF_ENS_COLD_START</name>
       <value>No</value>
     </envar>
     <envar>
@@ -713,6 +726,7 @@
     <dependency> 
       <and>
         <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
+        <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
         <taskdep task="gsi_analysis" state="SUCCEEDED"/>
       </and>
     </dependency>
@@ -766,9 +780,10 @@
       <value>&MPIRUN;</value>
     </envar>
     <dependency> 
-      <or>
+      <and>
+        <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
         <taskdep task="gsi_observer" state="SUCCEEDED"/>
-      </or>
+      </and>
     </dependency>
   </task>
 
@@ -791,6 +806,10 @@
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>IF_ENS_COLD_START</name>
+      <value>&IF_ENS_COLD_START;</value>
     </envar>
     <envar>
       <name>N_ENS</name>
@@ -831,20 +850,24 @@
     <dependency> 
       <or>
         <and>
-          <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
+          <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
           <taskdep task="enkf" state="SUCCEEDED"/>
 	</and>
         <and>
-          <streq><left>&IF_HYBRID;</left><right>No</right></streq>
+          <taskdep task="gsi_analysis" state="SUCCEEDED"/>
           <or>
-            <taskdep task="gsi_analysis" state="SUCCEEDED"/>
+            <streq><left>&IF_HYBRID;</left><right>No</right></streq>
+	    <and>
+	      <streq><left>&IF_HYBRID;</left><right>Yes</right></streq> 
+              <streq><left>&IF_ENS_COLD_START;</left><right>Yes</right></streq>
+	    </and>
           </or>
         </and>
       </or>
     </dependency>
   </task>
 
-  <task name="first_wrf_ens_00" maxtries="2" cycledefs="first_cycle">
+  <task name="first_wrf_ens_00" maxtries="3" cycledefs="first_cycle">
     <command>&DRIVERS;/wrf.ksh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
@@ -933,7 +956,7 @@
     </dependency>
   </task>
 
-  <task name="wrf_ens_00" maxtries="2" cycledefs="q_daily">
+  <task name="wrf_ens_00" maxtries="3" cycledefs="q_daily">
     <command>&DRIVERS;/wrf.ksh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
@@ -1217,6 +1240,7 @@
           </and>
           <and>
             <streq><left>&DA_MODE;</left><right>Yes</right></streq>
+            <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
             <taskdep task="wrfda_latbc" state="SUCCEEDED"/>
           </and>
         </or>
