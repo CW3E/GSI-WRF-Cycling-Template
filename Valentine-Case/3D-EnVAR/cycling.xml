@@ -170,9 +170,6 @@
     </envar>
     <dependency>
       <or>
-        <not>
-          <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
-        </not> 
         <taskdep task="wrf_ens_00" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/>
         <taskdep task="first_wrf_ens_00" cycle_offset="-&CYCLE_INTV;" state="SUCCEEDED"/>
       </or>
@@ -599,7 +596,7 @@
     </envar>
     <envar>
       <name>IF_ENS_COLD_START</name>
-      <value>No</value>
+      <value>&IF_ENS_COLD_START;</value>
     </envar>
     <envar>
       <name>IF_SATRAD</name>
