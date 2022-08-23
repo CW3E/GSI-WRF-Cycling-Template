@@ -171,9 +171,6 @@
     </envar>
     <dependency>
       <or>
-        <not>
-          <cycleexistdep cycle_offset="-&CYCLE_INTV;"/> 
-        </not> 	
         <taskdep task="wrf_ens_00" cycle_offset="&CYCLE_OFFSET;" state="SUCCEEDED"/>
         <taskdep task="first_wrf_ens_00" cycle_offset="&CYCLE_OFFSET;" state="SUCCEEDED"/>
       </or>
@@ -304,7 +301,7 @@
 
   <metatask name="ensemble_pre_proc">
     <var name="ENS_N">&ENS_LIST;</var>  
-    <task name="ungrib_ens_#ENS_N#" maxtries="2" cycledefs="q_daily">
+    <task name="ungrib_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
       <nodesize>&UNGRIB_NODESIZE;</nodesize>
@@ -362,11 +359,20 @@
         <value>&IF_ECMWF_ML;</value>
       </envar>
       <dependency>
-        <taskdep task="ungrib_ens_00" state="SUCCEEDED"/>
+        <and>
+	  <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
+	  <and>
+            <or>
+	      <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
+              <cycleexistdep cycle_offset="&CYCLE_OFFSET;"/> 
+            </or>
+	    <taskdep task="ungrib_ens_00" state="SUCCEEDED"/>
+	  </and>
+	</and>
       </dependency>
     </task>
 
-    <task name="metgrid_ens_#ENS_N#" maxtries="2" cycledefs="q_daily">
+    <task name="metgrid_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/metgrid.ksh</command>
       <cores>&METGRID_PROC;</cores>
       <nodesize>&METGRID_NODESIZE;</nodesize>
@@ -423,7 +429,7 @@
       </dependency>
     </task>
 
-    <task name="real_ens_#ENS_N#" maxtries="3" cycledefs="q_daily">
+    <task name="real_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/real.ksh</command>
       <cores>&REAL_PROC;</cores>
       <nodesize>&REAL_NODESIZE;</nodesize>
@@ -549,6 +555,7 @@
       <and>
 	<taskdep task="real_ens_00" state="SUCCEEDED"/>
         <metataskdep metatask="ensemble_pre_proc"/>
+	<streq><left>&DA_MODE;</left><right>Yes</right></streq>
       </and>
     </dependency>
   </task>
@@ -637,6 +644,149 @@
     </dependency>
   </task>
 
+  <task name="gsi_observer" maxtries="1" cycledefs="q_daily">
+    <command>&DRIVERS;/gsi.ksh</command>
+    <nodesize>&GSI_NODESIZE;</nodesize>
+    <cores>&GSI_PROC;</cores>
+    <walltime>&GSI_WC;</walltime>
+    <jobname><cyclestr>gsi_observer_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/gsi/gsi_observer_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&GSI_NODES;</native>
+    <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type FAIL</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&GSI_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>WRF_CTR_DOM</name>
+      <value>&WRF_CTR_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRF_ENS_DOM</name>
+      <value>&WRF_ENS_DOM;</value>
+    </envar>
+    <envar>
+      <name>ANAL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>IF_CTR_COLD_START</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>IF_ENS_COLD_START</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>IF_SATRAD</name>
+      <value>&IF_SATRAD;</value>
+    </envar>
+    <envar>
+      <name>IF_OBSERVER</name>
+      <value>Yes</value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>IF_HYBRID</name>
+      <value>&IF_HYBRID;</value>
+    </envar>
+    <envar>
+      <name>IF_4DENVAR</name>
+      <value>&IF_4DENVAR;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>GSI_ROOT</name>
+      <value>&GSI_ROOT;</value>
+    </envar>
+    <envar>
+      <name>CRTM_VERSION</name>
+      <value>&CRTM_VERSION;</value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <and>
+        <streq><left>&IF_HYBRID;</left><right>Yes</right></streq>
+        <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
+        <taskdep task="gsi_analysis" state="SUCCEEDED"/>
+      </and>
+    </dependency>
+  </task>
+
+  <task name="enkf" maxtries="2" cycledefs="q_daily">
+    <command>&DRIVERS;/enkf.ksh</command>
+    <nodesize>&GSI_NODESIZE;</nodesize>
+    <cores>&GSI_PROC;</cores>
+    <walltime>&GSI_WC;</walltime>
+    <jobname><cyclestr>enkf_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&LOG;/gsi/enkf_@Y@m@d@H.log</cyclestr></join>
+    <native>--partition=&PARTITION;</native>
+    <native>--account=&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&GSI_NODES;</native>
+    <native>--mem-per-cpu=&GSI_MEM_PER_CPU;</native>
+    <native>--mail-type BEGIN</native>
+    <native>--mail-type END</native>
+    <native>--mail-type FAIL</native>
+    <envar>
+      <name>CONSTANT</name>
+      <value>&GSI_CONSTANT;</value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&WRF_ENS_DOM;</value>
+    </envar>
+    <envar>
+      <name>ANAL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DATA</name>
+      <value>&STATIC_DATA;</value>
+    </envar>
+    <envar>
+      <name>INPUT_DATAROOT</name>
+      <value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>GSI_ROOT</name>
+      <value>&GSI_ROOT;</value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <dependency> 
+      <and>
+        <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
+        <taskdep task="gsi_observer" state="SUCCEEDED"/>
+      </and>
+    </dependency>
+  </task>
+
   <task name="wrfda_latbc" maxtries="4" cycledefs="q_daily">
     <command>&DRIVERS;/wrfda.ksh</command>
     <cores>&WRFDA_PROC;</cores>
@@ -698,7 +848,22 @@
       <value>&MPIRUN;</value>
     </envar>
     <dependency> 
-      <taskdep task="gsi_analysis" state="SUCCEEDED"/>
+      <or>
+        <and>
+          <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
+          <taskdep task="enkf" state="SUCCEEDED"/>
+	</and>
+        <and>
+          <taskdep task="gsi_analysis" state="SUCCEEDED"/>
+          <or>
+            <streq><left>&IF_HYBRID;</left><right>No</right></streq>
+	    <and>
+	      <streq><left>&IF_HYBRID;</left><right>Yes</right></streq> 
+              <streq><left>&IF_ENS_COLD_START;</left><right>Yes</right></streq>
+	    </and>
+          </or>
+        </and>
+      </or>
     </dependency>
   </task>
 
@@ -876,8 +1041,214 @@
       <value>&IF_FEEDBACK;</value>
     </envar>
     <dependency> 
-     <taskdep task="wrfda_latbc" state="SUCCEEDED"/>
+      <or>
+        <and>
+          <streq><left>&DA_MODE;</left><right>No</right></streq>
+          <taskdep task="real_ens_00" state="SUCCEEDED"/>
+        </and>
+        <and>
+          <streq><left>&DA_MODE;</left><right>Yes</right></streq>
+          <taskdep task="wrfda_latbc" state="SUCCEEDED"/>
+        </and>
+      </or>
     </dependency>
   </task>
+
+  <metatask name="first_ensemble_fore">
+    <var name="ENS_N">&ENS_LIST;</var>
+    <task name="first_wrf_ens_#ENS_N#" maxtries="2" cycledefs="first_cycle">
+      <command>&DRIVERS;/wrf.ksh</command>
+      <cores>&WRF_PROC;</cores>
+      <nodesize>&WRF_NODESIZE;</nodesize>
+      <walltime>&WRF_WC;</walltime>
+      <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
+      <join><cyclestr>&LOG;/wrf/wrf_ens_#ENS_N#_@Y@m@d@H.log</cyclestr></join>
+      <native>--partition=&PARTITION;</native>
+      <native>--account=&PROJECT;</native>
+      <native>--export=ALL</native>
+      <native>--nodes=&WRF_NODES;</native>
+      <native>--mem-per-cpu=&WRF_MEM_PER_CPU;</native>
+      <envar>
+        <name>CONSTANT</name>
+        <value>&WRF_CONSTANT;</value>
+      </envar>
+      <envar>
+         <name>ENS_N</name>
+         <value>#ENS_N#</value>
+      </envar>
+      <envar>
+        <name>START_TIME</name>
+        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>FCST_LENGTH</name>
+        <value>&FCST_LENGTH;</value>
+      </envar>
+      <envar>
+        <name>FCST_INTERVAL</name>
+        <value>&FCST_INTERVAL;</value>
+      </envar>
+      <envar>
+        <name>DATA_INTERVAL</name>
+        <value>&DATA_INTERVAL;</value>
+      </envar>
+      <envar>
+        <name>CYCLE_INTV</name>
+        <value>&CYCLE_INTV;</value>
+      </envar>
+      <envar>
+        <name>MAX_DOM</name>
+        <value>&WRF_ENS_DOM;</value>
+      </envar>
+      <envar>
+        <name>WRF_ROOT</name>
+        <value>&WRF_ROOT;</value>
+      </envar>
+      <envar>
+        <name>STATIC_DATA</name>
+        <value>&STATIC_DATA;</value>
+      </envar>
+      <envar>
+        <name>INPUT_DATAROOT</name>
+        <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>MPIRUN</name>
+        <value>&MPIRUN;</value>
+      </envar>
+      <envar>
+        <name>WRF_PROC</name>
+        <value>&WRF_PROC;</value>
+      </envar>
+      <envar>
+        <name>NIO_GROUPS</name>
+        <value>&NIO_GROUPS;</value>
+      </envar>
+      <envar>
+        <name>NIO_TASKS_PER_GROUP</name>
+        <value>&NIO_TASKS_PER_GROUP;</value>
+      </envar>
+      <envar>
+        <name>IF_CYCLING</name>
+        <value>No</value>
+      </envar>
+      <envar>
+        <name>IF_SST_UPDATE</name>
+        <value>&IF_SST_UPDATE;</value>
+      </envar>
+      <envar>
+        <name>IF_FEEDBACK</name>
+        <value>&IF_FEEDBACK;</value>
+      </envar>
+      <dependency> 
+        <and>
+          <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
+          <taskdep task="real_ens_#ENS_N#" state="SUCCEEDED"/>
+	</and>
+      </dependency>
+    </task>
+  </metatask>
+
+  <metatask name="ensemble_fore">
+    <var name="ENS_N">&ENS_LIST;</var>
+    <task name="wrf_ens_#ENS_N#" maxtries="2" cycledefs="q_daily">
+      <command>&DRIVERS;/wrf.ksh</command>
+      <cores>&WRF_PROC;</cores>
+      <nodesize>&WRF_NODESIZE;</nodesize>
+      <walltime>&WRF_WC;</walltime>
+      <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
+      <join><cyclestr>&LOG;/wrf/wrf_ens_#ENS_N#_@Y@m@d@H.log</cyclestr></join>
+      <native>--partition=&PARTITION;</native>
+      <native>--account=&PROJECT;</native>
+      <native>--export=ALL</native>
+      <native>--nodes=&WRF_NODES;</native>
+      <native>--mem-per-cpu=&WRF_MEM_PER_CPU;</native>
+      <envar>
+        <name>CONSTANT</name>
+        <value>&WRF_CONSTANT;</value>
+      </envar>
+      <envar>
+         <name>ENS_N</name>
+         <value>#ENS_N#</value>
+      </envar>
+      <envar>
+        <name>START_TIME</name>
+        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>FCST_LENGTH</name>
+        <value>&FCST_LENGTH;</value>
+      </envar>
+      <envar>
+        <name>FCST_INTERVAL</name>
+        <value>&FCST_INTERVAL;</value>
+      </envar>
+      <envar>
+        <name>DATA_INTERVAL</name>
+        <value>&DATA_INTERVAL;</value>
+      </envar>
+      <envar>
+        <name>CYCLE_INTV</name>
+        <value>&CYCLE_INTV;</value>
+      </envar>
+      <envar>
+        <name>MAX_DOM</name>
+        <value>&WRF_ENS_DOM;</value>
+      </envar>
+      <envar>
+        <name>WRF_ROOT</name>
+        <value>&WRF_ROOT;</value>
+      </envar>
+      <envar>
+        <name>STATIC_DATA</name>
+        <value>&STATIC_DATA;</value>
+      </envar>
+      <envar>
+        <name>INPUT_DATAROOT</name>
+        <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      </envar>
+      <envar>
+        <name>MPIRUN</name>
+        <value>&MPIRUN;</value>
+      </envar>
+      <envar>
+        <name>WRF_PROC</name>
+        <value>&WRF_PROC;</value>
+      </envar>
+      <envar>
+        <name>NIO_GROUPS</name>
+        <value>&NIO_GROUPS;</value>
+      </envar>
+      <envar>
+        <name>NIO_TASKS_PER_GROUP</name>
+        <value>&NIO_TASKS_PER_GROUP;</value>
+      </envar>
+      <envar>
+        <name>IF_CYCLING</name>
+        <value>&DA_MODE;</value>
+      </envar>
+      <envar>
+        <name>IF_SST_UPDATE</name>
+        <value>&IF_SST_UPDATE;</value>
+      </envar>
+      <envar>
+        <name>IF_FEEDBACK</name>
+        <value>&IF_FEEDBACK;</value>
+      </envar>
+      <dependency> 
+        <or>
+          <and>
+            <streq><left>&DA_MODE;</left><right>No</right></streq>
+            <metataskdep metatask="ensemble_pre_proc"/>
+          </and>
+          <and>
+            <streq><left>&DA_MODE;</left><right>Yes</right></streq>
+            <streq><left>&IF_ENS_COLD_START;</left><right>No</right></streq>
+            <taskdep task="wrfda_latbc" state="SUCCEEDED"/>
+          </and>
+        </or>
+      </dependency>
+    </task>
+  </metatask>
 
 </workflow>
