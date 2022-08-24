@@ -35,7 +35,7 @@
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902071800">
   <!ENTITY SECOND_CYCLE        "201902080000">
-  <!ENTITY CYCLE_END           "201902080600">
+  <!ENTITY CYCLE_END           "201902141800">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY CYCLE_OFFSET        "-6:00:00">
   <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without DA, adjust bkg data accordingly -->
@@ -104,7 +104,7 @@
   <!ENTITY GSI_MEM_PER_CPU     "5G">
   <!ENTITY GSI_NODESIZE        "24">
   <!ENTITY GSI_NODES           "16">
-  <!ENTITY GSI_WC              "01:30:00">
+  <!ENTITY GSI_WC              "03:00:00">
   <!-- END JOB SETTINGS -->
 ]>
 
@@ -113,7 +113,7 @@
   <cycledef group="q_daily">&SECOND_CYCLE; &CYCLE_END; &CYCLE_INTV;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
   
-  <task name="ungrib_ens_00" maxtries="2" cycledefs="first_cycle,q_daily">
+  <task name="ungrib_ens_00" maxtries="3" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/ungrib.ksh</command>
     <cores>&UNGRIB_PROC;</cores>
     <nodesize>&UNGRIB_NODESIZE;</nodesize>
@@ -180,7 +180,7 @@
     </dependency>
   </task>
 
-  <task name="metgrid_ens_00" maxtries="2" cycledefs="first_cycle,q_daily">
+  <task name="metgrid_ens_00" maxtries="3" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/metgrid.ksh</command>
     <cores>&METGRID_PROC;</cores>
     <nodesize>&METGRID_NODESIZE;</nodesize>
@@ -237,7 +237,7 @@
     </dependency>
   </task>
 
-  <task name="real_ens_00" maxtries="2" cycledefs="first_cycle,q_daily">
+  <task name="real_ens_00" maxtries="3" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/real.ksh</command>
     <cores>&REAL_PROC;</cores>
     <nodesize>&REAL_NODESIZE;</nodesize>
@@ -304,7 +304,7 @@
 
   <metatask name="ensemble_pre_proc">
     <var name="ENS_N">&ENS_LIST;</var>  
-    <task name="ungrib_ens_#ENS_N#" maxtries="2" cycledefs="q_daily">
+    <task name="ungrib_ens_#ENS_N#" maxtries="3" cycledefs="q_daily">
       <command>&DRIVERS;/ungrib.ksh</command>
       <cores>&UNGRIB_PROC;</cores>
       <nodesize>&UNGRIB_NODESIZE;</nodesize>
@@ -366,7 +366,7 @@
       </dependency>
     </task>
 
-    <task name="metgrid_ens_#ENS_N#" maxtries="2" cycledefs="q_daily">
+    <task name="metgrid_ens_#ENS_N#" maxtries="3" cycledefs="q_daily">
       <command>&DRIVERS;/metgrid.ksh</command>
       <cores>&METGRID_PROC;</cores>
       <nodesize>&METGRID_NODESIZE;</nodesize>
@@ -489,7 +489,7 @@
     </task>
   </metatask>
 
-  <task name="wrfda_lowbc" maxtries="1" cycledefs="q_daily">
+  <task name="wrfda_lowbc" maxtries="3" cycledefs="q_daily">
     <command>&DRIVERS;/wrfda.ksh</command>
     <cores>&WRFDA_PROC;</cores>
     <nodesize>&WRFDA_NODESIZE;</nodesize>
@@ -553,7 +553,7 @@
     </dependency>
   </task>
 
-  <task name="gsi_analysis" maxtries="1" cycledefs="q_daily">
+  <task name="gsi_analysis" maxtries="2" cycledefs="q_daily">
     <command>&DRIVERS;/gsi.ksh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>

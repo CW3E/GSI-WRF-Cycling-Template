@@ -145,9 +145,9 @@ if [ ! "${ENS_N}" ]; then
 fi
 
 # Ensure padding to two digits is included
-ens_n=`printf %02d ${ENS_N}`
+ens_n=`printf %02d $(( 10#${ENS_N} ))`
 # Make three digit padding for GSI conventions
-iiimem=`printf %03d ${ens_n}`
+iiimem=`printf %03d $(( 10#${ens_n} ))`
 
 if [ ! ${FCST_LENGTH} ]; then
   echo "ERROR: \$FCST_LENGTH is not defined!"

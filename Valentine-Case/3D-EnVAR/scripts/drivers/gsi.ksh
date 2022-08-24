@@ -673,10 +673,10 @@ while [ ${dmn} -le ${max_dom} ]; do
 
       while [ ${ens_n} -le ${N_ENS} ]; do
         # two zero padding for GEFS
-        iimem=`printf %02d ${ens_n}`
+	iimem=`printf %02d $(( 10#${ens_n} ))`
 
         # three zero padding for GSI
-        iiimem=`printf %03d ${ens_n}`
+	iiimem=`printf %03d $(( 10#${ens_n} ))`
 
         if [[ ${IF_ENS_COLD_START} = ${NO} ]]; then
           ens_file=${ens_root}/ens_${iimem}/lower_bdy_update/wrfout_d0${dmn}_${date_str}
@@ -893,8 +893,8 @@ while [ ${dmn} -le ${max_dom} ]; do
     while [[ ${ens_n} -le ${N_ENS} ]]; do
       rm pe0*
       print "\$ens_n is ${ens_n}"
-      iimem=`printf %02d ${ens_n}`
-      iiimem=`printf %03d ${ens_n}`
+      iimem=`printf %02d $(( 10#${ens_n} ))`
+      iiimem=`printf %03d $(( 10#${ens_n} ))`
 
       # get new background for each member
       if [[ -f wrf_inout ]]; then

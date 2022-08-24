@@ -175,10 +175,10 @@ ens_n=0
 
 while [ ${ens_n} -le ${n_ens} ]; do
   # define two zero padded string for GEFS 
-  iimem=`printf %02d ${ens_n}`
+  iimem=`printf %02d $(( 10#${ens_n} ))`
 
   # define three zero padded string for GSI
-  iiimem=`printf %03d ${ens_n}`
+  iiimem=`printf %03d $(( 10#${ens_n} ))`
   
   work_root=${INPUT_DATAROOT}/wrfdaprd/ens_${iimem}
   gsi_dir=${INPUT_DATAROOT}/gsiprd

@@ -142,7 +142,7 @@ if [ ! "${ENS_N}"  ]; then
 fi
 
 # ensure padding to two digits is included
-ens_n=`printf %02d ${ENS_N}`
+ens_n=`printf %02d $(( 10#${ENS_N} ))`
 
 if [ ! "${FCST_LENGTH}" ]; then
   echo "ERROR: \$FCST_LENGTH is not defined"
