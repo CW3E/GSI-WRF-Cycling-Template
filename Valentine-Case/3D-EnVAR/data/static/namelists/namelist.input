@@ -17,6 +17,8 @@
  end_second                          = 00, 00,
  interval_seconds                    = 3600,
  input_from_file                     = .true., .true.,
+ ! Interpolates the ICs for the nest from the parent domain when =2 below, 0 for ICs from file !
+ fine_input_stream                   = 2
  history_interval                    = 60, 60,
  history_outname                     = "./wrfout_d<domain>_<date>",
  io_form_history                     = 2,

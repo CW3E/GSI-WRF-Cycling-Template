@@ -168,7 +168,7 @@ if [[ ${IF_ENS_COLD_START} = ${YES} ]]; then
   n_ens=0
 else
   # perform over the entire ensemble
-  n_ens=${N_ENS}
+  n_ens=`printf $(( 10#${N_ENS} ))`
 fi
 
 ens_n=0
