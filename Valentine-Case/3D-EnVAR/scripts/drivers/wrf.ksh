@@ -133,6 +133,7 @@ fi
 # DATA_INTERVAL = Interval of input data in HH
 # START_TIME    = Simulation start time in YYMMDDHH
 # MAX_DOM       = Max number of domains to use in namelist settings
+# DOWN_DOM      = First domain index to downscale ICs from d01, less than MAX_DOM if downscaling to be used
 # IF_CYCLING    = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis or real.exe, case insensitive
 # IF_SST_UPDATE = Yes / No: whether WRF uses dynamic SST values 
 # IF_FEEBACK    = Yes / No: whether WRF domains use 1- or 2-way nesting
@@ -181,6 +182,11 @@ end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
 if [ ! "${MAX_DOM}" ]; then
   echo "ERROR: \$MAX_DOM is not defined"
+  exit 1
+fi
+
+if [ ! "${DOWN_DOM}" ]; then
+  echo "ERROR: \$DOWN_DOM is not defined"
   exit 1
 fi
 
@@ -299,7 +305,7 @@ dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   wrfinput_name=wrfinput_d0${dmn}
   # if cycling AND analyzing this domain, get initial conditions from last analysis
-  if [[ ${IF_CYCLING} = ${YES} ]]; then
+  if [[ ${IF_CYCLING} = ${YES} && ${dmn} -lt ${DOWN_DOM} ]]; then
     if [[ ${dmn} = 1 ]]; then
       # obtain the input and boundary files from the lateral boundary update by WRFDA 
       wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}/lateral_bdy_update/wrfvar_output 
@@ -309,7 +315,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
         exit 1
       fi
     else
-      # Nested domains have boundary conditions defined by parent, link from GSI / EnKF analysis
+      # Nested domains have boundary conditions defined by parent, link from GSI / EnKF analysis or downscaling start
       if [ ${ens_n} -eq 00 ]; then
 	# control solution is indexed 00, analyzed with GSI
         gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl_ens_${ens_n}.${START_TIME}

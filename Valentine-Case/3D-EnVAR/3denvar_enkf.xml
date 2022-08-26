@@ -19,7 +19,7 @@
   <!ENTITY DRIVERS             "&SCRIPTS;/drivers">
   <!ENTITY ENVIRONMENTS        "&SCRIPTS;/environments">
   <!ENTITY PROJ_DATA           "&PROJ_HOME;/data">
-  <!ENTITY LOG                 "&PROJ_DATA;/log">
+  <!ENTITY LOG                 "&PROJ_DATA;/log/3denvar_enkf">
   <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/cycle_io">
   <!ENTITY STATIC_DATA         "&PROJ_DATA;/static">
   <!-- END WORKFLOW SETTINGS -->
@@ -51,6 +51,7 @@
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY WRF_CTR_DOM         "1">
   <!ENTITY WRF_ENS_DOM         "1">
+  <!ENTITY WRF_DOWN_DOM        "2"> <!-- Domain index to have ICs downscaled from d01 -->
   <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY DATA_INTERVAL       "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
@@ -863,6 +864,10 @@
       <value>&WRF_CTR_DOM;</value>
     </envar>
     <envar>
+      <name>DOWN_DOM</name>
+      <value>&WRF_DOWN_DOM;</value>
+    </envar>
+    <envar>
       <name>WRF_ROOT</name>
       <value>&WRF_ROOT;</value>
     </envar>
@@ -950,6 +955,10 @@
     <envar>
       <name>MAX_DOM</name>
       <value>&WRF_CTR_DOM;</value>
+    </envar>
+    <envar>
+      <name>DOWN_DOM</name>
+      <value>&WRF_DOWN_DOM;</value>
     </envar>
     <envar>
       <name>WRF_ROOT</name>
@@ -1043,6 +1052,10 @@
         <value>&WRF_ENS_DOM;</value>
       </envar>
       <envar>
+        <name>DOWN_DOM</name>
+        <value>&WRF_DOWN_DOM;</value>
+      </envar>
+      <envar>
         <name>WRF_ROOT</name>
         <value>&WRF_ROOT;</value>
       </envar>
@@ -1133,6 +1146,10 @@
       <envar>
         <name>MAX_DOM</name>
         <value>&WRF_ENS_DOM;</value>
+      </envar>
+      <envar>
+        <name>DOWN_DOM</name>
+        <value>&WRF_DOWN_DOM;</value>
       </envar>
       <envar>
         <name>WRF_ROOT</name>

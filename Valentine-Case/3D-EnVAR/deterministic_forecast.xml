@@ -38,7 +38,7 @@
   <!-- I.e., CYCLE_START=CYCLE_END, and a single cycle with unique forecast length is defined -->
   <!ENTITY CYCLE_START         "201902110000">
   <!ENTITY CYCLE_END           "201902110000">
-  <!ENTITY CYCLE_INTV          "00:00:00">
+  <!ENTITY CYCLE_INTV          "01:00:00">
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
@@ -337,7 +337,7 @@
     </dependency>
   </task>
 
-  <task name="wrf" maxtries="3" cycledefs="daily">
+  <task name="wrf" maxtries="3" cycledefs="day">
     <command>&DRIVERS;/wrf.ksh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
