@@ -4,12 +4,12 @@
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
   <!-- USER-DEPENDENT ITEMS -->
-  <!ENTITY PROJ_HOME                         "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template">
+  <!ENTITY PROJ_HOME                         "/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/GSI-Tutorial">
   <!ENTITY PROJ_DATA                         "&PROJ_HOME;/data">
   <!ENTITY EMAIL                             "cgrudzien@ucsd.edu">
   <!ENTITY USERID                            "cgrudzien">
   <!ENTITY WRF_ROOT                          "/cw3e/mead/projects/cwp130/scratch/cgrudzien/WRF_CODE/WRF">
-  <!ENTITY GSI_ROOT                          "/cw3e/mead/projects/cwp106/scratch/cgrudzien/comGSIv3.7_EnKFv1.3">
+  <!ENTITY GSI_ROOT                          "/cw3e/mead/projects/cwp130/scratch/cgrudzien/comGSIv3.7_EnKFv1.3">
   <!ENTITY CRTM_VERSION                      "2.3.0">
   <!-- END USER-DEPENDENT -->
 
@@ -46,7 +46,7 @@
   <!-- END GSI SETTINGS -->
  
   <!-- JOB SETTINGS -->
-  <!ENTITY PROJECT                           "cwp106">
+  <!ENTITY PROJECT                           "cwp130">
   <!ENTITY SCHED                             "slurm">
   <!ENTITY COMPUTE                           "compute"> 
   <!ENTITY MPIRUN                            "mpirun">
@@ -68,7 +68,7 @@
   <cycledef group="q_daily">&CYCLE_START; &CYCLE_END; &CYCLE_INTV;</cycledef>
 
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
-    <task name="gsi" maxtries="2" cycledefs="q_daily">
+    <task name="gsi" maxtries="3" cycledefs="q_daily">
 
       <command>&STATIC_DATA;/gsi.ksh</command>
       <nodesize>&GSI_NODESIZE;</nodesize>
