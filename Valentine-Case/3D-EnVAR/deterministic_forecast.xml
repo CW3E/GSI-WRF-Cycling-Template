@@ -275,7 +275,7 @@
     </dependency>
   </task>
 
-  <task name="wrfda_latbc" maxtries="4" cycledefs="daily">
+  <task name="wrfda_latbc" maxtries="4" cycledefs="day">
     <command>&DRIVERS;/wrfda.ksh</command>
     <cores>&WRFDA_PROC;</cores>
     <nodesize>&WRFDA_NODESIZE;</nodesize>
@@ -335,7 +335,6 @@
       <taskdep task="real" state="SUCCEEDED"/>
     </dependency>
   </task>
-
 
   <task name="wrf" maxtries="3" cycledefs="daily">
     <command>&DRIVERS;/wrf.ksh</command>
