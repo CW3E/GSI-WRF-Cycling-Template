@@ -88,6 +88,7 @@
   <!ENTITY WRF_MEM_PER_CPU     "2G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
+  <!ENTITY WRF_WC              "12:00:00">
   <!-- END JOB SETTINGS -->
 ]>
 
