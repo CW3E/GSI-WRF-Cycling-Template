@@ -43,18 +43,20 @@
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
-  <!ENTITY BKG_DATA            "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
+  <!ENTITY CTR_BKG_DATA        "GFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
+  <!ENTITY ENS_BKG_DATA        "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
   <!ENTITY WPS_CONSTANT        "&ENVIRONMENTS;/WPS_constants.ksh">
   <!-- END UNGRIB SETTINGS -->
 
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
-  <!ENTITY WRF_CTR_DOM         "1">
-  <!ENTITY WRF_ENS_DOM         "1">
+  <!ENTITY WRF_CTR_DOM         "1"> <!-- Max domain for control simulation -->
+  <!ENTITY WRF_ENS_DOM         "1"> <!-- Max domain for ensemble simulation -->
   <!ENTITY WRF_DOWN_DOM        "2"> <!-- Domain index to have ICs downscaled from d01 -->
   <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01">
-  <!ENTITY DATA_INTERVAL       "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
+  <!ENTITY CTR_DATA_INTERVAL   "03"> <!-- This setting is applied to all WRF preprocessing and WRF control run -->
+  <!ENTITY ENS_DATA_INTERVAL   "06"> <!-- This setting is applied to all WRF preprocessing and WRF ensemble runs -->
   <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->
   <!ENTITY IF_FEEDBACK         "No"> <!-- This setting defines 1- or 2-way nesting with WRF domains -->
   <!ENTITY NIO_TASKS_PER_GROUP "0"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
@@ -130,7 +132,7 @@
     </envar>
     <envar>
       <name>BKG_DATA</name>
-      <value>&BKG_DATA;</value>
+      <value>&CTR_BKG_DATA;</value>
     </envar>
     <envar>
        <name>ENS_N</name>
@@ -150,7 +152,7 @@
     </envar>
     <envar>
       <name>DATA_INTERVAL</name>
-      <value>&DATA_INTERVAL;</value>
+      <value>&CTR_DATA_INTERVAL;</value>
     </envar>
     <envar>
       <name>WPS_ROOT</name>
@@ -209,7 +211,7 @@
     </envar>
     <envar>
       <name>DATA_INTERVAL</name>
-      <value>&DATA_INTERVAL;</value>
+      <value>&CTR_DATA_INTERVAL;</value>
     </envar>
     <envar>
       <name>MAX_DOM</name>
@@ -266,7 +268,7 @@
     </envar>
     <envar>
       <name>DATA_INTERVAL</name>
-      <value>&DATA_INTERVAL;</value>
+      <value>&CTR_DATA_INTERVAL;</value>
     </envar>
     <envar>
       <name>MAX_DOM</name>
@@ -321,7 +323,7 @@
       </envar>
       <envar>
         <name>BKG_DATA</name>
-        <value>&BKG_DATA;</value>
+        <value>&ENS_BKG_DATA;</value>
       </envar>
       <envar>
          <name>ENS_N</name>
@@ -341,7 +343,7 @@
       </envar>
       <envar>
         <name>DATA_INTERVAL</name>
-        <value>&DATA_INTERVAL;</value>
+        <value>&ENS_DATA_INTERVAL;</value>
       </envar>
       <envar>
         <name>WPS_ROOT</name>
@@ -394,7 +396,7 @@
       </envar>
       <envar>
         <name>DATA_INTERVAL</name>
-        <value>&DATA_INTERVAL;</value>
+        <value>&ENS_DATA_INTERVAL;</value>
       </envar>
       <envar>
         <name>MAX_DOM</name>
@@ -451,7 +453,7 @@
       </envar>
       <envar>
         <name>DATA_INTERVAL</name>
-        <value>&DATA_INTERVAL;</value>
+        <value>&ENS_DATA_INTERVAL;</value>
       </envar>
       <envar>
         <name>MAX_DOM</name>
@@ -853,7 +855,7 @@
     </envar>
     <envar>
       <name>DATA_INTERVAL</name>
-      <value>&DATA_INTERVAL;</value>
+      <value>&CTR_DATA_INTERVAL;</value>
     </envar>
     <envar>
       <name>CYCLE_INTV</name>
@@ -946,7 +948,7 @@
     </envar>
     <envar>
       <name>DATA_INTERVAL</name>
-      <value>&DATA_INTERVAL;</value>
+      <value>&CTR_DATA_INTERVAL;</value>
     </envar>
     <envar>
       <name>CYCLE_INTV</name>
@@ -1041,7 +1043,7 @@
       </envar>
       <envar>
         <name>DATA_INTERVAL</name>
-        <value>&DATA_INTERVAL;</value>
+        <value>&ENS_DATA_INTERVAL;</value>
       </envar>
       <envar>
         <name>CYCLE_INTV</name>
@@ -1137,7 +1139,7 @@
       </envar>
       <envar>
         <name>DATA_INTERVAL</name>
-        <value>&DATA_INTERVAL;</value>
+        <value>&ENS_DATA_INTERVAL;</value>
       </envar>
       <envar>
         <name>CYCLE_INTV</name>

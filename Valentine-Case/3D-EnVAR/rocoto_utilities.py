@@ -27,7 +27,7 @@ pathnam = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\
            'GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
 
 # name of .xml workflow WITHOUT the extension
-wrknam = 'cycling'
+wrknam = '3denvar_downscale'
 
 # path to database
 outnam = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\
@@ -41,14 +41,14 @@ pathroc = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/rocoto'
 
 def run_rocotorun():
     run_cmd = pathroc + '/bin/rocotorun -w ' +\
-              pathnam + '/' + wrknam + '.xml' +\
+              pathnam + '/control_flows/' + wrknam + '.xml' +\
               ' -d ' + outnam + '/workflow/' + wrknam + '.store -v 10'  
 
     os.system(run_cmd)
 
 def run_rocotoboot(cycle, task_list):
     boot_cmd = pathroc + '/bin/rocotoboot -w ' +\
-               pathnam + '/' + wrknam + '.xml' +\
+               pathnam + '/control_flows/' + wrknam + '.xml' +\
                ' -d ' + outnam + '/workflow/' + wrknam + '.store' +\
                ' -c ' + cycle + ' -t ' + task_list
 
@@ -56,6 +56,6 @@ def run_rocotoboot(cycle, task_list):
 
 def run_rocotostat():
     stat_cmd = pathroc + '/bin/rocotostat -w ' +\
-               pathnam + '/' + wrknam + '.xml' +\
+               pathnam + '/control_flows/' + wrknam + '.xml' +\
                ' -d ' + outnam + '/workflow/' + wrknam + '.store -c all'
     os.system(stat_cmd) 
