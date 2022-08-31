@@ -36,7 +36,7 @@
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902071800">
   <!ENTITY SECOND_CYCLE        "201902080000">
-  <!ENTITY CYCLE_END           "201902141800">
+  <!ENTITY CYCLE_END           "201902150600">
   <!ENTITY CYCLE_INTV          "06:00:00">
   <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without DA, adjust bkg data accordingly -->
   <!ENTITY ENS_LIST            "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
