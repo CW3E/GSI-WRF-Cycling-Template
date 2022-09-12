@@ -62,6 +62,10 @@ begin
   print(jmax)
   print(kmax)
 
+  ; set the vertical level here, note the output name is 
+  ; removed because this was simply hard-coded, set the name
+  ; below in xwks = gsn_open_wks if a different name is needed
+  ; between multiple usages of this file
   kmax=15
 
   titles = new(4,string)
@@ -72,7 +76,7 @@ begin
 
   plot = new(4,graphic)
 
-  xwks = gsn_open_wks("pdf","GSI_prepbufr_arw_15")
+  xwks = gsn_open_wks("pdf","GSI_prepbufr_arw")
 ;  xwks = gsn_open_wks("x11","gsun01n")
   gsn_define_colormap(xwks,"cosam12")
 
