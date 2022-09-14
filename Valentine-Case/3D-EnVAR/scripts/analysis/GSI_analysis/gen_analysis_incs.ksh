@@ -2,7 +2,7 @@
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 12:00:00
+#SBATCH -t 24:00:00
 #SBATCH --job-name="gen_GSI_inc"
 #SBATCH --export=ALL
 #SBATCH --account=cwp130
@@ -50,7 +50,7 @@ CYCLE_INT=6
 # define vertical level range and increments
 VERT_LEVS=(1)
 LEV=0
-MAX_LEV=80
+MAX_LEV=70
 VERT_INT=10
 
 # define the domain to compute the increments
@@ -77,6 +77,16 @@ fi
 
 start_time=`date -d "${start_time}"`
 
+# Convert END_TIME from 'YYYYMMDDHH' format to end_time in isoformat YYYY:MM:DD_HH
+if [ `echo "${END_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  end_time=`echo "${END_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
+else
+  echo "ERROR: end time, '${END_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  exit 1
+fi
+
+end_time=`date +%Y:%m%d_%H-d "${end_time}"`
+
 # construct vertical level array for looping, incrementing with VERT_INT
 while [[ ${LEV} -lt ${MAX_LEV} ]]; do
   (( LEV += ${VERT_INT} ))
@@ -86,9 +96,14 @@ done
 # loop through the date range
 cycle_num=0
 fcst_hour=0
+
+# directory string
 datestr=`date +%Y%m%d%H -d "${start_time} ${fcst_hour} hours"`
 
-while [[ ! ${datestr} > ${END_TIME} ]]; do
+# loop condition
+timestr=`date +%Y:%m:%d_%H -d "${start_time} ${fcst_hour} hours"`
+
+while [[ ! ${datestr} > ${end_time} ]]; do
   # define wrfout date string
   wrfdate=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst_hour} hours"`
 
@@ -131,7 +146,15 @@ while [[ ! ${datestr} > ${END_TIME} ]]; do
 
   # update the date string for directory names
   datestr=`date +%Y%m%d%H -d "${start_time} ${fcst_hour} hours"`
+
+  # update time string for lexicographical comparison
+  timestr=`date +%Y:%m:%d_%H -d "${start_time} ${fcst_hour} hours"`
 done
+
+# cleanup
+rm Analysis_increment.ncl
+rm wrfinput_d01.cdf
+rm wrf_inout.cdf
 
 #####################################################
 # end

@@ -1,1 +1,0 @@
-/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data/cycle_io/2019020800/gsiprd/d01/wrfanl_ens_00.2019020800
