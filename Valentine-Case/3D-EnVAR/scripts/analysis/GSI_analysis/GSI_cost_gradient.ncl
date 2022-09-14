@@ -5,7 +5,7 @@ begin
 
 ;  nloop1=10
 ;  nloop2=10
-  nloop1=stringtoint(systemfunc("cat cost_gradient.txt  | grep '^1' | tail -1 | awk '{print $2}' "))   ; iterations for 1st outer loop
+  nloop1=stringtoint(systemfunc("cat cost_gradient.txt  | grep '^1' | tail -1 | awk '{print $2}' "))  ; iterations for 1st outer loop
   nloop2=stringtoint(systemfunc("cat cost_gradient.txt  | grep '^2' | tail -1 | awk '{print $2}' "))  ; iterations for 2nd outer loop
 
   print(nloop1)
@@ -33,13 +33,13 @@ begin
   gsn_define_colormap(xwks,"cosam12")
 
   resources                  =  True              ; plot mods desired
-  resources@gsnDraw              = False              ; Do not draw plot
-  resources@gsnFrame             = False              ; Do not advance frame
+  resources@gsnDraw          = False              ; Do not draw plot
+  resources@gsnFrame         = False              ; Do not advance frame
 
-  resources@xyMarkLineModes   = "Markers"                ; choose which have markers
-  resources@xyMarkerColor = "black"
+  resources@xyMarkLineModes  = "Markers"          ; choose which have markers
+  resources@xyMarkerColor    = "black"
 
-  resources@xyMarkLineModes   = "Lines"                ; choose which have markers
+  resources@xyMarkLineModes  = "Lines"            ; choose which have markers
   plot(0) = gsn_xy(xwks, step(0:nloop1), cost(0:nloop1), resources)
   plot(1) = gsn_xy(xwks, step(0:nloop1), gradient(0:nloop1), resources)
   plot(2) = gsn_xy(xwks, step(nloop1+1:nloop1+nloop2+1), cost(nloop1+1:nloop1+nloop2+1), resources)

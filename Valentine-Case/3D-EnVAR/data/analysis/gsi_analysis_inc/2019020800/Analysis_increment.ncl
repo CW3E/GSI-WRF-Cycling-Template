@@ -97,7 +97,7 @@ begin
   print(kmax)
 
   ; defined below for sed step
-  kmax=VERTICAL_LEVEL_INDEX
+  kmax = 10
 
   titles = new(4,string)
   titles(0)="T inc, XY"
@@ -108,7 +108,7 @@ begin
   plot = new(4,graphic)
 
   ; defined below for sed step
-  xwks=PLOT_NAME
+  xwks = gsn_open_wks("png","a_minus_b_10")
 
   gsn_define_colormap(xwks,"cosam12")
 
