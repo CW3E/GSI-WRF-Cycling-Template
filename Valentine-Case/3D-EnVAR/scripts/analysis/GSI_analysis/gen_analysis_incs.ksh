@@ -85,7 +85,7 @@ else
   exit 1
 fi
 
-end_time=`date +%Y:%m%d_%H-d "${end_time}"`
+end_time=`date +%Y:%m:%d_%H -d "${end_time}"`
 
 # construct vertical level array for looping, incrementing with VERT_INT
 while [[ ${LEV} -lt ${MAX_LEV} ]]; do
