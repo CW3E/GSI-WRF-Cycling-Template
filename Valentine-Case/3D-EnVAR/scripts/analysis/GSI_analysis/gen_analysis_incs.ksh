@@ -151,11 +151,6 @@ while [[ ! ${datestr} > ${end_time} ]]; do
   timestr=`date +%Y:%m:%d_%H -d "${start_time} ${fcst_hour} hours"`
 done
 
-# cleanup
-rm Analysis_increment.ncl
-rm wrfinput_d01.cdf
-rm wrf_inout.cdf
-
 #####################################################
 # end
 
