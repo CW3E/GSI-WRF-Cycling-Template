@@ -50,7 +50,6 @@ import pandas as pd
 import pickle
 import datetime
 from matplotlib import pyplot as plt
-#import ipdb
 
 ##################################################################################
 # define script parameters
@@ -81,41 +80,53 @@ f.close()
 
 # load dataframe
 exec('data = data[\'d0%s\']'%DOM)
-#ipdb.set_trace()
 
-# define three panel figure with pre-defined size
+# define two panel figure with pre-defined size
 fig = plt.figure(figsize=(16,8))
-ax0 = fig.add_axes([.05, .10, .90, .4])
-ax1 = fig.add_axes([.05, .50, .90, .4])
+ax1 = fig.add_axes([.075, .15, .85, .38])
+ax0 = fig.add_axes([.075, .53, .85, .38])
 
 # set colors and storage for looping
-line_colors = ['#d95f02', '#7570b3', '#1b9e77']
-line_list = []
-line_labs = []
+line_colors = ['#d95f02', '#7570b3']
 
 # generate lines, saving values for legend
-exec('l0, = ax0.plot(d0%s[\'step\'], d0%s[\'cost\'],'%(i,i) +
-        'linewidth=2, markersize=26, color=line_colors[%s])'%(i-1))
+l0, = ax0.plot(data['cost'], linewidth=2, markersize=26, color=line_colors[0])
+l1, = ax1.plot(data['grad'], linewidth=2, markersize=26, color=line_colors[1])
 
-exec('l1, = ax1.plot(np.array(d0%s[\'step\']), d0%s[\'grad\'],'%(i,i) + 
-        'linewidth=2, markersize=26, color=line_colors[%s])'%(i-1))
+index = data.index.values[-1]
+dates = data['date'].values
+tic_mark = []
+tic_labs = []
 
-exec('line_list.append(l%s)'%i)
-exec('line_labs.append(\'d0%s\')'%(i))
+for i in range(0, index, 102):
+    ax0.axvline(x=i, linestyle=':', linewidth=1.25, color='k')
+    l2 = ax1.axvline(x=i, linestyle=':', linewidth=1.25, color='k')
+    tic_mark.append(i)
+    date_str = str(dates[i]).split(':')[0]
+    tic_labs.append(date_str)
+
+for i in range(51, index+1, 102):
+    ax0.axvline(x=i, linestyle=':', linewidth=1.25, color='#1b9e77')
+    l3 = ax1.axvline(x=i, linestyle=':', linewidth=1.25, color='#1b9e77')
+
+line_list = [l0, l1, l2, l3]
+line_labs = ['Cost', 'Gradient Norm', 'Outer loop 1', 'Outer loop 2']
 
 ##################################################################################
 # define display parameters
 
 #plot bounds
-ax0.set_ylim([0,120])
-ax1.set_ylim([0,20])
-ax2.set_ylim([0,0.008])
+ax0.set_xlim([0,index])
+ax1.set_xlim([0,index])
+ax1.set_yscale('log')
 
-title = 'Simulation minute'
+ax0.set_xticks(tic_mark)
+ax1.set_xticks(tic_mark, labels=tic_labs, rotation=45, ha='right')
 
 # tick parameters
 ax0.tick_params(
     labelsize=11,
+    labelbottom=False,
     )
 
 ax1.tick_params(
@@ -123,19 +134,9 @@ ax1.tick_params(
     )
 
 # add legend and sub-titles
-#fig.legend(line_list, line_labs, fontsize=18, ncol=4, loc='upper center')
-#plt.figtext(.31, .88, r'$\frac{\mathrm{d}ps}{\mathrm{d}t}$hPa/3hr',
-#        horizontalalignment='right', verticalalignment='top', fontsize=22)
-#plt.figtext(.63, .88, r'$\frac{\mathrm{d}\mu}{\mathrm{d}t}$mb/3hr',
-#        horizontalalignment='right', verticalalignment='top', fontsize=22)
-#plt.figtext(.95, .88, r'Max $\Delta \mu$', horizontalalignment='right',
-#        verticalalignment='top', fontsize=22)
-#
-## add maain title
-#plt.figtext(.50, .015, title, horizontalalignment='center',
-#        verticalalignment='center', fontsize=22)
-#
-## save figure and display
-#plt.savefig(OUT_PATH)
+fig.legend(line_list, line_labs, fontsize=18, ncol=4, loc='upper center')
+
+# save figure and display
+plt.savefig(OUT_PATH)
 plt.show()
 
