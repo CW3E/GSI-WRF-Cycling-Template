@@ -50,6 +50,7 @@ import pandas as pd
 import pickle
 import datetime
 from matplotlib import pyplot as plt
+#import ipdb
 
 ##################################################################################
 # define script parameters
@@ -57,17 +58,20 @@ PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Templa
 DATA_ROOT = PROJ_ROOT + '/data/analysis'
 
 # starting date and zero hour of data
-START_DATE = '2019-02-11T00:00:00'
+START_DATE = '2019-02-08T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-11T00:00:00'
+END_DATE = '2019-02-15T06:00:00'
 
 # define domain to plot
 DOM = 1
 
 # define the input and output names
-IN_PATH = DATA_ROOT + 'GSI_cost_grad_anl_' + START_DATE + '_to_' + END_DATE + '.txt'
-OUT_PATH = DATA_ROOT + 'GSI_cost_grad_anl_d0' + DOM + '_' + START_DATE + '_to_' + END_DATE + '.png'
+IN_PATH = DATA_ROOT + '/GSI_cost_grad_anl_' + START_DATE + '_to_' +\
+          END_DATE + '.txt'
+
+OUT_PATH = DATA_ROOT + '/GSI_cost_grad_anl_d0' + str(DOM) + '_' +\
+           START_DATE + '_to_' + END_DATE + '.png'
 
 ##################################################################################
 # load and plot data
@@ -77,31 +81,27 @@ f.close()
 
 # load dataframe
 exec('data = data[\'d0%s\']'%DOM)
+#ipdb.set_trace()
 
 # define three panel figure with pre-defined size
 fig = plt.figure(figsize=(16,8))
-ax0 = fig.add_axes([.038, .10, .28, .8])
-ax1 = fig.add_axes([.360, .10, .28, .8])
-ax2 = fig.add_axes([.682, .10, .28, .8])
+ax0 = fig.add_axes([.05, .10, .90, .4])
+ax1 = fig.add_axes([.05, .50, .90, .4])
 
 # set colors and storage for looping
 line_colors = ['#d95f02', '#7570b3', '#1b9e77']
 line_list = []
 line_labs = []
 
-for i in range(1, MAX_DOM + 1):
-    # generate lines, saving values for legend
-    exec('l%s, = ax0.plot(d0%s[\'xtime\'], d0%s[\'dpsdt\'],'%(i,i,i) +
-            'linewidth=2, markersize=26, color=line_colors[%s])'%(i-1))
-    
-    exec('ax1.plot(np.array(d0%s[\'xtime\']), d0%s[\'dmudt\'],'%(i,i) + 
-            'linewidth=2, markersize=26, color=line_colors[%s])'%(i-1))
-    
-    exec('ax2.plot(d0%s[\'xtime\'], d0%s[\'maxdmu\'],'%(i,i) +
-            'linewidth=2, markersize=26, color=line_colors[%s])'%(i-1))
-    
-    exec('line_list.append(l%s)'%i)
-    exec('line_labs.append(\'d0%s\')'%(i))
+# generate lines, saving values for legend
+exec('l0, = ax0.plot(d0%s[\'step\'], d0%s[\'cost\'],'%(i,i) +
+        'linewidth=2, markersize=26, color=line_colors[%s])'%(i-1))
+
+exec('l1, = ax1.plot(np.array(d0%s[\'step\']), d0%s[\'grad\'],'%(i,i) + 
+        'linewidth=2, markersize=26, color=line_colors[%s])'%(i-1))
+
+exec('line_list.append(l%s)'%i)
+exec('line_labs.append(\'d0%s\')'%(i))
 
 ##################################################################################
 # define display parameters
@@ -122,24 +122,20 @@ ax1.tick_params(
     labelsize=11,
     )
 
-ax2.tick_params(
-    labelsize=11,
-    )
-
 # add legend and sub-titles
-fig.legend(line_list, line_labs, fontsize=18, ncol=4, loc='upper center')
-plt.figtext(.31, .88, r'$\frac{\mathrm{d}ps}{\mathrm{d}t}$hPa/3hr',
-        horizontalalignment='right', verticalalignment='top', fontsize=22)
-plt.figtext(.63, .88, r'$\frac{\mathrm{d}\mu}{\mathrm{d}t}$mb/3hr',
-        horizontalalignment='right', verticalalignment='top', fontsize=22)
-plt.figtext(.95, .88, r'Max $\Delta \mu$', horizontalalignment='right',
-        verticalalignment='top', fontsize=22)
-
-# add maain title
-plt.figtext(.50, .015, title, horizontalalignment='center',
-        verticalalignment='center', fontsize=22)
-
-# save figure and display
-plt.savefig(OUT_PATH)
+#fig.legend(line_list, line_labs, fontsize=18, ncol=4, loc='upper center')
+#plt.figtext(.31, .88, r'$\frac{\mathrm{d}ps}{\mathrm{d}t}$hPa/3hr',
+#        horizontalalignment='right', verticalalignment='top', fontsize=22)
+#plt.figtext(.63, .88, r'$\frac{\mathrm{d}\mu}{\mathrm{d}t}$mb/3hr',
+#        horizontalalignment='right', verticalalignment='top', fontsize=22)
+#plt.figtext(.95, .88, r'Max $\Delta \mu$', horizontalalignment='right',
+#        verticalalignment='top', fontsize=22)
+#
+## add maain title
+#plt.figtext(.50, .015, title, horizontalalignment='center',
+#        verticalalignment='center', fontsize=22)
+#
+## save figure and display
+#plt.savefig(OUT_PATH)
 plt.show()
 

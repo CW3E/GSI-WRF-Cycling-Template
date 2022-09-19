@@ -32,7 +32,6 @@ import pickle
 import copy
 from datetime import datetime as dt
 from datetime import timedelta
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
