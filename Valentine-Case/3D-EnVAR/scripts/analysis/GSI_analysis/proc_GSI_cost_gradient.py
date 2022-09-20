@@ -74,7 +74,6 @@ def get_anls(start_date, end_date, cycle_int):
     else:
         # define the analysis times over range of cycle intervals
         cycle_steps = int(hours_range / cycle_int)
-        ipdb.set_trace()
         for i in range(cycle_steps + 1):
             anl_date = start_date + timedelta(hours=(i * cycle_int))
             anl_dates.append(anl_date)
