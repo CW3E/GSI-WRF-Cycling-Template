@@ -19,7 +19,8 @@
 # imports
 import os, sys, ssl
 import calendar
-from datetime import datetime, timedelta
+from datetime import datetime as dt
+from datetime import timedelta
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -28,7 +29,7 @@ from datetime import datetime, timedelta
 START_DATE = '2019-02-11T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-11T00:00:00'
+END_DATE = '2019-02-12T18:00:00'
 
 # interval of forcast data outputs after zero hour
 FCST_INT = 6
@@ -53,7 +54,7 @@ def get_reqs(start_date, end_date, fcst_int, cycle_int, max_fcst):
     date_reqs = []
     fcst_reqs = []
     delta = end_date - start_date
-    hours_range = delta.total_seconds() / 360
+    hours_range = delta.total_seconds() / 3600
     fcst_steps = int(max_fcst / fcst_int)
 
     if cycle_int == 0 or delta.total_seconds() == 0:
@@ -81,8 +82,8 @@ def get_reqs(start_date, end_date, fcst_int, cycle_int, max_fcst):
 # download data
 
 ## define date range to get data
-start_date = datetime.fromisoformat(START_DATE)
-end_date = datetime.fromisoformat(END_DATE)
+start_date = dt.fromisoformat(START_DATE)
+end_date = dt.fromisoformat(END_DATE)
 
 # obtain combinations
 date_reqs, fcst_reqs = get_reqs(start_date, end_date, FCST_INT,
