@@ -166,4 +166,3 @@ print('Writing out data to ' + out_path)
 f = open(out_path, 'wb')
 pickle.dump(data, f)
 f.close()
-
