@@ -1,21 +1,28 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This script reads in a generic fort.220 file from a GSI run and creates
+# This script reads in a fort.* single level file from a GSI run and creates
 # a Pandas dataframe containing time series values of the outputs of lines
 #
-#   cost,grad,step,b,step? = iter step cost grad  XX  XX  good
+#   o-g    0X    use    all    count    bias     rms    cpen    qcpen 
 #
-# giving time series statistics for the GSI cost diagnostics.
+# giving summary statistics for the observations grouped into their 'use' as 
+# assimilated, rejected or monitored.
 #
 # The dataframes are saved into a Pickled dictionary organized by fields as
 #
 #    'date'   : The cycle date time for which the analysis is performed 
-#    'loop'   : Outer loop number = 01 / 02 
-#    'iter'   : Iteration of the cost function in the current outer loop
-#    'cost'   : Eval of cost function in the current iteration / outer loop
-#    'grad'   : Norm of the cost function gradient in the current iteration /
-#               outer loop
+#    'iter'   : Outer loop number = 01: observation - background 
+#                                 = 02: observation - analysis (outer loop 1)
+#                                 = 03: observation - analysis (outer loop 2)
+#    'use'    : Use = assim: used in GSI analysis
+#                   = mon: monitored (read in but not assimilated by GSI)
+#                   = rej: rejected because of quality control in GSI
+#    'count'  : Total number of observations of type 
+#    'bias'   : Bias of observation departure for each outer loop
+#    'rms'    : Root mean square error of observation departure for each outer loop 
+#    'cpen'   : Observation part of penalty (cost function)
+#    'qcpen'  : Nonlinear qc penalty
 #
 # Data input and output directories should be defined in the below along with
 # DOM to control the domain processed.
@@ -44,6 +51,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import copy
+import glob
 from datetime import datetime as dt
 from datetime import timedelta
 
@@ -56,7 +64,7 @@ DATA_ROOT = PROJ_DIR + '/data/cycle_io'
 OUT_DIR = PROJ_DIR + '/data/analysis'
 
 # starting date and zero hour of data
-START_DATE = '2019-02-08T00:00:00'
+START_DATE = '2019-02-07T18:00:00'
 
 # final date and zero hour of data
 END_DATE = '2019-02-15T06:00:00'
@@ -95,7 +103,6 @@ def get_anls(start_date, end_date, cycle_int):
 
     return zip(anl_dates, anl_strng)
 
-
 ##################################################################################
 # Process data
 
@@ -104,7 +111,7 @@ start_date = dt.fromisoformat(START_DATE)
 end_date = dt.fromisoformat(END_DATE)
 
 # define the output name
-out_path = OUT_DIR + '/GSI_cost_grad_anl_' + START_DATE +\
+out_path = OUT_DIR + '/WRF_dps_dmu_dt_' + START_DATE +\
            '_to_' + END_DATE + '.txt'
 
 # generate the date range for the analyses
@@ -112,49 +119,79 @@ analyses = get_anls(start_date, end_date, CYCLE_INT)
 
 # initiate empty dataframe / dictionary
 d0 = pd.DataFrame.from_dict({
-    'date' : [],
-    'loop' : [],
-    'iter' : [],
-    'cost' : [],
-    'grad' : [],
+    'step'     : [],
+    'wrf_time' : [],
+    'xtime'    : [],
+    'dpsdt'    : [],
+    'dmudt'    : [],
+    'xgrid'    : [],
+    'ygrid'    : [],
+    'maxdmu'   : [],
     })
 
 for i in range(1, MAX_DOM + 1):
     # define a new dictionary for each domain
     exec('d0%s = copy.copy(d0)'%i)
 
-    print('Processing domain d0%s'%i)
+    # define the step index
+    exec('d0%s_indx = 1'%i)
 
-    # define the line index for the dataframe
-    step = 0
+print('Processing dates ' + START_DATE + ' to ' + END_DATE)
+for (anl_date, anl_strng) in analyses:
+    # define the rsl.error.0000 file to open based on the analysis date
+    in_path = DATA_ROOT + '/' + anl_strng + '/wrfprd/ens_00/rsl.wrf.*'
+
+    # find the lexicographically last rsl directory based on run times
+    in_path = sorted(glob.glob(in_path))[-1]
+    in_path = in_path + '/rsl.error.0000'
+    print(str_indt + 'Opening file ' + in_path)
+
+    # open file and loop lines
+    f = open(in_path)
+    for line in f:
+        split_line = line.split()
+        prefix = split_line[0]
+        if prefix == 'Timing':
+            # update wrf_time handling exceptions
+            try:
+                t = split_line[6]
+                date, time = t.split('_')
+                date_time = pd.to_datetime(date + ' ' + time)
+                print(2 * str_indt + str(date_time))
+            except:
+                pass
     
-    for (anl_date, anl_strng) in analyses:
-        # open file and loop lines
-        in_path = DATA_ROOT + '/' + anl_strng + '/gsiprd/d0' + str(i) + '/fort.220'
-        print(str_indt + 'Opening file ' + in_path)
-        f = open(in_path)
-
-        for line in f:
-            split_line = line.split(',')
-            prefix = split_line[0]
-            if prefix == 'cost':
-                step += 1
-                split_line = split_line[-1].split() 
-                tmp = np.array(split_line[2:6])
-                tmp_dict = {
-                    'date' : [anl_date],
-                    'loop' : [float(tmp[0])],      
-                    'iter' : [float(tmp[1])],
-                    'cost' : [float(tmp[2])], 
-                    'grad' : [float(tmp[3])], 
-                    }
-                exec('tmp_dict[\'step\'] = [int(step)]')
-                tmp_dict = pd.DataFrame.from_dict(tmp_dict, orient='columns')
-                exec('d0%s = pd.concat([d0%s, tmp_dict], axis=0)'%(i,i))
+        elif prefix[:2] == 'd0':
+            # process domain updates within MAX_DOM
+            i = prefix[-1]
+            if int(i) <= MAX_DOM:
+                if split_line[4:6] == ['dpsdt,', 'dmudt']:
+                    try:
+                        tmp = np.array(split_line[7:])
+                        tmp_dict = {
+                            'wrf_time' : [date_time],
+                            'xtime'    : [float(tmp[0])],      
+                            'dpsdt'    : [float(tmp[1])],
+                            'dmudt'    : [float(tmp[2])], 
+                            }
+                    except:
+                        pass
     
-        print(str_indt + 'Closing file ' + in_path)
-        f.close()
-
+                elif split_line[1:3] == ['Max', 'mu']:
+                    try:
+                        tmp = np.array(split_line[6:])
+                        tmp_dict['xgrid'] = [float(tmp[0])]  
+                        tmp_dict['ygrid'] = [float(tmp[1])] 
+                        tmp_dict['maxdmu'] = [float(tmp[2])] 
+                        exec('tmp_dict[\'step\'] = [int(d0%s_indx)]'%i)
+                        tmp_dict = pd.DataFrame.from_dict(tmp_dict, orient='columns')
+                        exec('d0%s = pd.concat([d0%s, tmp_dict], axis=0)'%(i,i))
+                        exec('d0%s_indx += 1'%i)
+                    except:
+                        pass
+    
+    print(str_indt + 'Closing file ' + in_path)
+    f.close()
 data = {}
 
 for i in range(1, MAX_DOM + 1):
