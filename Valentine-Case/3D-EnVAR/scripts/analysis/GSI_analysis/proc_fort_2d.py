@@ -15,7 +15,7 @@
 #    'iter'   : Outer loop number = 01: observation - background 
 #                                 = 02: observation - analysis (outer loop 1)
 #                                 = 03: observation - analysis (outer loop 2)
-#    'use'    : Use = assim: used in GSI analysis
+#    'use'    : Use = asm: used in GSI analysis
 #                   = mon: monitored (read in but not assimilated by GSI)
 #                   = rej: rejected because of quality control in GSI
 #    'count'  : Total number of observations of type 

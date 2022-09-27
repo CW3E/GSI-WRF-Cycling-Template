@@ -159,7 +159,7 @@ for i in range(MAX_DOM):
                 yys[0][j] >= d_end[1][0] and\
                 yys[0][j] <= d_end[1][1]
                ):
-                indx.append(i)
+                indx.append(j)
 
         # append indices for the values of the parent domain lying in the nest
         data[domains[i]]["indx"] = indx,

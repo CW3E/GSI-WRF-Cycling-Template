@@ -49,7 +49,6 @@ import pandas as pd
 import pickle
 import datetime
 from matplotlib import pyplot as plt
-import ipdb
 
 ##################################################################################
 # define script parameters
@@ -124,8 +123,8 @@ for i in range(index):
     a_per_rej[i] = a_num_rej / (a_num_mon + a_num_rej + a_num_asm)
 
 # generate lines, saving values for legend
-l0, = ax0.plot(range(index), bkg_mon['rms'], linewidth=2, markersize=26, color=line_colors[0])
-l1, = ax0.plot(range(index), anl_mon['rms'], linewidth=2, markersize=26, color=line_colors[1])
+l0, = ax0.plot(range(index), bkg_asm['rms'], linewidth=2, markersize=26, color=line_colors[0])
+l1, = ax0.plot(range(index), anl_asm['rms'], linewidth=2, markersize=26, color=line_colors[1])
 
 l2, = ax1.plot(range(index), b_per_rej, linewidth=2, markersize=26, color=line_colors[2])
 l3, = ax1.plot(range(index), a_per_rej, linewidth=2, markersize=26, color=line_colors[3])
