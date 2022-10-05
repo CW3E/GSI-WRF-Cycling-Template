@@ -49,6 +49,7 @@ import pandas as pd
 import pickle
 import datetime
 from matplotlib import pyplot as plt
+from matplotlib.ticker import PercentFormatter
 
 ##################################################################################
 # define script parameters
@@ -85,8 +86,8 @@ exec('data = data[\'d0%s\']'%DOM)
 
 # define two panel figure with pre-defined size
 fig = plt.figure(figsize=(16,8))
-ax1 = fig.add_axes([.075, .15, .85, .38])
-ax0 = fig.add_axes([.075, .53, .85, .38])
+ax1 = fig.add_axes([.110, .25, .85, .33])
+ax0 = fig.add_axes([.110, .58, .85, .33])
 
 # set colors and storage for looping
 line_colors = ['#1b9e77', '#7570b3', '#d95f02', 'k']
@@ -119,8 +120,8 @@ for i in range(index):
     b_num_asm = bkg_asm['count'].values[i]
     a_num_asm = anl_asm['count'].values[i]
 
-    b_per_rej[i] = b_num_rej / (b_num_mon + b_num_rej + b_num_asm)
-    a_per_rej[i] = a_num_rej / (a_num_mon + a_num_rej + a_num_asm)
+    b_per_rej[i] = 100 * b_num_rej / (b_num_mon + b_num_rej + b_num_asm)
+    a_per_rej[i] = 100 * a_num_rej / (a_num_mon + a_num_rej + a_num_asm)
 
 # generate lines, saving values for legend
 l0, = ax0.plot(range(index), bkg_asm['rms'], linewidth=2, markersize=26, color=line_colors[0])
@@ -130,16 +131,24 @@ l2, = ax1.plot(range(index), b_per_rej, linewidth=2, markersize=26, color=line_c
 l3, = ax1.plot(range(index), a_per_rej, linewidth=2, markersize=26, color=line_colors[3])
 
 line_list = [l0, l1, l2, l3]
-line_labs = ['For RMS', 'Anl RMS', 'For % Rej', 'Anl % Rej']
+line_labs = ['For RMSE', 'Anl RMSE', 'For % Rej', 'Anl % Rej']
 
 dates = bkg_mon['date'].values
 tic_mark = []
 tic_labs = []
 
+tic_count = 0
 for i in range(0, index):
     tic_mark.append(i)
-    date_str = str(dates[i]).split(':')[0]
-    tic_labs.append(date_str)
+
+    if tic_count % 2 == 0:
+        date_str = str(dates[i]).split(':')[0]
+        tic_labs.append(date_str)
+
+    else:
+        tic_labs.append("")
+
+    tic_count += 1
 
 ##################################################################################
 # define display parameters
@@ -153,16 +162,18 @@ ax1.set_xticks(tic_mark, labels=tic_labs, rotation=45, ha='right')
 
 # tick parameters
 ax0.tick_params(
-    labelsize=11,
+    labelsize=20,
     labelbottom=False,
     )
 
 ax1.tick_params(
-    labelsize=11,
+    labelsize=20,
     )
 
+ax1.yaxis.set_major_formatter(PercentFormatter(decimals=0))
+
 # add legend and sub-titles
-fig.legend(line_list, line_labs, fontsize=18, ncol=4, loc='upper center')
+fig.legend(line_list, line_labs, fontsize=22, ncol=4, loc='upper center')
 
 # save figure and display
 plt.savefig(OUT_PATH)

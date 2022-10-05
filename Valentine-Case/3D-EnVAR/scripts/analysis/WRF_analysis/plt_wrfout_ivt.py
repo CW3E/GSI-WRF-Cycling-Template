@@ -38,7 +38,7 @@ import copy
 # file paths
 f_in_path = './processed_numpy'
 f_out_path = './processed_numpy/ivt_plots'
-start_date = '2019021100' 
+start_date = '2019021400' 
 os.system('mkdir -p ' + f_out_path)
 
 # date for file
@@ -56,7 +56,7 @@ cart_proj = data['cart_proj']
 fig = plt.figure(figsize=(11.25,8.63))
 
 # Set the GeoAxes to the projection used by WRF
-ax0 = fig.add_axes([.875, .10, .05, .8])
+ax0 = fig.add_axes([.86, .10, .05, .8])
 ax1 = fig.add_axes([.05, .10, .8, .8], projection=cart_proj)
 ax2 = fig.add_axes(ax1.get_position(), frameon=False)
 ax3 = fig.add_axes([0.0, .05, .8, .05], frameon=False)
@@ -183,7 +183,7 @@ CS = ax2.contour(
                  levels=c_var_levels,
                 )
 
-ax2.clabel(CS, CS.levels, inline=True, fontsize=12)
+ax2.clabel(CS, CS.levels, inline=True, fontsize=20)
 
 # add geog / cultural features
 ax1.add_feature(cfeature.COASTLINE)
@@ -242,14 +242,25 @@ ax3.tick_params(
         labeltop=False,
         )
 
-ax3.text(0.02, 0, 'IVT Magnitude 50',  {'fontsize': 15})
-ax3.text(0.52, 0, 'IVT Magnitude 100', {'fontsize': 15})
-ax3.text(1.02, 0, 'IVT Magnitude 500', {'fontsize': 15})
+ax2.tick_params(
+        bottom=False,
+        labelbottom=False,
+        left=False,
+        labelleft=False,
+        right=False,
+        labelright=False,
+        top=False,
+        labeltop=False,
+        )
+
+ax3.text(0.02, 0, 'IVT Magnitude 50',  {'fontsize': 18})
+ax3.text(0.52, 0, 'IVT Magnitude 100', {'fontsize': 18})
+ax3.text(1.02, 0, 'IVT Magnitude 500', {'fontsize': 18})
 
 # Add a color bar
 cb(ax=ax0, cmap=color_map, norm=cnorm)
-ax1.tick_params(
-    labelsize=16,
+ax0.tick_params(
+    labelsize=21,
     )
 
 # Set the map bounds
@@ -269,8 +280,8 @@ d1 = d1[:4] + ':' + d1[4:6] + ':' + d1[6:8] + '_' + d1[8:] + ':00:00'
 title1 = date + r' - IVT $kg $ $m^{-1} s^{-1}$ ' +  c_pl + ' ' + c_var + ' contours'
 title2 = 'fzh ' + d1
 
-plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=18)
-plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=18)
+plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=22)
+plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=22)
 
 fig.savefig(f_out_path + '/' + date + '_fzh_' + d1 + '_ivt_' +\
             c_pl + '_' + c_var + '.png')

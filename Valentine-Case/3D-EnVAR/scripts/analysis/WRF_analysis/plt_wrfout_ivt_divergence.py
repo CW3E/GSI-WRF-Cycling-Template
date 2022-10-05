@@ -37,10 +37,12 @@ import copy
 
 ##################################################################################
 # file paths
-start_date_1 = '2019021100' 
-start_date_2 = '2019021400' 
+start_date_1 = '2019021400' 
+#start_date_2 = '2019021400' 
+start_date_2 = 'era5'
 f_in_path_1 = './processed_numpy/' + start_date_1
-f_in_path_2 = './processed_numpy/' + start_date_2
+#f_in_path_2 = './processed_numpy/' + start_date_2
+f_in_path_2 = './processed_numpy/era5'
 f_out_path = './processed_numpy/ivt_diff_plots'
 os.system('mkdir -p ' + f_out_path)
 
@@ -64,7 +66,7 @@ cart_proj = data['cart_proj']
 fig = plt.figure(figsize=(11.25,8.63))
 
 # Set the GeoAxes to the projection used by WRF
-ax0 = fig.add_axes([.875, .10, .05, .8])
+ax0 = fig.add_axes([.86, .10, .05, .8])
 ax1 = fig.add_axes([.05, .10, .8, .8], projection=cart_proj)
 
 # unpack variables and compute the divergence from f_2
@@ -106,7 +108,8 @@ abs_scale = 400
 
 # make a symmetric color map about zero
 cnorm = nrm(vmin=-abs_scale, vmax=abs_scale)
-color_map = sns.diverging_palette(280, 30, l=65, as_cmap=True)
+#color_map = sns.diverging_palette(280, 30, l=65, as_cmap=True)
+color_map = sns.diverging_palette(145, 300, s=60, as_cmap=True)
 
 # NaN out all values of d01 that lie in d02
 h_diff_d01[data['d02']['indx']] = np.nan
@@ -176,8 +179,8 @@ ax1.add_feature(cfeature.BORDERS)
 
 # Add a color bar
 cb(ax=ax0, cmap=color_map, norm=cnorm)
-ax1.tick_params(
-    labelsize=16,
+ax0.tick_params(
+    labelsize=21,
     )
 
 # Set the map bounds
@@ -189,14 +192,15 @@ ax1.gridlines(color='black', linestyle='dotted')
 
 # make title and save figure
 d1 = copy.copy(start_date_1) 
-d2 = copy.copy(start_date_2)
+#d2 = copy.copy(start_date_2)
 
 d1 = d1[:4] + ':' + d1[4:6] + ':' + d1[6:8] + '_' + d1[8:] + ':00:00'
-d2 = d2[:4] + ':' + d2[4:6] + ':' + d2[6:8] + '_' + d2[8:] + ':00:00'
+#d2 = d2[:4] + ':' + d2[4:6] + ':' + d2[6:8] + '_' + d2[8:] + ':00:00'
+d2 = 'ERA5 reanalysis'
 
 title1 = 'ivtm - ' + date
 title2 = 'fzh ' + d1 + ' minus fzh ' + d2
-plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=18)
-plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=18)
+plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=22)
+plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=22)
 plt.savefig(f_out_path + '/' + date + '_ivtm_diff_plot_fzh1_' + d1 + '_fzh2_' + d2 + '.png')
 plt.show()

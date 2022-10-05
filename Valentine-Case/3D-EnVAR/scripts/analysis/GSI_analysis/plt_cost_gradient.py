@@ -83,8 +83,8 @@ exec('data = data[\'d0%s\']'%DOM)
 
 # define two panel figure with pre-defined size
 fig = plt.figure(figsize=(16,8))
-ax1 = fig.add_axes([.075, .15, .85, .38])
-ax0 = fig.add_axes([.075, .53, .85, .38])
+ax1 = fig.add_axes([.11, .25, .85, .33])
+ax0 = fig.add_axes([.11, .58, .85, .33])
 
 # set colors and storage for looping
 line_colors = ['#d95f02', '#7570b3']
@@ -98,12 +98,19 @@ dates = data['date'].values
 tic_mark = []
 tic_labs = []
 
+tic_count = 0
 for i in range(0, index, 102):
     ax0.axvline(x=i, linestyle=':', linewidth=1.25, color='k')
     l2 = ax1.axvline(x=i, linestyle=':', linewidth=1.25, color='k')
     tic_mark.append(i)
     date_str = str(dates[i]).split(':')[0]
-    tic_labs.append(date_str)
+
+    if tic_count % 2 == 0:
+        tic_labs.append(date_str)
+    else:
+        tic_labs.append("")
+
+    tic_count += 1
 
 for i in range(51, index+1, 102):
     ax0.axvline(x=i, linestyle=':', linewidth=1.25, color='#1b9e77')
@@ -125,16 +132,16 @@ ax1.set_xticks(tic_mark, labels=tic_labs, rotation=45, ha='right')
 
 # tick parameters
 ax0.tick_params(
-    labelsize=11,
+    labelsize=20,
     labelbottom=False,
     )
 
 ax1.tick_params(
-    labelsize=11,
+    labelsize=20,
     )
 
 # add legend and sub-titles
-fig.legend(line_list, line_labs, fontsize=18, ncol=4, loc='upper center')
+fig.legend(line_list, line_labs, fontsize=22, ncol=4, loc='upper center')
 
 # save figure and display
 plt.savefig(OUT_PATH)
