@@ -41,7 +41,8 @@ CYCLE_INT = 6
 MAX_FCST = 108
 
 # root directory where date stamped sub-directories will collect data downloads
-DATA_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data/static/gribbed'
+PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
+DATA_ROOT = PROJ_ROOT + '/data/static/gribbed/GEFS'
 
 
 ##################################################################################

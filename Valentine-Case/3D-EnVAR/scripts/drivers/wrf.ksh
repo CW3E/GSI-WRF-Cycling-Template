@@ -127,16 +127,18 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ENS_N         = Ensemble index (00 for control)
-# FCST_LENGTH   = Total length of WRF forecast simulation in HH
-# FCST_INTERVAL = Interval of wrfout.d01 in HH
-# DATA_INTERVAL = Interval of input data in HH
-# START_TIME    = Simulation start time in YYMMDDHH
-# MAX_DOM       = Max number of domains to use in namelist settings
-# DOWN_DOM      = First domain index to downscale ICs from d01, less than MAX_DOM if downscaling to be used
-# IF_CYCLING    = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis or real.exe, case insensitive
-# IF_SST_UPDATE = Yes / No: whether WRF uses dynamic SST values 
-# IF_FEEBACK    = Yes / No: whether WRF domains use 1- or 2-way nesting
+# ENS_N          = Ensemble ID index, 00 for control, i > 00 for perturbation
+# BKG_DATA       = String case variable for supported inputs: GFS, GEFS currently
+# FCST_LENGTH    = Total length of WRF forecast simulation in HH
+# FCST_INTERVAL  = Interval of wrfout.d01 in HH
+# DATA_INTERVAL  = Interval of input data in HH
+# CYCLE_INTERVAL = Interval in HH on which DA is cycled in a cycling control flow
+# START_TIME     = Simulation start time in YYMMDDHH
+# MAX_DOM        = Max number of domains to use in namelist settings
+# DOWN_DOM       = First domain index to downscale ICs from d01, less than MAX_DOM if downscaling to be used
+# IF_CYCLING     = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis or real.exe, case insensitive
+# IF_SST_UPDATE  = Yes / No: whether WRF uses dynamic SST values 
+# IF_FEEBACK     = Yes / No: whether WRF domains use 1- or 2-way nesting
 #
 #####################################################
 
@@ -150,6 +152,16 @@ ens_n=`printf %02d $(( 10#${ENS_N} ))`
 # Make three digit padding for GSI conventions
 iiimem=`printf %03d $(( 10#${ens_n} ))`
 
+if [ ! "${BKG_DATA}"  ]; then
+  echo "ERROR: \$BKG_DATA is not defined"
+  exit 1
+fi
+
+if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
+  echo "ERROR: \${BKG_DATA} must equal \"GFS\" or \"GEFS\" as currently supported inputs."
+  exit 1
+fi
+
 if [ ! ${FCST_LENGTH} ]; then
   echo "ERROR: \$FCST_LENGTH is not defined!"
   exit 1
@@ -162,6 +174,11 @@ fi
 
 if [ ! "${DATA_INTERVAL}" ]; then
   echo "ERROR: \$DATA_INTERVAL is not defined"
+  exit 1
+fi
+
+if [ ! "${CYCLE_INTERVAL}" ]; then
+  echo "ERROR: \$CYCLE_INTERVAL is not defined"
   exit 1
 fi
 
@@ -195,6 +212,16 @@ if [[ ${IF_CYCLING} != ${YES} && ${IF_CYCLING} != ${NO} ]]; then
   exit 1
 fi
 
+if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+  echo "SST Update turned on"
+  sst_update=1
+elif [[ ${IF_SST_UPDATE} = ${NO} ]]; then
+  sst_update=0
+else
+  echo "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
+  exit 1
+fi
+
 if [[ ${IF_FEEDBACK} = ${YES} ]]; then
   echo "Two-way WRF nesting is turned on"
   feedback=1
@@ -206,28 +233,20 @@ else
   exit 1
 fi
 
-if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
-  echo "SST Update turned on"
-  sst_update=1
-elif [[ ${IF_SST_UPDATE} = ${NO} ]]; then
-  sst_update=0
-else
-  echo "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
-  exit 1
-fi
-
 #####################################################
 # Define WRF workflow dependencies
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
 # WRF_ROOT       = Root directory of a "clean" WRF build WRF/run directory
-# WRF_PROC       = The total number of processes to run WRF with MPI
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
 #                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 # MPIRUN         = MPI Command to execute WRF
+# WRF_PROC       = The total number of processes to run WRF with MPI
+# NIO_GROUPS     = Number of Quilting groups -- only used for NIO_TPG > 0
+# NIO_TPG        = Quilting tasks per group, set=0 if no quilting IO is to be used
 #
 #####################################################
 
@@ -238,16 +257,6 @@ fi
 
 if [ ! -d ${WRF_ROOT} ]; then
   echo "ERROR: \$WRF_ROOT directory ${WRF_ROOT} does not exist"
-  exit 1
-fi
-
-if [ ! "${WRF_PROC}" ]; then
-  echo "ERROR: \$WRF_PROC is not defined"
-  exit 1
-fi
-
-if [ -z "${WRF_PROC}" ]; then
-  echo "ERROR: The variable \$WRF_PROC must be set to the number of processors to run WRF"
   exit 1
 fi
 
@@ -263,6 +272,16 @@ fi
 
 if [ ! "${MPIRUN}" ]; then
   echo "ERROR: \$MPIRUN is not defined!"
+  exit 1
+fi
+
+if [ ! "${WRF_PROC}" ]; then
+  echo "ERROR: \$WRF_PROC is not defined"
+  exit 1
+fi
+
+if [ -z "${WRF_PROC}" ]; then
+  echo "ERROR: The variable \$WRF_PROC must be set to the number of processors to run WRF"
   exit 1
 fi
 
@@ -384,7 +403,8 @@ fi
 #  Build WRF namelist
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-cp ${STATIC_DATA}/namelists/namelist.input .
+namelist=${STATIC_DATA}/namelists/namelist.${BKG_DATA}
+cp ${namelist} ./namelist.input
 
 # Get the start and end time components
 start_year=`date +%Y -d "${start_time}"`
@@ -486,6 +506,7 @@ fi
 # Print run parameters
 echo
 echo "ENS_N          = ${ENS_N}"
+echo "BKG_DATA       = ${BKG_DATA}"
 echo "WRF_ROOT       = ${WRF_ROOT}"
 echo "STATIC_DATA    = ${STATIC_DATA}"
 echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
@@ -503,6 +524,7 @@ echo
 now=`date +%Y%m%d%H%M%S`
 echo "wrf started at ${now}"
 
+#${MPIRUN} -n ${WRF_PROC} ${wrf_exe}
 ${MPIRUN} ${wrf_exe}
 
 #####################################################
@@ -531,7 +553,7 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
 fi
 
 # ensure that the cycle_io/date/bkg directory exists for starting next cycle
-cycle_intv=`date +%H -d "${CYCLE_INTV}"`
+cycle_intv=`date +%H -d "${CYCLE_INTERVAL}"`
 datestr=`date +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
 new_bkg=${datestr}/bkg/ens_${ens_n}
 mkdir -p ${INPUT_DATAROOT}/../${new_bkg}

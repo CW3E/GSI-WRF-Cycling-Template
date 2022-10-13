@@ -162,8 +162,8 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# BKG_DATA       = String case variable for supported inputs: GFS, GEFS currently
 # ENS_N          = Ensemble ID index, 00 for control, i > 0 for perturbation
+# BKG_DATA       = String case variable for supported inputs: GFS, GEFS currently
 # FCST_LENGTH    = Total length of WRF forecast simulation in HH
 # DATA_INTERVAL  = Interval of input data in HH
 # START_TIME     = Simulation start time in YYMMDDHH
@@ -172,6 +172,14 @@ fi
 #                  initializing with model level data, case insensitive
 #
 #####################################################
+
+if [ ! "${ENS_N}"  ]; then
+  echo "ERROR: \$ENS_N is not defined"
+  exit 1
+fi
+
+# ensure padding to two digits is included
+ens_n=`printf %02d $(( 10#${ENS_N} ))`
 
 if [ ! "${BKG_DATA}"  ]; then
   echo "ERROR: \$BKG_DATA is not defined"
@@ -182,14 +190,6 @@ if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
   echo "ERROR: \${BKG_DATA} must equal \"GFS\" or \"GEFS\" as currently supported inputs."
   exit 1
 fi
-
-if [ ! "${ENS_N}"  ]; then
-  echo "ERROR: \$ENS_N is not defined"
-  exit 1
-fi
-
-# ensure padding to two digits is included
-ens_n=`printf %02d $(( 10#${ENS_N} ))`
 
 if [ ! "${FCST_LENGTH}" ]; then
   echo "ERROR: \$FCST_LENGTH is not defined"
@@ -300,16 +300,16 @@ rm -f Vtable
 
 # Check to make sure the variable table is available in the static
 # data and make a link to it
-vtable=${STATIC_DATA}/variable_tables/Vtable
+vtable=${STATIC_DATA}/variable_tables/Vtable.${BKG_DATA}
 if [ ! -r ${vtable} ]; then
   echo "ERROR: a 'Vtable' should be provided at location ${vtable}, Vtable not found"
   exit 1
 else
-  ln -sf ${vtable} ./
+  ln -sf ${vtable} ./Vtable
 fi
 
 # check to make sure the grib_dataroot exists and is non-empty
-grib_dataroot=${STATIC_DATA}/gribbed
+grib_dataroot=${STATIC_DATA}/gribbed/${BKG_DATA}
 if [! -d ${grib_dataroot} ]; then
   echo "ERROR: the directory ${grib_dataroot} does not exist"
   exit 1
@@ -365,8 +365,8 @@ mv namelist.wps.new namelist.wps
 #####################################################
 # Print run parameters
 echo
-echo "BKG_DATA       = ${BKG_DATA}"
 echo "ENS_N          = ${ENS_N}"
+echo "BKG_DATA       = ${BKG_DATA}"
 echo "WPS_ROOT       = ${WPS_ROOT}"
 echo "STATIC_DATA    = ${STATIC_DATA}"
 echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"

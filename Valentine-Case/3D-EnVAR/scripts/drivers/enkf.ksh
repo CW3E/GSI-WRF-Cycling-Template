@@ -92,33 +92,34 @@ fi
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
-# ANAL_TIME      = Analysis time YYYYMMDDHH
+# ANL_TIME       = Analysis time YYYYMMDDHH
 # GSI_ROOT       = Directory for clean GSI build
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
 #                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Analysis time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 # MPIRUN         = MPI Command to execute GSI
+# GSI_PROC       = Number of workers for MPI command to exectute on
 #
 # Below variables are derived by cycling.xml variables for convenience
 #
-# date_str       = Defined by the ANAL_TIME variable, to be used as path
+# date_str       = Defined by the ANL_TIME variable, to be used as path
 #                  name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
 #####################################################
 
-if [ ! "${ANAL_TIME}" ]; then
-  echo "ERROR: \$ANAL_TIME is not defined!"
+if [ ! "${ANL_TIME}" ]; then
+  echo "ERROR: \$ANL_TIME is not defined!"
   exit 1
 fi
 
-if [ `echo "${ANAL_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  # Define directory path name variable date_str=YYMMDDHH from ANAL_TIME
-  hh=`echo ${ANAL_TIME} | cut -c9-10`
-  anal_date=`echo ${ANAL_TIME} | cut -c1-8`
+if [ `echo "${ANL_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  # Define directory path name variable date_str=YYMMDDHH from ANL_TIME
+  hh=`echo ${ANL_TIME} | cut -c9-10`
+  anal_date=`echo ${ANL_TIME} | cut -c1-8`
   date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} ${hh} hours"`
 else
-  echo "ERROR: start time, '${ANAL_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  echo "ERROR: start time, '${ANL_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
 
@@ -144,6 +145,16 @@ fi
 
 if [ ! "${MPIRUN}" ]; then
   echo "ERROR: \$MPIRUN is not defined!"
+  exit 1
+fi
+
+if [ ! "${GSI_PROC}" ]; then
+  echo "ERROR: \$GSI_PROC is not defined"
+  exit 1
+fi
+
+if [ -z "${GSI_PROC}" ]; then
+  echo "ERROR: The variable \$GSI_PROC must be set to the number of processors to run GSI"
   exit 1
 fi
 
@@ -229,7 +240,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   # Print run parameters
   echo
   echo "N_ENS          = ${N_ENS}"
-  echo "ANAL_TIME      = ${ANAL_TIME}"
+  echo "ANL_TIME       = ${ANL_TIME}"
   echo "GSI_ROOT       = ${GSI_ROOT}"
   echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
   echo

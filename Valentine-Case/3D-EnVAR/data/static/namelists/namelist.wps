@@ -33,7 +33,7 @@
 /
 
 &metgrid
- ! GFS setting !
+ ! GFS / GEFS setting !
  fg_name = 'FILE',
  ! ERA5 setting !
  !fg_name = 'FILE', 'PRES'

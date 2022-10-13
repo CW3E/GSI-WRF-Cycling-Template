@@ -126,7 +126,8 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ENS_N         = Ensemble ID index, 00 for control, i > 0 for perturbation
+# ENS_N         = Ensemble ID index, 00 for control, i > 00 for perturbation
+# BKG_DATA      = String case variable for supported inputs: GFS, GEFS currently
 # FCST_LENGTH   = Total length of WRF forecast simulation in HH
 # DATA_INTERVAL = Interval of input data in HH
 # START_TIME    = Simulation start time in YYMMDDHH
@@ -144,6 +145,15 @@ fi
 # ensure padding to two digits is included
 ens_n=`printf %02d $(( 10#${ENS_N} ))`
 
+if [ ! "${BKG_DATA}"  ]; then
+  echo "ERROR: \$BKG_DATA is not defined"
+  exit 1
+fi
+
+if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
+  echo "ERROR: \${BKG_DATA} must equal \"GFS\" or \"GEFS\" as currently supported inputs."
+  exit 1
+fi
 
 if [ ! "${FCST_LENGTH}" ]; then
   echo "ERROR: \$FCST_LENGTH is not defined"
@@ -191,12 +201,12 @@ fi
 # Below variables are defined in cycling.xml workflow variables
 #
 # WRF_ROOT       = Root directory of a "clean" WRF build WRF/run directory
-# REAL_PROC      = The total number of processes to run real.exe with MPI
 # STATIC_DATA    = Root directory containing sub-directories for constants, namelists
 #                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 # MPIRUN         = MPI Command to execute real 
+# WPS_PROC       = The total number of processes to run real.exe with MPI
 #
 #####################################################
 
@@ -207,16 +217,6 @@ fi
 
 if [ ! -d "${WRF_ROOT}" ]; then
   echo "ERROR: WRF_ROOT directory ${WRF_ROOT} does not exist"
-  exit 1
-fi
-
-if [ ! "${REAL_PROC}" ]; then
-  echo "ERROR: \$REAL_PROC is not defined"
-  exit 1
-fi
-
-if [ -z "${REAL_PROC}" ]; then
-  echo "ERROR: The variable \$REAL_PROC must be set to the number of processors to run real"
   exit 1
 fi
 
@@ -232,6 +232,16 @@ fi
 
 if [ ! "${MPIRUN}" ]; then
   echo "ERROR: \$MPIRUN is not defined!"
+  exit 1
+fi
+
+if [ ! "${WPS_PROC}" ]; then
+  echo "ERROR: \$WPS_PROC is not defined"
+  exit 1
+fi
+
+if [ -z "${WPS_PROC}" ]; then
+  echo "ERROR: The variable \$WPS_PROC must be set to the number of processors to run real"
   exit 1
 fi
 
@@ -305,7 +315,8 @@ fi
 #  Build real namelist
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-cp ${STATIC_DATA}/namelists/namelist.input .
+namelist=${STATIC_DATA}/namelists/namelist.${BKG_DATA}
+cp ${namelist} ./namelist.input
 
 # Get the start and end time components
 start_year=`date +%Y -d "${start_time}"`
@@ -385,6 +396,7 @@ fi
 # Print run parameters
 echo
 echo "ENS_N          = ${ENS_N}"
+echo "BKG_DATA       = ${BKG_DATA}"
 echo "WRF_ROOT       = ${WRF_ROOT}"
 echo "STATIC_DATA    = ${STATIC_DATA}"
 echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
@@ -399,7 +411,9 @@ echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
 echo "real started at ${now}"
-${MPIRUN} ${real_exe}
+
+${MPIRUN} -n ${WPS_PROC} ${real_exe}
+#${MPIRUN} ${real_exe}
 
 #####################################################
 # Run time error check
@@ -420,7 +434,7 @@ fi
 
 # Look for successful completion messages in rsl files
 nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE REAL/' | wc -l`
-(( ntotal = REAL_PROC * 2 ))
+(( ntotal = WPS_PROC * 2 ))
 echo "Found ${nsuccess} of ${ntotal} completion messages"
 if [ ${nsuccess} -ne ${ntotal} ]; then
   echo "ERROR: ${real_exe} did not complete sucessfully, missing completion messages in RSL files"
@@ -445,7 +459,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   (( dmn += 1 ))
 done
 
-# check to see if the STT update field are generated
+# check to see if the SST update fields are generated
 if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
   dmn=1
   while [ ${dmn} -le ${MAX_DOM} ]; do
