@@ -14,13 +14,14 @@
   <!-- END USER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
+  <!ENTITY FLOW_NAME           "deterministic_forecast">
   <!ENTITY PROJ_HOME           "&WORK_SPACE;/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR">
   <!ENTITY SCRIPTS             "&PROJ_HOME;/scripts">
   <!ENTITY DRIVERS             "&SCRIPTS;/drivers">
   <!ENTITY ENVIRONMENTS        "&SCRIPTS;/environments">
   <!ENTITY PROJ_DATA           "&PROJ_HOME;/data">
-  <!ENTITY LOG                 "&PROJ_DATA;/log/deterministic_forecast">
-  <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/forecast_io">
+  <!ENTITY LOG                 "&PROJ_DATA;/log/&FLOW_NAME;">
+  <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/forecast_io/&FLOW_NAME;">
   <!ENTITY STATIC_DATA         "&PROJ_DATA;/static">
   <!-- END WORKFLOW SETTINGS -->
 

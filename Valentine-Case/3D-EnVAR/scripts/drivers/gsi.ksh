@@ -195,7 +195,7 @@ fi
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
-# ANAL_TIME      = Analysis time YYYYMMDDHH
+# ANL_TIME       = Analysis time YYYYMMDDHH
 # GSI_ROOT       = Directory for clean GSI build
 # CRTM_VERSION   = Version number of CRTM to specify path to binaries
 # STATIC_DATA    = Root directory containing sub-directories for constants,
@@ -203,31 +203,32 @@ fi
 # INPUT_DATAROOT = Analysis time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 # MPIRUN         = MPI Command to execute GSI
+# GSI_PROC       = Number of workers for MPI command to exectute on
 #
 # Below variables are derived by cycling.xml variables for convenience
 #
-# date_str       = Defined by the ANAL_TIME variable, to be used as path
+# date_str       = Defined by the ANL_TIME variable, to be used as path
 #                  name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
 #####################################################
 
-if [ ! "${ANAL_TIME}" ]; then
-  echo "ERROR: \$ANAL_TIME is not defined!"
+if [ ! "${ANL_TIME}" ]; then
+  echo "ERROR: \$ANL_TIME is not defined!"
   exit 1
 fi
 
-if [ `echo "${ANAL_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  # Define directory path name variable date_str=YYMMDDHH from ANAL_TIME
-  hh=`echo ${ANAL_TIME} | cut -c9-10`
-  anal_date=`echo ${ANAL_TIME} | cut -c1-8`
+if [ `echo "${ANL_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  # Define directory path name variable date_str=YYMMDDHH from ANL_TIME
+  hh=`echo ${ANL_TIME} | cut -c9-10`
+  anal_date=`echo ${ANL_TIME} | cut -c1-8`
   date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} ${hh} hours"`
 else
-  echo "ERROR: start time, '${ANAL_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  echo "ERROR: start time, '${ANL_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
 
 if [ -z "${date_str}"]; then
-  echo "ERROR: \$date_str is not defined correctly, check format of \$ANAL_TIME!"
+  echo "ERROR: \$date_str is not defined correctly, check format of \$ANL_TIME!"
   exit 1
 fi
 
@@ -258,6 +259,16 @@ fi
 
 if [ ! "${MPIRUN}" ]; then
   echo "ERROR: \$MPIRUN is not defined!"
+  exit 1
+fi
+
+if [ ! "${GSI_PROC}" ]; then
+  echo "ERROR: \$GSI_PROC is not defined"
+  exit 1
+fi
+
+if [ -z "${GSI_PROC}" ]; then
+  echo "ERROR: The variable \$GSI_PROC must be set to the number of processors to run GSI"
   exit 1
 fi
 
@@ -642,8 +653,8 @@ while [ ${dmn} -le ${max_dom} ]; do
 
   # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
   #if [[ ${IF_4DENVAR} = ${YES} ]] ; then
-  # PDYa=`echo ${ANAL_TIME} | cut -c1-8`
-  # cyca=`echo ${ANAL_TIME} | cut -c9-10`
+  # PDYa=`echo ${ANL_TIME} | cut -c1-8`
+  # cyca=`echo ${ANL_TIME} | cut -c9-10`
   # gdate=`date -u -d "${PDYa} ${cyca} -6 hour" +%Y%m%d%H` #guess date is 6hr ago
   # gHH=`echo ${gdate} |cut -c9-10`
   # datem1=`date -u -d "${PDYa} ${cyca} -1 hour" +%Y-%m-%d_%H:%M:%S` #1hr ago
@@ -778,14 +789,15 @@ while [ ${dmn} -le ${max_dom} ]; do
   echo "IF_OBSERVER        = ${IF_OBSERVER}"
   echo "IF_4DENVAR         = ${IF_4DENVAR}"
   echo
-  echo "ANAL_TIME          = ${ANAL_TIME}"
+  echo "ANL_TIME           = ${ANL_TIME}"
   echo "GSI_ROOT           = ${GSI_ROOT}"
   echo "CRTM_VERSION       = ${CRTM_VERSION}"
   echo "INPUT_DATAROOT     = ${INPUT_DATAROOT}"
   echo
   now=`date +%Y%m%d%H%M%S`
   echo "gsi started at ${now} with ${bk_core} background on domain d0${dmn}"
-  ${MPIRUN} ${gsi_exe} > stdout_ens_00.anl.${ANAL_TIME} 2>&1
+  #${MPIRUN} -n ${GSI_PROC} ${gsi_exe} > stdout_ens_00.anl.${ANL_TIME} 2>&1
+  ${MPIRUN} ${gsi_exe} > stdout_ens_00.anl.${ANL_TIME} 2>&1
 
   #####################################################
   # Run time error check
@@ -803,12 +815,12 @@ while [ ${dmn} -le ${max_dom} ]; do
   # GSI updating satbias_in (only for cycling assimilation)
 
   # Rename the output to more understandable names
-  cp wrf_inout   wrfanl_ens_00.${ANAL_TIME}
-  cp fort.201    fit_p1_ens_00.${ANAL_TIME}
-  cp fort.202    fit_w1_ens_00.${ANAL_TIME}
-  cp fort.203    fit_t1_ens_00.${ANAL_TIME}
-  cp fort.204    fit_q1_ens_00.${ANAL_TIME}
-  cp fort.207    fit_rad1_ens_00.${ANAL_TIME}
+  cp wrf_inout   wrfanl_ens_00.${ANL_TIME}
+  cp fort.201    fit_p1_ens_00.${ANL_TIME}
+  cp fort.202    fit_w1_ens_00.${ANL_TIME}
+  cp fort.203    fit_t1_ens_00.${ANL_TIME}
+  cp fort.204    fit_q1_ens_00.${ANL_TIME}
+  cp fort.207    fit_rad1_ens_00.${ANL_TIME}
 
   #####################################################
   # Loop over first and last outer loops to generate innovation
@@ -851,7 +863,7 @@ while [ ${dmn} -le ${max_dom} ]; do
     for type in ${listall}; do
        count=`ls pe*${type}_${loop}* | wc -l`
        if [[ ${count} -gt 0 ]]; then
-          cat pe*${type}_${loop}* > diag_${type}_${string}.${ANAL_TIME}
+          cat pe*${type}_${loop}* > diag_${type}_${string}.${ANL_TIME}
        fi
     done
   done
@@ -875,8 +887,8 @@ while [ ${dmn} -le ${max_dom} ]; do
   if [[ ${IF_OBSERVER} = ${YES} ]]; then
     string=ges
     for type in ${listall}; do
-      if [[ -f diag_${type}_${string}.${ANAL_TIME} ]]; then
-         mv diag_${type}_${string}.${ANAL_TIME} diag_${type}_${string}.ensmean
+      if [[ -f diag_${type}_${string}.${ANL_TIME} ]]; then
+         mv diag_${type}_${string}.${ANL_TIME} diag_${type}_${string}.ensmean
       fi
     done
     mv wrf_inout wrf_inout_ensmean
@@ -907,7 +919,7 @@ while [ ${dmn} -le ${max_dom} ]; do
 
       # run GSI
       echo " Run GSI observer with ${bk_core} for member ${iiimem}"
-      ${MPIRUN} ${gsi_exe} > stdout_ens_${iimem}.anl.${ANAL_TIME} 2>&1
+      ${MPIRUN} ${gsi_exe} > stdout_ens_${iimem}.anl.${ANL_TIME} 2>&1
 
       # run time error check and save run time file status
       error=$?

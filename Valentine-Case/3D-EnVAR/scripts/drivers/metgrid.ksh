@@ -185,6 +185,7 @@ fi
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 # MPIRUN         = MPI Command to execute metgrid
+# WPS_PROC       = The total number of processes to run WPS with MPI
 #
 #####################################################
 
@@ -213,6 +214,16 @@ if [ ! "${MPIRUN}" ]; then
   exit 1
 fi
 
+if [ ! "${WPS_PROC}" ]; then
+  echo "ERROR: \$WPS_PROC is not defined"
+  exit 1
+fi
+
+if [ -z "${WPS_PROC}" ]; then
+  echo "ERROR: The variable \$WPS_PROC must be set to the number of processors to run WPS"
+  exit 1
+fi
+
 #####################################################
 # Begin pre-metgrid setup
 #####################################################
@@ -233,7 +244,6 @@ if [ ! -x ${metgrid_exe} ]; then
   echo "ERROR: ${metgrid_exe} does not exist, or is not executable"
   exit 1
 fi
-
 
 # Make links to the WPS DAT files
 cd ${work_root}
@@ -307,6 +317,8 @@ echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
 echo "metgrid started at ${now}"
+
+#${MPIRUN} -n ${WPS_PROC} ${metgrid_exe}
 ${MPIRUN} ${metgrid_exe}
 
 #####################################################

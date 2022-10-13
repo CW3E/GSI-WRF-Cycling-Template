@@ -62,9 +62,9 @@ fi
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ANAL_TIME         = Analysis time YYYYMMDDHH
-# IF_ENS_COLD_START = Skip lower / lateral BC updates if "Yes"
 # N_ENS             = Max ensemble index (use 00 for control alone)
+# ANL_TIME          = Analysis time YYYYMMDDHH
+# IF_ENS_COLD_START = Skip lower / lateral BC updates if "Yes"
 # IF_LOWER          = 'Yes' if updating lower boundary conditions 
 #                     'No' if updating lateral boundary conditions
 # WRF_CTR_DOM       = Max domain index of control forecast
@@ -72,13 +72,27 @@ fi
 #
 # Below variabs are derived by cycling.xml variables for convenience
 #
-# date_str          = Defined by the ANAL_TIME variable, to be used as path
+# date_str          = Defined by the ANL_TIME variable, to be used as path
 #                     name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
 #####################################################
 
-if [ ! "${ANAL_TIME}" ]; then
-  echo "ERROR: \$ANAL_TIME is not defined!"
+if [ ! "${N_ENS}" ]; then
+  echo "ERROR: \$N_ENS is not defined!"
+  exit 1
+fi
+
+if [ ! "${ANL_TIME}" ]; then
+  echo "ERROR: \$ANL_TIME is not defined!"
+  exit 1
+fi
+
+hh=`echo ${ANL_TIME} | cut -c9-10`
+anal_date=`echo ${ANL_TIME} | cut -c1-8`
+date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} ${hh} hours"`
+
+if [ -z "${date_str}"]; then
+  echo "ERROR: \$date_str is not defined correctly, check format of \$ANL_TIME!"
   exit 1
 fi
 
@@ -87,17 +101,8 @@ if [[ ${IF_ENS_COLD_START} != ${YES} && ${IF_ENS_COLD_START} != ${NO} ]]; then
   exit 1
 fi
 
-if [ ! "${N_ENS}" ]; then
-  echo "ERROR: \$N_ENS is not defined!"
-  exit 1
-fi
-
-hh=`echo ${ANAL_TIME} | cut -c9-10`
-anal_date=`echo ${ANAL_TIME} | cut -c1-8`
-date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} ${hh} hours"`
-
-if [ -z "${date_str}"]; then
-  echo "ERROR: \$date_str is not defined correctly, check format of \$anal_date!"
+if [[ ${IF_LOWER} != ${YES} && ${IF_LOWER} != ${NO} ]]; then
+  echo "ERROR: \$IF_LOWER must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
@@ -108,11 +113,6 @@ fi
 
 if [ ! ${WRF_ENS_DOM} ]; then
   echo "ERROR: \$WRF_ENS_DOM is not defined!"
-  exit 1
-fi
-
-if [[ ${IF_LOWER} != ${YES} && ${IF_LOWER} != ${NO} ]]; then
-  echo "ERROR: \$IF_LOWER must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
@@ -318,7 +318,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
         exit 1
       fi
 
-      wrfanl=${gsi_dir}/d01/wrfanl_ens_00.${ANAL_TIME}
+      wrfanl=${gsi_dir}/d01/wrfanl_ens_00.${ANL_TIME}
       wrfbdy=${real_dir}/wrfbdy_d01
       wrfvar_outname=wrfvar_output
       wrfbdy_name=wrfbdy_d01
