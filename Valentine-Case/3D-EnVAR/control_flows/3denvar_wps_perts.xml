@@ -76,17 +76,17 @@
   <!ENTITY PARTITION           "--partition=compute"> 
   <!ENTITY MPIRUN              "mpirun">
   <!ENTITY WPS_PROC            "24"> <!-- WPS parallel / REAL procs, all serial hard-coded as 1 -->
-  <!ENTITY WPS_MEM             "120G">
+  <!ENTITY WPS_MEM             "5G">
   <!ENTITY WPS_NODESIZE        "24">
   <!ENTITY WPS_NODES           "1">
   <!ENTITY WPS_WC              "00:30:00">
   <!ENTITY WRF_PROC            "384">
-  <!ENTITY WRF_MEM             "120G">
+  <!ENTITY WRF_MEM             "5G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
   <!ENTITY WRF_WC              "01:30:00">
   <!ENTITY GSI_PROC            "384">
-  <!ENTITY GSI_MEM             "120G">
+  <!ENTITY GSI_MEM             "5G">
   <!ENTITY GSI_NODESIZE        "24">
   <!ENTITY GSI_NODES           "16">
   <!ENTITY GSI_WC              "01:30:00">
@@ -109,7 +109,7 @@
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
-    <native>--mem=&WPS_MEM;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WPS_CONSTANT;</value>
@@ -176,7 +176,7 @@
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
-    <native>--mem=&WPS_MEM;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WPS_CONSTANT;</value>
@@ -237,7 +237,7 @@
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
-    <native>--mem=&WPS_MEM;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
@@ -308,7 +308,7 @@
       <native>&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WPS_NODES;</native>
-      <native>--mem=&WPS_MEM;</native>
+      <native>--mem-per-cpu=&WPS_MEM;</native>
       <envar>
         <name>CONSTANT</name>
         <value>&WPS_CONSTANT;</value>
@@ -370,7 +370,7 @@
       <native>&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WPS_NODES;</native>
-      <native>--mem=&WPS_MEM;</native>
+      <native>--mem-per-cpu=&WPS_MEM;</native>
       <envar>
         <name>CONSTANT</name>
         <value>&WPS_CONSTANT;</value>
@@ -431,7 +431,7 @@
       <native>&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WPS_NODES;</native>
-      <native>--mem=&WPS_MEM;</native>
+      <native>--mem-per-cpu=&WPS_MEM;</native>
       <envar>
         <name>CONSTANT</name>
         <value>&WRF_CONSTANT;</value>
@@ -469,10 +469,6 @@
         <value>&WRF_ROOT;</value>
       </envar>
       <envar>
-        <name>WPS_PROC</name>
-        <value>&WPS_PROC;</value>
-      </envar>
-      <envar>
         <name>STATIC_DATA</name>
         <value>&STATIC_DATA;</value>
       </envar>
@@ -505,7 +501,7 @@
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
-    <native>--mem=&WPS_MEM;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
@@ -565,7 +561,7 @@
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&GSI_NODES;</native>
-    <native>--mem=&GSI_MEM;</native>
+    <native>--mem-per-cpu=&GSI_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&GSI_CONSTANT;</value>
@@ -651,7 +647,7 @@
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
-    <native>--mem=&WPS_MEM;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
@@ -708,7 +704,7 @@
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WRF_NODES;</native>
-    <native>--mem=&WRF_MEM;</native>
+    <native>--mem-per-cpu=&WRF_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
@@ -805,7 +801,7 @@
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WRF_NODES;</native>
-    <native>--mem=&WRF_MEM;</native>
+    <native>--mem-per-cpu=&WRF_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>

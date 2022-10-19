@@ -318,8 +318,7 @@ echo
 now=`date +%Y%m%d%H%M%S`
 echo "metgrid started at ${now}"
 
-#${MPIRUN} -n ${WPS_PROC} ${metgrid_exe}
-${MPIRUN} ${metgrid_exe}
+${MPIRUN} -n ${WPS_PROC} ${metgrid_exe}
 
 #####################################################
 # Run time error check

@@ -413,7 +413,6 @@ now=`date +%Y%m%d%H%M%S`
 echo "real started at ${now}"
 
 ${MPIRUN} -n ${WPS_PROC} ${real_exe}
-#${MPIRUN} ${real_exe}
 
 #####################################################
 # Run time error check

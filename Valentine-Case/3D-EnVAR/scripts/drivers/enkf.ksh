@@ -72,18 +72,18 @@ fi
 #####################################################
 # Options below are defined in cycling.xml (case insensitive)
 #
-# MAX_DOM       = INT   : GSI analyzes the domain d0${dmn} for dmn -le ${MAX_DOM}
 # N_ENS         = INT   : Max ensemble index (00 for control alone) 
+# MAX_DOM       = INT   : GSI analyzes the domain d0${dmn} for dmn -le ${MAX_DOM}
 #
 #####################################################
 
-if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \$MAX_DOM is not defined!"
+if [ ! ${N_ENS} -ge 03 ]; then
+	echo "ERROR: \$N_ENS must be specified to the number of ensemble perturbations (greater than 2)"
   exit 1
 fi
 
-if [ ! ${N_ENS} -ge 03 ]; then
-	echo "ERROR: \$N_ENS must be specified to the number of ensemble perturbations (greater than 2)"
+if [ ! ${MAX_DOM} ]; then
+  echo "ERROR: \$MAX_DOM is not defined!"
   exit 1
 fi
 
@@ -248,7 +248,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   echo "enkf started at ${now} on domain d0${dmn}"
   echo "Run EnKF"
   
-  ${MPIRUN} ${enkf_exe} < enkf.nml > stdout 2>&1
+  ${MPIRUN} -n ${GSI_PROC} ${enkf_exe} < enkf.nml > stdout 2>&1
   
   ##################################################################
   # Run time error check

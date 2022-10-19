@@ -796,8 +796,7 @@ while [ ${dmn} -le ${max_dom} ]; do
   echo
   now=`date +%Y%m%d%H%M%S`
   echo "gsi started at ${now} with ${bk_core} background on domain d0${dmn}"
-  #${MPIRUN} -n ${GSI_PROC} ${gsi_exe} > stdout_ens_00.anl.${ANL_TIME} 2>&1
-  ${MPIRUN} ${gsi_exe} > stdout_ens_00.anl.${ANL_TIME} 2>&1
+  ${MPIRUN} -n ${GSI_PROC} ${gsi_exe} > stdout_ens_00.anl.${ANL_TIME} 2>&1
 
   #####################################################
   # Run time error check

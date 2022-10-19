@@ -524,8 +524,7 @@ echo
 now=`date +%Y%m%d%H%M%S`
 echo "wrf started at ${now}"
 
-#${MPIRUN} -n ${WRF_PROC} ${wrf_exe}
-${MPIRUN} ${wrf_exe}
+${MPIRUN} -n ${WRF_PROC} ${wrf_exe}
 
 #####################################################
 # Run time error check
