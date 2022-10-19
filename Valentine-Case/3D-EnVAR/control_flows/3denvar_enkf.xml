@@ -238,7 +238,7 @@
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
-    <native>--mem-per-cpu=&REAL_MEM;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
@@ -431,7 +431,7 @@
       <native>&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WPS_NODES;</native>
-      <native>--mem-per-cpu=&REAL_MEM;</native>
+      <native>--mem-per-cpu=&WPS_MEM;</native>
       <envar>
         <name>CONSTANT</name>
         <value>&WRF_CONSTANT;</value>

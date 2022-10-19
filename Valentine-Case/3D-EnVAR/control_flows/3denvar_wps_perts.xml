@@ -333,7 +333,7 @@
         <name>START_TIME</name>
         <value><cyclestr>@Y@m@d@H</cyclestr></value>
       </envar>
-      <!-- IF using IF_ENS_COLD_START for gennerating WPS perts, BKG_START_TIME should be one cycle behind -->
+      <!-- NOTE: If hybridizing with WPS perts, BKG_START_TIME should be one cycle behind -->
       <envar>
         <name>BKG_START_TIME</name>
         <value><cyclestr offset="-&CYCLE_INTERVAL;">@Y@m@d@H</cyclestr></value>
@@ -578,7 +578,7 @@
       <name>IF_CTR_COLD_START</name>
       <value>No</value>
     </envar>
-    <!-- NOTE: use Yes below to use WPS perturbations for the ensemble -->
+    <!-- NOTE: use Yes below to use WPS perts for the ensemble hybrid background -->
     <envar>
       <name>IF_ENS_COLD_START</name>
       <value>Yes</value>
