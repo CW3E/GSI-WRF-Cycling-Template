@@ -30,8 +30,6 @@
   <!ENTITY WPS_PARALLEL_ROOT   "&SOFT_SPACE;/WRF_CODE/WRF_4.4/WPS_parallel">
   <!ENTITY WRF_ROOT            "&SOFT_SPACE;/WRF_CODE/WRF_4.4/WRF">
   <!ENTITY WRFDA_ROOT          "&SOFT_SPACE;/WRF_CODE/WRF_4.4/WRFDA">
-  <!ENTITY GSI_ROOT            "&SOFT_SPACE;/GSI_CODE/comGSIv3.7_EnKFv1.3">
-  <!ENTITY CRTM_VERSION        "2.3.0">
   <!-- END SOFTWARE SETTINGS -->
 
   <!-- CYCLING SETTINGS -->
@@ -39,27 +37,24 @@
   <!-- I.e., CYCLE_START=CYCLE_END, and a single cycle with unique forecast length is defined -->
   <!ENTITY CYCLE_START         "201902110000">
   <!ENTITY CYCLE_END           "201902110000">
-  <!ENTITY CYCLE_INTV          "01:00:00">
+  <!ENTITY CYCLE_INTERVAL      "01:00:00">
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
   <!ENTITY CTR_BKG_DATA        "GFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
-  <!ENTITY ENS_BKG_DATA        "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
   <!ENTITY WPS_CONSTANT        "&ENVIRONMENTS;/WPS_constants.ksh">
   <!-- END UNGRIB SETTINGS -->
 
   <!-- WRF SETTINGS -->
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY WRF_CTR_DOM         "2"> <!-- Max domain for control simulation -->
-  <!ENTITY WRF_ENS_DOM         "1"> <!-- Max domain for ensemble simulation -->
   <!ENTITY WRF_DOWN_DOM        "2"> <!-- Domain index to have ICs downscaled from d01 -->
   <!ENTITY FCST_LENGTH         "108">
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY CTR_DATA_INTERVAL   "03"> <!-- This setting is applied to all WRF preprocessing and WRF control run -->
-  <!ENTITY ENS_DATA_INTERVAL   "06"> <!-- This setting is applied to all WRF preprocessing and WRF ensemble runs -->
   <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->
   <!ENTITY IF_FEEDBACK         "No"> <!-- This setting defines 1- or 2-way nesting with WRF domains -->
-  <!ENTITY NIO_TASKS_PER_GROUP "0"> <!-- Set NIO_TASKS_PER_GROUP=0 for default TURN OFF QUILTING --> 
+  <!ENTITY NIO_TPG             "0"> <!-- Set NIO_TPG=0 for default TURN OFF QUILTING --> 
   <!ENTITY NIO_GROUPS          "4"> 
   <!-- END WRF SETTINGS -->
 
@@ -68,61 +63,54 @@
   <!ENTITY PROJECT             "--account=cwp130">
   <!ENTITY PARTITION           "--partition=compute"> 
   <!ENTITY MPIRUN              "mpirun">
-  <!ENTITY UNGRIB_PROC         "1">
-  <!ENTITY UNGRIB_MEM_PER_CPU  "5G">
-  <!ENTITY UNGRIB_NODESIZE     "24">
-  <!ENTITY UNGRIB_NODES        "1">
-  <!ENTITY UNGRIB_WC           "00:30:00">
-  <!ENTITY METGRID_PROC        "24">
-  <!ENTITY METGRID_MEM_PER_CPU "5G">
-  <!ENTITY METGRID_NODESIZE    "24">
-  <!ENTITY METGRID_NODES       "1">
-  <!ENTITY METGRID_WC          "00:30:00">
-  <!ENTITY REAL_PROC           "24">
-  <!ENTITY REAL_MEM_PER_CPU    "5G">
-  <!ENTITY REAL_NODESIZE       "24">
-  <!ENTITY REAL_NODES          "1">
-  <!ENTITY REAL_WC             "00:30:00">
-  <!ENTITY WRFDA_PROC          "1">
-  <!ENTITY WRFDA_MEM_PER_CPU   "5G">
-  <!ENTITY WRFDA_NODESIZE      "24">
-  <!ENTITY WRFDA_NODES         "1">
-  <!ENTITY WRFDA_WC            "00:30:00">
+  <!ENTITY WPS_PROC            "24"> <!-- WPS parallel / REAL procs, all serial hard-coded as 1 -->
+  <!ENTITY WPS_MEM             "5G">
+  <!ENTITY WPS_NODESIZE        "24">
+  <!ENTITY WPS_NODES           "1">
+  <!ENTITY WPS_WC              "00:30:00">
   <!ENTITY WRF_PROC            "384">
-  <!ENTITY WRF_MEM_PER_CPU     "2G">
+  <!ENTITY WRF_MEM             "5G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
-  <!ENTITY WRF_WC              "12:00:00">
+  <!ENTITY WRF_WC              "24:00:00">
   <!-- END JOB SETTINGS -->
 ]>
 
 <workflow realtime="F" scheduler="&SCHED;">
-  <cycledef group="day">&CYCLE_START; &CYCLE_END; &CYCLE_INTV;</cycledef>
+  <cycledef group="day">&CYCLE_START; &CYCLE_END; &CYCLE_INTERVAL;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
   
   <task name="ungrib" maxtries="3" cycledefs="day">
     <command>&DRIVERS;/ungrib.ksh</command>
-    <cores>&UNGRIB_PROC;</cores>
-    <nodesize>&UNGRIB_NODESIZE;</nodesize>
-    <walltime>&UNGRIB_WC;</walltime>
+    <cores>1</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>ungrib_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/ungrib/ungrib_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/ungrib/ungrib_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PARTITION;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
-    <native>--nodes=&UNGRIB_NODES;</native>
-    <native>--mem-per-cpu=&UNGRIB_MEM_PER_CPU;</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WPS_CONSTANT;</value>
+    </envar>
+    <envar>
+       <name>ENS_N</name>
+       <value>00</value>
     </envar>
     <envar>
       <name>BKG_DATA</name>
       <value>&CTR_BKG_DATA;</value>
     </envar>
     <envar>
-       <name>ENS_N</name>
-       <value>00</value>
+      <name>FCST_LENGTH</name>
+      <value>&FCST_LENGTH;</value>
+    </envar>
+    <envar>
+      <name>DATA_INTERVAL</name>
+      <value>&CTR_DATA_INTERVAL;</value>
     </envar>
     <envar>
       <name>START_TIME</name>
@@ -133,12 +121,8 @@
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>FCST_LENGTH</name>
-      <value>&FCST_LENGTH;</value>
-    </envar>
-    <envar>
-      <name>DATA_INTERVAL</name>
-      <value>&CTR_DATA_INTERVAL;</value>
+      <name>IF_ECMWF_ML</name>
+      <value>No</value>
     </envar>
     <envar>
       <name>WPS_ROOT</name>
@@ -152,31 +136,23 @@
       <name>INPUT_DATAROOT</name>
       <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
     </envar>
-    <envar>
-      <name>IF_ECMWF_ML</name>
-      <value>No</value>
-    </envar>
   </task>
 
   <task name="metgrid" maxtries="3" cycledefs="day">
     <command>&DRIVERS;/metgrid.ksh</command>
-    <cores>&METGRID_PROC;</cores>
-    <nodesize>&METGRID_NODESIZE;</nodesize>
-    <walltime>&METGRID_WC;</walltime>
+    <cores>&WPS_PROC;</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>metgrid_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/metgrid/metgrid_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/metgrid/metgrid_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PARTITION;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
-    <native>--nodes=&METGRID_NODES;</native>
-    <native>--mem-per-cpu=&METGRID_MEM_PER_CPU;</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WPS_CONSTANT;</value>
-    </envar>
-    <envar>
-      <name>START_TIME</name>
-      <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
        <name>ENS_N</name>
@@ -189,6 +165,10 @@
     <envar>
       <name>DATA_INTERVAL</name>
       <value>&CTR_DATA_INTERVAL;</value>
+    </envar>
+    <envar>
+      <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
       <name>MAX_DOM</name>
@@ -210,6 +190,10 @@
       <name>MPIRUN</name>
       <value>&MPIRUN;</value>
     </envar>
+    <envar>
+      <name>WPS_PROC</name>
+      <value>&WPS_PROC;</value>
+    </envar>
     <dependency> 
       <taskdep task="ungrib" state="SUCCEEDED"/>
     </dependency>
@@ -217,16 +201,16 @@
 
   <task name="real" maxtries="3" cycledefs="day">
     <command>&DRIVERS;/real.ksh</command>
-    <cores>&REAL_PROC;</cores>
-    <nodesize>&REAL_NODESIZE;</nodesize>
-    <walltime>&REAL_WC;</walltime>
+    <cores>&WPS_PROC;</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/real/real_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/real/real_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PARTITION;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
-    <native>--nodes=&REAL_NODES;</native>
-    <native>--mem-per-cpu=&REAL_MEM_PER_CPU;</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
@@ -236,8 +220,8 @@
        <value>00</value>
     </envar>
     <envar>
-      <name>START_TIME</name>
-      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      <name>BKG_DATA</name>
+      <value>&CTR_BKG_DATA;</value>
     </envar>
     <envar>
       <name>FCST_LENGTH</name>
@@ -248,8 +232,16 @@
       <value>&CTR_DATA_INTERVAL;</value>
     </envar>
     <envar>
+      <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
       <name>MAX_DOM</name>
       <value>&WRF_CTR_DOM;</value>
+    </envar>
+    <envar>
+      <name>IF_SST_UPDATE</name>
+      <value>&IF_SST_UPDATE;</value>
     </envar>
     <envar>
       <name>WRF_ROOT</name>
@@ -264,16 +256,12 @@
       <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>IF_SST_UPDATE</name>
-      <value>&IF_SST_UPDATE;</value>
-    </envar>
-    <envar>
       <name>MPIRUN</name>
       <value>&MPIRUN;</value>
     </envar>
     <envar>
-      <name>REAL_PROC</name>
-      <value>&REAL_PROC;</value>
+      <name>WPS_PROC</name>
+      <value>&WPS_PROC;</value>
     </envar>
     <dependency> 
       <taskdep task="metgrid" state="SUCCEEDED"/>
@@ -282,35 +270,35 @@
 
   <task name="wrfda_latbc" maxtries="4" cycledefs="day">
     <command>&DRIVERS;/wrfda.ksh</command>
-    <cores>&WRFDA_PROC;</cores>
-    <nodesize>&WRFDA_NODESIZE;</nodesize>
-    <walltime>&WRFDA_WC;</walltime>
+    <cores>1</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>wrfda_latbc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/wrfda/wrfda_latbc_@Y@m@d@H.log</cyclestr></join>
     <native>&PARTITION;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
-    <native>--nodes=&WRFDA_NODES;</native>
-    <native>--mem-per-cpu=&WRFDA_MEM_PER_CPU;</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
-    </envar>
-    <envar>
-      <name>IF_ENS_COLD_START</name>
-      <value>Yes</value>
     </envar>
     <envar>
       <name>N_ENS</name>
       <value>00</value>
     </envar>
     <envar>
-      <name>IF_LOWER</name>
-      <value>No</value>
+      <name>ANL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>ANAL_TIME</name>
-      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      <name>IF_ENS_COLD_START</name>
+      <value>Yes</value>
+    </envar>
+    <envar>
+      <name>IF_LOWER</name>
+      <value>No</value>
     </envar>
     <envar>
       <name>WRF_CTR_DOM</name>
@@ -318,7 +306,7 @@
     </envar>
     <envar>
       <name>WRF_ENS_DOM</name>
-      <value>&WRF_ENS_DOM;</value>
+      <value>1</value>
     </envar>
     <envar>
       <name>WRFDA_ROOT</name>
@@ -332,10 +320,6 @@
       <name>INPUT_DATAROOT</name>
       <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
     </envar>
-    <envar>
-      <name>MPIRUN</name>
-      <value>&MPIRUN;</value>
-    </envar>
     <dependency> 
       <taskdep task="real" state="SUCCEEDED"/>
     </dependency>
@@ -347,12 +331,12 @@
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>
     <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/wrf/wrf_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PARTITION;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WRF_NODES;</native>
-    <native>--mem-per-cpu=&WRF_MEM_PER_CPU;</native>
+    <native>--mem-per-cpu=&WRF_MEM;</native>
     <envar>
       <name>CONSTANT</name>
       <value>&WRF_CONSTANT;</value>
@@ -362,8 +346,8 @@
        <value>00</value>
     </envar>
     <envar>
-      <name>START_TIME</name>
-      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      <name>BKG_DATA</name>
+      <value>&CTR_BKG_DATA;</value>
     </envar>
     <envar>
       <name>FCST_LENGTH</name>
@@ -378,8 +362,12 @@
       <value>&CTR_DATA_INTERVAL;</value>
     </envar>
     <envar>
-      <name>CYCLE_INTV</name>
-      <value>&CYCLE_INTV;</value>
+      <name>CYCLE_INTERVAL</name>
+      <value>&CYCLE_INTERVAL;</value>
+    </envar>
+    <envar>
+      <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
       <name>MAX_DOM</name>
@@ -388,6 +376,18 @@
     <envar>
       <name>DOWN_DOM</name>
       <value>&WRF_DOWN_DOM;</value>
+    </envar>
+    <envar>
+      <name>IF_CYCLING</name>
+      <value>Yes</value>
+    </envar>
+    <envar>
+      <name>IF_SST_UPDATE</name>
+      <value>&IF_SST_UPDATE;</value>
+    </envar>
+    <envar>
+      <name>IF_FEEDBACK</name>
+      <value>&IF_FEEDBACK;</value>
     </envar>
     <envar>
       <name>WRF_ROOT</name>
@@ -414,20 +414,8 @@
       <value>&NIO_GROUPS;</value>
     </envar>
     <envar>
-      <name>NIO_TASKS_PER_GROUP</name>
-      <value>&NIO_TASKS_PER_GROUP;</value>
-    </envar>
-    <envar>
-      <name>IF_CYCLING</name>
-      <value>No</value>
-    </envar>
-    <envar>
-      <name>IF_SST_UPDATE</name>
-      <value>&IF_SST_UPDATE;</value>
-    </envar>
-    <envar>
-      <name>IF_FEEDBACK</name>
-      <value>&IF_FEEDBACK;</value>
+      <name>NIO_TPG</name>
+      <value>&NIO_TPG;</value>
     </envar>
     <dependency> 
       <taskdep task="wrfda_latbc" state="SUCCEEDED"/>
