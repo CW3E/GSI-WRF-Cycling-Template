@@ -36,26 +36,40 @@ import os
 import copy
 
 ##################################################################################
-# file paths
-start_date_1 = '2019021400' 
-#start_date_2 = '2019021400' 
-start_date_2 = 'era5'
-f_in_path_1 = './processed_numpy/' + start_date_1
-#f_in_path_2 = './processed_numpy/' + start_date_2
-f_in_path_2 = './processed_numpy/era5'
-f_out_path = './processed_numpy/ivt_diff_plots'
-os.system('mkdir -p ' + f_out_path)
+# set file paths
 
-# date for files
+# path to project 
+PROJ_DIR = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\
+                   'GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
+
+# input / save file directory path
+DATA_ROOT = PROJ_DIR + '/data/analysis/deterministic_forecast'
+
+# data params
+START_DATE_1 = '2019021400' 
+#START_DATE_2 = '2019021400' 
+START_DATE_2 = 'era5'
+
+# define the IO paths based on params
+F_IN_PATH_1 = DATA_ROOT + '/processed_numpy/' + START_DATE_1
+#F_IN_PATH_2 = DATA_ROOT + '/processed_numpy/' + START_DATE_2
+F_IN_PATH_2 = DATA_ROOT + '/processed_numpy/era5'
+F_OUT_PATH = DATA_ROOT + '/processed_numpy/ivt_diff_plots'
+
+# valid date for data
 date = '2019-02-14_00:00:00'
 
+##################################################################################
+# create the output path directory if it doesn't exist
+os.system('mkdir -p ' + F_OUT_PATH)
+
 # load data file 1 which is used as the reference data
-f_1 = open(f_in_path_1 + '/start_' + start_date_1 + '_forecast_' + date + '.txt', 'rb')
+f_1 = open(F_IN_PATH_1 + '/start_' + START_DATE_1 + '_forecast_' + date + '.txt', 'rb')
 data = pickle.load(f_1)
 f_1.close()
 
 # load data file 2 which we compute divergence with
-f_2 = open(f_in_path_2 + '/start_' + start_date_2 + '_forecast_' + date + '.txt', 'rb')
+f_2 = open(F_IN_PATH_2 + '/start_' + START_DATE_2 + '_forecast_' + date + '.txt', 'rb')
 data_diff = pickle.load(f_2)
 f_2.close()
 
@@ -191,8 +205,8 @@ ax1.set_ylim(data['d01']['y_lim'])
 ax1.gridlines(color='black', linestyle='dotted')
 
 # make title and save figure
-d1 = copy.copy(start_date_1) 
-#d2 = copy.copy(start_date_2)
+d1 = copy.copy(START_DATE_1) 
+#d2 = copy.copy(START_DATE_2)
 
 d1 = d1[:4] + ':' + d1[4:6] + ':' + d1[6:8] + '_' + d1[8:] + ':00:00'
 #d2 = d2[:4] + ':' + d2[4:6] + ':' + d2[6:8] + '_' + d2[8:] + ':00:00'
@@ -202,5 +216,5 @@ title1 = 'ivtm - ' + date
 title2 = 'fzh ' + d1 + ' minus fzh ' + d2
 plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=22)
 plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=22)
-plt.savefig(f_out_path + '/' + date + '_ivtm_diff_plot_fzh1_' + d1 + '_fzh2_' + d2 + '.png')
+plt.savefig(F_OUT_PATH + '/' + date + '_ivtm_diff_plot_fzh1_' + d1 + '_fzh2_' + d2 + '.png')
 plt.show()

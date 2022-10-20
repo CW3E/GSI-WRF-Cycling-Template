@@ -35,8 +35,8 @@
   <!-- CYCLING SETTINGS -->
   <!-- Forecasts with same end-time but different start time are performed as unique workflows currently -->
   <!-- I.e., CYCLE_START=CYCLE_END, and a single cycle with unique forecast length is defined -->
-  <!ENTITY CYCLE_START         "201902110000">
-  <!ENTITY CYCLE_END           "201902110000">
+  <!ENTITY CYCLE_START         "201902140000">
+  <!ENTITY CYCLE_END           "201902140000">
   <!ENTITY CYCLE_INTERVAL      "01:00:00">
   <!-- END CYCLING SETTINGS -->
 
@@ -49,7 +49,7 @@
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
   <!ENTITY WRF_CTR_DOM         "2"> <!-- Max domain for control simulation -->
   <!ENTITY WRF_DOWN_DOM        "2"> <!-- Domain index to have ICs downscaled from d01 -->
-  <!ENTITY FCST_LENGTH         "108">
+  <!ENTITY FCST_LENGTH         "03">
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY CTR_DATA_INTERVAL   "03"> <!-- This setting is applied to all WRF preprocessing and WRF control run -->
   <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->
@@ -72,7 +72,7 @@
   <!ENTITY WRF_MEM             "5G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
-  <!ENTITY WRF_WC              "24:00:00">
+  <!ENTITY WRF_WC              "01:00:00">
   <!-- END JOB SETTINGS -->
 ]>
 
