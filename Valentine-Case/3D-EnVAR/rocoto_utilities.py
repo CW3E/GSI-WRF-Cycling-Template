@@ -27,7 +27,7 @@ pathnam = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\
            'GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
 
 # name of .xml workflow WITHOUT the extension
-wrknam = 'deterministic_forecast'
+wrknam = '3denvar_downscale'
 
 # path to database
 outnam = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\

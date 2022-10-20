@@ -358,7 +358,7 @@
       </dependency>
     </task>
 
-    <task name="metgrid_ens_#ENS_N#" maxtries="3" cycledefs="q_daily">
+    <task name="metgrid_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/metgrid.ksh</command>
       <cores>&WPS_PROC;</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>
@@ -419,7 +419,7 @@
       </dependency>
     </task>
 
-    <task name="real_ens_#ENS_N#" maxtries="3" cycledefs="q_daily">
+    <task name="real_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/real.ksh</command>
       <cores>&WPS_PROC;</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>
