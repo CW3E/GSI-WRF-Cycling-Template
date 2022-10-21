@@ -50,31 +50,38 @@ import pandas as pd
 import pickle
 import datetime
 from matplotlib import pyplot as plt
+from gsi_py_utilities import USR_HME
 
 ##################################################################################
-# define script parameters
-PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
-DATA_ROOT = PROJ_ROOT + '/data/analysis'
+# SET GLOBAL PARAMETERS 
+
+# define control flow to analyze 
+CTR_FLW = '3denvar_downscale'
 
 # starting date and zero hour of data
 START_DATE = '2019-02-08T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-15T06:00:00'
+END_DATE = '2019-02-08T06:00:00'
 
 # define domain to plot
 DOM = 1
 
-# define the input and output names
-IN_PATH = DATA_ROOT + '/GSI_cost_grad_anl_' + START_DATE + '_to_' +\
-          END_DATE + '.txt'
+##################################################################################
+# begin plotting
 
-OUT_PATH = DATA_ROOT + '/GSI_cost_grad_anl_d0' + str(DOM) + '_' +\
+# define derived data paths
+proj_root = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
+data_root = proj_root + '/data/analysis' + '/' + CTR_FLW
+in_path = data_root + '/GSI_cost_grad_anl_' + START_DATE + '_to_' +\
+          END_DATE + '.bin'
+
+out_path = data_root + '/GSI_cost_grad_anl_d0' + str(DOM) + '_' +\
            START_DATE + '_to_' + END_DATE + '.png'
 
-##################################################################################
+
 # load and plot data
-f = open(IN_PATH, 'rb')
+f = open(in_path, 'rb')
 data = pickle.load(f)
 f.close()
 
@@ -144,6 +151,5 @@ ax1.tick_params(
 fig.legend(line_list, line_labs, fontsize=22, ncol=4, loc='upper center')
 
 # save figure and display
-plt.savefig(OUT_PATH)
+plt.savefig(out_path)
 plt.show()
-

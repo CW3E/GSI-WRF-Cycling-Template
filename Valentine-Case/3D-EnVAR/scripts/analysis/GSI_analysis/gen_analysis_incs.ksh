@@ -39,8 +39,8 @@
 #####################################################
 # Preamble
 #####################################################
-# verbose for debugging
-set -x
+# uncoment to make verbose for debugging
+#set -x
 
 # define date range and increments
 START_TIME=2019020800

@@ -19,7 +19,7 @@
 # imports
 import os
 import time
-from rocoto_utilities import run_rocotorun, run_rocotoboot
+from rocoto_utilities import run_rocotorun
 
 ##################################################################################
 # initiate rocoto

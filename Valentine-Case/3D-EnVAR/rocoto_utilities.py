@@ -1,5 +1,10 @@
 ##################################################################################
+# Description
+##################################################################################
+#
+##################################################################################
 # License Statement:
+##################################################################################
 #
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
 # 
@@ -16,46 +21,73 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports
+# Imports
+##################################################################################
 import os
 
 ##################################################################################
-# utility global variables
+# SET GLOBAL PARAMETERS
+##################################################################################
+# directory for git clone
+USR_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
-# path to .xml workflow
-pathnam = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\
-           'GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
+# project directory
+PRJ_DIR = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
 
 # name of .xml workflow WITHOUT the extension
-wrknam = '3denvar_downscale'
-
-# path to database
-outnam = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\
-         'GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data'
+#CTR_FLW = '3denvar_wps_perts'
+#CTR_FLW = '3denvar_enkf'
+#CTR_FLW = '3denvar_downscale'
+#CTR_FLW = 'ensemble_forecast'
+CTR_FLW = 'deterministic_forecast'
 
 # path to rocoto binary root directory
-pathroc = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/rocoto'
+PATHROC = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/rocoto'
 
 ##################################################################################
-# rocoto utility commands
+# Derived paths
+##################################################################################
+# path to .xml control flows 
+flw_dir =  PRJ_DIR + '/control_flows'
+
+# path to database
+dbs_dir = PRJ_DIR + '/data'
+
+##################################################################################
+# Rocoto utility commands
+##################################################################################
+# The following commands are wrappers for the native rocoto functions described
+# in the documentation http://christopherwharrop.github.io/rocoto/
 
 def run_rocotorun():
-    run_cmd = pathroc + '/bin/rocotorun -w ' +\
-              pathnam + '/control_flows/' + wrknam + '.xml' +\
-              ' -d ' + outnam + '/workflow/' + wrknam + '.store -v 10'  
+    cmd = PATHROC + '/bin/rocotorun -w ' +\
+          flw_dir + '/' + CTR_FLW + '.xml' +\
+          ' -d ' + dbs_dir + '/workflow/' + CTR_FLW + '.store -v 10'  
 
-    os.system(run_cmd)
-
-def run_rocotoboot(cycle, task_list):
-    boot_cmd = pathroc + '/bin/rocotoboot -w ' +\
-               pathnam + '/control_flows/' + wrknam + '.xml' +\
-               ' -d ' + outnam + '/workflow/' + wrknam + '.store' +\
-               ' -c ' + cycle + ' -t ' + task_list
-
-    os.system(boot_cmd) 
+    os.system(cmd)
 
 def run_rocotostat():
-    stat_cmd = pathroc + '/bin/rocotostat -w ' +\
-               pathnam + '/control_flows/' + wrknam + '.xml' +\
-               ' -d ' + outnam + '/workflow/' + wrknam + '.store -c all'
-    os.system(stat_cmd) 
+    cmd = PATHROC + '/bin/rocotostat -w ' +\
+          flw_dir + '/' + CTR_FLW + '.xml' +\
+          ' -d ' + dbs_dir + '/workflow/' + CTR_FLW + '.store -c all'
+
+    os.system(cmd) 
+
+def run_rocotoboot(cycle, task_list):
+    cmd = PATHROC + '/bin/rocotoboot -w ' +\
+          flw_dir + '/' + CTR_FLW + '.xml' +\
+          ' -d ' + dbs_dir + '/workflow/' + CTR_FLW + '.store' +\
+          ' -c ' + cycle + ' -t ' + task_list
+
+    os.system(cmd) 
+
+def run_rocotorewind(cycle, task_list):
+    cmd = PATHROC + '/bin/rocotorewind -w ' +\
+          flw_dir + '/' + CTR_FLW + '.xml' +\
+          ' -d ' + dbs_dir + '/workflow/' + CTR_FLW + '.store' +\
+          ' -c ' + cycle + ' -t ' + task_list
+
+    os.system(cmd) 
+
+##################################################################################
+# end

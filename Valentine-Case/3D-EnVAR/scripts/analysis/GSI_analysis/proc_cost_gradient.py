@@ -39,27 +39,28 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports
+# Imports
+##################################################################################
 import numpy as np
 import pandas as pd
 import pickle
 import copy
 from datetime import datetime as dt
-from datetime import timedelta
+from gsi_py_utilities import USR_HME, STR_INDT, get_anls
+import os
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
+##################################################################################
 
-# set paths to I/O
-PROJ_DIR = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
-DATA_ROOT = PROJ_DIR + '/data/cycle_io'
-OUT_DIR = PROJ_DIR + '/data/analysis'
+# define control flow to analyze 
+CTR_FLW = '3denvar_downscale'
 
 # starting date and zero hour of data
 START_DATE = '2019-02-08T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-15T06:00:00'
+END_DATE = '2019-02-08T06:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 6
@@ -68,44 +69,22 @@ CYCLE_INT = 6
 MAX_DOM = 1
 
 ##################################################################################
-# UTILITY METHODS
-
-str_indt = '    '
-
-def get_anls(start_date, end_date, cycle_int):
-    # generates analysis times based on script parameters
-    anl_dates = []
-    anl_strng = []
-    delta = end_date - start_date
-    hours_range = delta.total_seconds() / 3600
-
-    if cycle_int == 0 or delta.total_seconds() == 0:
-        # for a zero cycle interval or start date equal end date, only process 
-        # the start date time directory
-        anl_dates.append(start_date)
-        anl_strng.append(start_date.strftime('%Y%m%d%H'))
-
-    else:
-        # define the analysis times over range of cycle intervals
-        cycle_steps = int(hours_range / cycle_int)
-        for i in range(cycle_steps + 1):
-            anl_date = start_date + timedelta(hours=(i * cycle_int))
-            anl_dates.append(anl_date)
-            anl_strng.append(anl_date.strftime('%Y%m%d%H'))
-
-    return zip(anl_dates, anl_strng)
-
-
-##################################################################################
 # Process data
+##################################################################################
+
+# define derived data paths
+proj_root = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
+data_root = proj_root + '/data/cycle_io' + '/' + CTR_FLW
+out_dir = proj_root + '/data/analysis' + '/' + CTR_FLW
+os.system('mkdir -p ' + out_dir)
 
 # convert to date times
 start_date = dt.fromisoformat(START_DATE)
 end_date = dt.fromisoformat(END_DATE)
 
 # define the output name
-out_path = OUT_DIR + '/GSI_cost_grad_anl_' + START_DATE +\
-           '_to_' + END_DATE + '.txt'
+out_path = out_dir + '/GSI_cost_grad_anl_' + START_DATE +\
+           '_to_' + END_DATE + '.bin'
 
 # generate the date range for the analyses
 analyses = get_anls(start_date, end_date, CYCLE_INT)
@@ -130,8 +109,8 @@ for i in range(1, MAX_DOM + 1):
     
     for (anl_date, anl_strng) in analyses:
         # open file and loop lines
-        in_path = DATA_ROOT + '/' + anl_strng + '/gsiprd/d0' + str(i) + '/fort.220'
-        print(str_indt + 'Opening file ' + in_path)
+        in_path = data_root + '/' + anl_strng + '/gsiprd/d0' + str(i) + '/fort.220'
+        print(STR_INDT + 'Opening file ' + in_path)
         f = open(in_path)
 
         for line in f:
@@ -152,7 +131,7 @@ for i in range(1, MAX_DOM + 1):
                 tmp_dict = pd.DataFrame.from_dict(tmp_dict, orient='columns')
                 exec('d0%s = pd.concat([d0%s, tmp_dict], axis=0)'%(i,i))
     
-        print(str_indt + 'Closing file ' + in_path)
+        print(STR_INDT + 'Closing file ' + in_path)
         f.close()
 
 data = {}
@@ -166,3 +145,6 @@ print('Writing out data to ' + out_path)
 f = open(out_path, 'wb')
 pickle.dump(data, f)
 f.close()
+
+##################################################################################
+# end

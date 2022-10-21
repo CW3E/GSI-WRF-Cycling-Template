@@ -1,6 +1,13 @@
 ##################################################################################
 # Description
 ##################################################################################
+# This script is designed to ingest a specific  wrfout output file and to
+# interpolate fields onto specified pressure levels, organized into heirarchical
+# dictionaries containing numpy arrays. Assuming completely heirarchical nesting
+# of domains, this provides the x-y grid coordinates for nested domains relative
+# to the parent domain, and provides bounds of the nest on that grid. This script
+# is then designed for simple numpy based plotting, to be extended further in
+# later versions.
 #
 ##################################################################################
 # License Statement
@@ -21,7 +28,8 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports / exports
+# Imports
+##################################################################################
 from netCDF4 import Dataset
 import numpy as np
 import pickle
@@ -31,50 +39,53 @@ from wrf import (
         cartopy_ylim, latlon_coords, ll_to_xy,
         )
 from wrf_py_utilities import (
-        process_D3_vars, process_D3_raw_vars, comp_IVT_IWV, str_indt,
+        process_D3_vars, process_D3_raw_vars, comp_IVT_IWV, STR_INDT, PROJ_ROOT,
         )
 
 ##################################################################################
-# set data processing parameters
-
-START_DATE = '2019021400'
-
-# path to project 
-PROJ_DIR = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/' +\
-                   'GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
-
-# input / save file directory path
-INPUT_DATA_ROOT = PROJ_DIR + '/data/forecast_io/deterministic_forecast'
-OUTPUT_DATA_ROOT = PROJ_DIR + '/data/analysis/deterministic_forecast'
-
+# SET GLOBAL PARAMETERS
 ##################################################################################
-# process data
-f_in_path = INPUT_DATA_ROOT + '/' + START_DATE + '/wrfprd/ens_00'
-f_out_path = OUTPUT_DATA_ROOT + '/processed_numpy/' + START_DATE
-os.system('mkdir -p ' + f_out_path)
+# define control flow to analyze 
+CTR_FLW = 'deterministic_forecast'
 
-# pressure levels to interpolate to and date of inputs / outputs
-pls = [250, 500, 700, 850, 925]
-date = '2019-02-14_00:00:00'
+# start date time of WRF forecast in YYYYMMDDHH
+START_DT = '2019021400'
+
+# pressure levels to interpolate to
+PLVS = [250, 500, 700, 850, 925]
+
+# analysis date time of inputs / outputs 
+ANL_DT = '2019-02-14_00:00:00'
 
 # domains to be processed, this assumes completely heirarchical nesting
 MAX_DOM = 2
 
 # 3D variables to extract and units
-in_vars = ['z',  'ua', 'va', 'temp', 'rh', 'wspd_wdir']
-units =   ['dm', 'kt', 'kt', 'K',    '',   'kts']
+IN_VARS = ['z',  'ua', 'va', 'temp', 'rh', 'wspd_wdir']
+UNITS =   ['dm', 'kt', 'kt', 'K',    '',   'kts']
 
 # 3D pressure-level interpolated variables to save
-out_vars = ['geop', 'u', 'v', 'temp', 'rh', 'wspd']
+OUT_VARS = ['geop', 'u', 'v', 'temp', 'rh', 'wspd']
 
 ##################################################################################
-# process data
+# Process data
+##################################################################################
+# define data I/O directories as derived paths
+data_root = PROJ_ROOT + '/data/forecast_io/' + CTR_FLW
+out_dir = PROJ_ROOT + '/data/analysis/' + CTR_FLW
+f_in_path = data_root + '/' + START_DT + '/wrfprd/ens_00'
+f_out_path = out_dir + '/processed_numpy/' + START_DT
+os.system('mkdir -p ' + f_out_path)
 
 # define all domains
 domains = []
 
 # define the total number of vars to process
-n_vars = len(in_vars)
+n_vars = len(IN_VARS)
+
+print('Begin analysis, processing variables:')
+for i in range(n_vars):
+    print(IN_VARS[i] + ' in units ' + UNITS[i] + ' to ' OUT_VARS[i])
 
 for i in range(1, MAX_DOM + 1):
     exec('domains.append(\'d0%i\')'%i)
@@ -90,12 +101,16 @@ yys = []
 
 for i in range(MAX_DOM):
     # Open the NetCDF files
-    nc_files.append(Dataset(f_in_path + '/wrfout_' + domains[i] + '_' + date))
+    fname = f_in_path + '/wrfout_' + domains[i] + '_' + ANL_DT
+    print('Opening file ' + fname)
+    nc_files.append(Dataset(fname))
 
     # extract the pressures in domain
+    print('Extracting pressure levels')
     p_ds.append(getvar(nc_files[i], 'pressure'))
 
     # Get the latitude and longitude points of domain
+    print('Extracting lat and lon values for grid')
     lat, lon = latlon_coords(p_ds[i])
     lats.append(to_np(lat))
     lons.append(to_np(lon))
@@ -107,6 +122,7 @@ for i in range(MAX_DOM):
     y_lims.append(y_lim)
     
     # grid the points in x / y ON THE PARENT DOMAIN 
+    print('Extracting x / y grid values corresponding to parent domain')
     xx, yy = ll_to_xy(nc_files[0], lat, lon, meta=False)  
     xxs.append(xx)
     yys.append(yy)
@@ -117,10 +133,11 @@ cart_proj = get_cartopy(p_ds[0])
 # create storage for data
 data = {
         'cart_proj' : cart_proj,
-        'date' : date,
+        'date' : ANL_DT,
        }
 
 for i in range(MAX_DOM):
+    print('Begin interpolation of data domain d0' + str(i))
     # add grid data under domain key
     data[domains[i]] = { 
                         'xx' : xxs[i],
@@ -132,18 +149,18 @@ for i in range(MAX_DOM):
                        }
 
     # interpolate 3D fields to pressure levels and add to data dict
-    for pl in pls:
+    for pl in PLVS:
         key = 'pl_' + str(pl)
         data[domains[i]][key] = {}
 
         for k in range(n_vars):
             pl_var = process_D3_vars(nc_files[i], p_ds[i],
-                                     pl, in_vars[k], units[k])
+                                     pl, IN_VARS[k], UNITS[k])
 
-            data[domains[i]][key][out_vars[k]] = to_np(pl_var) 
+            data[domains[i]][key][OUT_VARS[k]] = to_np(pl_var) 
     
     # extract / compute 2D fields and add to data dict
-    data[domains[i]]['slp'] = to_np(getvar(nc_files[i], 'slp', units='hPa'))
+    data[domains[i]]['slp'] = to_np(getvar(nc_files[i], 'slp', UNITS='hPa'))
     ivtm, ivtu, ivtv, iwv = comp_IVT_IWV(nc_files[i], p_ds[i])
     data[domains[i]]['ivtm'] = to_np(ivtm) 
     data[domains[i]]['ivtu'] = to_np(ivtu)
@@ -173,7 +190,7 @@ for i in range(MAX_DOM):
         # append indices for the values of the parent domain lying in the nest
         data[domains[i]]['indx'] = indx,
 
-f = open(f_out_path + '/start_' + START_DATE + '_forecast_' + date + '.txt', 'wb')
+f = open(f_out_path + '/start_' + START_DT + '_forecast_' + ANL_DT + '.bin', 'wb')
 pickle.dump(data,f)
 f.close()
 

@@ -29,6 +29,7 @@
 # 
 ##################################################################################
 # imports
+##################################################################################
 from netCDF4 import Dataset
 import sys
 import time
@@ -40,13 +41,48 @@ from wrf import (
                 )
 
 ##################################################################################
-# utility global variables
-str_indt = "    "
+# SET GLOBAL PARAMETERS 
+##################################################################################
+
+# standard string indentation
+STR_INDT = "    "
+
+# define location of git clone 
+USR_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
+
+# define project space
+PROJ_ROOT = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
 
 ##################################################################################
-# utility functions
+# UTILITY METHODS
+##################################################################################
+# generates analysis times based on script parameters
 
+def get_anls(start_date, end_date, cycle_int):
+    anl_dates = []
+    anl_strng = []
+    delta = end_date - start_date
+    hours_range = delta.total_seconds() / 3600
+
+    if cycle_int == 0 or delta.total_seconds() == 0:
+        # for a zero cycle interval or start date equal end date, only process 
+        # the start date time directory
+        anl_dates.append(start_date)
+        anl_strng.append(start_date.strftime('%Y%m%d%H'))
+
+    else:
+        # define the analysis times over range of cycle intervals
+        cycle_steps = int(hours_range / cycle_int)
+        for i in range(cycle_steps + 1):
+            anl_date = start_date + timedelta(hours=(i * cycle_int))
+            anl_dates.append(anl_date)
+            anl_strng.append(anl_date.strftime('%Y%m%d%H'))
+
+    return zip(anl_dates, anl_strng)
+
+##################################################################################
 # gets and interpolates variable to pressure level with specified units available 
+
 def process_D3_vars(ds, p_ds, pl, var, unit, cache=None):
     # uses getvar utility from WRF-py
     if unit:
@@ -59,7 +95,9 @@ def process_D3_vars(ds, p_ds, pl, var, unit, cache=None):
 
     return int_var
 
+##################################################################################
 # extracts and interpolates variable to pressure level
+
 def process_D3_raw_vars(ds, p_ds, pl, var, cache=None):
     # uses extract_vars utility from WRF-py
     eta_var = extract_vars(ds, ALL_TIMES, var, cache=cache)[var]
@@ -67,7 +105,9 @@ def process_D3_raw_vars(ds, p_ds, pl, var, cache=None):
 
     return int_var
 
+##################################################################################
 # if data is staggered in any dimension, interpolate to unstaggered grid
+
 def unstaggered_grid(xarr):
     for dim in xarr.dims:
         if dim.endswith('_stag'):
@@ -81,7 +121,9 @@ def unstaggered_grid(xarr):
 
     return xarr
 
+##################################################################################
 # compute IVT / IWV
+
 def comp_IVT_IWV(nc_file, pres):
     # define constant c
     c = 100/9.8
@@ -138,5 +180,3 @@ def comp_IVT_IWV(nc_file, pres):
 
 ##################################################################################
 # end
-
-

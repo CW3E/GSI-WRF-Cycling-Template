@@ -43,6 +43,7 @@
 # 
 ##################################################################################
 # imports
+##################################################################################
 import numpy as np
 import pandas as pd
 import pickle
@@ -50,14 +51,13 @@ import copy
 import glob
 from datetime import datetime as dt
 from datetime import timedelta
+from wrf_py_utilities import STR_INDT, get_anls, PROJ_ROOT
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
-
-# set paths to I/O
-PROJ_DIR = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
-DATA_ROOT = PROJ_DIR + '/data/cycle_io'
-OUT_DIR = PROJ_DIR + '/data/analysis'
+##################################################################################
+# define control flow to analyze 
+CTR_FLW = '3denvar_downscale'
 
 # starting date and zero hour of data
 START_DATE = '2019-02-07T18:00:00'
@@ -72,43 +72,19 @@ CYCLE_INT = 6
 MAX_DOM = 1
 
 ##################################################################################
-# UTILITY METHODS
-
-str_indt = '    '
-
-def get_anls(start_date, end_date, cycle_int):
-    # generates analysis times based on script parameters
-    anl_dates = []
-    anl_strng = []
-    delta = end_date - start_date
-    hours_range = delta.total_seconds() / 3600
-
-    if cycle_int == 0 or delta.total_seconds() == 0:
-        # for a zero cycle interval or start date equal end date, only process 
-        # the start date time directory
-        anl_dates.append(start_date)
-        anl_strng.append(start_date.strftime('%Y%m%d%H'))
-
-    else:
-        # define the analysis times over range of cycle intervals
-        cycle_steps = int(hours_range / cycle_int)
-        for i in range(cycle_steps + 1):
-            anl_date = start_date + timedelta(hours=(i * cycle_int))
-            anl_dates.append(anl_date)
-            anl_strng.append(anl_date.strftime('%Y%m%d%H'))
-
-    return zip(anl_dates, anl_strng)
-
-##################################################################################
 # Process data
+##################################################################################
+# define derived data paths 
+data_root = PROJ_ROOT + '/data/cycle_io/' + CTR_FLW
+out_dir = PROJ_ROOT + '/data/analysis/' + CTR_FLW
 
 # convert to date times
 start_date = dt.fromisoformat(START_DATE)
 end_date = dt.fromisoformat(END_DATE)
 
 # define the output name
-out_path = OUT_DIR + '/WRF_dps_dmu_dt_' + START_DATE +\
-           '_to_' + END_DATE + '.txt'
+out_path = out_dir + '/WRF_dps_dmu_dt_' + START_DATE +\
+           '_to_' + END_DATE + '.bin'
 
 # generate the date range for the analyses
 analyses = get_anls(start_date, end_date, CYCLE_INT)
@@ -135,12 +111,12 @@ for i in range(1, MAX_DOM + 1):
 print('Processing dates ' + START_DATE + ' to ' + END_DATE)
 for (anl_date, anl_strng) in analyses:
     # define the rsl.error.0000 file to open based on the analysis date
-    in_path = DATA_ROOT + '/' + anl_strng + '/wrfprd/ens_00/rsl.wrf.*'
+    in_path = data_root + '/' + anl_strng + '/wrfprd/ens_00/rsl.wrf.*'
 
     # find the lexicographically last rsl directory based on run times
     in_path = sorted(glob.glob(in_path))[-1]
     in_path = in_path + '/rsl.error.0000'
-    print(str_indt + 'Opening file ' + in_path)
+    print(STR_INDT + 'Opening file ' + in_path)
 
     # open file and loop lines
     f = open(in_path)
@@ -153,7 +129,7 @@ for (anl_date, anl_strng) in analyses:
                 t = split_line[6]
                 date, time = t.split('_')
                 date_time = pd.to_datetime(date + ' ' + time)
-                print(2 * str_indt + str(date_time))
+                print(2 * STR_INDT + str(date_time))
             except:
                 pass
     
@@ -186,7 +162,7 @@ for (anl_date, anl_strng) in analyses:
                     except:
                         pass
     
-    print(str_indt + 'Closing file ' + in_path)
+    print(STR_INDT + 'Closing file ' + in_path)
     f.close()
 data = {}
 
@@ -199,3 +175,6 @@ print('Writing out data to ' + out_path)
 f = open(out_path, 'wb')
 pickle.dump(data, f)
 f.close()
+
+##################################################################################
+# end
