@@ -28,58 +28,16 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports
+# Imports
 ##################################################################################
 from netCDF4 import Dataset
-import sys
-import time
-import math
-import glob
-import numpy as np
+import cartopy
 from wrf import (
                  getvar, interplevel, extract_vars, ALL_TIMES,
                 )
 
 ##################################################################################
-# SET GLOBAL PARAMETERS 
-##################################################################################
-
-# standard string indentation
-STR_INDT = "    "
-
-# define location of git clone 
-USR_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
-
-# define project space
-PROJ_ROOT = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
-
-##################################################################################
 # UTILITY METHODS
-##################################################################################
-# generates analysis times based on script parameters
-
-def get_anls(start_date, end_date, cycle_int):
-    anl_dates = []
-    anl_strng = []
-    delta = end_date - start_date
-    hours_range = delta.total_seconds() / 3600
-
-    if cycle_int == 0 or delta.total_seconds() == 0:
-        # for a zero cycle interval or start date equal end date, only process 
-        # the start date time directory
-        anl_dates.append(start_date)
-        anl_strng.append(start_date.strftime('%Y%m%d%H'))
-
-    else:
-        # define the analysis times over range of cycle intervals
-        cycle_steps = int(hours_range / cycle_int)
-        for i in range(cycle_steps + 1):
-            anl_date = start_date + timedelta(hours=(i * cycle_int))
-            anl_dates.append(anl_date)
-            anl_strng.append(anl_date.strftime('%Y%m%d%H'))
-
-    return zip(anl_dates, anl_strng)
-
 ##################################################################################
 # gets and interpolates variable to pressure level with specified units available 
 

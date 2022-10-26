@@ -1,10 +1,8 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This module contains utility methods for using GSI-py diagnostics provided in
-# this repository. These methods are imported to use in the companion
-# data processing scripts in this repository, but can also be used standalone
-# for other data analysis purposes.
+# This module contains utility methods for plotting and data analysis
+# to be used separately from the wrf_py environment.
 #
 ##################################################################################
 # License Statement
@@ -33,8 +31,9 @@ from datetime import timedelta
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
+
 # standard string indentation
-STR_INDT = '    '
+STR_INDT = "    "
 
 # define location of git clone 
 USR_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
@@ -45,9 +44,9 @@ PROJ_ROOT = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
 ##################################################################################
 # UTILITY METHODS
 ##################################################################################
+# generates analysis times based on script parameters
 
 def get_anls(start_date, end_date, cycle_int):
-    # generates analysis times based on script parameters
     anl_dates = []
     anl_strng = []
     delta = end_date - start_date

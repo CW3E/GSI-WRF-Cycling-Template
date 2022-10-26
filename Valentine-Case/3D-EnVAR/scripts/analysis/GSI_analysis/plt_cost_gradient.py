@@ -44,17 +44,21 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports and exports
+# Imports
+##################################################################################
 import numpy as np
 import pandas as pd
 import pickle
 import datetime
+import matplotlib
+# use this setting on COMET / Skyriver for x forwarding
+matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
-from gsi_py_utilities import USR_HME
+from gsi_py_utilities import PROJ_ROOT
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
-
+##################################################################################
 # define control flow to analyze 
 CTR_FLW = '3denvar_downscale'
 
@@ -68,11 +72,10 @@ END_DATE = '2019-02-08T06:00:00'
 DOM = 1
 
 ##################################################################################
-# begin plotting
-
+# Begin plotting
+##################################################################################
 # define derived data paths
-proj_root = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
-data_root = proj_root + '/data/analysis' + '/' + CTR_FLW
+data_root = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW
 in_path = data_root + '/GSI_cost_grad_anl_' + START_DATE + '_to_' +\
           END_DATE + '.bin'
 
@@ -153,3 +156,6 @@ fig.legend(line_list, line_labs, fontsize=22, ncol=4, loc='upper center')
 # save figure and display
 plt.savefig(out_path)
 plt.show()
+
+##################################################################################
+# end

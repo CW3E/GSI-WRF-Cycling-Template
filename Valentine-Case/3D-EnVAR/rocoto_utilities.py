@@ -42,7 +42,7 @@ PRJ_DIR = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
 CTR_FLW = 'deterministic_forecast'
 
 # path to rocoto binary root directory
-PATHROC = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/rocoto'
+PATHROC = USR_HME + '/rocoto'
 
 ##################################################################################
 # Derived paths

@@ -54,13 +54,12 @@ import pickle
 import copy
 import glob
 from datetime import datetime as dt
-from gsi_py_utilities import USR_HME, STR_INDT, get_anls
+from gsi_py_utilities import PROJ_ROOT, STR_INDT, get_anls
 import os
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
-
 # define control flow to analyze 
 CTR_FLW = '3denvar_downscale'
 
@@ -82,11 +81,9 @@ FORT='201'
 ##################################################################################
 # Process data
 ##################################################################################
-
 # define derived data paths
-proj_root = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
-data_root = proj_root + '/data/cycle_io' + '/' + CTR_FLW
-out_dir = proj_root + '/data/analysis' + '/' + CTR_FLW
+data_root = PROJ_ROOT + '/data/cycle_io' + '/' + CTR_FLW
+out_dir = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW
 os.system('mkdir -p ' + out_dir)
 
 # convert to date times

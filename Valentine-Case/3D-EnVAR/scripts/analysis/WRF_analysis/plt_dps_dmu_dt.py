@@ -46,32 +46,43 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports and exports
+# Imports
+##################################################################################
 import numpy as np
 import pandas as pd
 import pickle
 import datetime as dt
+import matplotlib
+# use this setting on COMET / Skyriver for x forwarding
+matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
+from py_plt_utilities import PROJ_ROOT
 
 ##################################################################################
-# define script parameters
-# set paths to I/O
-PROJ_DIR = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
-DATA_ROOT = PROJ_DIR + '/data/analysis'
+# SET GLOBAL PARAMETERS 
+##################################################################################
+# define control flow to analyze 
+CTR_FLW = '3denvar_downscale'
 
 # starting date and zero hour of data
 START_DATE = '2019-02-07T18:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-15T06:00:00'
+END_DATE = '2019-02-08T06:00:00'
 
-IN_PATH = DATA_ROOT + '/WRF_dps_dmu_dt_' + START_DATE + '_to_' + END_DATE + '.txt'
-OUT_PATH = DATA_ROOT + '/WRF_spin_up_' + START_DATE + '_to_' + END_DATE + '.png'
+# define domain to plot
 DOM = 1
 
 ##################################################################################
+# Begin plotting
+##################################################################################
+# define derived data paths 
+data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW
+in_path = data_root + '/WRF_dps_dmu_dt_' + START_DATE + '_to_' + END_DATE + '.bin'
+out_path = data_root + '/WRF_spin_up_' + START_DATE + '_to_' + END_DATE + '.png'
+
 # load and plot data
-f = open(IN_PATH, 'rb')
+f = open(in_path, 'rb')
 tmp = pickle.load(f)
 f.close()
 
@@ -110,8 +121,6 @@ for i in range(steps):
     if x_1 < x_0:
         tic_mark.append(i)
         date = str(dates[i]).split(':')[0]
-        split_date = date.split()
-        date = split_date[0] + 'T' + split_date[1]
         tic_labs.append(date)
 
 ##################################################################################
@@ -137,5 +146,8 @@ ax1.set_xticks(tic_mark)
 ax0.set_xticks(tic_mark, labels=tic_labs, rotation=45, ha='right')
 
 # save figure and display
-plt.savefig(OUT_PATH)
+plt.savefig(out_path)
 plt.show()
+
+##################################################################################
+# end

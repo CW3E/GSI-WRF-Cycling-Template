@@ -42,7 +42,7 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports
+# Imports
 ##################################################################################
 import numpy as np
 import pandas as pd
@@ -51,7 +51,7 @@ import copy
 import glob
 from datetime import datetime as dt
 from datetime import timedelta
-from wrf_py_utilities import STR_INDT, get_anls, PROJ_ROOT
+from py_plt_utilities import STR_INDT, get_anls, PROJ_ROOT
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -63,7 +63,7 @@ CTR_FLW = '3denvar_downscale'
 START_DATE = '2019-02-07T18:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-15T06:00:00'
+END_DATE = '2019-02-08T06:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 6

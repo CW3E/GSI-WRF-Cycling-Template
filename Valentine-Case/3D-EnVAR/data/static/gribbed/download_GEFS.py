@@ -1,5 +1,19 @@
 ##################################################################################
+# Description
+##################################################################################
+# This script is to automate downloading GEFS data for WRF initialization
+# over arbitrary date ranges hosted by AWS, without using a sign-in to an
+# account.  This data is hosted on the AWS open data service sponsored by NOAA at
+#
+#     https://registry.opendata.aws/noaa-gefs/
+#
+# Dates are specified in iso format in the global parameters for the script below.
+# Other options specify the frequency of forecast outputs, time between zero hours
+# and the max forecast hour for any zero hour.
+#
+##################################################################################
 # License Statement:
+##################################################################################
 #
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
 # 
@@ -16,7 +30,8 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports
+# Imports
+##################################################################################
 import os, sys, ssl
 import calendar
 from datetime import datetime as dt
@@ -24,12 +39,12 @@ from datetime import timedelta
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
-
+##################################################################################
 # starting date and zero hour of data
-START_DATE = '2019-02-11T00:00:00'
+START_DATE = '2019-02-07T18:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-12T18:00:00'
+END_DATE = '2019-02-08T06:00:00'
 
 # interval of forcast data outputs after zero hour
 FCST_INT = 6
@@ -41,14 +56,16 @@ CYCLE_INT = 6
 MAX_FCST = 108
 
 # root directory where date stamped sub-directories will collect data downloads
-PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
-DATA_ROOT = PROJ_ROOT + '/data/static/gribbed/GEFS'
+PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
+DATA_ROOT = PROJ_ROOT +\
+    '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVARdata/static/gribbed/GEFS'
 
 
 ##################################################################################
 # UTILITY METHODS
+##################################################################################
 
-str_indt = '    '
+STR_INDT = '    '
 
 def get_reqs(start_date, end_date, fcst_int, cycle_int, max_fcst):
     # generates requests based on script parameters
@@ -80,9 +97,9 @@ def get_reqs(start_date, end_date, fcst_int, cycle_int, max_fcst):
 
 
 ##################################################################################
-# download data
-
-## define date range to get data
+# Download data
+##################################################################################
+# define date range to get data
 start_date = dt.fromisoformat(START_DATE)
 end_date = dt.fromisoformat(END_DATE)
 
@@ -99,7 +116,7 @@ for date in date_reqs:
     os.system('mkdir -p ' + down_dir)
 
     for HH in fcst_reqs:
-        print(str_indt + 'Forecast Hour ' + HH + '\n')
+        print(STR_INDT + 'Forecast Hour ' + HH + '\n')
 
         # download primary variables
         cmda = 'aws s3 cp --no-sign-request ' +\
@@ -108,8 +125,8 @@ for date in date_reqs:
                '/pgrb2a/ ' + down_dir +\
                ' --exclude \'*\' --include \'*f' + HH + '\' --recursive'
 
-        print(str_indt * 2 + 'Running command:\n')
-        print(str_indt * 3 + cmda + '\n')
+        print(STR_INDT * 2 + 'Running command:\n')
+        print(STR_INDT * 3 + cmda + '\n')
         os.system(cmda)
 
         # download secondary variables
@@ -119,10 +136,13 @@ for date in date_reqs:
                '/pgrb2b/ ' + down_dir +\
                ' --exclude \'*\' --include \'*f' + HH + '\' --recursive'
 
-        print(str_indt * 2 + 'Running command:\n')
-        print(str_indt * 3 + cmdb + '\n')
+        print(STR_INDT * 2 + 'Running command:\n')
+        print(STR_INDT * 3 + cmdb + '\n')
         os.system(cmdb)
 
 
 print('\n')
 print('Script complete -- verify the downloads at root ' + DATA_ROOT + '\n')
+
+##################################################################################
+# end

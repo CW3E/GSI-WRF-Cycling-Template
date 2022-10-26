@@ -1,6 +1,10 @@
 ##################################################################################
 # Description
 ##################################################################################
+# This will plot IWV and pressure contour data generated from the companion
+# script proc_wrfout_np.py.  The plotting script will null out values of the
+# parent domain lying in nested domains, currently only developed for two
+# domains.  
 #
 ##################################################################################
 # License Statement
@@ -21,7 +25,11 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports / exports
+# Imports
+##################################################################################
+import matplotlib 
+# use this setting on COMET / Skyriver for x forwarding                                                               
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
 from matplotlib.cm import get_cmap
@@ -32,20 +40,33 @@ import cartopy.feature as cfeature
 import numpy as np
 import pickle
 import os
-import copy
+from py_plt_utilities import PROJ_ROOT
+import ipdb
 
 ##################################################################################
-# file paths
-f_in_path = './processed_numpy'
-f_out_path = './processed_numpy/ivt_plots'
-start_date = '2019021400' 
-os.system('mkdir -p ' + f_out_path)
+# SET GLOBAL PARAMETERS
+##################################################################################
+# define control flow to analyze 
+CTR_FLW = 'deterministic_forecast'
 
-# date for file
-date = '2019-02-14_00:00:00'
+# start date time of WRF forecast in YYYYMMDDHH
+START_DT = '2019021100'
+
+# analysis date time of inputs / outputs 
+ANL_DT = '2019-02-14_00:00:00'
+
+##################################################################################
+# Begin plotting
+##################################################################################
+# define derived data paths 
+data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/processed_numpy'
+in_path = data_root + '/' + START_DT
+out_path = data_root + '/iwv_plots'
+os.system('mkdir -p ' + out_path)
 
 # load data
-f = open(f_in_path + '/' + start_date + '/start_' + start_date + '_forecast_' + date + '.txt', 'rb')
+f = open(in_path + '/' + '/start_' + START_DT + '_forecast_' +\
+         ANL_DT + '.bin', 'rb')
 data = pickle.load(f)
 f.close()
 
@@ -61,34 +82,34 @@ ax1 = fig.add_axes([.05, .10, .8, .8], projection=cart_proj)
 ax2 = fig.add_axes(ax1.get_position(), frameon=False)
 ax3 = fig.add_axes([0.0, .05, .8, .05], frameon=False)
 
-# hard set the ivt magnitude threshold to target ARs
-ivtm_min = 250
-ivtm_max = 1200
-cnorm = nrm(vmin=ivtm_min, vmax=ivtm_max)
-color_map = sns.color_palette('flare', as_cmap=True)
+# hard code the iwv scale to target ARs
+iwv_min = 20
+iwv_max = 60
+color_map = sns.husl_palette(n_colors=20, h=0.65, s=0.9, l=0.55, as_cmap=True)
+cnorm = nrm(vmin=iwv_min, vmax=iwv_max)
 
-# extract ivtm
-ivtm_d01 = data['d01']['ivtm'].flatten()
-ivtm_d02 = data['d02']['ivtm'].flatten()
-ivtms = [ivtm_d01, ivtm_d02]
+# make the scales of d01 / d02 equivalent in color map
+iwv_d01 = data['d01']['iwv'].flatten()
+iwv_d02 = data['d02']['iwv'].flatten()
+iwvs = [iwv_d01, iwv_d02]
 
-# find the index of values that lie below the ivtm_min
+# find the index of values that lie below the iwv_min
 indxs = [[], []]
 for i in range(2):
-    for k in range(len(ivtms[i])):
-        if ivtms[i][k] < ivtm_min:
+    for k in range(len(iwvs[i])):
+        if iwvs[i][k] < iwv_min:
             indxs[i].append(k)
 
 # NaN out all values of d01 that lie in d02
-ivtm_d01[data['d02']['indx']] = np.nan
+iwv_d01[data['d02']['indx']] = np.nan
 
 # NaN out all values of both domains that lie below the threshold
-ivtm_d01[indxs[0]] = np.nan
-ivtm_d02[indxs[1]] = np.nan
+iwv_d01[indxs[0]] = np.nan
+iwv_d02[indxs[1]] = np.nan
 
-# plot ivtm as intensity in scatter / heat plot for parent domain
+# plot iwv as intensity in scatter / heat plot for parent domain
 ax1.scatter(x=data['d01']['lons'], y=data['d01']['lats'],
-            c=ivtm_d01,
+            c=iwv_d01,
             alpha=0.600,
             cmap=color_map,
             norm=cnorm,
@@ -98,9 +119,9 @@ ax1.scatter(x=data['d01']['lons'], y=data['d01']['lats'],
             transform=crs.PlateCarree(),
            )
 
-# plot ivtm as intensity in scatter / heat plot for nested domain
+# plot iwv as intensity in scatter / heat plot for nested domain
 ax1.scatter(x=data['d02']['lons'], y=data['d02']['lats'],
-            c=ivtm_d02,
+            c=iwv_d02,
             alpha=0.600,
             cmap=color_map,
             norm=cnorm,
@@ -146,7 +167,6 @@ ax1.plot(
          color='k',
         )
 
-
 # add slp contour plot
 c_pl = ''
 c_var = 'slp'
@@ -190,40 +210,43 @@ ax1.add_feature(cfeature.COASTLINE)
 ax1.add_feature(cfeature.STATES)
 ax1.add_feature(cfeature.BORDERS)
 
-# Add ivt u / v directional barbs plotting every w_kth data point above the threshold
-w_k = 4000
+# Add wind barbs plotting every w_kth data point, starting from w_k/2
+w_k = 5000
+w_pl = 850
 lats = np.array(data['d01']['lats'])
 lons = np.array(data['d01']['lons'])
-ivtx = np.array(lons).flatten()
-ivty = np.array(lats).flatten()
-ivtu = data['d01']['ivtu'].flatten() 
-ivtv = data['d01']['ivtv'].flatten()
+#wndx = lats.flatten()
+#wndy = lons.flatten()
+wndx = data['d01']['xx']
+wndy = data['d01']['yy']
+wndu = data['d01']['pl_' + str(w_pl)]['u'].flatten()
+wndv = data['d01']['pl_' + str(w_pl)]['v'].flatten()
 
-# delete the ivt vectors that fall below the threshold
-ivtx = np.delete(ivtx, indxs[0])
-ivty = np.delete(ivty, indxs[0])
-ivtu = np.delete(ivtu, indxs[0])
-ivtv = np.delete(ivtv, indxs[0])
-
+# delete the wind barbs that fall below the threshold
+wndx = np.delete(wndx, indxs[0])
+wndy = np.delete(wndy, indxs[0])
+wndu = np.delete(wndu, indxs[0])
+wndv = np.delete(wndv, indxs[0])
 
 barb_incs = {
-             'half':50,
-             'full':100,
-             'flag':500,
+             'half':5,
+             'full':10,
+             'flag':50,
             }
 
-ax1.barbs(
-          ivtx[int(w_k/2)::w_k], ivty[int(w_k/2)::w_k],
-          ivtu[int(w_k/2)::w_k], ivtv[int(w_k/2)::w_k],
-          transform=crs.PlateCarree(), 
+ax2.barbs(
+          wndx[int(w_k/2)::w_k], wndy[int(w_k/2)::w_k],
+          wndu[int(w_k/2)::w_k], wndv[int(w_k/2)::w_k],
+          #transform=crs.PlateCarree(), 
           length=7,
           barb_increments=barb_incs,
          )
+
 # create barb legend
 ax3.barbs(
         [0, 0.5, 1],
         [0, 0, 0],
-        [50, 100, 500],
+        [5, 10, 50],
         [0, 0, 0],
         length=10,
         barb_increments=barb_incs,
@@ -242,24 +265,13 @@ ax3.tick_params(
         labeltop=False,
         )
 
-ax2.tick_params(
-        bottom=False,
-        labelbottom=False,
-        left=False,
-        labelleft=False,
-        right=False,
-        labelright=False,
-        top=False,
-        labeltop=False,
-        )
-
-ax3.text(0.02, 0, 'IVT Magnitude 50',  {'fontsize': 18})
-ax3.text(0.52, 0, 'IVT Magnitude 100', {'fontsize': 18})
-ax3.text(1.02, 0, 'IVT Magnitude 500', {'fontsize': 18})
+ax3.text(0.02, 0, '5 knots',  {'fontsize': 18})
+ax3.text(0.52, 0, '10 knots', {'fontsize': 18})
+ax3.text(1.02, 0, '50 knots', {'fontsize': 18})
 
 # Add a color bar
 cb(ax=ax0, cmap=color_map, norm=cnorm)
-ax0.tick_params(
+ax1.tick_params(
     labelsize=21,
     )
 
@@ -273,16 +285,9 @@ ax2.set_position(ax1.get_position())
 # Add the gridlines
 ax1.gridlines(color='black', linestyle='dotted')
 
-# make title and save figure
-d1 = copy.copy(start_date)
-d1 = d1[:4] + ':' + d1[4:6] + ':' + d1[6:8] + '_' + d1[8:] + ':00:00'
+title = ANL_DT + ' - iwv / ' + str(w_pl) + ' wind / ' +  c_pl + ' ' + c_var + ' contours'
+plt.figtext(.50, .95, title, horizontalalignment='center', verticalalignment='center', fontsize=18)
 
-title1 = date + r' - IVT $kg $ $m^{-1} s^{-1}$ ' +  c_pl + ' ' + c_var + ' contours'
-title2 = 'fzh ' + d1
-
-plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=22)
-plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=22)
-
-fig.savefig(f_out_path + '/' + date + '_fzh_' + d1 + '_ivt_' +\
-            c_pl + '_' + c_var + '.png')
+#fig.savefig('./' + START_DT + '/start_' + START_DT + '_d01_d02_' + date + '_iwv_' + str(w_pl) + '_wind_' +\
+#            c_pl + '_' + c_var + '.png')
 plt.show()
