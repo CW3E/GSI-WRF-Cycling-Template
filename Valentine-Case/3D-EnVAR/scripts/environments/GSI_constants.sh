@@ -1,12 +1,10 @@
-#!/bin/ksh
+#!/bin/bash
 ##########################################################################
-#
-# Script Name: GSI_constants.ksh
-#
-# Description:
-#    This script localizes several tools specific to this platform.  It
-#    should be called by other workflow scripts to define common
-#    variables.
+# Description
+##########################################################################
+# This script localizes several tools specific to this platform.  It
+# should be called by other workflow scripts to define common
+# variables.
 #
 ##########################################################################
 # License Statement:
@@ -29,14 +27,14 @@
 # Using GMT time zone for time computations
 export TZ="GMT"
 
-# set COMET specific environment for intelmpi 2018.1.163, using ksh
-eval `/bin/modulecmd ksh purge`
+# set COMET specific environment for intelmpi 2018.1.163
+module purge
 export MODULEPATH=/share/apps/compute/modulefiles:$MODULEPATH
-eval `/bin/modulecmd ksh load intel/2018.1.163`
-eval `/bin/modulecmd ksh load intelmpi/2018.1.163`
-eval `/bin/modulecmd ksh load hdf5/1.10.3`
-eval `/bin/modulecmd ksh load netcdf/4.6.1`
-eval `/bin/modulecmd ksh list`
+module load intel/2018.1.163
+module load intelmpi/2018.1.163
+module load hdf5/1.10.3
+module load netcdf/4.6.1
+module list
 
 # Set up netcdf
 export JASPERLIB="/usr/lib64"
@@ -48,9 +46,9 @@ export HDF5="/opt/hdf5/1.10.3/intel/intelmpi/"
 export PATH=${NCARG_ROOT}/bin:${PATH}
 
 # setup lapack
-eval `/bin/modulecmd ksh load lapack`
+module load lapack
 LAPACK_PATH="/share/apps/compute/lapack"
-eval `/bin/modulecmd ksh list`
+module list
 
 # ensure ulimit is set unlimited
 ulimit -s unlimited

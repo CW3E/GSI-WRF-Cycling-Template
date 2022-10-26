@@ -47,11 +47,11 @@
   <!-- UNGRIB SETTINGS -->
   <!ENTITY CTR_BKG_DATA        "GFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
   <!ENTITY ENS_BKG_DATA        "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
-  <!ENTITY WPS_CONSTANT        "&ENVIRONMENTS;/WPS_constants.ksh">
+  <!ENTITY WPS_CONSTANT        "&ENVIRONMENTS;/WPS_constants.sh">
   <!-- END UNGRIB SETTINGS -->
 
   <!-- WRF SETTINGS -->
-  <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
+  <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.sh">
   <!ENTITY WRF_CTR_DOM         "1"> <!-- Max domain for control simulation -->
   <!ENTITY WRF_ENS_DOM         "1"> <!-- Max domain for ensemble simulation -->
   <!ENTITY WRF_DOWN_DOM        "2"> <!-- Domain index to have ICs downscaled from d01 -->
@@ -66,7 +66,7 @@
   <!-- END WRF SETTINGS -->
 
   <!-- GSI SETTINGS -->
-  <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.ksh">
+  <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.sh">
   <!ENTITY IF_SATRAD           "Yes">
   <!-- END GSI SETTINGS -->
  
@@ -99,7 +99,7 @@
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
   
   <task name="ungrib_ens_00" maxtries="3" cycledefs="first_cycle,q_daily">
-    <command>&DRIVERS;/ungrib.ksh</command>
+    <command>&DRIVERS;/ungrib.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
@@ -166,7 +166,7 @@
   </task>
 
   <task name="metgrid_ens_00" maxtries="3" cycledefs="first_cycle,q_daily">
-    <command>&DRIVERS;/metgrid.ksh</command>
+    <command>&DRIVERS;/metgrid.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
@@ -227,7 +227,7 @@
   </task>
 
   <task name="real_ens_00" maxtries="3" cycledefs="first_cycle,q_daily">
-    <command>&DRIVERS;/real.ksh</command>
+    <command>&DRIVERS;/real.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
@@ -298,7 +298,7 @@
   <metatask name="ensemble_pre_proc">
     <var name="ENS_N">&ENS_LIST;</var>  
     <task name="ungrib_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
-      <command>&DRIVERS;/ungrib.ksh</command>
+      <command>&DRIVERS;/ungrib.sh</command>
       <cores>1</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>
       <walltime>&WPS_WC;</walltime>
@@ -359,7 +359,7 @@
     </task>
 
     <task name="metgrid_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
-      <command>&DRIVERS;/metgrid.ksh</command>
+      <command>&DRIVERS;/metgrid.sh</command>
       <cores>&WPS_PROC;</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>
       <walltime>&WPS_WC;</walltime>
@@ -420,7 +420,7 @@
     </task>
 
     <task name="real_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
-      <command>&DRIVERS;/real.ksh</command>
+      <command>&DRIVERS;/real.sh</command>
       <cores>&WPS_PROC;</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>
       <walltime>&WPS_WC;</walltime>
@@ -490,7 +490,7 @@
   </metatask>
 
   <task name="wrfda_lowbc" maxtries="3" cycledefs="q_daily">
-    <command>&DRIVERS;/wrfda.ksh</command>
+    <command>&DRIVERS;/wrfda.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
@@ -551,7 +551,7 @@
   </task>
 
   <task name="gsi_analysis" maxtries="2" cycledefs="q_daily">
-    <command>&DRIVERS;/gsi.ksh</command>
+    <command>&DRIVERS;/gsi.sh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
     <walltime>&GSI_WC;</walltime>
@@ -637,7 +637,7 @@
   </task>
 
   <task name="wrfda_latbc" maxtries="4" cycledefs="q_daily">
-    <command>&DRIVERS;/wrfda.ksh</command>
+    <command>&DRIVERS;/wrfda.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
@@ -695,7 +695,7 @@
   </task>
 
   <task name="first_wrf_ens_00" maxtries="3" cycledefs="first_cycle">
-    <command>&DRIVERS;/wrf.ksh</command>
+    <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>
@@ -792,7 +792,7 @@
   </task>
 
   <task name="wrf_ens_00" maxtries="3" cycledefs="q_daily">
-    <command>&DRIVERS;/wrf.ksh</command>
+    <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>
@@ -891,7 +891,7 @@
   <metatask name="ensemble_fore">
     <var name="ENS_N">&ENS_LIST;</var>
     <task name="wrf_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
-      <command>&DRIVERS;/wrf.ksh</command>
+      <command>&DRIVERS;/wrf.sh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>
       <walltime>&WRF_WC;</walltime>

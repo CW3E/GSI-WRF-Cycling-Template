@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #####################################################
 # Description
 #####################################################
@@ -12,9 +12,9 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WRFDA environment
-# in a WRF_constants.ksh script to be sourced in the below.  Variables
+# in a WRF_constants.sh script to be sourced in the below.  Variables
 # aliases in this script are based on conventions defined in the
-# companion WRF_constants.ksh with this driver.
+# companion WRF_constants.sh with this driver.
 #
 # SEE THE README FOR FURTHER INFORMATION
 #
@@ -493,6 +493,6 @@ while [ ${ens_n} -le ${n_ens} ]; do
   (( ens_n += 1 ))
 done
 
-echo "wrfda.ksh completed successfully at `date`"
+echo "wrfda.sh completed successfully at `date`"
 
 exit 0

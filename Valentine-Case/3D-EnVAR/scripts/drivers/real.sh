@@ -1,9 +1,9 @@
-#!/bin/ksh
+#!/bin/bash
 #####################################################
 # Description
 #####################################################
 # This driver script is a major fork and rewrite of the Rocoto workflow
-# WRF driver script of Christopher Harrop Licensed for modification /
+# real.exe driver script of Christopher Harrop Licensed for modification /
 # redistribution in the License Statement below.
 #
 # The purpose of this fork is to work in a Rocoto-based
@@ -13,9 +13,9 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WRF environment
-# in a WRF_constants.ksh script to be sourced in the below.  Variables
+# in a WRF_constants.sh script to be sourced in the below.  Variables
 # aliases in this script are based on conventions defined in the
-# companion WRF_constants.ksh with this driver.
+# companion WRF_constants.sh with this driver.
 #
 # SEE THE README FOR FURTHER INFORMATION
 #
@@ -81,11 +81,10 @@
 #                 325 Broadway R/FST
 #                 Boulder, CO. 80305
 #
-#     Purpose: This is a complete rewrite of the run_wrf.pl script that is
-#              distributed with the WRF Standard Initialization.  This script
-#              may be run on the command line, or it may be submitted directly
-#              to a batch queueing system.  A few environment variables must be
-#              set before it is run.
+#     Purpose: This is a complete rewrite of the real portion of the
+#              wrfprep.pl script that is distributed with the WRF Standard
+#              Initialization.  This script may be run on the command line, or
+#              it may be submitted directly to a batch queueing system.
 #
 #     A short and simple "control" script could be written to call this script
 #     or to submit this  script to a batch queueing  system.  Such a "control"
@@ -100,15 +99,15 @@
 # Options below are hard-coded based on the type of experiment
 # (i.e., these not expected to change within DA cycles).
 #
-# io_restart = 2 for regular or 102 for split restart files
-#              (currently only 2 supported)
-#
 #####################################################
 # uncomment to run verbose for debugging / testing
-
 set -x
 
-io_restart=2
+# assuming data preprocessed with metgrid in WPS
+real_prefix="met_em"
+
+# assuming that all data is in NetCDF form
+real_suffix=".nc"
 
 #####################################################
 # Read in WRF constants for local environment
@@ -123,34 +122,28 @@ fi
 . ${CONSTANT}
 
 #####################################################
-# Make checks for WRF settings
+# Make checks for real settings
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ENS_N          = Ensemble ID index, 00 for control, i > 00 for perturbation
-# BKG_DATA       = String case variable for supported inputs: GFS, GEFS currently
-# FCST_LENGTH    = Total length of WRF forecast simulation in HH
-# FCST_INTERVAL  = Interval of wrfout.d01 in HH
-# DATA_INTERVAL  = Interval of input data in HH
-# CYCLE_INTERVAL = Interval in HH on which DA is cycled in a cycling control flow
-# START_TIME     = Simulation start time in YYMMDDHH
-# MAX_DOM        = Max number of domains to use in namelist settings
-# DOWN_DOM       = First domain index to downscale ICs from d01, less than MAX_DOM if downscaling to be used
-# IF_CYCLING     = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis or real.exe, case insensitive
-# IF_SST_UPDATE  = Yes / No: whether WRF uses dynamic SST values 
-# IF_FEEBACK     = Yes / No: whether WRF domains use 1- or 2-way nesting
+# ENS_N         = Ensemble ID index, 00 for control, i > 00 for perturbation
+# BKG_DATA      = String case variable for supported inputs: GFS, GEFS currently
+# FCST_LENGTH   = Total length of WRF forecast simulation in HH
+# DATA_INTERVAL = Interval of input data in HH
+# START_TIME    = Simulation start time in YYMMDDHH
+# MAX_DOM       = Max number of domains to use in namelist settings
+# IF_SST_UPDATE = "Yes" or "No" switch to compute dynamic SST forcing, (must include auxinput4 path and
+#                  timing in namelist) case insensitive
 #
 #####################################################
 
-if [ ! "${ENS_N}" ]; then
-  echo "ERROR: \$ENS_N is not defined!"
+if [ ! "${ENS_N}"  ]; then
+  echo "ERROR: \$ENS_N is not defined"
   exit 1
 fi
 
-# Ensure padding to two digits is included
+# ensure padding to two digits is included
 ens_n=`printf %02d $(( 10#${ENS_N} ))`
-# Make three digit padding for GSI conventions
-iiimem=`printf %03d $(( 10#${ens_n} ))`
 
 if [ ! "${BKG_DATA}"  ]; then
   echo "ERROR: \$BKG_DATA is not defined"
@@ -162,13 +155,8 @@ if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
   exit 1
 fi
 
-if [ ! ${FCST_LENGTH} ]; then
-  echo "ERROR: \$FCST_LENGTH is not defined!"
-  exit 1
-fi
-
-if [ ! ${FCST_INTERVAL} ]; then
-  echo "ERROR: \$FCST_INTERVAL is not defined!"
+if [ ! "${FCST_LENGTH}" ]; then
+  echo "ERROR: \$FCST_LENGTH is not defined"
   exit 1
 fi
 
@@ -177,17 +165,12 @@ if [ ! "${DATA_INTERVAL}" ]; then
   exit 1
 fi
 
-if [ ! "${CYCLE_INTERVAL}" ]; then
-  echo "ERROR: \$CYCLE_INTERVAL is not defined"
-  exit 1
-fi
-
 if [ ! "${START_TIME}" ]; then
-  echo "ERROR: \$START_TIME is not defined"
+  echo "ERROR: \$START_TIME is not defined!"
   exit 1
 fi
 
-# Convert START_TIME from 'YYYYMMDDHH' format to start_time in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
+# Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
 if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
   start_time=`echo "${START_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
@@ -197,18 +180,8 @@ fi
 start_time=`date -d "${start_time}"`
 end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
-if [ ! "${MAX_DOM}" ]; then
-  echo "ERROR: \$MAX_DOM is not defined"
-  exit 1
-fi
-
-if [ ! "${DOWN_DOM}" ]; then
-  echo "ERROR: \$DOWN_DOM is not defined"
-  exit 1
-fi
-
-if [[ ${IF_CYCLING} != ${YES} && ${IF_CYCLING} != ${NO} ]]; then
-  echo "ERROR: \$IF_CYCLING must equal 'Yes' or 'No' (case insensitive)"
+if [ ! ${MAX_DOM} ]; then
+  echo "ERROR: \$MAX_DOM is not defined!"
   exit 1
 fi
 
@@ -222,19 +195,8 @@ else
   exit 1
 fi
 
-if [[ ${IF_FEEDBACK} = ${YES} ]]; then
-  echo "Two-way WRF nesting is turned on"
-  feedback=1
-elif [[ ${IF_FEEDBACK} = ${NO} ]]; then
-  echo "One-way WRF nesting is turned on"
-  feedback=0
-else
-  echo "ERROR: \$IF_FEEDBACK must equal 'Yes' or 'No' (case insensitive)"
-  exit 1
-fi
-
 #####################################################
-# Define WRF workflow dependencies
+# Define real workflow dependencies
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
@@ -243,10 +205,8 @@ fi
 #                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
-# MPIRUN         = MPI Command to execute WRF
-# WRF_PROC       = The total number of processes to run WRF with MPI
-# NIO_GROUPS     = Number of Quilting groups -- only used for NIO_TPG > 0
-# NIO_TPG        = Quilting tasks per group, set=0 if no quilting IO is to be used
+# MPIRUN         = MPI Command to execute real 
+# WPS_PROC       = The total number of processes to run real.exe with MPI
 #
 #####################################################
 
@@ -255,8 +215,8 @@ if [ ! "${WRF_ROOT}" ]; then
   exit 1
 fi
 
-if [ ! -d ${WRF_ROOT} ]; then
-  echo "ERROR: \$WRF_ROOT directory ${WRF_ROOT} does not exist"
+if [ ! -d "${WRF_ROOT}" ]; then
+  echo "ERROR: WRF_ROOT directory ${WRF_ROOT} does not exist"
   exit 1
 fi
 
@@ -275,35 +235,35 @@ if [ ! "${MPIRUN}" ]; then
   exit 1
 fi
 
-if [ ! "${WRF_PROC}" ]; then
-  echo "ERROR: \$WRF_PROC is not defined"
+if [ ! "${WPS_PROC}" ]; then
+  echo "ERROR: \$WPS_PROC is not defined"
   exit 1
 fi
 
-if [ -z "${WRF_PROC}" ]; then
-  echo "ERROR: The variable \$WRF_PROC must be set to the number of processors to run WRF"
+if [ -z "${WPS_PROC}" ]; then
+  echo "ERROR: The variable \$WPS_PROC must be set to the number of processors to run real"
   exit 1
 fi
 
 #####################################################
-# Begin pre-WRF setup
+# Begin pre-real setup
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# work_root      = Working directory where WRF runs
+# work_root      = Working directory where real runs and outputs background files
 # wrf_dat_files  = All file contents of clean WRF/run directory
 #                  namelists, boundary and input data will be linked
 #                  from other sources
-# wrf_exe        = Path and name of working executable
+# real_exe       = Path and name of working executable
 #
 #####################################################
 
-work_root=${INPUT_DATAROOT}/wrfprd/ens_${ens_n}
-set -A wrf_dat_files ${WRF_ROOT}/run/*
-wrf_exe=${WRF_ROOT}/main/wrf.exe
+work_root=${INPUT_DATAROOT}/realprd/ens_${ens_n}
+wrf_dat_files=(${WRF_ROOT}/run/*)
+real_exe=${WRF_ROOT}/main/real.exe
 
-if [ ! -x ${wrf_exe} ]; then
-  echo "ERROR: ${wrf_exe} does not exist, or is not executable"
+if [ ! -x ${real_exe} ]; then
+  echo "ERROR: ${real_exe} does not exist, or is not executable"
   exit 1
 fi
 
@@ -316,81 +276,33 @@ for file in ${wrf_dat_files[@]}; do
   ln -sf ${file} ./
 done
 
-# Remove any old WRF outputs in the directory
-rm -f wrfout_*
+# Remove IC/BC in the directory if old data present
+rm -f wrfinput_d0*
+rm -f wrfbdy_d01
 
-# Link WRF initial conditions from real.exe or GSI analysis depending on IF_CYCLING switch
+# Check to make sure the real input files (e.g. met_em.d01.*)
+# are available and make links to them
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
-  wrfinput_name=wrfinput_d0${dmn}
-  # if cycling AND analyzing this domain, get initial conditions from last analysis
-  if [[ ${IF_CYCLING} = ${YES} && ${dmn} -lt ${DOWN_DOM} ]]; then
-    if [[ ${dmn} = 1 ]]; then
-      # obtain the input and boundary files from the lateral boundary update by WRFDA 
-      wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}/lateral_bdy_update/wrfvar_output 
-      ln -sf ${wrfda_outname} ./${wrfinput_name}
-      if [ ! -r ./${wrfinput_name} ]; then
-        echo "ERROR: ${work_root}/${wrfinput_name} does not exist, or is not readable, check source ${wrfda_outname}"
-        exit 1
-      fi
-    else
-      # Nested domains have boundary conditions defined by parent, link from GSI / EnKF analysis or downscaling start
-      if [ ${ens_n} -eq 00 ]; then
-	# control solution is indexed 00, analyzed with GSI
-        gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}/wrfanl_ens_${ens_n}.${START_TIME}
-      else
-	# ensemble perturbations are updated with EnKF step
-        gsi_outname=${INPUT_DATAROOT}/enkfprd/d0${dmn}/analysis.${iiimem}
-      fi
-      ln -sf ${gsi_outname} ./${wrfinput_name}
-      if [ ! -r ./${wrfinput_name} ]; then
-        echo "ERROR: ${work_root}/${wrfinput_name} does not exist, or is not readable, check source ${gsi_outname}"
-        exit 1
-      fi
-    fi
-  else
-    # else get initial conditions from real.exe
-    real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/${wrfinput_name}
-    ln -sf ${real_outname} ./
-    if [ ! -r ./${wrfinput_name} ]; then
-      echo "ERROR: ${work_root}/${wrfinput_name} does not exist, or is not readable, check source ${real_outname}"
+  fcst=0
+  while [ ${fcst} -le ${FCST_LENGTH} ]; do
+    time_str=`date "+%Y-%m-%d_%H:%M:%S" -d "${start_time} ${fcst} hours"`
+    realinput_name=${real_prefix}.d0${dmn}.${time_str}${real_suffix}
+    wps_dir=${INPUT_DATAROOT}/wpsprd/ens_${ens_n}
+    if [ ! -r "${wps_dir}/${realinput_name}" ]; then
+      echo "ERROR: Input file '${INPUT_DATAROOT}/${realinput_name}' is missing"
       exit 1
     fi
-  fi
-  # NOTE: THIS LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
-  if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
-    wrflowinp_name=wrflowinp_d0${dmn}
-    real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/${wrflowinp_name}
-    ln -sf ${real_outname} ./
-    if [ ! -s ${wrflowinp_name} ]; then
-      echo "ERROR: ${work_root}/${wrflowinp_name} does not exist, or is not readable, check source ${real_outname}"
-    fi
-  fi
+    ln -sf ${wps_dir}/${realinput_name} ./
+    (( fcst += DATA_INTERVAL ))
+  done
   (( dmn += 1 ))
 done
-
-if [[ ${IF_CYCLING} = ${YES} ]]; then
-  # Link the wrfbdy_d01 file from the WRFDA updated BCs
-  wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}/lateral_bdy_update/wrfbdy_d01
-  ln -sf ${wrfda_outname} ./wrfbdy_d01
-  if [ ! -r ${work_root}/wrfbdy_d01 ]; then
-    echo "ERROR: ${work_root}/wrfbdy_d01 does not exist, or is not readable, check source in ${wrfda_outname}"
-    exit 1
-  fi
-else
-  # Link the wrfbdy_d01 file from real.exe
-  real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/wrfbdy_d01
-  ln -sf ${real_outname} ./wrfbdy_d01
-  if [ ! -r ${work_root}/wrfbdy_d01 ]; then
-    echo "ERROR: ${work_root}/wrfbdy_d01 does not exist, or is not readable, check source in ${real_outname}"
-    exit 1
-  fi
-fi
 
 # Move existing rsl files to a subdir if there are any
 echo "Checking for pre-existing rsl files"
 if [ -f "rsl.out.0000" ]; then
-  rsldir=rsl.wrf.`ls -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | cut -d" " -f 6`
+  rsldir=rsl.`ls -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | cut -d" " -f 7`
   mkdir ${rsldir}
   echo "Moving pre-existing rsl files to ${rsldir}"
   mv rsl.out.* ${rsldir}
@@ -400,7 +312,7 @@ else
 fi
 
 #####################################################
-#  Build WRF namelist
+#  Build real namelist
 #####################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
 namelist=${STATIC_DATA}/namelists/namelist.${BKG_DATA}
@@ -420,15 +332,14 @@ end_hour=`date +%H -d "${end_time}"`
 end_minute=`date +%M -d "${end_time}"`
 end_second=`date +%S -d "${end_time}"`
 
-# Update the max_dom in namelist
+# Compute number of days and hours for the run
+(( run_days = FCST_LENGTH / 24 ))
+(( run_hours = FCST_LENGTH % 24 ))
+
+# Update max_dom in namelist
 cat namelist.input | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
   > namelist.input.new
 mv namelist.input.new namelist.input
-
-# Compute number of days and hours, and total minutes, for the run
-(( run_days = FCST_LENGTH / 24 ))
-(( run_hours = FCST_LENGTH % 24 ))
-(( run_mins = FCST_LENGTH * 60 ))
 
 # Update the run_days in wrf namelist.input
 cat namelist.input | sed "s/\(${RUN}_${DAY}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
@@ -440,16 +351,6 @@ cat namelist.input | sed "s/\(${RUN}_${HOUR}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 =
   > namelist.input.new
 mv namelist.input.new namelist.input
 
-# Update the restart interval in wrf namelist to the end of the FCST_LENGTH
-cat namelist.input | sed "s/\(${RESTART}_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_mins}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
-
-# Update the restart I/O form in wrf namelist
-cat namelist.input | sed "s/\(${IO}_${FORM}_${RESTART}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${io_restart}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
-
 # Update the start time in wrf namelist (propagates settings to three domains)
 cat namelist.input | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${start_year}, ${start_year}, ${start_year}/" \
   | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_month}, ${start_month}, ${start_month}/" \
@@ -457,7 +358,7 @@ cat namelist.input | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = 
   | sed "s/\(${START}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_hour}, ${start_hour}, ${start_hour}/" \
   | sed "s/\(${START}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_minute}, ${start_minute}, ${start_minute}/" \
   | sed "s/\(${START}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${start_second}, ${start_second}, ${start_second}/" \
-   > namelist.input.new
+  > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update end time in namelist (propagates settings to three domains)
@@ -470,21 +371,10 @@ cat namelist.input | sed "s/\(${END}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${
   > namelist.input.new
 mv namelist.input.new namelist.input
 
-# Update feedback option for nested domains
-cat namelist.input | sed "s/\(${FEEDBACK}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${feedback}/"\
-  > namelist.input.new
-mv namelist.input.new namelist.input
-
-# Update the quilting settings to the parameters set in the workflow
-cat namelist.input | sed "s/\(${NIO}_${TASK}[Ss]_${PER}_${GROUP}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_TASKS_PER_GROUP}/" \
-                      | sed "s/\(${NIO}_${GROUP}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_GROUPS}/" \
-   > namelist.input.new
-mv namelist.input.new namelist.input
-
-# Update data interval in namelist
+# Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
 cat namelist.input | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
-   > namelist.input.new
+  > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update sst_update settings
@@ -496,12 +386,12 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
   # update the auxinput4_interval to the DATA_INTERVAL (propagates to three domains)
   (( auxinput4_minutes = DATA_INTERVAL * 60 ))
   cat namelist.input | sed "s/\(${AUXINPUT}4_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}.*/\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}/" \
-     > namelist.input.new
+    > namelist.input.new
   mv namelist.input.new namelist.input
 fi
 
 #####################################################
-# Run WRF
+# Run REAL
 #####################################################
 # Print run parameters
 echo
@@ -512,19 +402,17 @@ echo "STATIC_DATA    = ${STATIC_DATA}"
 echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 echo
 echo "FCST LENGTH    = ${FCST_LENGTH}"
-echo "FCST INTERVAL  = ${FCST_INTERVAL}"
+echo "DATA INTERVAL  = ${DATA_INTERVAL}"
 echo "MAX_DOM        = ${MAX_DOM}"
-echo "IF_CYCLING     = ${IF_CYCLING}"
 echo "IF_SST_UPDATE  = ${IF_SST_UPDATE}"
-echo "IF_FEEDBACK    = ${IF_FEEDBACK}"
 echo
 echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
 echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
-echo "wrf started at ${now}"
+echo "real started at ${now}"
 
-${MPIRUN} -n ${WRF_PROC} ${wrf_exe}
+${MPIRUN} -n ${WPS_PROC} ${real_exe}
 
 #####################################################
 # Run time error check
@@ -532,62 +420,65 @@ ${MPIRUN} -n ${WRF_PROC} ${wrf_exe}
 error=$?
 
 # Save a copy of the RSL files
-rsldir=rsl.wrf.${now}
+rsldir=rsl.real.${now}
 mkdir ${rsldir}
 mv rsl.out.* ${rsldir}
 mv rsl.error.* ${rsldir}
 cp namelist.* ${rsldir}
 
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${wrf_exe} exited with status ${error}"
+  echo "ERROR: ${real_exe} exited with status ${error}"
   exit ${error}
 fi
 
-# Look for successful completion messages in rsl files, adjusted for quilting processes
-nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE WRF/' | wc -l`
-(( ntotal=(WRF_PROC - NIO_GROUPS * NIO_TASKS_PER_GROUP ) * 2 ))
+# Look for successful completion messages in rsl files
+nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE REAL/' | wc -l`
+(( ntotal = WPS_PROC * 2 ))
 echo "Found ${nsuccess} of ${ntotal} completion messages"
 if [ ${nsuccess} -ne ${ntotal} ]; then
-  echo "ERROR: ${wrf_exe} did not complet successfully, missing completion messages in RLS files"
+  echo "ERROR: ${real_exe} did not complete sucessfully, missing completion messages in RSL files"
+  exit 1
 fi
 
-# ensure that the cycle_io/date/bkg directory exists for starting next cycle
-cycle_intv=`date +%H -d "${CYCLE_INTERVAL}"`
-datestr=`date +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
-new_bkg=${datestr}/bkg/ens_${ens_n}
-mkdir -p ${INPUT_DATAROOT}/../${new_bkg}
+# check to see if the BC output is generated
+bc_file=wrfbdy_d01
+if [ ! -s ${bc_file} ]; then
+  echo "${real_exe} failed to generate boundary conditions ${bc_file}"
+  exit 1
+fi
 
-# Check for all wrfout files on FCST_INTERVAL and link files to the appropriate bkg directory
+# check to see if the IC output is generated
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
-  fcst=0
-  while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    datestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
-    if [ ! -s "wrfout_d0${dmn}_${datestr}" ]; then
-      echo "WRF failed to complete.  wrfout_d0${dmn}_${datestr} is missing or empty!"
-      exit 1
-    else
-      ln -sfr wrfout_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
-    fi
-
-    (( fcst += FCST_INTERVAL ))
-  done
-
-  if [ ! -s "wrfrst_d0${dmn}_${datestr}" ]; then
-    echo "WRF failed to complete.  wrfrst_d0${dmn}_${datestr} is missing or empty!"
+  ic_file=wrfinput_d0${dmn}
+  if [ ! -s ${ic_file} ]; then
+    echo "${real_exe} failed to generate initial conditions ${ic_file} for domain d0${dmn}"
     exit 1
-  else
-    ln -sfr wrfrst_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
   fi
-
   (( dmn += 1 ))
 done
+
+# check to see if the SST update fields are generated
+if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+  dmn=1
+  while [ ${dmn} -le ${MAX_DOM} ]; do
+    sst_file=wrflowinp_d0${dmn}
+    if [ ! -s ${sst_file} ]; then
+      echo "${real_exe} failed to generate SST update file ${sst_file} for domain d0${dmn}"
+      exit 1
+    fi
+    (( dmn += 1 ))
+  done
+fi
+
+# Remove the real input files (e.g. met_em.d01.*)
+rm -f ./${real_prefix}.*
 
 # Remove links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
     rm -f `basename ${file}`
 done
 
-echo "wrf.ksh completed successfully at `date`"
+echo "real.sh completed successfully at `date`"
 
 exit 0

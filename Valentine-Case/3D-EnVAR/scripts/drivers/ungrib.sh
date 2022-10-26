@@ -1,9 +1,9 @@
-#!/bin/ksh
+#!/bin/bash
 #####################################################
 # Description
 #####################################################
 # This driver script is a major fork and rewrite of the Rocoto workflow
-# real.exe driver script of Christopher Harrop Licensed for modification /
+# ungrib driver script of Christopher Harrop Licensed for modification /
 # redistribution in the License Statement below.
 #
 # The purpose of this fork is to work in a Rocoto-based
@@ -13,9 +13,9 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WPS environment
-# in a WPS_constants.ksh script to be sourced in the below.  Variables
+# in a WPS_constants.sh script to be sourced in the below.  Variables
 # aliases in this script are based on conventions defined in the
-# companion WPS_constants.ksh with this driver.
+# companion WPS_constants.sh with this driver.
 #
 # SEE THE README FOR FURTHER INFORMATION
 #
@@ -74,7 +74,7 @@
 #     NO RESPONSIBILITY (1) FOR THE USE OF THE SOFTWARE AND
 #     DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL SUPPORT TO USERS.
 #
-#     Script Name: metgrid.ksh
+#     Script Name: ungrib.ksh
 #
 #          Author: Christopher Harrop
 #                  Forecast Systems Laboratory
@@ -85,17 +85,57 @@
 #         Version: 1.0
 #         Changes: None
 #
-#      Purpose: This is a complete rewrite of the metgrid portion of the
-#               wrfprep.pl script that is distributed with the WRF Standard
-#               Initialization.  This script may be run on the command line, or
-#               it may be submitted directly to a batch queueing system.
+#      Purpose: This is a complete  rewrite of the grib_prep.pl  script that is
+#               distributed with  the WRF Standard Initialization.  This script
+#               may be run on the command line, or it may be submitted directly
+#               to a  batch queueing system.  A few environment variables  must
+#               be set before it is run:
 #
-#     A short and simple "control" script could be written to call this script
-#     or to submit this  script to a batch queueing  system.  Such a "control"
-#     script  could  also  be  used to  set the above environment variables as
-#     appropriate  for  a  particular experiment.  Batch  queueing options can
-#     be  specified on the command  line or  as directives at  the top of this
-#     script.  A set of default batch queueing directives is provided.
+#                INSTALL_ROOT = Location of compiled wrfsi binaries and scripts.
+#                MOAD_DATAHOME = Top level directory of grib_prep configuration data.
+#                EXT_DATAROOT = Top level directory of grib_prep output
+#                 FCST_LENGTH = The length of the forecast in hours.  If not set,
+#                               the default value of 48 is used.
+#               FCST_INTERVAL = The interval, in hours, between each forecast.
+#                               If not set, the default value of 3 is used.
+#                      SOURCE = The data source to process.
+#                  START_TIME = The cycle time to use for the initial time.
+#                               If not set, the system clock is used.
+#
+#               It is also HIGHLY recommended that you set the FORMAT environment
+#               variable to specify the format of the ungrib filenames you are
+#               processing.  The FORMAT environment variable works similarly to
+#               the format associated with UNIX date command:
+#
+#                 %Y - Represents a four digit year, YYYY
+#                 %y - Represents a two digit year, YY
+#                 %j - Represents a three digit julian day, JJJ
+#                 %m - Represents a two digit month, 01 thru 12
+#                 %d - Represents a two digit day, 01 thru 31
+#                 %H - Represents a two digit hour, 00 thru 23
+#                 %F - Represents a four digit forecast hour, FFFF
+#                 %f - Represents a two digit forecast hour, FF
+#
+#               Examples:
+#
+#                  FORMAT="%Y%m%d%H%F.grib" would match files named:
+#
+#                            YYYYMMDDHHFFFF.grib
+#
+#                  FORMAT="%Y%j%H%F.grib" would match files named:
+#
+#                            YYYYJJJHHFFFF.grib
+#
+#                  FORMAT="eta.t%Hz.pgrb.%f would match files named:
+#
+#                            eta.tHHz.pgrb.ff
+#
+#      A short and simple "control" script could be written to call this script
+#      or to submit this  script to a batch queueing  system.  Such a "control"
+#      script  could  also  be  used to  set the above environment variables as
+#      appropriate  for  a  particular experiment.  Batch  queueing options can
+#      be  specified on the command  line or  as directives at  the top of this
+#      script.  A set of default batch queueing directives is provided.
 #
 #####################################################
 # Preamble
@@ -106,12 +146,6 @@
 #####################################################
 # uncomment to run verbose for debugging / testing
 set -x
-
-# assuming data preprocessed with metgrid in WPS
-metgrid_prefix="met_em"
-
-# assuming using serial netcdf -- this is not currently configured for parallel metgrid
-metgrid_suffix="nc"
 
 #####################################################
 
@@ -124,15 +158,18 @@ fi
 . ${CONSTANT}
 
 #####################################################
-# Make checks for metgrid settings
+# Make checks for ungrib settings
 #####################################################
 # Options below are defined in cycling.xml
 #
-# ENS_N         = Ensemble ID index, 00 for control, i > 0 for perturbation
-# FCST_LENGTH   = Total length of WRF forecast simulation in HH
-# DATA_INTERVAL = Interval of input data in HH
-# START_TIME    = Simulation start time in YYMMDDHH
-# MAX_DOM       = Max number of domains to use in namelist settings
+# ENS_N          = Ensemble ID index, 00 for control, i > 0 for perturbation
+# BKG_DATA       = String case variable for supported inputs: GFS, GEFS currently
+# FCST_LENGTH    = Total length of WRF forecast simulation in HH
+# DATA_INTERVAL  = Interval of input data in HH
+# START_TIME     = Simulation start time in YYMMDDHH
+# BKG_START_TIME = Background simulation start time in YYMMDDHH
+# IF_ECMWF_ML    = "Yes" or "No" switch to compute ECMWF coefficients for
+#                  initializing with model level data, case insensitive
 #
 #####################################################
 
@@ -143,6 +180,16 @@ fi
 
 # ensure padding to two digits is included
 ens_n=`printf %02d $(( 10#${ENS_N} ))`
+
+if [ ! "${BKG_DATA}"  ]; then
+  echo "ERROR: \$BKG_DATA is not defined"
+  exit 1
+fi
+
+if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
+  echo "ERROR: \${BKG_DATA} must equal \"GFS\" or \"GEFS\" as currently supported inputs."
+  exit 1
+fi
 
 if [ ! "${FCST_LENGTH}" ]; then
   echo "ERROR: \$FCST_LENGTH is not defined"
@@ -159,6 +206,11 @@ if [ ! "${START_TIME}" ]; then
   exit 1
 fi
 
+if [ ! "${BKG_START_TIME}" ]; then
+  echo "ERROR: \$BKG_START_TIME is not defined!"
+  exit 1
+fi
+
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
 if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
   start_time=`echo "${START_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
@@ -169,13 +221,17 @@ fi
 start_time=`date -d "${start_time}"`
 end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
-if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \$MAX_DOM is not defined!"
+# define BKG_START_TIME date string wihtout HH
+bkg_start_date=`echo ${BKG_START_TIME} | cut -c1-8`
+bkg_start_hh=`echo ${BKG_START_TIME} | cut -c9-10`
+
+if [[ ${IF_ECMWF_ML} != ${YES} && ${IF_ECMWF_ML} != ${NO} ]]; then
+  echo "ERROR: \$IF_ECMWF_ML must equal 'Yes' or 'No' (case insensitive)"
   exit 1
 fi
 
 #####################################################
-# Define metgrid workflow dependencies
+# Define ungrib workflow dependencies
 #####################################################
 # Below variables are defined in cycling.xml workflow variables
 #
@@ -184,8 +240,6 @@ fi
 #                  grib data, geogrid data, obs tar files etc.
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
-# MPIRUN         = MPI Command to execute metgrid
-# WPS_PROC       = The total number of processes to run WPS with MPI
 #
 #####################################################
 
@@ -204,69 +258,85 @@ if [ ! -d ${STATIC_DATA} ]; then
   exit 1
 fi
 
-if [ ! -d ${INPUT_DATAROOT} ]; then
-  echo "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
-  exit 1
-fi
-
-if [ ! "${MPIRUN}" ]; then
-  echo "ERROR: \$MPIRUN is not defined!"
-  exit 1
-fi
-
-if [ ! "${WPS_PROC}" ]; then
-  echo "ERROR: \$WPS_PROC is not defined"
-  exit 1
-fi
-
-if [ -z "${WPS_PROC}" ]; then
-  echo "ERROR: The variable \$WPS_PROC must be set to the number of processors to run WPS"
+if [ -z ${INPUT_DATAROOT} ]; then
+  echo "ERROR: \$INPUT_DATAROOT directory name is not defined"
   exit 1
 fi
 
 #####################################################
-# Begin pre-metgrid setup
+# Begin pre-unrib setup
 #####################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
-# work_root      = Working directory where metgrid_exe runs and outputs
-# wps_dat_files  = All file contents of clean WPS directory
-#                  namelists and input data will be linked from other sources
-# metgrid_exe    = Path and name of working executable
+# work_root     = Working directory where ungrib_exe runs and outputs
+# wps_dat_files = All file contents of clean WPS directory
+#                 namelists and input data will be linked from other sources
+# ungrib_exe    = Path and name of working executable
+# vtable        = Path and name of variable table
+# grib_dataroot = Path to the raw data to be processed
 #
 #####################################################
 
 work_root=${INPUT_DATAROOT}/wpsprd/ens_${ens_n}
-set -A wps_dat_files ${WPS_ROOT}/*
-metgrid_exe=${WPS_ROOT}/metgrid.exe
+mkdir -p ${work_root}
+cd ${work_root}
 
-if [ ! -x ${metgrid_exe} ]; then
-  echo "ERROR: ${metgrid_exe} does not exist, or is not executable"
+wps_dat_files=(${WPS_ROOT}/*)
+ungrib_exe=${WPS_ROOT}/ungrib.exe
+
+if [ ! -x ${ungrib_exe} ]; then
+  echo "ERROR: ${ungrib_exe} does not exist, or is not executable"
   exit 1
 fi
 
 # Make links to the WPS DAT files
-cd ${work_root}
 for file in ${wps_dat_files[@]}; do
   echo "ln -sf ${file}"
   ln -sf ${file} ./
 done
 
-# Remove any previous geogrid static files
-rm -f geo_em.d0*
+# Remove any previous Vtables
+rm -f Vtable
 
-# Check to make sure the geogrid input files (e.g. geo_em.d01.nc)
-# are available and make links to them
-dmn=1
-while [ ${dmn} -le ${MAX_DOM} ]; do
-  geoinput_name=${STATIC_DATA}/geogrid/geo_em.d0${dmn}.nc
-  if [ ! -r "${geoinput_name}" ]; then
-    echo "ERROR: Input file '${geoinput_name}' is missing"
-    exit 1
+# Check to make sure the variable table is available in the static
+# data and make a link to it
+vtable=${STATIC_DATA}/variable_tables/Vtable.${BKG_DATA}
+if [ ! -r ${vtable} ]; then
+  echo "ERROR: a 'Vtable' should be provided at location ${vtable}, Vtable not found"
+  exit 1
+else
+  ln -sf ${vtable} ./Vtable
+fi
+
+# check to make sure the grib_dataroot exists and is non-empty
+grib_dataroot=${STATIC_DATA}/gribbed/${BKG_DATA}
+if [! -d ${grib_dataroot} ]; then
+  echo "ERROR: the directory ${grib_dataroot} does not exist"
+  exit 1
+fi
+
+if [ -z `ls -A ${grib_dataroot}`]; then
+  echo "ERROR: ${grib_dataroot} is emtpy, put grib data in this location for processing"
+  exit 1
+fi
+
+# link the grib data to the working directory
+link_cmnd="./link_grib.csh ${grib_dataroot}/${bkg_start_date}"
+if [[ ${BKG_DATA} = "GFS" ]]; then
+  # GFS has single control trajectory
+  fnames="gfs.0p25.${BKG_START_TIME}.f*"
+elif [[ ${BKG_DATA} = "GEFS" ]]; then
+  if [[ ${ens_n} = "00" ]]; then
+    # 00 perturbation is the control forecast
+    fnames="gec${ens_n}.t${bkg_start_hh}z.pgrb*"
+  else
+    # all other are control forecast perturbations
+    fnames="gep${ens_n}.t${bkg_start_hh}z.pgrb*"
   fi
-  ln -sf ${geoinput_name} ./
-  (( dmn += 1 ))
-done
+fi
+
+# link gribbed forecast data
+`${link_cmnd}/${fnames}`
 
 #####################################################
 #  Build WPS namelist
@@ -274,93 +344,102 @@ done
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
 cp ${STATIC_DATA}/namelists/namelist.wps .
 
-# Update max_dom in namelist
-cat namelist.wps | sed "s/\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${MAX_DOM}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
-
 # define start / end time patterns for namelist.wps
 start_yyyymmdd_hhmmss=`date +%Y-%m-%d_%H:%M:%S -d "${start_time}"`
 end_yyyymmdd_hhmmss=`date +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
 
 # Update the start and end date in namelist (propagates settings to three domains)
 cat namelist.wps | sed "s/\(${START}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}','${start_yyyymmdd_hhmmss}'/" \
-                 | sed "s/\(${END}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
-  > namelist.wps.new
+                    | sed "s/\(${END}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*/\1 = '${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}','${end_yyyymmdd_hhmmss}'/" \
+                      > namelist.wps.new
 mv namelist.wps.new namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = DATA_INTERVAL * 3600 ))
 cat namelist.wps | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
-  > namelist.wps.new
+                      > namelist.wps.new
 mv namelist.wps.new namelist.wps
 
-# Remove pre-existing metgrid files
-rm -f ${metgrid_prefix}.d0*.*.${metgrid_suffix}
-
 #####################################################
-# Run metgrid 
+# Run ungrib 
 #####################################################
 # Print run parameters
 echo
 echo "ENS_N          = ${ENS_N}"
+echo "BKG_DATA       = ${BKG_DATA}"
 echo "WPS_ROOT       = ${WPS_ROOT}"
 echo "STATIC_DATA    = ${STATIC_DATA}"
 echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
 echo
 echo "FCST LENGTH    = ${FCST_LENGTH}"
 echo "DATA INTERVAL  = ${DATA_INTERVAL}"
-echo "MAX_DOM        = ${MAX_DOM}"
+echo "IF_ECMWF_ML    = ${IF_ECMWF_ML}"
 echo
 echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
 echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo "BKG_START_TIME = ${BKG_START_TIME}"
 echo
 now=`date +%Y%m%d%H%M%S`
-echo "metgrid started at ${now}"
-
-${MPIRUN} -n ${WPS_PROC} ${metgrid_exe}
+echo "ungrib started at ${now}"
+./ungrib.exe
 
 #####################################################
 # Run time error check
 #####################################################
 error=$?
 
-# save metgrid logs
-log_dir=metgrid_log.${now}
+if [ ${error} -ne 0 ]; then
+  echo "ERROR: ${ungrib_exe} exited with status ${error}"
+  exit ${error}
+fi
+
+# save ungrib logs
+log_dir=ungrib_log.${now}
 mkdir ${log_dir}
-mv metgrid.log* ${log_dir}
+mv ungrib.log ${log_dir}
 
 # save a copy of namelist
 cp namelist.wps ${log_dir}
 
-if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${metgrid_exe} exited with status ${error}"
-  exit ${error}
-fi
+# Check to see if we've got all the files we're expecting
+fcst=0
+while [ ${fcst} -le ${FCST_LENGTH} ]; do
+  filename=FILE:`date +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
+  if [ ! -s ${filename} ]; then
+    echo "ERROR: ${filename} is missing"
+    exit 1
+  fi
+  (( fcst += DATA_INTERVAL ))
+done
 
-# Check to see if metgrid outputs are generated
-dmn=1
-while [ ${dmn} -le ${MAX_DOM} ]; do
+# If ungribbing ECMWF model level data, calculate additional coefficients
+# NOTE: namelist.wps should account for the "PRES" file prefixes in fg_names
+if [[ ${IF_ECMWF_ML} = ${YES} ]]; then
+  ln -sf ${STATIC_DATA}/variable_tables/ecmwf_coeffs ./
+  ./util/calc_ecmwf_p.exe
+  # Check to see if we've got all the files we're expecting
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    time_str=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
-    if [ ! -e "${metgrid_prefix}.d0${dmn}.${time_str}.${metgrid_suffix}" ]; then
-      echo "${metgrid_exe} for d0${dmn} failed to complete"
+    filename=PRES:`date +%Y-%m-%d_%H -d "${start_time} ${fcst} hours"`
+    if [ ! -s ${filename} ]; then
+      echo "ERROR: ${filename} is missing"
       exit 1
     fi
     (( fcst += DATA_INTERVAL ))
   done
-  (( dmn += 1 ))
-done
+fi
 
 # Remove links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
     rm -f `basename ${file}`
 done
 
+# remove links to grib files
+rm -f GRIBFILE.*
+
 # Remove namelist
 rm -f namelist.wps
 
-echo "metgrid.ksh completed successfully at `date`"
+echo "ungrib.sh completed successfully at `date`"
 
 exit 0

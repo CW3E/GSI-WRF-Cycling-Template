@@ -1,8 +1,8 @@
-#!/bin/ksh
+#!/bin/bash
 #####################################################
 # Description
 #####################################################
-# This driver script is a major fork and rewrite of the standard GSI ksh
+# This driver script is a major fork and rewrite of the standard GSI.ksh
 # driver script for the GSI tutorial
 # https://dtcenter.ucar.edu/com-GSI/users/tutorial/online_tutorial/index_v3.7.php
 #
@@ -13,9 +13,9 @@
 # WRF driver script of Christopher Harrop.
 #
 # One should write machine specific options for the GSI environment
-# in a GSI_constants.ksh script to be sourced in the below.  Variables
+# in a GSI_constants.sh script to be sourced in the below.  Variables
 # aliases in this script are based on conventions defined in the
-# companion GSI_constants.ksh with this driver.
+# companion GSI_constants.sh with this driver.
 #
 # SEE THE README FOR FURTHER INFORMATION
 #
@@ -944,6 +944,6 @@ while [ ${dmn} -le ${max_dom} ]; do
   (( dmn += 1 ))
 done
 
-echo "gsi.ksh completed successfully at `date`"
+echo "gsi.sh completed successfully at `date`"
 
 exit 0

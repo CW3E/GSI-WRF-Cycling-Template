@@ -42,11 +42,11 @@
 
   <!-- UNGRIB SETTINGS -->
   <!ENTITY CTR_BKG_DATA        "GFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
-  <!ENTITY WPS_CONSTANT        "&ENVIRONMENTS;/WPS_constants.ksh">
+  <!ENTITY WPS_CONSTANT        "&ENVIRONMENTS;/WPS_constants.sh">
   <!-- END UNGRIB SETTINGS -->
 
   <!-- WRF SETTINGS -->
-  <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.ksh">
+  <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.sh">
   <!ENTITY WRF_CTR_DOM         "2"> <!-- Max domain for control simulation -->
   <!ENTITY WRF_DOWN_DOM        "2"> <!-- Domain index to have ICs downscaled from d01 -->
   <!ENTITY FCST_LENGTH         "48">
@@ -81,7 +81,7 @@
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
   
   <task name="ungrib" maxtries="3" cycledefs="day">
-    <command>&DRIVERS;/ungrib.ksh</command>
+    <command>&DRIVERS;/ungrib.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
@@ -139,7 +139,7 @@
   </task>
 
   <task name="metgrid" maxtries="3" cycledefs="day">
-    <command>&DRIVERS;/metgrid.ksh</command>
+    <command>&DRIVERS;/metgrid.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
@@ -200,7 +200,7 @@
   </task>
 
   <task name="real" maxtries="3" cycledefs="day">
-    <command>&DRIVERS;/real.ksh</command>
+    <command>&DRIVERS;/real.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
@@ -269,7 +269,7 @@
   </task>
 
   <task name="wrfda_latbc" maxtries="4" cycledefs="day">
-    <command>&DRIVERS;/wrfda.ksh</command>
+    <command>&DRIVERS;/wrfda.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
@@ -326,7 +326,7 @@
   </task>
 
   <task name="wrf" maxtries="3" cycledefs="day">
-    <command>&DRIVERS;/wrf.ksh</command>
+    <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>

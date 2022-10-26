@@ -1,12 +1,10 @@
-#!/bin/ksh
+#!/bin/bash
 ##########################################################################
-#
-# Script Name: WRF_constants.ksh
-#
-# Description:
-#    This script localizes several tools specific to this platform.  It
-#    should be called by other workflow scripts to define common
-#    variables.
+# Description
+##########################################################################
+# This script localizes several tools specific to this platform.  It
+# should be called by other workflow scripts to define common
+# variables.
 #
 ##########################################################################
 # License Statement:
@@ -30,14 +28,14 @@
 export TZ="GMT"
 
 # sets COMET specific environment for intelmpi 2019.5.281
-eval `/bin/modulecmd ksh purge`
+module purge
 export MODULEPATH=/share/apps/compute/modulefiles:$MODULEPATH
-eval `/bin/modulecmd ksh load intel/2019.5.281`
-eval `/bin/modulecmd ksh load intelmpi/2019.5.281`
+module load intel/2019.5.281
+module load intelmpi/2019.5.281
 export MODULEPATH=/share/apps/compute/modulefiles/applications:$MODULEPATH
-eval `/bin/modulecmd ksh load hdf5/1.10.7`
-eval `/bin/modulecmd ksh load netcdf/4.7.4intelmpi`
-eval `/bin/modulecmd ksh list`
+module load hdf5/1.10.7
+module load netcdf/4.7.4intelmpi
+module list
 
 # Create paths for netcdf
 export JASPERLIB="/usr/lib64"

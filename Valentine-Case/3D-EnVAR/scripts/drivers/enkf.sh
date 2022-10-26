@@ -1,8 +1,8 @@
-#!/bin/ksh
+#!/bin/bash
 #####################################################
 # Description
 #####################################################
-# This driver script is a major fork and rewrite of the standard EnKF ksh
+# This driver script is a major fork and rewrite of the standard EnKF.ksh
 # driver script as discussed in the documentation:
 # https://dtcenter.ucar.edu/EnKF/users/docs/enkf_users_guide/html_v1.3/enkf_ch3.html
 #
@@ -13,9 +13,9 @@
 # WRF driver script of Christopher Harrop.
 #
 # One should write machine specific options for the GSI environment
-# in a GSI_constants.ksh script to be sourced in the below.  Variables
+# in a GSI_constants.sh script to be sourced in the below.  Variables
 # aliases in this script are based on conventions defined in the
-# companion GSI_constants.ksh with this driver.
+# companion GSI_constants.sh with this driver.
 #
 # SEE THE README FOR FURTHER INFORMATION
 #
@@ -262,6 +262,6 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   (( dmn += 1 ))
 done
 
-echo "enkf.ksh completed successfully at `date`"
+echo "enkf.sh completed successfully at `date`"
 
 exit 0

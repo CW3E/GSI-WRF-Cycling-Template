@@ -1,6 +1,12 @@
 ##################################################################################
 # Description
 ##################################################################################
+# This module is designed to centralize the path definitions and assignment of
+# different possible control flows for the rocoto workflow manager.  One
+# should define the appropriate paths for their system in the GLOBAL PARAMETERS
+# below, and specify the appropriate control flow for the task.  Methods in this
+# module can be used in other scripts for automating rocoto actions or used
+# stand alone in a python sesssion by importing the module.
 #
 ##################################################################################
 # License Statement:
@@ -28,25 +34,28 @@ import os
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
-# directory for git clone
+# directory for git clone of GSI-WRF-Cycling-Template
 USR_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
-# project directory
-PRJ_DIR = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
+# directory for rocoto install
+RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
 # name of .xml workflow WITHOUT the extension
 #CTR_FLW = '3denvar_wps_perts'
 #CTR_FLW = '3denvar_enkf'
-#CTR_FLW = '3denvar_downscale'
+CTR_FLW = '3denvar_downscale'
 #CTR_FLW = 'ensemble_forecast'
-CTR_FLW = 'deterministic_forecast'
-
-# path to rocoto binary root directory
-PATHROC = USR_HME + '/rocoto'
+#CTR_FLW = 'deterministic_forecast'
 
 ##################################################################################
 # Derived paths
 ##################################################################################
+# project directory
+PRJ_DIR = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
+
+# path to rocoto binary root directory
+PATHROC = RCT_HME + '/rocoto'
+
 # path to .xml control flows 
 flw_dir =  PRJ_DIR + '/control_flows'
 
