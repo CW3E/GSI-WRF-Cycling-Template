@@ -50,7 +50,7 @@ from py_plt_utilities import STR_INDT, PROJ_ROOT
 CTR_FLW = 'deterministic_forecast'
 
 # start date time of WRF forecast in YYYYMMDDHH
-START_DT = '2019021100'
+START_DT = '2019021300'
 
 # pressure levels to interpolate to
 PLVS = [250, 500, 700, 850, 925]

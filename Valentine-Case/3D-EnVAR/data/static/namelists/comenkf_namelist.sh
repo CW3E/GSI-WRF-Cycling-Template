@@ -2,7 +2,7 @@
 cat <<EOF > enkf.nml
 
  &nam_enkf
-  datestring          = '$ANAL_TIME',
+  datestring          = '$ANL_TIME',
   datapath            = './',
   analpertwtnh        = 0.9,
   analpertwtsh        = 0.9,

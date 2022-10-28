@@ -390,92 +390,69 @@ while [ ${dmn} -le ${max_dom} ]; do
      srcobsfile=()
      gsiobsfile=()
 
-     # tested
      srcobsfile+=("1bamua")
      gsiobsfile+=("amsuabufr")
 
-     # not available for dates
-     #srcobsfile+=("1bamub")
-     #gsiobsfile+=("amsubbufr")
+     srcobsfile+=("1bamub")
+     gsiobsfile+=("amsubbufr")
 
-     # available, not tested
-     #srcobsfile+=("1bhrs4")
-     #gsiobsfile+=("hirs4bufr")
+     srcobsfile+=("1bhrs4")
+     gsiobsfile+=("hirs4bufr")
 
-     # available, not tested
-     #srcobsfile+=("1bmhs")
-     #gsiobsfile+=("mhsbufr")
+     srcobsfile+=("1bmhs")
+     gsiobsfile+=("mhsbufr")
 
-     # available, not tested
-     #srcobsfile+=("airsev")
-     #gsiobsfile+=("airsbufr")
+     srcobsfile+=("airsev")
+     gsiobsfile+=("airsbufr")
 
-     # not available for dates
      #srcobsfile+=("amsr2")
      #gsiobsfile+=("amsrebufr")
 
-     # available, not tested
-     #srcobsfile+=("atms")
-     #gsiobsfile+=("atmsbufr")
+     srcobsfile+=("atms")
+     gsiobsfile+=("atmsbufr")
 
-     # not available for dates
      #srcobsfile+=("esamua")
      #gsiobsfile+=("amsuabufrears")
 
-     # available, not tested
-     #srcobsfile+=("eshrs3")
-     #gsiobsfile+=("hirs3bufrears")
+     srcobsfile+=("eshrs3")
+     gsiobsfile+=("hirs3bufrears")
 
-     # available, not tested
-     #srcobsfile+=("esmhs")
-     #gsiobsfile+=("mhsbufrears")
+     srcobsfile+=("esmhs")
+     gsiobsfile+=("mhsbufrears")
 
-     # available, not tested
-     #srcobsfile+=("geoimr")
-     #gsiobsfile+=("gimgrbufr")
+     srcobsfile+=("geoimr")
+     gsiobsfile+=("gimgrbufr")
 
-     # not available for dates
-     #srcobsfile+=("goesfv")
-     #gsiobsfile+=("gsnd1bufr")
+     srcobsfile+=("goesfv")
+     gsiobsfile+=("gsnd1bufr")
 
-     # available, not tested
-     #srcobsfile+=("gome")
-     #gsiobsfile+=("gomebufr")
+     srcobsfile+=("gome")
+     gsiobsfile+=("gomebufr")
 
-     # not available for dates
-     #srcobsfile+=("lgycld")
-     #gsiobsfile+=("larcglb")
-
-     # not available for dates
-     #srcobsfile+=("nexrad")
-     #gsiobsfile+=("l2rbufr")
-
-     # not available for dates
-     #srcobsfile+=("omi")
-     #gsiobsfile+=("omibufr")
-
-     # tested
      srcobsfile+=("gpsro")
      gsiobsfile+=("gpsrobufr")
 
-     # tested
-     #srcobsfile+=("mtiasi")
-     #gsiobsfile+=("iasibufr")
+     #srcobsfile+=("lgycld")
+     #gsiobsfile+=("larcglb")
 
-     # available, not tested
-     #srcobsfile+=("osbuv8")
-     #gsiobsfile+=("sbuvbufr")
+     srcobsfile+=("mtiasi")
+     gsiobsfile+=("iasibufr")
 
-     # tested
+     #srcobsfile+=("nexrad")
+     #gsiobsfile+=("l2rbufr")
+
+     #srcobsfile+=("omi")
+     #gsiobsfile+=("omibufr")
+
+     srcobsfile+=("osbuv8")
+     gsiobsfile+=("sbuvbufr")
+
      srcobsfile+=("satwnd")
      gsiobsfile+=("satwndbufr")
 
-     # available, not tested
-     #srcobsfile+=("ssmisu")
-     #gsiobsfile+=("ssmirrbufr")
+     srcobsfile+=("ssmisu")
+     gsiobsfile+=("ssmirrbufr")
 
-     # available, not tested
-     # not recommended by Minghua
      #srcobsfile+=("sevcsr")
      #gsiobsfile+=("seviribufr")
 
@@ -506,10 +483,10 @@ while [ ${dmn} -le ${max_dom} ]; do
      done
   fi
 
-  echo " Copy fixed files and link CRTM coefficient files to working directory"
+  echo " Copy fix files and link CRTM coefficient files to working directory"
 
   #####################################################
-  # Set fixed files
+  # Set fix files
   #
   #   berror    = Forecast model background error statistics
   #   specoef   = CRTM spectral coefficients
@@ -607,11 +584,12 @@ while [ ${dmn} -le ${max_dom} ]; do
      ln -s ${crtm_root_order}/${file}.TauCoeff.bin ./
   done
 
-  # NOTE: manual linking taken from Minghua's example driver, IASI CRTM coefficients do not follow
-  # the above dynamic linking pattern and must be set manually, airs linking below doesn't exist in
-  # standard CRTM, may need to follow up later
-  #ln -sf ${crtm_root_order}/airs281SUBSET_aqua.SpcCoeff.bin ./airs_aqua.SpcCoeff.bin    
-  #ln -sf ${crtm_root_order}/airs281SUBSET_aqua.TauCoeff.bin ./airs_aqua.TauCoeff.bin
+  # NOTE: manual linking below is taken from Minghua's example driver, ask about this
+  #ln -sf ${CRTM_ROOT_ORDER}/airs281SUBSET_aqua.SpcCoeff.bin ./airs_aqua.SpcCoeff.bin    
+  #ln -sf ${CRTM_ROOT_ORDER}/airs281SUBSET_aqua.TauCoeff.bin ./airs_aqua.TauCoeff.bin
+  # NOTE: the above versions don't exist in CRTM v2.3.0, but the below do
+  ln -sf ${CRTM_ROOT_ORDER}/airs281_aqua.SpcCoeff.bin ./airs_aqua.SpcCoeff.bin    
+  ln -sf ${CRTM_ROOT_ORDER}/airs281_aqua.TauCoeff.bin ./airs_aqua.TauCoeff.bin
   ln -sf ${crtm_root_order}/iasi616_metop-a.SpcCoeff.bin ./iasi_metop-a.SpcCoeff.bin
   ln -sf ${crtm_root_order}/iasi616_metop-a.TauCoeff.bin ./iasi_metop-a.TauCoeff.bin
   ln -sf ${crtm_root_order}/iasi616_metop-b.SpcCoeff.bin ./iasi_metop-b.SpcCoeff.bin

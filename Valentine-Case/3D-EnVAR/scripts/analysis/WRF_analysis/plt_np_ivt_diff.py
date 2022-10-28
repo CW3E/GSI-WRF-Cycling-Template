@@ -53,7 +53,7 @@ CTR_FLW = 'deterministic_forecast'
 
 # start date time of WRF forecast in YYYYMMDDHH
 # or set to 'era5' to compare versus the ERA5 reanalysis
-START_DT1 = '2019021400' 
+START_DT1 = '2019021100' 
 START_DT2 = 'era5'
 
 # valid date for data
