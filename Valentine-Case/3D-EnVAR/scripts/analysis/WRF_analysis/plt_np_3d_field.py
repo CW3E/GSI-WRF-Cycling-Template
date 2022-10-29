@@ -1,10 +1,10 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This will plot IWV, wind and pressure contour data generated from the companion
-# script proc_wrfout_np.py.  The plotting script will null out values of the
-# parent domain lying in nested domains, currently only developed for two
-# domains.  
+# This will plot an arbitrary 3D field interpolated to a specific pressure level
+# data generated from the companion script proc_wrfout_np.py.  The plotting 
+# script will null out values of the parent domain lying in nested domains,
+# currently only developed for two domains.
 #
 ##################################################################################
 # License Statement
@@ -54,6 +54,14 @@ START_DT = '2019021200'
 # analysis date time of inputs / outputs 
 ANL_DT = '2019-02-14_00:00:00'
 
+# heat plot pressure level and variable
+H_PL = 700
+H_VAR = 'rh'
+
+# contour plot pressure level and variable, leave pressure level '' for sea level
+C_PL = ''
+C_VAR = 'slp'
+
 # pressure level for plotting wind barbs
 W_PL = 850
 
@@ -63,7 +71,7 @@ W_PL = 850
 # define derived data paths 
 data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW
 in_path = data_root + '/processed_numpy/' + START_DT
-out_path = data_root + '/iwv_plots'
+out_path = data_root + '/3d_int_plots'
 os.system('mkdir -p ' + out_path)
 
 # load data
@@ -84,35 +92,36 @@ ax1 = fig.add_axes([.05, .10, .8, .8], projection=cart_proj)
 ax2 = fig.add_axes(ax1.get_position(), frameon=False)
 ax3 = fig.add_axes([.03, .05, .8, .05], frameon=False)
 
-# hard code the iwv scale to target ARs
-iwv_min = 20
-iwv_max = 60
-color_map = sns.hls_palette(n_colors=40, h=0.68, s=0.9, l=0.55,
-        as_cmap=True).reversed()
-cnorm = nrm(vmin=iwv_min, vmax=iwv_max)
-
 # make the scales of d01 / d02 equivalent in color map
-iwv_d01 = data['d01']['iwv'].flatten()
-iwv_d02 = data['d02']['iwv'].flatten()
-iwvs = [iwv_d01, iwv_d02]
+H_VAR_d01 = data['d01']['pl_' + str(H_PL)][H_VAR].flatten()
+H_VAR_d02 = data['d02']['pl_' + str(H_PL)][H_VAR].flatten()
 
-# find the index of values that lie below the iwv_min
-indxs = [[], []]
-for i in range(2):
-    for k in range(len(iwvs[i])):
-        if iwvs[i][k] < iwv_min:
-            indxs[i].append(k)
+# define color map and scale depending on variable
+if H_VAR == 'rh':
+   # % units with fixed range
+   cnorm = nrm(vmin=0, vmax=100)
+   color_map = sns.cubehelix_palette(80, start=.75, rot=1.50, as_cmap=True, reverse=True, dark=0.25)
+
+elif H_VAR == 'temp':
+    # normal temperature range will be hard coded
+    cnorm = nrm(vmin=250, vmax=314)
+    color_map = sns.color_palette('viridis', as_cmap=True)
+
+else:
+    # find the max / min value over the inner 100 - alpha percentile range of the data
+    scale = np.append(H_VAR_d01, H_VAR_d02)
+    scale = scale[~np.isnan(scale.data)]
+    alpha = 1
+    max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
+    color_map = sns.color_palette('flare_r', as_cmap=True)
+    cnorm = nrm(vmin=min_scale, vmax=max_scale)
 
 # NaN out all values of d01 that lie in d02
-iwv_d01[data['d02']['indx']] = np.nan
+H_VAR_d01[data['d02']['indx']] = np.nan
 
-# NaN out all values of both domains that lie below the threshold
-iwv_d01[indxs[0]] = np.nan
-iwv_d02[indxs[1]] = np.nan
-
-# plot iwv as intensity in scatter / heat plot for parent domain
+# plot H_VAR as intensity in scatter / heat plot for parent domain
 ax1.scatter(x=data['d01']['lons'], y=data['d01']['lats'],
-            c=iwv_d01,
+            c=H_VAR_d01,
             alpha=0.600,
             cmap=color_map,
             norm=cnorm,
@@ -122,9 +131,9 @@ ax1.scatter(x=data['d01']['lons'], y=data['d01']['lats'],
             transform=crs.PlateCarree(),
            )
 
-# plot iwv as intensity in scatter / heat plot for nested domain
+# plot H_VAR as intensity in scatter / heat plot for nested domain
 ax1.scatter(x=data['d02']['lons'], y=data['d02']['lats'],
-            c=iwv_d02,
+            c=H_VAR_d02,
             alpha=0.600,
             cmap=color_map,
             norm=cnorm,
@@ -170,11 +179,17 @@ ax1.plot(
          color='k',
         )
 
-# add slp contour plot
-c_pl = ''
-c_var = 'slp'
-c_var_pl = np.array(data['d01'][c_var]).flatten()
-c_var_levels =[1000, 1008, 1016, 1024]
+if C_PL == '' and C_VAR == 'slp':
+    # add slp contour plot
+    c_var_pl = np.array(data['d01'][C_VAR]).flatten()
+    c_var_levels =[1000, 1008, 1016, 1024]
+
+else:
+    # add pressure level contour plot
+    C_PL = 250
+    C_VAR = 'rh'
+    c_var_levels = 4
+    c_var_pl = data['d01']['pl_' + str(C_PL)][C_VAR].flatten()
 
 # shape contour data for contour function in x / y coordinates
 lats = np.array(data['d01']['lats'])
@@ -215,12 +230,6 @@ wndx = data['d01']['xx']
 wndy = data['d01']['yy']
 wndu = data['d01']['pl_' + str(W_PL)]['u'].flatten()
 wndv = data['d01']['pl_' + str(W_PL)]['v'].flatten()
-
-# delete the wind barbs that fall below the threshold
-wndx = np.delete(wndx, indxs[0])
-wndy = np.delete(wndy, indxs[0])
-wndu = np.delete(wndu, indxs[0])
-wndv = np.delete(wndv, indxs[0])
 
 barb_incs = {
              'half':5,
@@ -276,7 +285,7 @@ ax3.text(1.02, 0, '50 knots', {'fontsize': 18})
 
 # Add a color bar
 cb(ax=ax0, cmap=color_map, norm=cnorm)
-ax0.tick_params(
+ax1.tick_params(
     labelsize=21,
     )
 
@@ -290,8 +299,8 @@ ax2.set_position(ax1.get_position())
 # Add the gridlines
 ax1.gridlines(color='black', linestyle='dotted')
 
-title1 = ANL_DT[:13] + r' - IWV $kg $ $m^{-2}$ / ' + str(W_PL) + 'hPa wind / ' +\
-        c_pl + ' ' + c_var + ' contours'
+title1 = ANL_DT[:13] + r' - ' + str(H_PL) + 'hPa ' + H_VAR + ' / ' +\
+        str(W_PL) + 'hPa wind / ' + C_PL + ' ' + C_VAR + ' contours'
 start_dt = START_DT[:4] + '-' + START_DT[4:6] + '-' + START_DT[6:8] + '_' +\
         START_DT[8:]
 title2 = 'fzh - ' + start_dt
@@ -300,8 +309,10 @@ plt.figtext(.50, .96, title1, horizontalalignment='center',
 plt.figtext(.50, .91, title2, horizontalalignment='center',
         verticalalignment='center', fontsize=22)
 
-fig.savefig(out_path + '/' + ANL_DT[:13] + '_fzh_' + start_dt + '_iwv_' +\
-            str(W_PL) + '_wind_' + c_var + '.png')
+fig.savefig(out_path + '/' + ANL_DT[:13] + '_fzh_' + start_dt + '_' +\
+            str(H_PL) + '_' + H_VAR + '_' +\
+            str(W_PL) + '_wind_' +\
+            str(C_PL) + '_' + C_VAR + '.png')
 plt.show()
 
 ##################################################################################

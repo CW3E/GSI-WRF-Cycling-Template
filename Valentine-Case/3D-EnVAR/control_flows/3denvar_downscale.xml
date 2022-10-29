@@ -694,7 +694,7 @@
     </dependency>
   </task>
 
-  <task name="first_wrf_ens_00" maxtries="3" cycledefs="first_cycle">
+  <task name="first_wrf_ens_00" maxtries="4" cycledefs="first_cycle">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
@@ -791,7 +791,7 @@
     </dependency>
   </task>
 
-  <task name="wrf_ens_00" maxtries="3" cycledefs="q_daily">
+  <task name="wrf_ens_00" maxtries="5" cycledefs="q_daily">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
@@ -890,7 +890,7 @@
 
   <metatask name="ensemble_fore">
     <var name="ENS_N">&ENS_LIST;</var>
-    <task name="wrf_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
+    <task name="wrf_ens_#ENS_N#" maxtries="10" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/wrf.sh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>

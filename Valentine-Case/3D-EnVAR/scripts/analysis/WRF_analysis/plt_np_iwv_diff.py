@@ -1,6 +1,11 @@
 ##################################################################################
 # Description
 ##################################################################################
+# This plots the point-wise difference in IWV from two wrfout files
+# pre-processed with the companion proc_wrfout_np.py script.  Start dates
+# and valide date of the output file are specified in the global parameters
+# below, where this can be used to measure versus ERA5 downscaled to the 
+# forecast domain.
 #
 ##################################################################################
 # License Statement
@@ -21,8 +26,11 @@
 #     limitations under the License.
 # 
 ##################################################################################
-# imports / exports
-import matplotlib as mpl
+# Imports
+##################################################################################
+import matplotlib
+# use this setting on COMET / Skyriver for x forwarding
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
 from matplotlib.cm import get_cmap
@@ -34,31 +42,44 @@ import numpy as np
 import pickle
 import os
 import copy
+from py_plt_utilities import PROJ_ROOT
 
 ##################################################################################
-# file paths
-start_date_1 = '2019021300' 
-start_date_2 = '2019021400' 
-f_in_path_1 = './processed_numpy/' + start_date_1
-f_in_path_2 = './processed_numpy/' + start_date_2
-f_out_path = './processed_numpy/iwv_diff_plots'
-os.system('mkdir -p ' + f_out_path)
+# SET GLOBAL PARAMETERS
+##################################################################################
+# define control flow to analyze 
+CTR_FLW = 'deterministic_forecast'
 
-# date for files
-date = '2019-02-14_00:00:00'
+# start date time of WRF forecast in YYYYMMDDHH
+# or set to 'era5' to compare versus the ERA5 reanalysis
+START_DT1 = '2019021100' 
+START_DT2 = 'era5'
+
+# valid date for data
+ANL_DT = '2019-02-14_00:00:00'
+
+##################################################################################
+# Begin plotting
+##################################################################################
+# define derived data paths 
+data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW
+in_path1 = data_root + '/processed_numpy/' + START_DT1
+in_path2 = data_root + '/processed_numpy/' + START_DT2
+out_path = data_root + '/iwv_diff_plots'
+os.system('mkdir -p ' + out_path)
 
 # load data file 1 which is used as the reference data
-f_1 = open(f_in_path_1 + '/start_' + start_date_1 + '_forecast_' + date + '.txt', 'rb')
-data = pickle.load(f_1)
-f_1.close()
+f1 = open(in_path1 + '/start_' + START_DT1 + '_forecast_' + ANL_DT + '.bin', 'rb')
+dataf1 = pickle.load(f1)
+f1.close()
 
 # load data file 2 which we compute divergence with
-f_2 = open(f_in_path_2 + '/start_' + start_date_2 + '_forecast_' + date + '.txt', 'rb')
-data_diff = pickle.load(f_2)
-f_2.close()
+f2 = open(in_path2 + '/start_' + START_DT2 + '_forecast_' + ANL_DT + '.bin', 'rb')
+dataf2 = pickle.load(f2)
+f2.close()
 
 # load the projection
-cart_proj = data['cart_proj']
+cart_proj = dataf1['cart_proj']
 
 # Create a figure
 fig = plt.figure(figsize=(11.25,8.63))
@@ -67,21 +88,21 @@ fig = plt.figure(figsize=(11.25,8.63))
 ax0 = fig.add_axes([.875, .10, .05, .8])
 ax1 = fig.add_axes([.05, .10, .8, .8], projection=cart_proj)
 
-# unpack variables and compute the divergence from f_2
-h1_var_d01 = data['d01']['iwv'].flatten()
-h1_var_d02 = data['d02']['iwv'].flatten()
+# unpack variables and compute the divergence from f2
+f1_d01 = dataf1['d01']['iwv'].flatten()
+f1_d02 = dataf1['d02']['iwv'].flatten()
 
-h2_var_d01 = data_diff['d01']['iwv'].flatten()
-h2_var_d02 = data_diff['d02']['iwv'].flatten()
+f2_d01 = dataf2['d01']['iwv'].flatten()
+f2_d02 = dataf2['d02']['iwv'].flatten()
 
-h_diff_d01 = h1_var_d01 - h2_var_d01
-h_diff_d02 = h1_var_d02 - h2_var_d02
+h_diff_d01 = f1_d01 - f2_d01
+h_diff_d02 = f1_d02 - f2_d02
 
 # optional method for asymetric divergence plots
-class MidpointNormalize(mpl.colors.Normalize):
+class MidpointNormalize(nrm):
     def __init__(self, vmin, vmax, midpoint=0, clip=False):
         self.midpoint = midpoint
-        mpl.colors.Normalize.__init__(self, vmin, vmax, clip)
+        nrm.__init__(self, vmin, vmax, clip)
 
     def __call__(self, value, clip=None):
         normalized_min = max(0, 1 / 2 * (1 - abs((self.midpoint - self.vmin) / (self.midpoint - self.vmax))))
@@ -106,13 +127,13 @@ abs_scale = 20
 
 # make a symmetric color map about zero
 cnorm = nrm(vmin=-abs_scale, vmax=abs_scale)
-color_map = sns.diverging_palette(145, 300, s=60, as_cmap=True)
+color_map = sns.diverging_palette(280, 30, l=65, as_cmap=True)
 
 # NaN out all values of d01 that lie in d02
-h_diff_d01[data['d02']['indx']] = np.nan
+h_diff_d01[dataf1['d02']['indx']] = np.nan
 
 # plot iwv as intensity in scatter / heat plot for parent domain
-ax1.scatter(x=data['d01']['lons'], y=data['d01']['lats'],
+ax1.scatter(x=dataf1['d01']['lons'], y=dataf1['d01']['lats'],
             c=h_diff_d01.data,
             cmap=color_map,
             norm=cnorm,
@@ -123,7 +144,7 @@ ax1.scatter(x=data['d01']['lons'], y=data['d01']['lats'],
            )
 
 # plot iwv as intensity in scatter / heat plot for nested domain
-ax1.scatter(x=data['d02']['lons'], y=data['d02']['lats'],
+ax1.scatter(x=dataf1['d02']['lons'], y=dataf1['d02']['lats'],
             c=h_diff_d02.data,
             cmap=color_map,
             norm=cnorm,
@@ -135,8 +156,8 @@ ax1.scatter(x=data['d02']['lons'], y=data['d02']['lats'],
 
 # bottom boundary
 ax1.plot(
-         [data['d02']['x_lim'][0], data['d02']['x_lim'][1]],
-         [data['d02']['y_lim'][0], data['d02']['y_lim'][0]],
+         [dataf1['d02']['x_lim'][0], dataf1['d02']['x_lim'][1]],
+         [dataf1['d02']['y_lim'][0], dataf1['d02']['y_lim'][0]],
          linestyle='-',
          linewidth=1.5,
          color='k',
@@ -144,8 +165,8 @@ ax1.plot(
 
 # top boundary
 ax1.plot(
-         [data['d02']['x_lim'][0], data['d02']['x_lim'][1]],
-         [data['d02']['y_lim'][1], data['d02']['y_lim'][1]],
+         [dataf1['d02']['x_lim'][0], dataf1['d02']['x_lim'][1]],
+         [dataf1['d02']['y_lim'][1], dataf1['d02']['y_lim'][1]],
          linestyle='-',
          linewidth=1.5,
          color='k',
@@ -153,8 +174,8 @@ ax1.plot(
 
 # left boundary
 ax1.plot(
-         [data['d02']['x_lim'][0], data['d02']['x_lim'][0]],
-         [data['d02']['y_lim'][0], data['d02']['y_lim'][1]],
+         [dataf1['d02']['x_lim'][0], dataf1['d02']['x_lim'][0]],
+         [dataf1['d02']['y_lim'][0], dataf1['d02']['y_lim'][1]],
          linestyle='-',
          linewidth=1.5,
          color='k',
@@ -162,8 +183,8 @@ ax1.plot(
 
 # right boundary
 ax1.plot(
-         [data['d02']['x_lim'][1], data['d02']['x_lim'][1]],
-         [data['d02']['y_lim'][0], data['d02']['y_lim'][1]],
+         [dataf1['d02']['x_lim'][1], dataf1['d02']['x_lim'][1]],
+         [dataf1['d02']['y_lim'][0], dataf1['d02']['y_lim'][1]],
          linestyle='-',
          linewidth=1.5,
          color='k',
@@ -177,26 +198,39 @@ ax1.add_feature(cfeature.BORDERS)
 # Add a color bar
 cb(ax=ax0, cmap=color_map, norm=cnorm)
 ax1.tick_params(
-    labelsize=16,
+    labelsize=21,
     )
 
 # Set the map bounds
-ax1.set_xlim(data['d01']['x_lim'])
-ax1.set_ylim(data['d01']['y_lim'])
+ax1.set_xlim(dataf1['d01']['x_lim'])
+ax1.set_ylim(dataf1['d01']['y_lim'])
 
 # Add the gridlines
 ax1.gridlines(color='black', linestyle='dotted')
 
 # make title and save figure
-d1 = copy.copy(start_date_1) 
-d2 = copy.copy(start_date_2)
+d1 = copy.copy(START_DT1) 
+d1 = d1[:4] + '-' + d1[4:6] + '-' + d1[6:8] + '_' + d1[8:]
 
-d1 = d1[:4] + ':' + d1[4:6] + ':' + d1[6:8] + '_' + d1[8:] + ':00:00'
-d2 = d2[:4] + ':' + d2[4:6] + ':' + d2[6:8] + '_' + d2[8:] + ':00:00'
+if START_DT2 == 'era5':
+    d2 = 'ERA5 reanalysis'
+    out_name = out_path + '/' + ANL_DT[:13] + '_iwv_diff_plot_fzh1_' + d1 + '_fzh2_' + START_DT2 + '.png' 
+else:
+    d2 = copy.copy(START_DT2)
+    d2 = d2[:4] + ':' + d2[4:6] + ':' + d2[6:8] + '_' + d2[8:]
+    out_name = out_path + '/' + ANL_DT[:13] + '_iwv_diff_plot_fzh1_' + d1 + '_fzh2_' + d2 + '.png' 
 
-title1 = 'iwv - ' + date
-title2 = 'fzh ' + d1 + ' minus fzh ' + d2
-plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=18)
-plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=18)
-plt.savefig(f_out_path + '/' + date + '_iwv_diff_plot_fzh1_' + d1 + '_fzh2_' + d2 + '.png')
+title1 = 'iwv - ' + ANL_DT[:13]
+
+if START_DT2 == 'era5':
+    title2 = 'fzh - ' + d1 + ' minus ' + d2
+else:
+    title2 = 'fzh - ' + d1 + ' minus fzh -' + d2
+
+plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=22)
+plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=22)
+plt.savefig(out_name)
 plt.show()
+
+##################################################################################
+# end

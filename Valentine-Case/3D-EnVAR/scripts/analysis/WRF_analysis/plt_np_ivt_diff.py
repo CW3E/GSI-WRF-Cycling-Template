@@ -28,10 +28,9 @@
 ##################################################################################
 # Imports
 ##################################################################################
-import matplotlib 
-# use this setting on COMET / Skyriver for x forwarding                                                               
+import matplotlib
+# use this setting on COMET / Skyriver for x forwarding
 matplotlib.use('TkAgg')
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
 from matplotlib.cm import get_cmap
@@ -63,9 +62,9 @@ ANL_DT = '2019-02-14_00:00:00'
 # Begin plotting
 ##################################################################################
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/processed_numpy'
-in_path1 = data_root + '/' + START_DT1
-in_path2 = data_root + '/' + START_DT2
+data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW
+in_path1 = data_root + '/processed_numpy/' + START_DT1
+in_path2 = data_root + '/processed_numpy/' + START_DT2
 out_path = data_root + '/ivt_diff_plots'
 os.system('mkdir -p ' + out_path)
 
@@ -100,10 +99,10 @@ h_diff_d01 = f1_d01 - f2_d01
 h_diff_d02 = f1_d02 - f2_d02
 
 # optional method for asymetric divergence plots
-class MidpointNormalize(mpl.colors.Normalize):
+class MidpointNormalize(nrm):
     def __init__(self, vmin, vmax, midpoint=0, clip=False):
         self.midpoint = midpoint
-        mpl.colors.Normalize.__init__(self, vmin, vmax, clip)
+        nrm.__init__(self, vmin, vmax, clip)
 
     def __call__(self, value, clip=None):
         normalized_min = max(0, 1 / 2 * (1 - abs((self.midpoint - self.vmin) / (self.midpoint - self.vmax))))
@@ -128,7 +127,6 @@ abs_scale = 400
 
 # make a symmetric color map about zero
 cnorm = nrm(vmin=-abs_scale, vmax=abs_scale)
-#color_map = sns.diverging_palette(280, 30, l=65, as_cmap=True)
 color_map = sns.diverging_palette(145, 300, s=60, as_cmap=True)
 
 # NaN out all values of d01 that lie in d02
@@ -212,22 +210,22 @@ ax1.gridlines(color='black', linestyle='dotted')
 
 # make title and save figure
 d1 = copy.copy(START_DT1) 
+d1 = d1[:4] + '-' + d1[4:6] + '-' + d1[6:8] + '_' + d1[8:]
 
-d1 = d1[:4] + ':' + d1[4:6] + ':' + d1[6:8] + '_' + d1[8:]
 if START_DT2 == 'era5':
     d2 = 'ERA5 reanalysis'
-    out_name = out_path + '/' + ANL_DT + '_ivtm_diff_plot_fzh1_' + d1 + '_fzh2_' + START_DT2 + '.png' 
+    out_name = out_path + '/' + ANL_DT[:13] + '_ivtm_diff_plot_fzh1_' + d1 + '_fzh2_' + START_DT2 + '.png' 
 else:
     d2 = copy.copy(START_DT2)
     d2 = d2[:4] + ':' + d2[4:6] + ':' + d2[6:8] + '_' + d2[8:]
-    out_name = out_path + '/' + ANL_DT + '_ivtm_diff_plot_fzh1_' + d1 + '_fzh2_' + d2 + '.png' 
+    out_name = out_path + '/' + ANL_DT[:13] + '_ivtm_diff_plot_fzh1_' + d1 + '_fzh2_' + d2 + '.png' 
 
 title1 = 'ivtm - ' + ANL_DT[:13]
 
 if START_DT2 == 'era5':
-    title2 = 'fzh ' + d1 + ' minus ' + d2
+    title2 = 'fzh - ' + d1 + ' minus ' + d2
 else:
-    title2 = 'fzh ' + d1 + ' minus fzh ' + d2
+    title2 = 'fzh - ' + d1 + ' minus fzh -' + d2
 
 plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=22)
 plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=22)

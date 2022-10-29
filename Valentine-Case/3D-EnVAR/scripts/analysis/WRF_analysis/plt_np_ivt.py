@@ -28,8 +28,8 @@
 ##################################################################################
 # Imports
 ##################################################################################
-import matplotlib 
-# use this setting on COMET / Skyriver for x forwarding                                                               
+import matplotlib
+# use this setting on COMET / Skyriver for x forwarding
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
@@ -59,8 +59,8 @@ ANL_DT = '2019-02-14_00:00:00'
 # Begin plotting
 ##################################################################################
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/processed_numpy'
-in_path = data_root + '/' + START_DT
+data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW
+in_path = data_root + '/processed_numpy/' + START_DT
 out_path = data_root + '/ivt_plots'
 os.system('mkdir -p ' + out_path)
 
@@ -173,12 +173,6 @@ c_var = 'slp'
 c_var_pl = np.array(data['d01'][c_var]).flatten()
 c_var_levels =[1000, 1008, 1016, 1024]
 
-# add pressure level contour plot
-#c_pl = 250
-#c_var = 'rh'
-#c_var_levels = 4
-#c_var_pl = data['d01']['pl_' + str(c_pl)][c_var].flatten()
-
 # shape contour data for contour function in x / y coordinates
 lats = np.array(data['d01']['lats'])
 lons = np.array(data['d01']['lons'])
@@ -210,7 +204,7 @@ ax1.add_feature(cfeature.COASTLINE)
 ax1.add_feature(cfeature.STATES)
 ax1.add_feature(cfeature.BORDERS)
 
-# Add ivt u / v directional barbs plotting every w_kth data point above the threshold
+# Add ivt u / v directional barbs plotting every w_kth point above the threshold
 w_k = 4000
 lats = np.array(data['d01']['lats'])
 lons = np.array(data['d01']['lons'])
@@ -298,15 +292,15 @@ title1 = ANL_DT[:13] + r' - IVT $kg $ $m^{-1} s^{-1}$ ' +  c_pl +\
         ' ' + c_var + ' contours'
 start_dt = START_DT[:4] + '-' + START_DT[4:6] + '-' + START_DT[6:8] + '_' +\
         START_DT[8:]
-title2 = 'fzh ' + start_dt
+title2 = 'fzh - ' + start_dt
 
 plt.figtext(.50, .96, title1, horizontalalignment='center',
         verticalalignment='center', fontsize=22)
 plt.figtext(.50, .91, title2, horizontalalignment='center',
         verticalalignment='center', fontsize=22)
 
-fig.savefig(out_path + '/' + ANL_DT + '_fzh_' + START_DT + '_ivt_' +\
-            c_pl + '_' + c_var + '.png')
+fig.savefig(out_path + '/' + ANL_DT[:13] + '_fzh_' + start_dt + '_ivt_' +\
+            c_var + '.png')
 plt.show()
 
 ##################################################################################
