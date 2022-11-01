@@ -384,7 +384,7 @@ while [ ${dmn} -le ${max_dom} ]; do
   ln -s ${prepbufr} ./prepbufr
 
   # Link to satellite data
-  ii=1
+  ii=0
 
   if [[ ${IF_SATRAD} = ${YES} ]] ; then
      srcobsfile=()
@@ -393,8 +393,8 @@ while [ ${dmn} -le ${max_dom} ]; do
      srcobsfile+=("1bamua")
      gsiobsfile+=("amsuabufr")
 
-     srcobsfile+=("1bamub")
-     gsiobsfile+=("amsubbufr")
+     #srcobsfile+=("1bamub")
+     #gsiobsfile+=("amsubbufr")
 
      srcobsfile+=("1bhrs4")
      gsiobsfile+=("hirs4bufr")
@@ -458,13 +458,15 @@ while [ ${dmn} -le ${max_dom} ]; do
 
      len=${#srcobsfile[@]}
 
-     while [[ $ii -le ${len} ]]; do
+     while [[ $ii -lt ${len} ]]; do
 	tar_file=${obs_root}/${srcobsfile[$ii]}.${anal_date}.tar.gz
 	if [ -r "${tar_file}" ]; then
 	  cd ${obs_root}
 	  tar -xvf `basename ${tar_file}`
 	  if [[ ${srcobsfile[$ii]} = "satwnd" ]]; then
 	    obs_file=${obs_root}/${anal_date}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${hh}z.${anal_date}.txt
+	  elif [[ ${srcobsfile[$ii]} = "airsev" ]]; then
+	    obs_file=${obs_root}/${anal_date}.airssev/gdas.${srcobsfile[$ii]}.t${hh}z.${anal_date}.bufr
 	  else
 	    obs_file=${obs_root}/${anal_date}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${hh}z.${anal_date}.bufr
 	  fi
@@ -583,17 +585,6 @@ while [ ${dmn} -le ${max_dom} ]; do
      ln -s ${crtm_root_order}/${file}.SpcCoeff.bin ./
      ln -s ${crtm_root_order}/${file}.TauCoeff.bin ./
   done
-
-  # NOTE: manual linking below is taken from Minghua's example driver, ask about this
-  #ln -sf ${CRTM_ROOT_ORDER}/airs281SUBSET_aqua.SpcCoeff.bin ./airs_aqua.SpcCoeff.bin    
-  #ln -sf ${CRTM_ROOT_ORDER}/airs281SUBSET_aqua.TauCoeff.bin ./airs_aqua.TauCoeff.bin
-  # NOTE: the above versions don't exist in CRTM v2.3.0, but the below do
-  ln -sf ${CRTM_ROOT_ORDER}/airs281_aqua.SpcCoeff.bin ./airs_aqua.SpcCoeff.bin    
-  ln -sf ${CRTM_ROOT_ORDER}/airs281_aqua.TauCoeff.bin ./airs_aqua.TauCoeff.bin
-  ln -sf ${crtm_root_order}/iasi616_metop-a.SpcCoeff.bin ./iasi_metop-a.SpcCoeff.bin
-  ln -sf ${crtm_root_order}/iasi616_metop-a.TauCoeff.bin ./iasi_metop-a.TauCoeff.bin
-  ln -sf ${crtm_root_order}/iasi616_metop-b.SpcCoeff.bin ./iasi_metop-b.SpcCoeff.bin
-  ln -sf ${crtm_root_order}/iasi616_metop-b.TauCoeff.bin ./iasi_metop-b.TauCoeff.bin
 
   if [[ ${if_oneob} = ${YES} ]]; then
     # Only need this file for single obs test

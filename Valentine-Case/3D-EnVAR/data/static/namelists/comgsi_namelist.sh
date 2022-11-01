@@ -7,13 +7,13 @@ cat <<EOF > gsiparm.anl
    factqmin=0.0,factqmax=0.0,
    iguess=-1,
    oneobtest=${if_oneobtest},retrieval=.false.,
-   nhr_assimilation=6,l_foto=.false.,
+   nhr_assimilation=2,l_foto=.false.,
    use_pbl=.false.,verbose=.true.,
    lread_obs_save=${if_read_obs_save},lread_obs_skip=${if_read_obs_skip},
    newpc4pred=.true.,adp_anglebc=.true.,angord=4,
    passive_bc=.true.,use_edges=.false.,emiss_bc=.true.,
    diag_precon=.true.,step_start=1.e-3,
-   l4densvar=${if4d},nhr_obsbin=1,min_offset=180,
+   l4densvar=${if4d},nhr_obsbin=1,min_offset=60,
    use_gfs_nemsio=${if_gfs_nemsio},
  /
  &GRIDOPTS
@@ -37,7 +37,7 @@ cat <<EOF > gsiparm.anl
    dfact=0.75,dfact1=3.0,noiqc=.false.,c_varqc=0.02,vadfile='prepbufr',
  /
  &OBS_INPUT
-   dmesh(1)=120.0,dmesh(2)=60.0,dmesh(3)=30,time_window_max=3.0,ext_sonde=.true.,
+   dmesh(1)=120.0,dmesh(2)=60.0,dmesh(3)=30,time_window_max=1.5,ext_sonde=.true.,
  /
 OBS_INPUT::
 !  dfile          dtype       dplat     dsis                 dval    dthin dsfcalc
