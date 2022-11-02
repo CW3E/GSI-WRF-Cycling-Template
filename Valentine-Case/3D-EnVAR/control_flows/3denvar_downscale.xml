@@ -89,7 +89,7 @@
   <!ENTITY GSI_MEM             "5G">
   <!ENTITY GSI_NODESIZE        "24">
   <!ENTITY GSI_NODES           "16">
-  <!ENTITY GSI_WC              "03:30:00">
+  <!ENTITY GSI_WC              "06:30:00">
   <!-- END JOB SETTINGS -->
 ]>
 
@@ -550,7 +550,7 @@
     </dependency>
   </task>
 
-  <task name="gsi_analysis" maxtries="1" cycledefs="q_daily">
+  <task name="gsi_analysis" maxtries="2" cycledefs="q_daily">
     <command>&DRIVERS;/gsi.sh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
