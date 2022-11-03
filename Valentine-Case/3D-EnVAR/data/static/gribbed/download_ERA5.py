@@ -121,7 +121,7 @@ def get_call(call, date1, date2, hours):
         return {'reanalysis-era5-complete' : 
                 {
                  'class'    : 'ea',
-                 'date'     : '%s/to/%s'%(date1,date2),
+                 'date'     : '%s/%s'%(date1,date2),
                  'expver'   : '1',
                  'grid'     : '0.25/0.25',
                  'format'   : 'grib',
