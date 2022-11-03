@@ -41,10 +41,10 @@ from datetime import timedelta
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # starting date and zero hour of data
-START_DATE = '2019-02-07T18:00:00'
+START_DATE = '2019-02-10T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-08T06:00:00'
+END_DATE = '2019-02-15T18:00:00'
 
 # interval of forcast data outputs after zero hour
 FCST_INT = 6
@@ -53,12 +53,12 @@ FCST_INT = 6
 CYCLE_INT = 6
 
 # max forecast lenght in hours
-MAX_FCST = 108
+MAX_FCST = 6
 
 # root directory where date stamped sub-directories will collect data downloads
-PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
+PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/testing'
 DATA_ROOT = PROJ_ROOT +\
-    '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVARdata/static/gribbed/GEFS'
+    '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data/static/gribbed/GEFS'
 
 
 ##################################################################################
