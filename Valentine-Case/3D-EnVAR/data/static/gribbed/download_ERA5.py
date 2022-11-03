@@ -137,7 +137,7 @@ def get_call(call, date1, date2, hours):
     elif call == 'pres_levels':
         return {'reanalysis-era5-pressure-levels' : 
                 {
-                 'date'          : '%s/to/%s'%(date1,date2),
+                 'date'          : '%s/%s'%(date1,date2),
                  'time'          : hours, 
                  'product_type'  : 'reanalysis',
                  'variable'      : [
@@ -165,7 +165,7 @@ def get_call(call, date1, date2, hours):
     elif call == 'surf_levels':
         return {'reanalysis-era5-single-levels':
                 {
-                 'date'          : '%s/to/%s'%(date1,date2),
+                 'date'          : '%s/%s'%(date1,date2),
                  'time'          : hours, 
                  'product_type': 'reanalysis',
                  'format'      : 'grib',
