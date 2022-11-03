@@ -70,7 +70,7 @@ CALL = sys.argv[1]
 # root directory where date stamped sub-directories will collect data downloads
 PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 DATA_ROOT = PROJ_ROOT +\
-    '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVARdata/static/gribbed/' +\
+    '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data/static/gribbed/' +\
     'ERA5/' + CALL + '/'
 
 # define the start and end year / month / day in YYYY-MM-DD formated string values
