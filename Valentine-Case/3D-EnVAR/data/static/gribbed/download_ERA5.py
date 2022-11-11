@@ -63,6 +63,7 @@ from datetime import date, timedelta
 # Set the below to equal the uid & key from ECMWF for personal account, this can
 # include multiple accounts in the list for more downloads simulataneously
 #AUTHS = [b'xxxxxx:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx']
+AUTHS = [b'129569:d311504f-2930-4fd3-b674-061b23598b84']
 
 # which type of data to download, defined in script call
 CALL = sys.argv[1]
@@ -74,14 +75,14 @@ DATA_ROOT = PROJ_ROOT +\
     'ERA5/' + CALL + '/'
 
 # define the start and end year / month / day in YYYY-MM-DD formated string values
-START_DATE = '2018-02-08'
-END_DATE = '2018-02-09'
+START_DATE = '2019-02-08'
+END_DATE = '2019-02-08'
 
 # interval over which to combine days into single files for download, format Int
-DATE_INT = 2
+DATE_INT = 1
 
 # first hour to get data, format Int
-START_HOUR = 0
+START_HOUR = 11
 
 # interval on which to get additional data
 HOUR_INT = 1
@@ -121,7 +122,7 @@ def get_call(call, date1, date2, hours):
         return {'reanalysis-era5-complete' : 
                 {
                  'class'    : 'ea',
-                 'date'     : '%s/%s'%(date1,date2),
+                 'date'     : '%s/to/%s'%(date1,date2),
                  'expver'   : '1',
                  'grid'     : '0.25/0.25',
                  'format'   : 'grib',
