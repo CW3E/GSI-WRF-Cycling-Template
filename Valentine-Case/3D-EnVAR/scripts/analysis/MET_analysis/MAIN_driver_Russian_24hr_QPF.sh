@@ -14,7 +14,7 @@ END_DT="2019021100"
 data_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data"
 
 # SET UP VALID TIME
-sd=2019-02-14
+sd=2019-02-10
 tt=00
       
 export VALIDYEAR=${sd:0:4}
@@ -29,16 +29,15 @@ INITDAY=`expr $VALIDDAY - $lt`
 wrf_cf_output="/cw3e/mead/datasets/cw3e/NRT/2021-2022/NRT_gfs/${VALIDYEAR}${VALIDMON}${INITDAY}${VALIDHR}/cf/" 
 
 # set up other access directories           
-wrf_met_output_root="/cw3e/mead/projects/cwp129/cw3e_MET_verification/MET_output/NRT_gfs/${VALIDYEAR}${VALIDMON}${VALIDDAY}${VALIDHR}/"
+wrf_met_output_root="${data_root}/analysis/${CTR_FLW}/MET_analysis/${VALIDYEAR}${VALIDMON}${VALIDDAY}${VALIDHR}/"
 stage_iv_root="/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV/"
 scripts_home="/cw3e/mead/projects/cwp129/cw3e_MET_verification/driver_scripts/"
 mask_polygon_root="/cw3e/mead/projects/cwp129/cw3e_MET_verification/common_polygons/region/"
 
 ## MET Singularity Path
-#metsrc="/cw3e/mead/projects/cwp110/cpapadop/ENSEMBLE_test_2/post_proc/apps/metmode/8.0/metmode-8.0.sif"
-metsrc="/cw3e/mead/projects/cwp129/Software/MET/Met/met-10.0.1/met-10.0.1.sif"
+metsrc="${USR_HME}/MET_CODE/met-10.0.0.sif"
 
-#check if directory exists, if not than make it
+#check if directory exists, if not then make it
 if [ ! -d $wrf_met_output_root ] 
 then
    echo "Directory $wrf_met_output_root DOES NOT exist.  Creating it now." 
