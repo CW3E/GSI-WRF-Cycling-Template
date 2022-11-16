@@ -4,7 +4,7 @@
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
-  <!ENTITY WORK_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien/testing">
+  <!ENTITY WORK_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien/TIGGE">
   <!ENTITY SOFT_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
   <!-- END COMPUTER-DEPENDENT -->
 
