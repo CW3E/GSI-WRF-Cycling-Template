@@ -10,12 +10,7 @@
 #
 # Dates are specified in iso format in the global parameters for the script below.
 # Other options specify the frequency of forecast outputs, time between zero hours
-# and the max forecast hour for any zero hour.  GEFS control solution is not
-# downloaded by default, though this can be modified by removing the line
-#
-#    '--exclude \'*gec*\'' + ' ' +\
-#
-# below.
+# and the max forecast hour for any zero hour.
 #
 # NOTE: as of 2022-10-15 AWS api changes across date ranges, syntax switches
 # for dates between:
@@ -25,15 +20,7 @@
 #     2020-09-23 to PRESENT
 #
 # the exclude statements in the below are designed to handle these exceptions
-# using a recurisive copy from a base path.  Likewise, padding for forecast hours
-# changes length and multiple include statements are supplied to handle
-# discrepancies.  All data will be downloaded to a path of the form
-#
-#     DATA_ROOT/GEFS/YYYYMMDD/gepXX.tHHz.pgrb2a.fZZZ
-#     DATA_ROOT/GEFS/YYYYMMDD/gepXX.tHHz.pgrb2b.fZZZ
-#
-# with the file names from AWS modified from their original form to match
-# this convention for consistency with the workflow.
+# using a recurisive copy from a base path.
 # 
 ##################################################################################
 # License Statement:
@@ -66,10 +53,10 @@ from datetime import timedelta
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # starting date and zero hour of data
-START_DATE = '2017-02-08T00:00:00'
+START_DATE = '2021-01-20T18:00:00'
 
 # final date and zero hour of data
-END_DATE = '2017-02-08T00:00:00'
+END_DATE = '2021-01-29T18:00:00'
 
 # interval of forcast data outputs after zero hour
 FCST_INT = 6
@@ -162,7 +149,6 @@ for date in date_reqs:
               '--exclude \'*wave*\'' + ' ' +\
               '--exclude \'*geavg*\'' + ' ' +\
               '--exclude \'*gespr*\'' + ' ' +\
-              '--exclude \'*gec*\'' + ' ' +\
               '--exclude \'*0p25*\''
 
         print(STR_INDT * 2 + 'Running command:\n')
@@ -200,25 +186,6 @@ for date in date_reqs:
 
     os.system('rm file_list.txt')
     os.system('rm dir_list.txt')
-
-    # clean file names for consistency
-    fnames = glob.glob(down_dir + '*')
-    for name in fnames:
-        split_name = name.split('.')
-        
-        if len(split_name) > 4:
-            del split_name[3]
-
-        else:
-            pgrb, fcst_hr = split_name[-1].split('f')
-            split_name[-1] = pgrb + '.f' + fcst_hr.zfill(3)
-
-        tmp_name = ''
-        for i in range(len(split_name) - 1):
-            tmp_name += split_name[i] + '.'
-
-        tmp_name += split_name[-1] 
-        os.system('mv ' + name + ' ' + tmp_name)
 
 print('\n')
 print('Script complete -- verify the downloads at root ' + DATA_ROOT + '\n')
