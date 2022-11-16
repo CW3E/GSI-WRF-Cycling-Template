@@ -35,7 +35,7 @@ import os
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # directory for git clone of GSI-WRF-Cycling-Template
-USR_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/testing'
+USR_HME = '/cw3e/mead/projects/cwp106/scratch/'
 
 # directory for rocoto install
 RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
@@ -51,7 +51,7 @@ CTR_FLW = '3denvar_downscale'
 # Derived paths
 ##################################################################################
 # project directory
-PRJ_DIR = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
+PRJ_DIR = USR_HME + '/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR'
 
 # path to rocoto binary root directory
 PATHROC = RCT_HME + '/rocoto'

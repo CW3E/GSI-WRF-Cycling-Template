@@ -4,7 +4,7 @@
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
-  <!ENTITY WORK_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien/testing">
+  <!ENTITY WORK_SPACE          "/cw3e/mead/projects/cwp106/scratch">
   <!ENTITY SOFT_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
   <!-- END COMPUTER-DEPENDENT -->
 
@@ -15,7 +15,7 @@
 
   <!-- WORKFLOW SETTINGS -->
   <!ENTITY FLOW_NAME           "3denvar_downscale">
-  <!ENTITY PROJ_HOME           "&WORK_SPACE;/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR">
+  <!ENTITY PROJ_HOME           "&WORK_SPACE;/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR">
   <!ENTITY SCRIPTS             "&PROJ_HOME;/scripts">
   <!ENTITY DRIVERS             "&SCRIPTS;/drivers">
   <!ENTITY ENVIRONMENTS        "&SCRIPTS;/environments">
@@ -35,9 +35,9 @@
   <!-- END SOFTWARE SETTINGS -->
 
   <!-- CYCLING SETTINGS -->
-  <!ENTITY CYCLE_START         "201902071800">
-  <!ENTITY SECOND_CYCLE        "201902080000">
-  <!ENTITY CYCLE_END           "201902150600">
+  <!ENTITY CYCLE_START         "202101201800">
+  <!ENTITY SECOND_CYCLE        "202101210000">
+  <!ENTITY CYCLE_END           "202101291800">
   <!ENTITY CYCLE_INTERVAL      "06:00:00">
   <!ENTITY ENS_LIST            "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
   <!ENTITY N_ENS               "20"> <!-- Must equal the max index of the ENS_LIST above or 00 if not hybrid DA -->
