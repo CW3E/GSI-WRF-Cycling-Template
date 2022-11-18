@@ -88,7 +88,8 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 
     if data_type == 'gep_pl':
         # perturbation pressure level data
-        target = down_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
+        target = down_dir + '/gep' + ens_n.zfill(2) + '.t' +\
+                date.strftime('%H') +\
                 'z.pgrb_pl.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
@@ -111,7 +112,8 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
     
     elif data_type == 'gep_sl': 
         # perturbation surface level data
-        target = down_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
+        target = down_dir + '/gep' + ens_n.zfill(2) + '.t' +\
+                date.strftime('%H') +\
                 'z.pgrb_sl.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
@@ -133,7 +135,8 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 
     elif data_type == 'gep_st':
         # perturbation static data
-        target = down_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
+        target = down_dir + '/gep' + ens_n.zfill(2) + '.t' +\
+                date.strftime('%H') +\
                 'z.pgrb_st.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
@@ -155,7 +158,8 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 
     elif data_type == 'gep_lm':
         # perturbation landmask
-        target = down_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
+        target = down_dir + '/gep' + ens_n.zfill(2) + '.t' +\
+                date.strftime('%H') +\
                 'z.pgrb_lm.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
@@ -177,7 +181,8 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 
     elif data_type == 'gec_pl':
         # control pressure level
-        target = down_dir + '/gec' + ens_n + '.t' + date.strftime('%H') +\
+        target = down_dir + '/gec' + ens_n.zfill(2) + '.t' +\
+                date.strftime('%H') +\
                 'z.pgrb_pl.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
@@ -197,7 +202,8 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
  
     elif data_type == 'gec_sl':
         # control surface level
-        target = down_dir + '/gec' + ens_n + '.t' + date.strftime('%H') +\
+        target = down_dir + '/gec' + ens_n.zfill(2) + '.t' +\
+                date.strftime('%H') +\
                 'z.pgrb_pl.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
