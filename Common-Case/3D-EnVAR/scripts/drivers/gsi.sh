@@ -371,18 +371,19 @@ if [ ! -r "${prepbufr_tar}" ]; then
   echo "ERROR: file '${prepbufr_tar}' does not exist!"
   exit 1
 else
+  # untar prepbufr data to predefined directory
   # define prepbufr directory
   mkdir -p ${prepbufr_dir}
-  
-  # untar prepbufr data to the directory and unpack nested data
   tar -xvf ${prepbufr_tar} -C ${prepbufr_dir}
-  prepbufr_nest=(`find ${prepbufr_dir} -f`)
+
+  # unpack nested directory structure
+  prepbufr_nest=(`find ${prepbufr_dir} -type f`)
   nest_indx=1
-  
   while [ ${nest_indx} -le ${#prepbufr_nest[@]} ]; do
     mv ${prepbufr_nest[${nest_indx}]} ${prepbufr_dir}
     (( nest_indx += 1))
   done
+  rmdir ${prepburf_dir}/*
 
   if [ ! -r "${prepbufr}" ]; then
     echo "ERROR: file '${prepbufr}' does not exist!"
@@ -663,14 +664,19 @@ while [ ${dmn} -le ${max_dom} ]; do
 	bias_dir=${bias_dirs[$ii]}
 	bias_file=${bias_files[$ii]}
         if [ -r "${tar_file}" ]; then
+	  # untar to specified directory
+	  mkdir -p ${bias_dir}
           tar -xvf ${tar_file} -C ${bias_dir}
-	  bias_nest=(`find ${bias_dir} -f`)
+
+	  # unpack nested directory structure
+	  bias_nest=(`find ${bias_dir} -type f`)
           nest_indx=1
-          
           while [ ${nest_indx} -le ${#bias_nest[@]} ]; do
             mv ${bias_nest[${nest_indx}]} ${bias_dir}
             (( nest_indx += 1))
           done
+	  rmdir ${bias_dir}/*
+
           if [ -r "${bias_file}" ]; then
             echo "Link the GDAS bias correction file ${bias_file} for loop zero of analysis"
             ln -sf ${bias_file} ./${bias_in_files[$ii]}
