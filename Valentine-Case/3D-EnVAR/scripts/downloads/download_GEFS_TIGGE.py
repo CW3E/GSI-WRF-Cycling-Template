@@ -52,7 +52,7 @@ from download_utilities import PROJ_ROOT, STR_INDT, get_reqs
 START_DATE = '2019-02-08T18:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-09T00:00:00'
+END_DATE = '2019-02-08T18:00:00'
 
 # interval of forcast data outputs after zero hour
 FCST_INT = 6
@@ -85,11 +85,12 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
     for gep data, not control solution.
     """
 
-    download_dir = DATA_ROOT + '/' + date.strftime('%Y%m%d')
+    down_dir = DATA_ROOT + '/' + date.strftime('%Y%m%d')
+    os.system('mkdir -p ' + down_dir)
 
     if data_type == 'gep_pl':
         # perturbation pressure level data
-        target = download_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
+        target = down_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
                 'z.pgrb_pl.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
@@ -112,7 +113,7 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
     
     elif data_type == 'gep_sl': 
         # perturbation surface level data
-        target = download_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
+        target = down_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
                 'z.pgrb_sl.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
@@ -134,7 +135,7 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 
     elif data_type == 'gep_st':
         # perturbation static data
-        target = download_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
+        target = down_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
                 'z.pgrb_st.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
@@ -147,7 +148,7 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
                'origin': 'kwbc',
                'param': '228002',
                'step': '0',
-               'time': date.strftime('%H:%M:%S'),
+               'time': '00:00:00',
                'type': 'pf',
                'target': target,
               }
@@ -156,6 +157,8 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 
     elif data_type == 'gep_lm':
         # perturbation landmask
+        target = down_dir + '/gep' + ens_n + '.t' + date.strftime('%H') +\
+                'z.pgrb_lm.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
                'dataset': 'tigge',
@@ -167,7 +170,7 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
                'origin': 'kwbc',
                'param': '172',
                'step': '6',
-               'time': date.strftime('%H:%M:%S'),
+               'time': '00:00:00',
                'type': 'pf',
                'target': target,
               }
@@ -175,6 +178,9 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
         return req
 
     elif data_type == 'gec_pl':
+        # control pressure level
+        target = down_dir + '/gec' + ens_n + '.t' + date.strftime('%H') +\
+                'z.pgrb_pl.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
                'dataset': 'tigge',
@@ -192,6 +198,9 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
               }
  
     elif data_type == 'gec_sl':
+        # control surface level
+        target = down_dir + '/gec' + ens_n + '.t' + date.strftime('%H') +\
+                'z.pgrb_pl.0p50.f' + fcst_hr.zfill(3)
         req = {
                'class': 'ti',
                'dataset': 'tigge',
@@ -218,17 +227,15 @@ server = ECMWFDataServer()
 date_reqs, fcst_reqs = get_reqs(start_date, end_date, FCST_INT,
                                 CYCLE_INT, MAX_FCST)
 
+req_list = []
+
 # make requests
 for date in date_reqs:
-    print('Downloading GEFS Date ' + date[0] + '\n')
-    print('Zero Hour ' + date[1] + '\n')
-
-    down_dir = DATA_ROOT + '/' + date[0] + '/'
-    os.system('mkdir -p ' + down_dir)
+    print('Downloading GEFS Date ' + date.strftime('%Y-%m-%d') + '\n')
+    print('Zero Hour ' + date.strftime('%H') + '\n')
 
     for fcst in fcst_reqs:
         req_list.append()
 
 map(server.retrieve, req_list)
-
 

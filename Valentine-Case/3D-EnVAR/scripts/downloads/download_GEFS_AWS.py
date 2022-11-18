@@ -54,10 +54,10 @@ from download_utilities import PROJ_ROOT, STR_INDT, get_reqs
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # starting date and zero hour of data
-START_DATE = '2021-01-20T00:00:00'
+START_DATE = '2018-01-20T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2021-01-20T00:00:00'
+END_DATE = '2018-01-22T00:00:00'
 
 # interval of forcast data outputs after zero hour
 FCST_INT = 6
