@@ -37,9 +37,7 @@
 ##################################################################################
 # Imports
 ##################################################################################
-import os, sys, ssl
-import calendar
-import glob
+import os
 from datetime import datetime as dt
 from datetime import timedelta
 from ecmwfapi import ECMWFDataServer
@@ -64,7 +62,7 @@ CYCLE_INT = 6
 MAX_FCST = 6
 
 # max ensemble size to download from perturbations
-N_ENS = 20
+N_ENS = 2
 
 # dowload control solution True / False
 CTR=False
@@ -221,6 +219,11 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 ##################################################################################
 # Download data
 ##################################################################################
+# define date range to get data
+start_date = dt.fromisoformat(START_DATE)
+end_date = dt.fromisoformat(END_DATE)
+
+# initialize the server for ecmwf
 server = ECMWFDataServer()
  
 # obtain combinations
@@ -231,11 +234,17 @@ req_list = []
 
 # make requests
 for date in date_reqs:
-    print('Downloading GEFS Date ' + date.strftime('%Y-%m-%d') + '\n')
-    print('Zero Hour ' + date.strftime('%H') + '\n')
+    for fcst_hr in fcst_reqs:
+        for ens_n in range(1, N_ENS+1):
+            req_list.append(get_call(date, fcst_hr, 'gep_pl', ens_n=str(ens_n)))
+            req_list.append(get_call(date, fcst_hr, 'gep_sl', ens_n=str(ens_n)))
 
-    for fcst in fcst_reqs:
-        req_list.append()
+        if CTR:
+            req_list.append(get_call(date, fcst_hr, 'gec_pl'))
+            req_list.append(get_call(date, fcst_hr, 'gec_pl'))
+            
+for req in req_list:
+    print(req)
+    server.retrieve(req)
 
-map(server.retrieve, req_list)
-
+#map(server.retrieve, req_list)

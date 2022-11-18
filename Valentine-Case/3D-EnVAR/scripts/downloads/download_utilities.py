@@ -26,9 +26,6 @@
 ##################################################################################
 # Imports
 ##################################################################################
-import os, sys, ssl
-import calendar
-import glob
 from datetime import datetime as dt
 from datetime import timedelta
 
