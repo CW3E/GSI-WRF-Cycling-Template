@@ -72,7 +72,9 @@
   <!-- JOB SETTINGS -->
   <!ENTITY SCHED               "slurm">
   <!ENTITY PROJECT             "--account=cwp130">
-  <!ENTITY PARTITION           "--partition=compute"> 
+  <!ENTITY PART_COMPU          "--partition=compute"> 
+  <!ENTITY PART_DEBUG          "--partition=shared"> 
+  <!ENTITY PART_RAPID          "--partition=compute"> 
   <!ENTITY MPIRUN              "mpirun">
   <!ENTITY WPS_PROC            "24"> <!-- WPS parallel / REAL procs, all serial hard-coded as 1 -->
   <!ENTITY WPS_MEM             "5G">
@@ -106,7 +108,7 @@
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>ungrib_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/ungrib/ungrib_ens_00_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
@@ -173,7 +175,7 @@
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>metgrid_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/metgrid/metgrid_ens_00_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
@@ -234,7 +236,7 @@
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/real/real_ens_00_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
@@ -305,7 +307,7 @@
       <walltime>&WPS_WC;</walltime>
       <jobname><cyclestr>ungrib_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&LOG;/ungrib/ungrib_ens_#ENS_N#_@Y@m@d@H.log</cyclestr></join>
-      <native>&PARTITION;</native>
+      <native>&PART_DEBUG;</native>
       <native>&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WPS_NODES;</native>
@@ -366,7 +368,7 @@
       <walltime>&WPS_WC;</walltime>
       <jobname><cyclestr>metgrid_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&LOG;/metgrid/metgrid_ens_#ENS_N#_@Y@m@d@H.log</cyclestr></join>
-      <native>&PARTITION;</native>
+      <native>&PART_DEBUG;</native>
       <native>&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WPS_NODES;</native>
@@ -427,7 +429,7 @@
       <walltime>&WPS_WC;</walltime>
       <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&LOG;/real/real_ens_#ENS_N#_@Y@m@d@H.log</cyclestr></join>
-      <native>&PARTITION;</native>
+      <native>&PART_DEBUG;</native>
       <native>&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WPS_NODES;</native>
@@ -497,7 +499,7 @@
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>wrfda_lowbc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/wrfda/wrfda_lowbc_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
@@ -557,7 +559,7 @@
     <walltime>&GSI_WC;</walltime>
     <jobname><cyclestr>gsi_analysis_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/gsi/gsi_analysis_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_RAPID;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&GSI_NODES;</native>
@@ -642,7 +644,7 @@
     <walltime>&GSI_OBSERVER_WC;</walltime>
     <jobname><cyclestr>gsi_observer_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/gsi/gsi_observer_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_RAPID;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&GSI_NODES;</native>
@@ -727,7 +729,7 @@
     <walltime>&ENKF_WC;</walltime>
     <jobname><cyclestr>enkf_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/gsi/enkf_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_RAPID;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&GSI_NODES;</native>
@@ -780,7 +782,7 @@
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>wrfda_latbc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/wrfda/wrfda_latbc_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
@@ -837,7 +839,7 @@
     <walltime>&WRF_WC;</walltime>
     <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WRF_NODES;</native>
@@ -934,7 +936,7 @@
     <walltime>&WRF_WC;</walltime>
     <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WRF_NODES;</native>
@@ -1033,7 +1035,7 @@
       <walltime>&WRF_WC;</walltime>
       <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&LOG;/wrf/wrf_ens_#ENS_N#_@Y@m@d@H.log</cyclestr></join>
-      <native>&PARTITION;</native>
+      <native>&PART_COMPU;</native>
       <native>&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WRF_NODES;</native>
@@ -1133,7 +1135,7 @@
       <walltime>&WRF_WC;</walltime>
       <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&LOG;/wrf/wrf_ens_#ENS_N#_@Y@m@d@H.log</cyclestr></join>
-      <native>&PARTITION;</native>
+      <native>&PART_COMPU;</native>
       <native>&PROJECT;</native>
       <native>--export=ALL</native>
       <native>--nodes=&WRF_NODES;</native>
