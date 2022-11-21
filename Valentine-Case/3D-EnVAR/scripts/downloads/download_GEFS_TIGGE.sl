@@ -2,21 +2,16 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH -t 48:00:00
-#SBATCH -J download_ERA5
+#SBATCH -J download_GEFS
 #SBATCH --export=ALL
 
 ##################################################################################
 # Description
 ##################################################################################
-# This is a companion to the download_ERA5.py script which is designed to handle
-# long download times with a scheduled job in SLURM.  Parameters for the job
-# should be edited in the above, with directory and user settings edited in the
-# below.  The ${levels} variable should be set to one of the pre-defined options
-# in the download_ERA5.py script as:
-#
-#    "model_levels" -- the script will download model level data
-#    "surf_levels"  -- the script will download surface level data
-#    "pres_levels"  -- the script will download pressure level data
+# This is a companion to the download_GEFS_TIGGE.py script which is designed to
+# handle long download times with a scheduled job in SLURM.  Parameters for the
+# job should be edited in the above, with directory and user settings edited in
+# the below.  Data call settings are set directly in the Python script.
 #
 ##################################################################################
 # License Statement
@@ -48,16 +43,12 @@ scripts="${PRJ_HME}/scripts/downloads"
 cd ${scripts}
 eval `echo pwd`
 
-# define which levels to download, see supported options in download_ERA5.py
-levels="model_levels"
-echo "Downloading ${levels}"
-
 # empty dependency conflicts, work in eccodes environment
 conda activate eccodes
 echo `conda list`
 
 # run rocoto 
-python -u download_ERA5.py ${levels}
+python -u download_GEFS_TIGGE.py
 
 echo "Finished download script, verify downloads"
 

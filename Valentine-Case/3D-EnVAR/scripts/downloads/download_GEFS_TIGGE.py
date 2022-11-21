@@ -16,6 +16,10 @@
 # the script below. Other options specify the frequency of forecast outputs,
 # time between zero hours and the max forecast hour for any zero hour.
 #
+# This script is designed to download combined perturbation data for a given
+# zero hour and a specified forecast horizon to be split later in a postprocessing
+# script.
+#
 ##################################################################################
 # License Statement:
 ##################################################################################
@@ -41,6 +45,7 @@ import os
 from datetime import datetime as dt
 from datetime import timedelta
 from ecmwfapi import ECMWFDataServer
+from multiprocessing import Pool
 from download_utilities import PROJ_ROOT, STR_INDT, get_reqs
 
 ##################################################################################
@@ -50,7 +55,7 @@ from download_utilities import PROJ_ROOT, STR_INDT, get_reqs
 START_DATE = '2019-02-08T18:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-08T18:00:00'
+END_DATE = '2019-02-10T00:00:00'
 
 # interval of forcast data outputs after zero hour
 FCST_INT = 6
@@ -62,9 +67,13 @@ CYCLE_INT = 6
 MAX_FCST = 6
 
 # max ensemble size to download from perturbations
-N_ENS = 2
+# NOTE: all ensemble members are combined in a single file to be split later
+# to download data effectively from the ECMWF public queue
+N_ENS = 20
 
 # dowload control solution True / False
+# NOTE: control solution is downloaded to a separate file than the perturbations
+# due to differences in syntaxing with batch downloads
 CTR=False
 
 # root directory where date stamped sub-directories will collect data downloads
@@ -75,22 +84,41 @@ DATA_ROOT = PROJ_ROOT +\
 # UTILITY METHODS
 ##################################################################################
 
-def get_call(date, fcst_hr, data_type, ens_n=None):
+def get_call(date, fcst_hrs, data_type, n_ens=None):
     """Defines call for request based on above arguments
 
     Data request runs on 'data_type' switch with pre-defined templates for
-    requests based on data types.  Ensemble index ens_n is only needed
+    requests based on data types.  Ensemble index n_ens is only needed
     for gep data, not control solution.
     """
 
     down_dir = DATA_ROOT + '/' + date.strftime('%Y%m%d')
     os.system('mkdir -p ' + down_dir)
 
+    # create string list of perturbations if n_ens is given
+    if n_ens:
+        ens_list = ''
+        for i in range(1, n_ens):
+            ens_list += str(i) + '/'
+
+        # append the last ensemble index without trailing slash
+        ens_list += str(n_ens)
+
+    # create string list of combined forecast hours
+    steps = ''
+    num_hrs = len(fcst_hrs)
+    for i in range(num_hrs - 1):
+        steps += str(fcst_hrs[i]) + '/'
+
+    # append the last forecast hour without trailing slash
+    steps += str(fcst_hrs[-1])
+
     if data_type == 'gep_pl':
         # perturbation pressure level data
-        target = down_dir + '/gep' + ens_n.zfill(2) + '.t' +\
-                date.strftime('%H') +\
-                'z.pgrb_pl.0p50.f' + fcst_hr.zfill(3)
+        target = down_dir + '/TIGGE_geps_1-' + str(n_ens) +\
+                 '_pl_zh_' + date.strftime('%Y-%m-%d_%H') +\
+                 '_fcst_hrs_0-' + str(fcst_hrs[-1]) + '.grib'  
+
         req = {
                'class': 'ti',
                'dataset': 'tigge',
@@ -99,10 +127,10 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
                'grid': '0.5/0.5',
                'levelist': '200/250/300/500/700/850/925/1000',
                'levtype': 'pl',
-               'number': ens_n,
+               'number': ens_list,
                'origin': 'kwbc',
                'param': '130/131/132/133/156',
-               'step': fcst_hr,
+               'step': steps,
                'target': target,
                'time': date.strftime('%H:%M:%S'),
                'type': 'pf',
@@ -112,9 +140,10 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
     
     elif data_type == 'gep_sl': 
         # perturbation surface level data
-        target = down_dir + '/gep' + ens_n.zfill(2) + '.t' +\
-                date.strftime('%H') +\
-                'z.pgrb_sl.0p50.f' + fcst_hr.zfill(3)
+        target = down_dir + '/TIGGE_geps_1-' + str(n_ens) +\
+                 '_sl_zh_' + date.strftime('%Y-%m-%d_%H') +\
+                 '_fcst_hrs_0-' + str(fcst_hrs[-1]) + '.grib'  
+
         req = {
                'class': 'ti',
                'dataset': 'tigge',
@@ -122,10 +151,10 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
                'expver': 'prod',
                'grid': '0.5/0.5',
                'levtype': 'sfc',
-               'number': ens_n,
+               'number': ens_list,
                'origin': 'kwbc',
                'param': '134/151/165/166/167/168/235/228039/228139/228144',
-               'step': fcst_hr,
+               'step': steps,
                'target': target,
                'time': date.strftime('%H:%M:%S'),
                'type': 'pf',
@@ -135,9 +164,10 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 
     elif data_type == 'gep_st':
         # perturbation static data
-        target = down_dir + '/gep' + ens_n.zfill(2) + '.t' +\
-                date.strftime('%H') +\
-                'z.pgrb_st.0p50.f' + fcst_hr.zfill(3)
+        target = down_dir + '/TIGGE_geps_1-' + str(n_ens) +\
+                 '_st_zh_' + date.strftime('%Y-%m-%d_00:00:00') +\
+                 '.grib'  
+
         req = {
                'class': 'ti',
                'dataset': 'tigge',
@@ -145,7 +175,7 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
                'expver': 'prod',
                'grid': '0.5/0.5',
                'levtype': 'sfc',
-               'number': ens_n,
+               'number': ens_list,
                'origin': 'kwbc',
                'param': '228002',
                'step': '0',
@@ -158,9 +188,10 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 
     elif data_type == 'gep_lm':
         # perturbation landmask
-        target = down_dir + '/gep' + ens_n.zfill(2) + '.t' +\
-                date.strftime('%H') +\
-                'z.pgrb_lm.0p50.f' + fcst_hr.zfill(3)
+        target = down_dir + '/TIGGE_geps_1-' + str(n_ens) +\
+                 '_lm_zh_' + date.strftime('%Y-%m-%d_00:00:00') +\
+                 '.grib'  
+
         req = {
                'class': 'ti',
                'dataset': 'tigge',
@@ -168,7 +199,7 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
                'expver': 'prod',
                'grid': '0.5/0.5',
                'levtype': 'sfc',
-               'number': ens_n,
+               'number': ens_list,
                'origin': 'kwbc',
                'param': '172',
                'step': '6',
@@ -181,9 +212,10 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
 
     elif data_type == 'gec_pl':
         # control pressure level
-        target = down_dir + '/gec' + ens_n.zfill(2) + '.t' +\
-                date.strftime('%H') +\
-                'z.pgrb_pl.0p50.f' + fcst_hr.zfill(3)
+        target = down_dir + '/TIGGE_gec'+\
+                 '_pl_zh_' + date.strftime('%Y-%m-%d_%H') +\
+                 '_fcst_hrs_0-' + str(fcst_hrs[-1]) + '.grib'  
+
         req = {
                'class': 'ti',
                'dataset': 'tigge',
@@ -194,7 +226,7 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
                'levtype': 'pl',
                'origin': 'kwbc',
                'param': '130/131/132/133/156',
-               'step': fcst_hr,
+               'step': steps,
                'target': target,
                'time': date.strftime('%H:%M:%S'),
                'type': 'cf',
@@ -202,9 +234,10 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
  
     elif data_type == 'gec_sl':
         # control surface level
-        target = down_dir + '/gec' + ens_n.zfill(2) + '.t' +\
-                date.strftime('%H') +\
-                'z.pgrb_pl.0p50.f' + fcst_hr.zfill(3)
+        target = down_dir + '/TIGGE_gec'+\
+                 '_sl_zh_' + date.strftime('%Y-%m-%d_%H') +\
+                 '_fcst_hrs_0-' + str(fcst_hrs[-1]) + '.grib'  
+
         req = {
                'class': 'ti',
                'dataset': 'tigge',
@@ -214,7 +247,7 @@ def get_call(date, fcst_hr, data_type, ens_n=None):
                'levtype': 'sfc',
                'origin': 'kwbc',
                'param': '134/151/165/166/167/168/235/228039/228139/228144',
-               'step': fcst_hr,
+               'step': steps,
                'target': target,
                'time': date.strftime('%H:%M:%S'),
                'type': 'cf',
@@ -240,17 +273,20 @@ req_list = []
 
 # make requests
 for date in date_reqs:
-    for fcst_hr in fcst_reqs:
-        for ens_n in range(1, N_ENS+1):
-            req_list.append(get_call(date, fcst_hr, 'gep_pl', ens_n=str(ens_n)))
-            req_list.append(get_call(date, fcst_hr, 'gep_sl', ens_n=str(ens_n)))
-
-        if CTR:
-            req_list.append(get_call(date, fcst_hr, 'gec_pl'))
-            req_list.append(get_call(date, fcst_hr, 'gec_pl'))
+    req_list.append(get_call(date, fcst_reqs, 'gep_pl', n_ens=N_ENS))
+    req_list.append(get_call(date, fcst_reqs, 'gep_sl', n_ens=N_ENS))
+    
+    if CTR:
+        req_list.append(get_call(date, fcst_reqs, 'gec_pl'))
+        req_list.append(get_call(date, fcst_reqs, 'gec_pl'))
             
+print('Generating requests:')
 for req in req_list:
     print(req)
-    server.retrieve(req)
+    print('\n')
 
-#map(server.retrieve, req_list)
+# map requests to asynchronous workers for download
+with Pool(23) as pool:
+    print(pool.map(server.retrieve, req_list))
+
+print('Completed Python script')
