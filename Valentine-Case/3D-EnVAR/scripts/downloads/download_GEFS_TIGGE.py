@@ -52,7 +52,7 @@ from download_utilities import PROJ_ROOT, STR_INDT, get_reqs
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # starting date and zero hour of data
-START_DATE = '2019-02-08T18:00:00'
+START_DATE = '2019-02-10T00:00:00'
 
 # final date and zero hour of data
 END_DATE = '2019-02-10T00:00:00'
@@ -284,9 +284,10 @@ print('Generating requests:')
 for req in req_list:
     print(req)
     print('\n')
+    server.retrieve(req)
 
 # map requests to asynchronous workers for download
-with Pool(23) as pool:
-    print(pool.map(server.retrieve, req_list))
+#with Pool(23) as pool:
+#    print(pool.map(server.retrieve, req_list))
 
 print('Completed Python script')

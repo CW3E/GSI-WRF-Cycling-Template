@@ -8,13 +8,8 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This is a fork of the ERA5 reanalysis preprocessing script written by 
-# Xin Zhang, accessed with the ERA5 WRF initialization tutorial at
-#
-#   https://dreambooker.site/2018/04/20/Initializing-the-WRF-model-with-ERA5/
-#
-# Last accessed on 2022-11-17 by CJG.
-#
+# This is a fork of the GEFS preprocessing script written by 
+# Dan Steinhoff, Caroline Papadopoulos, et al.
 # This script is designed to work with an ecmwf_gribtools conda environment for
 # the preprocessing the data with gribtools for WRF
 #
@@ -46,14 +41,20 @@
 ##################################################################################
 set -x
 
-# start date for the data download
-START_DT="2019-02-08"
+# start date time for the data download
+DT="2019-02-08_00:00:00"
 
-# end date for the data download
-END_DT="2019-02-08"
+# max forecast hour for the data
+FCST=6
+
+# pressure (pl) or surface (sl) levels 
+LEVELS=("pl" "sl")
 
 # location of git clone
 USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien/TIGGE"
+
+# ensemble size
+N_ENS=20
 
 # initiate bash and source bashrc to initialize environement
 conda init bash
@@ -62,9 +63,14 @@ source /home/cgrudzien/.bashrc
 ##################################################################################
 # Download data
 ##################################################################################
+# cut date time into sub parts for file names
+dt=`echo ${DT} | cut -c 1-4,6-7,9-10`
+hr=`echo ${DT} | cut -c 12-13`
+dh=`echo ${DT} | cut -c 1-13`
+
 # directory of ERA5 download
 data_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data/"
-workdir="${data_root}/static/gribbed/ERA5/model_levels"
+workdir="${data_root}/static/gribbed/GEFS/${dt}"
 cd ${workdir}
 echo "Move to working directory:"
 eval `echo pwd`
@@ -73,11 +79,55 @@ eval `echo pwd`
 conda activate ecmwf_gribtools
 echo `conda list`
 
-# define input and output data
-file_in="${START_DT}--${END_DT}_model_levels.grib"
-file_out="${START_DT}--${END_DT}_model_levels.grib.1"
-grib_set -s deletePV=1,edition=1 ${file_in} ${file_out} 
+for level in ${LEVELS[@]}; do
+  # define input and output data based on level
+  file_in="TIGGE_geps_1-${N_ENS}_${level}_zh_${dh}_fcst_hrs_0-${FCST}.grib"
+  file_out="gep[perturbationNumber].t${hr}z.pgrb_${level}.f[forecastTime]"
+  echo "Processing ${file_in} to files ${file_out}"
 
+  # copy with grib tools splitting on perturbation number and forecast time
+  grib_copy ${file_in} ${file_out}
+done
+
+# loop back through files to add padding to forecast hours and perturbation numbers
+out_files=(gep*)
+
+IFS="."
+
+for file in ${out_files[@]}; do
+  # split file name on period
+  read -ra split_name <<< "${file}"
+  
+  # padd ensemble number
+  ens_n=`echo split[0] | cut -c 4- | printf %02d`
+
+  # padd forecast hour
+  fcst_hr=`echo split[-1] | cut -c 2- | printf %03d`
+
+  # begin new name construction
+  rename="gep${ens_n}"
+
+  # loop elements of the split name, excluding first and last
+  ii=1
+  name_len=${#split_name[@]}
+
+  while [ ii -lt name_len]; do
+   rename+="."
+   rename+=split_name[ii]
+   (( ii += 1 ))
+  done
+
+  # add last padded element
+  rename+="."
+  rename+="f${fcst_hr}"
+  
+  # rename file if not already padded
+  if [[ ${file} -ne ${rename} ]]; do
+    mv ${file} ${rename} 
+  fi
+  done
+done
+ 
 echo "Finished preprocessing ${file_in} to destination ${file_out}"
 
 exit 0

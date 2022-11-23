@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p shared
+#SBATCH -p compute
 #SBATCH --nodes=1
 #SBATCH -t 48:00:00
 #SBATCH -J download_GEFS
