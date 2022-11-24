@@ -39,10 +39,10 @@
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
-set -x
+#set -x
 
 # start date time for the data download
-DT="2019-02-08_00:00:00"
+DT="2019-02-10_00:00:00"
 
 # max forecast hour for the data
 FCST=6
@@ -92,17 +92,19 @@ done
 # loop back through files to add padding to forecast hours and perturbation numbers
 out_files=(gep*)
 
-IFS="."
-
 for file in ${out_files[@]}; do
   # split file name on period
+  IFS="."
   read -ra split_name <<< "${file}"
-  
+  IFS=""
+
   # padd ensemble number
-  ens_n=`echo split[0] | cut -c 4- | printf %02d`
+  ens_n=`echo ${split_name[0]} | cut -c 4- `
+  ens_n=`printf %02d ${ens_n}`
 
   # padd forecast hour
-  fcst_hr=`echo split[-1] | cut -c 2- | printf %03d`
+  fcst_hr=`echo ${split_name[-1]} | cut -c 2-`
+  fcst_hr=`printf %03d ${fcst_hr}`
 
   # begin new name construction
   rename="gep${ens_n}"
@@ -110,10 +112,11 @@ for file in ${out_files[@]}; do
   # loop elements of the split name, excluding first and last
   ii=1
   name_len=${#split_name[@]}
+  (( name_len -= 1 ))
 
-  while [ ii -lt name_len]; do
+  while [[ ${ii} -lt ${name_len} ]]; do
    rename+="."
-   rename+=split_name[ii]
+   rename+=${split_name[ii]}
    (( ii += 1 ))
   done
 
@@ -122,10 +125,9 @@ for file in ${out_files[@]}; do
   rename+="f${fcst_hr}"
   
   # rename file if not already padded
-  if [[ ${file} -ne ${rename} ]]; do
+  if [[ ${file} != ${rename} ]]; then
     mv ${file} ${rename} 
   fi
-  done
 done
  
 echo "Finished preprocessing ${file_in} to destination ${file_out}"
