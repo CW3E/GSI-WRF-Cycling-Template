@@ -63,13 +63,12 @@ from datetime import date, timedelta
 # Set the below to equal the uid & key from ECMWF for personal account, this can
 # include multiple accounts in the list for more downloads simulataneously
 #AUTHS = [b'xxxxxx:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx']
-AUTHS = [b'129569:d311504f-2930-4fd3-b674-061b23598b84']
 
 # which type of data to download, defined in script call
 CALL = sys.argv[1]
 
 # root directory where date stamped sub-directories will collect data downloads
-PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/TIGGE'
+PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 DATA_ROOT = PROJ_ROOT +\
     '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data/static/gribbed/' +\
     'ERA5/' + CALL + '/'

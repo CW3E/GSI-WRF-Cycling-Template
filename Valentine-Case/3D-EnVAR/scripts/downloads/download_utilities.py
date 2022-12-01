@@ -33,7 +33,7 @@ from datetime import timedelta
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # directory of git clone
-PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/TIGGE'
+PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
 ##################################################################################
 # UTILITY METHODS

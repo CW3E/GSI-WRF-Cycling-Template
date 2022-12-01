@@ -42,7 +42,7 @@ conda init bash
 source /home/cgrudzien/.bashrc
 
 # set the working directory and cd there
-USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien/TIGGE"
+USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 PRJ_HME="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
 scripts="${PRJ_HME}/scripts/downloads"
 cd ${scripts}

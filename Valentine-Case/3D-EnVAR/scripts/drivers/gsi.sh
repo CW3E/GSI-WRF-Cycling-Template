@@ -56,7 +56,6 @@
 # if_oneob    = Yes   : Do single observation test
 #
 #####################################################
-
 # uncomment to run verbose for debugging / testing
 set -x
 
@@ -335,7 +334,8 @@ gsi_exe=${GSI_ROOT}/build/bin/gsi.x
 gsi_namelist=${STATIC_DATA}/namelists/comgsi_namelist.sh
 crtm_root=${GSI_ROOT}/CRTM_v${CRTM_VERSION}
 prepbufr_tar=${obs_root}/prepbufr.${anl_date}.nr.tar.gz
-prepbufr=${obs_root}/${anl_date}.nr/prepbufr.gdas.${anl_date}.t${hh}z.nr
+prepbufr_dir=${obs_root}/${anl_date}.nr
+prepbufr=${prepbufr_dir}/prepbufr.gdas.${anl_date}.t${hh}z.nr
 
 if [ ! -d "${obs_root}" ]; then
   echo "ERROR: obs_root directory '${obs_root}' does not exist!"
@@ -371,8 +371,20 @@ if [ ! -r "${prepbufr_tar}" ]; then
   echo "ERROR: file '${prepbufr_tar}' does not exist!"
   exit 1
 else
-  cd ${obs_root}
-  tar -xvf `basename ${prepbufr_tar}`
+  # untar prepbufr data to predefined directory
+  # define prepbufr directory
+  mkdir -p ${prepbufr_dir}
+  tar -xvf ${prepbufr_tar} -C ${prepbufr_dir}
+
+  # unpack nested directory structure
+  prepbufr_nest=(`find ${prepbufr_dir} -type f`)
+  nest_indx=1
+  while [ ${nest_indx} -le ${#prepbufr_nest[@]} ]; do
+    mv ${prepbufr_nest[${nest_indx}]} ${prepbufr_dir}
+    (( nest_indx += 1))
+  done
+  rmdir ${prepburf_dir}/*
+
   if [ ! -r "${prepbufr}" ]; then
     echo "ERROR: file '${prepbufr}' does not exist!"
     exit 1
@@ -631,6 +643,10 @@ while [ ${dmn} -le ${max_dom} ]; do
       tar_files+=(${obs_root}/abias.${anl_date}.tar.gz)
       tar_files+=(${obs_root}/abiaspc.${anl_date}.tar.gz)
 
+      bias_dirs=()
+      bias_dirs+=(${obs_root}/${anl_date}.abias)
+      bias_dirs+=(${obs_root}/${anl_date}.abiaspc)
+
       bias_files=()
       bias_files+=(${obs_root}/${anl_date}.abias/gdas.abias.t${hh}z.${anl_date}.txt)
       bias_files+=(${obs_root}/${anl_date}.abiaspc/gdas.abiaspc.t${hh}z.${anl_date}.txt)
@@ -645,13 +661,24 @@ while [ ${dmn} -le ${max_dom} ]; do
 
       while [[ ${ii} -lt ${len} ]]; do
 	tar_file=${tar_files[$ii]}
+	bias_dir=${bias_dirs[$ii]}
 	bias_file=${bias_files[$ii]}
         if [ -r "${tar_file}" ]; then
-          cd ${obs_root}
-          tar -xvf `basename ${tar_file}`
+	  # untar to specified directory
+	  mkdir -p ${bias_dir}
+          tar -xvf ${tar_file} -C ${bias_dir}
+
+	  # unpack nested directory structure
+	  bias_nest=(`find ${bias_dir} -type f`)
+          nest_indx=1
+          while [ ${nest_indx} -le ${#bias_nest[@]} ]; do
+            mv ${bias_nest[${nest_indx}]} ${bias_dir}
+            (( nest_indx += 1))
+          done
+	  rmdir ${bias_dir}/*
+
           if [ -r "${bias_file}" ]; then
             echo "Link the GDAS bias correction file ${bias_file} for loop zero of analysis"
-            cd ${workdir}
             ln -sf ${bias_file} ./${bias_in_files[$ii]}
           else
             echo "GDAS bias correction file not readable at ${bias_file}"

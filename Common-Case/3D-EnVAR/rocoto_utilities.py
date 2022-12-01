@@ -35,7 +35,7 @@ import os
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # directory for git clone of GSI-WRF-Cycling-Template
-USR_HME = '/cw3e/mead/projects/cwp106/scratch/'
+USR_HME = '/cw3e/mead/projects/cwp130/scratch/'
 
 # directory for rocoto install
 RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
