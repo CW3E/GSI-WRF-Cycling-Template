@@ -35,8 +35,8 @@
   <!-- CYCLING SETTINGS -->
   <!-- Forecasts with same end-time but different start time are performed as unique workflows currently -->
   <!-- I.e., CYCLE_START=CYCLE_END, and a single cycle with unique forecast length is defined -->
-  <!ENTITY CYCLE_START         "201902130000">
-  <!ENTITY CYCLE_END           "201902130000">
+  <!ENTITY CYCLE_START         "201902140000">
+  <!ENTITY CYCLE_END           "201902140000">
   <!ENTITY CYCLE_INTERVAL      "01:00:00">
   <!-- END CYCLING SETTINGS -->
 
@@ -72,7 +72,7 @@
   <!ENTITY WRF_MEM             "5G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
-  <!ENTITY WRF_WC              "18:00:00">
+  <!ENTITY WRF_WC              "24:00:00">
   <!-- END JOB SETTINGS -->
 ]>
 
