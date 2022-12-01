@@ -48,15 +48,16 @@ import calendar
 import glob
 from datetime import datetime as dt
 from datetime import timedelta
+from download_utilities import PROJ_ROOT, STR_INDT, get_reqs
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # starting date and zero hour of data
-START_DATE = '2021-01-20T00:00:00'
+START_DATE = '2018-01-20T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2021-01-20T00:00:00'
+END_DATE = '2018-01-22T00:00:00'
 
 # interval of forcast data outputs after zero hour
 FCST_INT = 6
@@ -67,53 +68,15 @@ CYCLE_INT = 6
 # max forecast lenght in hours
 MAX_FCST = 6
 
-# directory of git clone
-PROJ_ROOT = '/cw3e/mead/projects/cwp130/scratch/cgrudzien/TIGGE'
-
 # root directory where date stamped sub-directories will collect data downloads
 DATA_ROOT = PROJ_ROOT +\
     '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data/static/gribbed/GEFS'
-
 
 ##################################################################################
 # UTILITY METHODS
 ##################################################################################
 
-STR_INDT = '    '
 CMD = 'aws s3 cp --no-sign-request s3://noaa-gefs-pds/gefs.'
-
-def get_reqs(start_date, end_date, fcst_int, cycle_int, max_fcst):
-    # generates requests based on script parameters
-    date_reqs = []
-    fcst_reqs = []
-    delta = end_date - start_date
-    hours_range = delta.total_seconds() / 3600
-    fcst_steps = int(max_fcst / fcst_int)
-
-    if cycle_int == 0 or delta.total_seconds() == 0:
-        # for a zero cycle interval or start date equal end date, only download
-        # at start date / hour
-        date_reqs.append([start_date.strftime('%Y%m%d'),
-                          start_date.strftime('%H')])
-
-    else:
-        # define the zero hours for forecasts over range of cycle intervals
-        cycle_steps = int(hours_range / cycle_int)
-        for i in range(cycle_steps + 1):
-            fcst_start = start_date + timedelta(hours=(i * cycle_int))
-            date_reqs.append([fcst_start.strftime('%Y%m%d'),
-                              fcst_start.strftime('%H')])
-
-    for i in range(fcst_steps + 1):
-        # download the forecast horizons in the range fcst_steps
-        # NOTE: there is a syntax switch from 2 digit padding to three
-        # digit padding so that we will create two versions of the forecast
-        # request to make valid calls across dates
-        fcst_reqs.append([str(i * fcst_int).zfill(2),
-                          str(i * fcst_int).zfill(3)])
-
-    return date_reqs, fcst_reqs
-
 
 ##################################################################################
 # Download data
@@ -128,18 +91,18 @@ date_reqs, fcst_reqs = get_reqs(start_date, end_date, FCST_INT,
 
 # make requests
 for date in date_reqs:
-    print('Downloading GEFS Date ' + date[0] + '\n')
-    print('Zero Hour ' + date[1] + '\n')
+    print('Downloading GEFS Date ' + date.strftime('%Y-%m-%d') + '\n')
+    print('Zero Hour ' + date.strftime('%H') + '\n')
 
-    down_dir = DATA_ROOT + '/' + date[0] + '/'
+    down_dir = DATA_ROOT + '/' + date.strftime('%Y%m%d') + '/'
     os.system('mkdir -p ' + down_dir)
 
     for fcst in fcst_reqs:
         # the following are the two and three digit padding versions of the hours
-        HH = fcst[0]
-        HHH = fcst[1]
+        HH  = fcst.zfill(2)
+        HHH = fcst.zfill(3)
         print(STR_INDT + 'Forecast Hour ' + HH + '\n')
-        cmd = CMD + date[0] + '/' + date[1] + ' ' +\
+        cmd = CMD + date.strftime('%Y%m%d') + '/' + date.strftime('%H') + ' ' +\
               down_dir + ' ' +\
               '--recursive ' +\
               '--exclude \'*\'' + ' ' +\
