@@ -55,9 +55,9 @@ from download_utilities import PROJ_ROOT, STR_INDT, get_reqs
 START_DATE = '2019-02-08T18:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-09T18:00:00'
+END_DATE = '2019-02-10T18:00:00'
 
-# interval of forcast data outputs after zero hour
+# interval of forecast data outputs after zero hour
 FCST_INT = 6
 
 # number of hours between zero hours for forecast data
@@ -153,7 +153,7 @@ def get_call(date, fcst_hrs, data_type, n_ens=None):
                'levtype': 'sfc',
                'number': ens_list,
                'origin': 'kwbc',
-               'param': '134/151/165/166/167/168/235/228039/228139/228144',
+               'param': '134/151/165/166/167/168/172/235/228039/228139/228144',
                'step': steps,
                'target': target,
                'time': date.strftime('%H:%M:%S'),
@@ -165,8 +165,8 @@ def get_call(date, fcst_hrs, data_type, n_ens=None):
     elif data_type == 'gep_st':
         # perturbation static data
         target = down_dir + '/TIGGE_geps_1-' + str(n_ens) +\
-                 '_st_zh_' + date.strftime('%Y-%m-%d_00:00:00') +\
-                 '.grib'  
+                 '_st_zh_' + date.strftime('%Y-%m-%d_%H') +\
+                 '_fcst_hrs_0-' + str(fcst_hrs[-1]) + '.grib'  
 
         req = {
                'class': 'ti',
@@ -179,31 +179,7 @@ def get_call(date, fcst_hrs, data_type, n_ens=None):
                'origin': 'kwbc',
                'param': '228002',
                'step': '0',
-               'time': '00:00:00',
-               'type': 'pf',
-               'target': target,
-              }
-
-        return req
-
-    elif data_type == 'gep_lm':
-        # perturbation landmask
-        target = down_dir + '/TIGGE_geps_1-' + str(n_ens) +\
-                 '_lm_zh_' + date.strftime('%Y-%m-%d_00:00:00') +\
-                 '.grib'  
-
-        req = {
-               'class': 'ti',
-               'dataset': 'tigge',
-               'date': date.strftime('%Y-%m-%d'),
-               'expver': 'prod',
-               'grid': '0.5/0.5',
-               'levtype': 'sfc',
-               'number': ens_list,
-               'origin': 'kwbc',
-               'param': '172',
-               'step': '6',
-               'time': '00:00:00',
+               'time': date.strftime('%H:%M:%S'),
                'type': 'pf',
                'target': target,
               }
@@ -275,19 +251,19 @@ req_list = []
 for date in date_reqs:
     req_list.append(get_call(date, fcst_reqs, 'gep_pl', n_ens=N_ENS))
     req_list.append(get_call(date, fcst_reqs, 'gep_sl', n_ens=N_ENS))
+    req_list.append(get_call(date, fcst_reqs, 'gep_st', n_ens=N_ENS))
     
     if CTR:
         req_list.append(get_call(date, fcst_reqs, 'gec_pl'))
-        req_list.append(get_call(date, fcst_reqs, 'gec_pl'))
+        req_list.append(get_call(date, fcst_reqs, 'gec_sl'))
             
 print('Generating requests:')
 for req in req_list:
     print(req)
     print('\n')
-    server.retrieve(req)
 
 # map requests to asynchronous workers for download
-#with Pool(23) as pool:
-#    print(pool.map(server.retrieve, req_list))
+with Pool(23) as pool:
+    print(pool.map(server.retrieve, req_list))
 
 print('Completed Python script')
