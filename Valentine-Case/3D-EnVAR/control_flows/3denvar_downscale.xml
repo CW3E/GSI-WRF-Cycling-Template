@@ -36,8 +36,8 @@
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902081800">
-  <!ENTITY SECOND_CYCLE        "201902100600">
-  <!ENTITY CYCLE_END           "201902100600">
+  <!ENTITY SECOND_CYCLE        "201902151200">
+  <!ENTITY CYCLE_END           "201902151200">
   <!ENTITY CYCLE_INTERVAL      "06:00:00">
   <!ENTITY ENS_LIST            "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
   <!ENTITY N_ENS               "20"> <!-- Must equal the max index of the ENS_LIST above or 00 if not hybrid DA -->
@@ -67,7 +67,7 @@
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.sh">
   <!ENTITY IF_SATRAD           "Yes">
-  <!ENTITY MAX_BC_LOOP         "2">
+  <!ENTITY MAX_BC_LOOP         "0">
   <!-- END GSI SETTINGS -->
  
   <!-- JOB SETTINGS -->
