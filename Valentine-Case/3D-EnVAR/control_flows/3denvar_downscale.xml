@@ -297,7 +297,7 @@
 
   <metatask name="ensemble_pre_proc">
     <var name="ENS_N">&ENS_LIST;</var>  
-    <task name="ungrib_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
+    <task name="ungrib_ens_#ENS_N#" maxtries="4" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/ungrib.sh</command>
       <cores>1</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>
@@ -419,7 +419,7 @@
       </dependency>
     </task>
 
-    <task name="real_ens_#ENS_N#" maxtries="3" cycledefs="first_cycle,q_daily">
+    <task name="real_ens_#ENS_N#" maxtries="30" cycledefs="first_cycle,q_daily">
       <command>&DRIVERS;/real.sh</command>
       <cores>&WPS_PROC;</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>

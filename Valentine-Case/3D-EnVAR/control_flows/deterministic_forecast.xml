@@ -4,7 +4,7 @@
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
-  <!ENTITY WORK_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
+  <!ENTITY WORK_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien/testing">
   <!ENTITY SOFT_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
   <!-- END COMET-DEPENDENT -->
 
@@ -49,7 +49,7 @@
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.sh">
   <!ENTITY WRF_CTR_DOM         "2"> <!-- Max domain for control simulation -->
   <!ENTITY WRF_DOWN_DOM        "2"> <!-- Domain index to have ICs downscaled from d01 -->
-  <!ENTITY FCST_LENGTH         "24">
+  <!ENTITY FCST_LENGTH         "48">
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY CTR_DATA_INTERVAL   "03"> <!-- This setting is applied to all WRF preprocessing and WRF control run -->
   <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->
@@ -72,7 +72,7 @@
   <!ENTITY WRF_MEM             "5G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
-  <!ENTITY WRF_WC              "18:00:00">
+  <!ENTITY WRF_WC              "36:00:00">
   <!-- END JOB SETTINGS -->
 ]>
 

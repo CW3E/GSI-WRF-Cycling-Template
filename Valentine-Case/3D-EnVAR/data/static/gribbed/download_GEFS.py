@@ -41,7 +41,7 @@ from datetime import timedelta
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # starting date and zero hour of data
-START_DATE = '2019-02-10T00:00:00'
+START_DATE = '2019-02-09T00:00:00'
 
 # final date and zero hour of data
 END_DATE = '2019-02-15T18:00:00'
