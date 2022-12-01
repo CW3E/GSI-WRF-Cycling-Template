@@ -1,0 +1,66 @@
+Modified from notes by Rachel Weihs 9/4/2020 
+Last updated by Caroline Papadopoulos 3/29/2022
+
+Size of forcing data:
+
+Total size 989G	GEFS_ensemble  apparant size is 1.2 T 
+ 118 directories each <DATE>_raw size variable ~ 8.4 G,  apparant size 9.7G 
+
+Where date is 2017 Jan/Feb 2019 Jan/Feb
+
+
+Instructions on how to download the forcing files:
+
+	If you don't already, please register for an ECMWF account in order to download data from the TIGGE database. 
+
+	https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets
+
+	Install ECMWF api key in your home area on pipeline.  I followed step 1.  
+
+	Put key in ~/.ecmwfapirc
+	
+
+	Install mini-conda environment and ecmwf python client libraries:  
+	following cw3e-wiki:  https://sites.google.com/ucsd.edu/cw3e-wiki/teams/it/how-tos/cw3e-it-python-on-cw3e-servers
+
+		On machine where you are going to do the downloads:
+  		%  mkdir Miniconda
+  		%  scp -pr skyriver:/apps/miniconda/Miniconda3-latest-Linux-x86_64.sh .
+  		%  mv Miniconda3-latest-Linux-x86_64.sh  Miniconda
+  		%  cd Miniconda/
+  		%  bash Miniconda3-latest-Linux-x86_64.sh
+
+	exit out of shell and then re-enter
+  		%  conda create --name ecmwf_downloads
+  		%  conda activate ecmwf_downloads
+  		%  conda install python=3.8
+  		%  pip install ecmwf-api-client
+
+	Move script to directory
+ 		>> mkdir ECMWF_downloads
+	 	>> mv MAIN_get-gefs_full_fields.py  ECMWF_downloads
+		>> cd ECMWF_downloads
+
+	edit MAIN_get-gfs_full_fields.py for dates 
+	3 dates is usually enough at one execution to make sure things are going smoothly.
+	NOTE: Download history is located in the Ensemble tracker:
+
+		https://docs.google.com/spreadsheets/d/1JVRfAs1YS_Uf48p06_wCrnUpGD_2FzEXFRMJJNaYjMA/edit#gid=0
+
+	Note, you may need to accept terms for tigge dataset before first run:
+ 	http://apps.ecmwf.int/datasets/licences/tigge
+
+	Run code
+ 		>> python MAIN_get-gefs_full_fields.py
+	NOTE when done need to deactivate conda env:
+ 		>> conda deactivate
+
+
+NOTE: these are versions of the scripts:
+
+	MAIN_get-gefs_full_fields.py.orig			Original version with all member calls including control
+	MAIN_get-gefs_full_fields.py_no_control			Missing control member calls 
+	MAIN_get-gefs_full_fields.py				Working version with control member commented out
+	MAIN_get-gefs_full_fields_ctl.py			Working version with only control member calls
+
+

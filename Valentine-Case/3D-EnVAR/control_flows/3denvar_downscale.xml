@@ -4,9 +4,9 @@
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
-  <!ENTITY WORK_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
+  <!ENTITY WORK_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien/TIGGE">
   <!ENTITY SOFT_SPACE          "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
-  <!-- END COMET-DEPENDENT -->
+  <!-- END COMPUTER-DEPENDENT -->
 
   <!-- USER-DEPENDENT ITEMS -->
   <!ENTITY EMAIL               "cgrudzien@ucsd.edu">
@@ -39,7 +39,6 @@
   <!ENTITY SECOND_CYCLE        "201902080000">
   <!ENTITY CYCLE_END           "201902150600">
   <!ENTITY CYCLE_INTERVAL      "06:00:00">
-  <!ENTITY DA_MODE             "Yes"> <!-- Set to "No" to run WRF cycles without DA, adjust bkg data accordingly -->
   <!ENTITY ENS_LIST            "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
   <!ENTITY N_ENS               "20"> <!-- Must equal the max index of the ENS_LIST above or 00 if not hybrid DA -->
   <!-- END CYCLING SETTINGS -->
@@ -68,6 +67,7 @@
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.sh">
   <!ENTITY IF_SATRAD           "Yes">
+  <!ENTITY MAX_BC_LOOP         "2">
   <!-- END GSI SETTINGS -->
  
   <!-- JOB SETTINGS -->
@@ -89,7 +89,7 @@
   <!ENTITY GSI_MEM             "5G">
   <!ENTITY GSI_NODESIZE        "24">
   <!ENTITY GSI_NODES           "16">
-  <!ENTITY GSI_WC              "03:30:00">
+  <!ENTITY GSI_WC              "06:30:00">
   <!-- END JOB SETTINGS -->
 ]>
 
@@ -578,7 +578,6 @@
       <name>IF_CTR_COLD_START</name>
       <value>No</value>
     </envar>
-    <!-- NOTE: use Yes below to use WPS perts for the ensemble hybrid background -->
     <envar>
       <name>IF_ENS_COLD_START</name>
       <value>No</value>
@@ -598,6 +597,10 @@
     <envar>
       <name>N_ENS</name>
       <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>MAX_BC_LOOP</name>
+      <value>&MAX_BC_LOOP;</value>
     </envar>
     <envar>
       <name>IF_4DENVAR</name>
@@ -845,7 +848,7 @@
     </envar>
     <envar>
       <name>IF_CYCLING</name>
-      <value>&DA_MODE;</value>
+      <value>Yes</value>
     </envar>
     <envar>
       <name>IF_SST_UPDATE</name>
