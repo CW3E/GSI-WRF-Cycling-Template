@@ -67,8 +67,6 @@ DMN="2"
 # Process data
 #####################################################
 # define derived data paths
-
-# root of all data files for project
 proj_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
 work_root="${proj_root}/data/analysis/${CTR_FLW}/MET_analysis"
 data_root="${proj_root}/data/forecast_io/${CTR_FLW}"

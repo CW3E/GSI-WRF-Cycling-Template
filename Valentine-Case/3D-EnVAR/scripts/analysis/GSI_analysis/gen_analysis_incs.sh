@@ -45,10 +45,13 @@
 # set local environment for ncl and dependencies
 module load ncl_ncarg
 
+# root directory for git clone
+USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
+
 # define control flow to analyze 
 CTR_FLW="3denvar_downscale"
 
-# define date range and increments
+# define date range and cycling interval
 START_DT="2019020800"
 END_DT="2019020812"
 CYCLE_INT="6"
@@ -61,9 +64,6 @@ VERT_INT="10"
 
 # define the domain to compute the increments
 DMN="1"
-
-# set local root paths
-USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 #####################################################
 # Process data
