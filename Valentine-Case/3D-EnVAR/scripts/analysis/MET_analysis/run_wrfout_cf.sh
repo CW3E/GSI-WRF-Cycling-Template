@@ -16,7 +16,7 @@
 # This driver script is designed as a companion to the WRF preprocessing script
 # wrfout_to_cf.ncl to ready WRF outputs for MET. This script is based on original
 # source code provided by Rachel Weihs and Caroline Papadopoulos.  This is
-# re-written to homogenize project structure and to include felibility with
+# re-written to homogenize project structure and to include flexibility with
 # processing date ranges of data.
 #
 #####################################################
