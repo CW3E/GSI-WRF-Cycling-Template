@@ -1,21 +1,28 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This script reads in a generic fort.220 file from a GSI run and creates
+# This script reads in a fort.* single level file from a GSI run and creates
 # a Pandas dataframe containing time series values of the outputs of lines
 #
-#   cost,grad,step,b,step? = iter step cost grad  XX  XX  good
+#   o-g    0X    use    all    count    bias     rms    cpen    qcpen 
 #
-# giving time series statistics for the GSI cost diagnostics.
+# giving summary statistics for the observations grouped into their 'use' as 
+# assimilated, rejected or monitored.
 #
 # The dataframes are saved into a Pickled dictionary organized by fields as
 #
 #    'date'   : The cycle date time for which the analysis is performed 
-#    'loop'   : Outer loop number = 01 / 02 
-#    'iter'   : Iteration of the cost function in the current outer loop
-#    'cost'   : Eval of cost function in the current iteration / outer loop
-#    'grad'   : Norm of the cost function gradient in the current iteration /
-#               outer loop
+#    'iter'   : Outer loop number = 01: observation - background 
+#                                 = 02: observation - analysis (outer loop 1)
+#                                 = 03: observation - analysis (outer loop 2)
+#    'use'    : Use = asm: used in GSI analysis
+#                   = mon: monitored (read in but not assimilated by GSI)
+#                   = rej: rejected because of quality control in GSI
+#    'count'  : Total number of observations of type 
+#    'bias'   : Bias of observation departure for each outer loop
+#    'rms'    : Root mean square error of observation departure for each outer loop 
+#    'cpen'   : Observation part of penalty (cost function)
+#    'qcpen'  : Nonlinear qc penalty
 #
 # Data input and output directories should be defined in the below along with
 # DOM to control the domain processed.
@@ -45,6 +52,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import copy
+import glob
 from datetime import datetime as dt
 from gsi_py_utilities import PROJ_ROOT, STR_INDT, get_anls
 import os
@@ -56,16 +64,19 @@ import os
 CTR_FLW = '3denvar_downscale'
 
 # starting date and zero hour of data
-START_DT = '2019-02-08T00:00:00'
+START_DATE = '2019-02-08T00:00:00'
 
 # final date and zero hour of data
-END_DT = '2019-02-08T06:00:00'
+END_DATE = '2019-02-08T06:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 6
 
 # define domains to process
 MAX_DOM = 1
+
+# the string extension of the GSI fort diagnostic file
+FORT='201'
 
 ##################################################################################
 # Process data
@@ -76,23 +87,26 @@ out_dir = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW
 os.system('mkdir -p ' + out_dir)
 
 # convert to date times
-start_date = dt.fromisoformat(START_DT)
-end_date = dt.fromisoformat(END_DT)
+start_date = dt.fromisoformat(START_DATE)
+end_date = dt.fromisoformat(END_DATE)
 
 # define the output name
-out_path = out_dir + '/GSI_cost_grad_anl_' + START_DT +\
-           '_to_' + END_DT + '.bin'
+out_path = out_dir + '/GSI_fort_' + FORT + '_' + START_DATE +\
+           '_to_' + END_DATE + '.bin'
 
 # generate the date range for the analyses
 analyses = get_anls(start_date, end_date, CYCLE_INT)
 
 # initiate empty dataframe / dictionary
 d0 = pd.DataFrame.from_dict({
-    'date' : [],
-    'loop' : [],
-    'iter' : [],
-    'cost' : [],
-    'grad' : [],
+    'date'  : [],
+    'iter'  : [],
+    'use'   : [],
+    'count' : [],
+    'bias'  : [],
+    'rms'   : [],
+    'cpen'  : [],
+    'qcpen' : [],
     })
 
 for i in range(1, MAX_DOM + 1):
@@ -106,27 +120,32 @@ for i in range(1, MAX_DOM + 1):
     
     for (anl_date, anl_strng) in analyses:
         # open file and loop lines
-        in_path = data_root + '/' + anl_strng + '/gsiprd/d0' + str(i) + '/fort.220'
+        in_path = data_root + '/' + anl_strng + '/gsiprd/d0' + str(i) + '/fort.' + FORT
         print(STR_INDT + 'Opening file ' + in_path)
         f = open(in_path)
 
         for line in f:
-            split_line = line.split(',')
-            prefix = split_line[0]
-            if prefix == 'cost':
-                step += 1
-                split_line = split_line[-1].split() 
-                tmp = np.array(split_line[2:6])
-                tmp_dict = {
-                    'date' : [anl_date],
-                    'loop' : [float(tmp[0])],      
-                    'iter' : [float(tmp[1])],
-                    'cost' : [float(tmp[2])], 
-                    'grad' : [float(tmp[3])], 
-                    }
-                exec('tmp_dict[\'step\'] = [int(step)]')
-                tmp_dict = pd.DataFrame.from_dict(tmp_dict, orient='columns')
-                exec('d0%s = pd.concat([d0%s, tmp_dict], axis=0)'%(i,i))
+            split_line = line.split()
+            try:
+                typ = split_line[3]
+                if typ == 'all':
+                    step += 1
+                    tmp_dict = {
+                        'date' : [anl_date],
+                        'iter'  : [int(split_line[1])],
+                        'use'   : [split_line[2]],
+                        'count' : [int(split_line[4])],
+                        'bias'  : [float(split_line[5])],
+                        'rms'   : [float(split_line[6])],
+                        'cpen'  : [float(split_line[7])],
+                        'qcpen' : [float(split_line[8])],
+                        }
+                    exec('tmp_dict[\'step\'] = [int(step)]')
+                    tmp_dict = pd.DataFrame.from_dict(tmp_dict, orient='columns')
+                    exec('d0%s = pd.concat([d0%s, tmp_dict], axis=0)'%(i,i))
+
+            except:
+                pass
     
         print(STR_INDT + 'Closing file ' + in_path)
         f.close()
