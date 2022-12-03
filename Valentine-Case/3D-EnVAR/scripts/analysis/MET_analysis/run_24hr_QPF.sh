@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --mem=120G
 #SBATCH -t 24:00:00
-#SBATCH --job-name="run_24hr_QPF"
+#SBATCH --job-name="24hr_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp130
 #SBATCH --mail-user cgrudzien@ucsd.edu
@@ -60,11 +60,13 @@ ANL_END="2019-02-15_00:00:00"
 #####################################################
 # define derived data paths
 proj_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
-data_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR/data"
+data_root="${proj_root}/data"
 work_root="${data_root}/analysis/${CTR_FLW}/MET_analysis/${START_DT}"
-stage_iv_root="${USR_HME}/DATA/stageIV"
+stageiv_root="${USR_HME}/DATA/stageIV"
 scripts_home="${proj_root}/scripts/analysis/MET_analysis"
-mask_polygon_root="/cw3e/mead/projects/cwp129/cw3e_MET_verification/common_polygons/region/"
+met_root="${USR_HME}/MET_CODE"
+met_src="${met_root}/met-10.0.1.sif"
+mask_root="${met_root}/polygons"
 
 # Set up valid time for verification
 validyear=${ANL_START:0:4}
@@ -72,49 +74,45 @@ validmon=${ANL_START:5:2}
 validday=${ANL_START:8:2}
 validhr=${ANL_START:11:2}
 
-# MET Singularity Path
-metsrc="${USR_HME}/MET_CODE/met-10.0.0.sif"
-
 # Set up singularity container
-echo "singularity instance start -B  ${work_root}:/work_root:rw,${stage_iv_root}:/root_stageiv:ro,${scripts_home}:/scripts:ro ${metsrc} met1"  
-singularity instance start -B ${work_root}:/work_root:rw,${stage_iv_root}:/root_stageiv:ro,${mask_polygon_root}:/root_mask:ro,${scripts_home}:/scripts:ro ${metsrc} met1 
+echo "singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/root_stageiv:ro,${scripts_home}:/scripts:ro ${met_src} met1"  
+singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/root_stageiv:ro,${mask_root}:/mask_root:ro,${scripts_home}:/scripts:ro ${met_src} met1 
 
 # Combine 3-hr precip to 24-hr
 statement="singularity exec instance://met1 pcp_combine \
 -sum 00000000_000000 1 ${validyear}${validmon}${validday}_${validhr}0000 24 \
 /work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
 -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"24hr_qpf\" \
--pcpdir /input \
--pcprx \"wrfcf_gfs_d02_\" \
+-pcpdir /work_root \
+-pcprx \"wrf_post_${ANL_START}_to_${ANL_END}.nc\" \
 -v 1"
-echo $statement
-eval $statement
+echo ${statement}
+eval ${statement}
 
-# Regrid to Stage-IV
-statement="singularity exec instance://met1 regrid_data_plane \
-/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
-/root_stageiv/ST4.${START_DT}.01h.nc \
-/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc -field 'name=\"24hr_qpf\";  level=\"(*,*)\";'  -method BILIN -width 2 -v 1"
-echo $statement
-eval $statement
-
-# NOTE: need a new landmask here for California generally?
-statement="singularity exec instance://met1 gen_vx_mask -v 10 \
-/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
--type poly \
-/root_mask/Russian_LatLonPoints.txt \
-/work_root/Russian_mask_regridded_NRT_pcpcombine_with_StageIV.nc"
-echo $statement
-eval $statement
-
-# RUN GRIDSTAT
-statement="singularity exec instance://met1 grid_stat -v 10 \
-/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc
-/root_stageiv/ST4.${START_DT}.01h.nc \
-/scripts/GridStatConfig
--outdir /work_root"
-echo $statement
-eval $statement
+## Regrid to Stage-IV
+#statement="singularity exec instance://met1 regrid_data_plane \
+#/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+#/root_stageiv/ST4.${START_DT}.01h.nc \
+#/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc -field 'name=\"24hr_qpf\";  level=\"(*,*)\";'  -method BILIN -width 2 -v 1"
+#echo ${statement}
+#eval ${statement}
+#
+#statement="singularity exec instance://met1 gen_vx_mask -v 10 \
+#/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+#-type poly \
+#/mask_root/region/CALatLonPoints.txt \
+#/work_root/CA_mask_regridded_with_StageIV.nc"
+#echo ${statement}
+#eval ${statement}
+#
+## RUN GRIDSTAT
+#statement="singularity exec instance://met1 grid_stat -v 10 \
+#/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc
+#/root_stageiv/ST4.${START_DT}.01h.nc \
+#/scripts/GridStatConfig
+#-outdir /work_root"
+#echo ${statement}
+#eval ${statement}
 
 # End MET Process and singularity stop
 singularity instance stop met1

@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --mem=120G
 #SBATCH -t 24:00:00
-#SBATCH --job-name="wrf_cf_compliant"
+#SBATCH --job-name="wrfout_cf"
 #SBATCH --export=ALL
 #SBATCH --account=cwp130
 #SBATCH --mail-user cgrudzien@ucsd.edu
