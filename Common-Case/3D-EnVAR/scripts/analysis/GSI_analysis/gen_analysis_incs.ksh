@@ -103,7 +103,7 @@ datestr=`date +%Y%m%d%H -d "${start_time} ${fcst_hour} hours"`
 # loop condition
 timestr=`date +%Y:%m:%d_%H -d "${start_time} ${fcst_hour} hours"`
 
-while [[ ! ${datestr} > ${end_time} ]]; do
+while [[ ! ${timestr} > ${end_time} ]]; do
   # define wrfout date string
   wrfdate=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst_hour} hours"`
 
