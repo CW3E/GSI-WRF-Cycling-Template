@@ -670,7 +670,7 @@ while [ ${dmn} -le ${max_dom} ]; do
 
 	  # unpack nested directory structure
 	  bias_nest=(`find ${bias_dir} -type f`)
-          nest_indx=1
+          nest_indx=0
           while [ ${nest_indx} -le ${#bias_nest[@]} ]; do
             mv ${bias_nest[${nest_indx}]} ${bias_dir}
             (( nest_indx += 1))
