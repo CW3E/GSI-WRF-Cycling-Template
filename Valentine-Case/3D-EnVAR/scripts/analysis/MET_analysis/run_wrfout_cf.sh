@@ -58,7 +58,7 @@ CYCLE_INT="24"
 
 # WRF ISO date times defining range of data processed
 ANL_START="2019-02-14_00:00:00"
-ANL_END="2019-02-15_00:00:00"
+ANL_END="2019-02-14_01:00:00"
 
 # verification domain for the forecast data
 DMN="2"
@@ -116,7 +116,7 @@ while [[ ! ${timestr} > ${end_dt} ]]; do
   # set output file name
   output_file="wrf_post_${ANL_START}_to_${ANL_END}.nc"
   
-  statement="ncl 'file_in=\"${input_path}/${file_1}\"' 'file_prev=\"${input_path}/${file_2}\"                               
+  statement="ncl 'file_in=\"${input_path}/${file_2}\"' 'file_prev=\"${input_path}/${file_1}\"                               
       ' 'file_out=\"${output_path}/${output_file}\"' wrfout_to_cf.ncl "
   
   eval ${statement}

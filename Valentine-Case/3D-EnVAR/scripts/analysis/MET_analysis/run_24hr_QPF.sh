@@ -53,12 +53,15 @@ CYCLE_INT="24"
 
 # WRF ISO date times defining range of data processed
 ANL_START="2019-02-14_00:00:00"
-ANL_END="2019-02-15_00:00:00"
+ANL_END="2019-02-14_01:00:00"
 
 #####################################################
 # Process data
 #####################################################
 # define derived data paths
+
+precip_dt="2019021412"
+
 proj_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
 data_root="${proj_root}/data"
 work_root="${data_root}/analysis/${CTR_FLW}/MET_analysis/${START_DT}"
@@ -69,18 +72,18 @@ met_src="${met_root}/met-10.0.1.sif"
 mask_root="${met_root}/polygons"
 
 # Set up valid time for verification
-validyear=${ANL_START:0:4}
-validmon=${ANL_START:5:2}
-validday=${ANL_START:8:2}
-validhr=${ANL_START:11:2}
+validyear=${ANL_END:0:4}
+validmon=${ANL_END:5:2}
+validday=${ANL_END:8:2}
+validhr=${ANL_END:11:2}
 
 # Set up singularity container
-echo "singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/root_stageiv:ro,${scripts_home}:/scripts:ro ${met_src} met1"  
-singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/root_stageiv:ro,${mask_root}:/mask_root:ro,${scripts_home}:/scripts:ro ${met_src} met1 
+echo "singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/root_stageiv:rw,${scripts_home}:/scripts:ro ${met_src} met1"  
+singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/root_stageiv:rw,${mask_root}:/mask_root:ro,${scripts_home}:/scripts:ro ${met_src} met1 
 
 # Combine 3-hr precip to 24-hr
 statement="singularity exec instance://met1 pcp_combine \
--sum 00000000_000000 1 ${validyear}${validmon}${validday}_${validhr}0000 24 \
+-sum 00000000_000000 24 ${validyear}${validmon}${validday}_${validhr}0000 24 \
 /work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
 -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"24hr_qpf\" \
 -pcpdir /work_root \
@@ -89,30 +92,36 @@ statement="singularity exec instance://met1 pcp_combine \
 echo ${statement}
 eval ${statement}
 
-## Regrid to Stage-IV
-#statement="singularity exec instance://met1 regrid_data_plane \
-#/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
-#/root_stageiv/ST4.${START_DT}.01h.nc \
-#/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc -field 'name=\"24hr_qpf\";  level=\"(*,*)\";'  -method BILIN -width 2 -v 1"
+# uncompress the stageiv data
+#statement="uncompress -vf ${stageiv_root}/ST4.${precip_dt}.24h.Z"
 #echo ${statement}
 #eval ${statement}
-#
-#statement="singularity exec instance://met1 gen_vx_mask -v 10 \
-#/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
-#-type poly \
-#/mask_root/region/CALatLonPoints.txt \
-#/work_root/CA_mask_regridded_with_StageIV.nc"
-#echo ${statement}
-#eval ${statement}
-#
-## RUN GRIDSTAT
-#statement="singularity exec instance://met1 grid_stat -v 10 \
-#/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc
-#/root_stageiv/ST4.${START_DT}.01h.nc \
-#/scripts/GridStatConfig
-#-outdir /work_root"
-#echo ${statement}
-#eval ${statement}
+#/root_stageiv/ST4.${precip_dt}.24h.Z \
+
+# Regrid to Stage-IV
+statement="singularity exec instance://met1 regrid_data_plane \
+/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+/root_stageiv/ST4.2019021400.01h \
+/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc -field 'name=\"24hr_qpf\";  level=\"(*,*)\";'  -method BILIN -width 2 -v 1"
+echo ${statement}
+eval ${statement}
+
+statement="singularity exec instance://met1 gen_vx_mask -v 10 \
+/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+-type poly \
+/mask_root/region/CALatLonPoints.txt \
+/work_root/CA_mask_regridded_with_StageIV.nc"
+echo ${statement}
+eval ${statement}
+
+# RUN GRIDSTAT
+statement="singularity exec instance://met1 grid_stat -v 10 \
+/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc
+/root_stageiv/ST4.2019021400.01h \
+/scripts/GridStatConfig
+-outdir /work_root"
+echo ${statement}
+eval ${statement}
 
 # End MET Process and singularity stop
 singularity instance stop met1
