@@ -56,7 +56,7 @@
 
 &domains
  !! time step settings from MJM !!
- time_step                           = 135,
+ time_step                           = 120,
  !! time step settings from reanalysis !!
  !time_step                           = 30,
  !starting_time_step                  = 24,   8,
@@ -80,8 +80,10 @@
  time_step_fract_den                 = 1,
  max_dom                             = 2,
  !e_vert                              = 80,   80,
- e_vert                              = 48,   48,
+ e_vert                              = 55,   55,
  p_top_requested                     = 1000,
+ !! Ivette's requested model height (in meters) !!
+ ztop                                = 30000
  !! GEFS setting pre 2021 !!
  !num_metgrid_levels                  = 27,
  !! GEFS setting 2021 on !!

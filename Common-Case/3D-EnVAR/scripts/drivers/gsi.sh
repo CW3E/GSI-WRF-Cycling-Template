@@ -583,7 +583,7 @@ while [ ${dmn} -le ${max_dom} ]; do
 
     satangl=${fix_root}/global_satangbias.txt
     satinfo=${fix_root}/global_satinfo.txt
-    convinfo=${fix_root}/global_convinfo.txt
+    convinfo=${fix_root}/global_convinfo_profiler_ascat.txt
     ozinfo=${fix_root}/global_ozinfo.txt
     pcpinfo=${fix_root}/global_pcpinfo.txt
     lightinfo=${fix_root}/global_lightinfo.txt

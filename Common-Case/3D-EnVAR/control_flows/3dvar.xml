@@ -83,12 +83,12 @@
   <!ENTITY WRF_MEM             "5G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
-  <!ENTITY WRF_WC              "01:00:00">
+  <!ENTITY WRF_WC              "00:30:00">
   <!ENTITY GSI_PROC            "384">
   <!ENTITY GSI_MEM             "5G">
   <!ENTITY GSI_NODESIZE        "24">
   <!ENTITY GSI_NODES           "16">
-  <!ENTITY GSI_WC              "04:30:00">
+  <!ENTITY GSI_WC              "00:30:00">
   <!-- END JOB SETTINGS -->
 ]>
 
