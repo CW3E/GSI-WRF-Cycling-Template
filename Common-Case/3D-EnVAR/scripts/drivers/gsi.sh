@@ -433,44 +433,44 @@ while [ ${dmn} -le ${max_dom} ]; do
        srcobsfile=()
        gsiobsfile=()
 
-       srcobsfile+=("1bamua")
-       gsiobsfile+=("amsuabufr")
+       #srcobsfile+=("1bamua")
+       #gsiobsfile+=("amsuabufr")
 
        #srcobsfile+=("1bamub")
        #gsiobsfile+=("amsubbufr")
 
-       srcobsfile+=("1bhrs4")
-       gsiobsfile+=("hirs4bufr")
+       #srcobsfile+=("1bhrs4")
+       #gsiobsfile+=("hirs4bufr")
 
-       srcobsfile+=("1bmhs")
-       gsiobsfile+=("mhsbufr")
+       #srcobsfile+=("1bmhs")
+       #gsiobsfile+=("mhsbufr")
 
-       srcobsfile+=("airsev")
-       gsiobsfile+=("airsbufr")
+       #srcobsfile+=("airsev")
+       #gsiobsfile+=("airsbufr")
 
        #srcobsfile+=("amsr2")
        #gsiobsfile+=("amsrebufr")
 
-       srcobsfile+=("atms")
-       gsiobsfile+=("atmsbufr")
+       #srcobsfile+=("atms")
+       #gsiobsfile+=("atmsbufr")
 
        #srcobsfile+=("esamua")
        #gsiobsfile+=("amsuabufrears")
 
-       srcobsfile+=("eshrs3")
-       gsiobsfile+=("hirs3bufrears")
+       #srcobsfile+=("eshrs3")
+       #gsiobsfile+=("hirs3bufrears")
 
-       srcobsfile+=("esmhs")
-       gsiobsfile+=("mhsbufrears")
+       #srcobsfile+=("esmhs")
+       #gsiobsfile+=("mhsbufrears")
 
-       srcobsfile+=("geoimr")
-       gsiobsfile+=("gimgrbufr")
+       #srcobsfile+=("geoimr")
+       #gsiobsfile+=("gimgrbufr")
 
-       srcobsfile+=("goesfv")
-       gsiobsfile+=("gsnd1bufr")
+       #srcobsfile+=("goesfv")
+       #gsiobsfile+=("gsnd1bufr")
 
-       srcobsfile+=("gome")
-       gsiobsfile+=("gomebufr")
+       #srcobsfile+=("gome")
+       #gsiobsfile+=("gomebufr")
 
        srcobsfile+=("gpsro")
        gsiobsfile+=("gpsrobufr")
@@ -478,8 +478,8 @@ while [ ${dmn} -le ${max_dom} ]; do
        #srcobsfile+=("lgycld")
        #gsiobsfile+=("larcglb")
 
-       srcobsfile+=("mtiasi")
-       gsiobsfile+=("iasibufr")
+       #srcobsfile+=("mtiasi")
+       #gsiobsfile+=("iasibufr")
 
        #srcobsfile+=("nexrad")
        #gsiobsfile+=("l2rbufr")
@@ -487,14 +487,14 @@ while [ ${dmn} -le ${max_dom} ]; do
        #srcobsfile+=("omi")
        #gsiobsfile+=("omibufr")
 
-       srcobsfile+=("osbuv8")
-       gsiobsfile+=("sbuvbufr")
+       #srcobsfile+=("osbuv8")
+       #gsiobsfile+=("sbuvbufr")
 
-       srcobsfile+=("satwnd")
-       gsiobsfile+=("satwndbufr")
+       #srcobsfile+=("satwnd")
+       #gsiobsfile+=("satwndbufr")
 
-       srcobsfile+=("ssmisu")
-       gsiobsfile+=("ssmirrbufr")
+       #srcobsfile+=("ssmisu")
+       #gsiobsfile+=("ssmirrbufr")
 
        #srcobsfile+=("sevcsr")
        #gsiobsfile+=("seviribufr")
@@ -583,7 +583,7 @@ while [ ${dmn} -le ${max_dom} ]; do
 
     satangl=${fix_root}/global_satangbias.txt
     satinfo=${fix_root}/global_satinfo.txt
-    convinfo=${fix_root}/global_convinfo.txt
+    convinfo=${fix_root}/global_convinfo_profiler_ascat.txt
     ozinfo=${fix_root}/global_ozinfo.txt
     pcpinfo=${fix_root}/global_pcpinfo.txt
     lightinfo=${fix_root}/global_lightinfo.txt
