@@ -53,12 +53,12 @@ CTR_FLW="deterministic_forecast_early_start_date_test"
 
 # define date range and forecast cycle interval
 START_DT="2019021100"
-END_DT="2019021400"
+END_DT="2019021100"
 CYCLE_INT="24"
 
 # WRF ISO date times defining range of data processed
 ANL_START="2019-02-14_00:00:00"
-ANL_END="2019-02-14_01:00:00"
+ANL_END="2019-02-15_00:00:00"
 
 # verification domain for the forecast data
 DMN="2"

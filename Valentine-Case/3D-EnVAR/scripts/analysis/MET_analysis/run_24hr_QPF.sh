@@ -53,14 +53,12 @@ CYCLE_INT="24"
 
 # WRF ISO date times defining range of data processed
 ANL_START="2019-02-14_00:00:00"
-ANL_END="2019-02-14_01:00:00"
+ANL_END="2019-02-15_00:00:00"
 
 #####################################################
 # Process data
 #####################################################
 # define derived data paths
-
-precip_dt="2019021412"
 
 proj_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
 data_root="${proj_root}/data"
@@ -81,47 +79,41 @@ validhr=${ANL_END:11:2}
 echo "singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/root_stageiv:rw,${scripts_home}:/scripts:ro ${met_src} met1"  
 singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/root_stageiv:rw,${mask_root}:/mask_root:ro,${scripts_home}:/scripts:ro ${met_src} met1 
 
-# Combine 3-hr precip to 24-hr
+# Combine  precip to 24-hr
 statement="singularity exec instance://met1 pcp_combine \
--sum 00000000_000000 24 ${validyear}${validmon}${validday}_${validhr}0000 24 \
+-sum 20190211_000000 24 ${validyear}${validmon}${validday}_${validhr}0000 24 \
 /work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
 -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"24hr_qpf\" \
 -pcpdir /work_root \
 -pcprx \"wrf_post_${ANL_START}_to_${ANL_END}.nc\" \
--v 1"
+-v 3"
 echo ${statement}
 eval ${statement}
 
-# uncompress the stageiv data
-#statement="uncompress -vf ${stageiv_root}/ST4.${precip_dt}.24h.Z"
+## Regrid to Stage-IV
+#statement="singularity exec instance://met1 regrid_data_plane \
+#/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+#/root_stageiv/StageIV_QPE_2019021500.nc \
+#/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc -field 'name=\"24hr_qpf\";  level=\"(*,*)\";'  -method BILIN -width 2 -v 1"
 #echo ${statement}
 #eval ${statement}
-#/root_stageiv/ST4.${precip_dt}.24h.Z \
-
-# Regrid to Stage-IV
-statement="singularity exec instance://met1 regrid_data_plane \
-/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
-/root_stageiv/ST4.2019021400.01h \
-/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc -field 'name=\"24hr_qpf\";  level=\"(*,*)\";'  -method BILIN -width 2 -v 1"
-echo ${statement}
-eval ${statement}
-
-statement="singularity exec instance://met1 gen_vx_mask -v 10 \
-/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
--type poly \
-/mask_root/region/CALatLonPoints.txt \
-/work_root/CA_mask_regridded_with_StageIV.nc"
-echo ${statement}
-eval ${statement}
-
-# RUN GRIDSTAT
-statement="singularity exec instance://met1 grid_stat -v 10 \
-/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc
-/root_stageiv/ST4.2019021400.01h \
-/scripts/GridStatConfig
--outdir /work_root"
-echo ${statement}
-eval ${statement}
+#
+#statement="singularity exec instance://met1 gen_vx_mask -v 10 \
+#/work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+#-type poly \
+#/mask_root/region/CALatLonPoints.txt \
+#/work_root/CA_mask_regridded_with_StageIV.nc"
+#echo ${statement}
+#eval ${statement}
+#
+## RUN GRIDSTAT
+#statement="singularity exec instance://met1 grid_stat -v 10 \
+#/work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc
+#/root_stageiv/StageIV_QPE_2019021500.nc \
+#/scripts/GridStatConfig
+#-outdir /work_root"
+#echo ${statement}
+#eval ${statement}
 
 # End MET Process and singularity stop
 singularity instance stop met1
