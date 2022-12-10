@@ -35,7 +35,6 @@ import glob
 from datetime import datetime as dt
 from datetime import timedelta
 from py_plt_utilities import STR_INDT, get_anls, PROJ_ROOT
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -60,7 +59,6 @@ CYCLE_INT = 24
 ##################################################################################
 # define derived data paths 
 data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/MET_analysis'
-out_dir = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/MET_analysis'
 
 # convert to date times
 start_date = dt.fromisoformat(START_DATE)
@@ -68,7 +66,7 @@ end_date = dt.fromisoformat(END_DATE)
 valid_date = dt.fromisoformat(VALID_DATE)
 
 # define the output name
-out_path = out_dir + '/grid_stats_lead_' + START_DATE +\
+out_path = data_root + '/grid_stats_lead_' + START_DATE +\
            '_to_' + END_DATE + '_valid_' + VALID_DATE +\
            '.bin'
 
