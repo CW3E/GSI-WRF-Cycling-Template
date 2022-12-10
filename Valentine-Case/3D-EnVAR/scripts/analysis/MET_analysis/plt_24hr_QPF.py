@@ -30,6 +30,7 @@
 import matplotlib
 # use this setting on COMET / Skyriver for x forwarding
 matplotlib.use('TkAgg')
+from datetime import datetime as dt
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
 from matplotlib.cm import get_cmap
@@ -95,31 +96,80 @@ level_data = data['cts'][vals]
 # cut down df to CA region and obtain levels of data 
 level_data = level_data.loc[(level_data['VX_MASK'] == 'CALatLonPoints')]
 data_levels =  sorted(list(set(level_data['FCST_THRESH'].values)))
-data_leads = sorted(list(set(level_data['FCST_LEAD'].valuse)))
+data_leads = sorted(list(set(level_data['FCST_LEAD'].values)))[::-1]
 num_levels = len(data_levels)
 num_leads = len(data_leads)
+stats = ['PODY', 'PODN']
 
 # create array storage for probs
-tmp = np.zeros([num_levels, num_leads])
+tmp = np.zeros([num_levels, num_leads, 2])
 
-for i in range(num_levels):
-    for j in range(num_leads):
-        val = level_data.loc[(level_data['FCST_THRESH'] == data_levels[i]) &
-                             (level_data['FCST_LEAD'] == data_leads[j])]
-        
-        tmp[i,j] = val['PODY']
+for k in range(2):
+    for i in range(num_levels):
+        for j in range(num_leads):
+            val = level_data.loc[(level_data['FCST_THRESH'] == data_levels[i]) &
+                                 (level_data['FCST_LEAD'] == data_leads[j])]
+            
+            tmp[i, j, k] = val[stats[k]]
 
 # Create a figure
 fig = plt.figure(figsize=(11.25,8.63))
 
 # Set the GeoAxes to the projection used by WRF
-ax0 = fig.add_axes([.86, .10, .05, .8])
-ax1 = fig.add_axes([.05, .10, .8, .8])
+ax0 = fig.add_axes([.89, .10, .05, .8])
+ax1 = fig.add_axes([.08, .10, .39, .8])
+ax2 = fig.add_axes([.49, .10, .39, .8])
 
-color_map = sns.color_palette("husl", 101)
 max_scale = 1.0
 min_scale = 0.0
+color_map = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True, reverse=True, dark=0.25)
+sns.heatmap(tmp[:,:,0], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale, vmax=max_scale, cmap=color_map)
+sns.heatmap(tmp[:,:,1], linewidth=0.5, ax=ax2, cbar_ax=ax0, vmin=min_scale, vmax=max_scale, cmap=color_map)
 
-sns.heatmap(tmp, linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale, vmax=max_scale, cmap=color_map)
+
+for i in range(num_leads):
+    data_leads[i] = data_leads[i][:2]
+
+ax1.set_xticklabels(data_leads)
+ax1.set_yticklabels(data_levels)
+ax2.set_xticklabels(data_leads)
+ax2.set_yticklabels(data_levels)
+
+
+ax0.tick_params(
+        labelsize=20
+        )
+
+ax1.tick_params(
+        labelsize=20
+        )
+
+ax2.tick_params(
+        labelsize=20,
+        left=False,
+        labelleft=False,
+        right=False,
+        labelright=False,
+        )
+
+title1='24hr accumulated precip at ' + VALID_DATE
+lab1='Forecast lead hrs'
+lab2='Precip Thresh mm'
+lab3='PODY'
+lab4='PODN'
+plt.figtext(.5, .02, lab1, horizontalalignment='center',
+            verticalalignment='center', fontsize=22)
+
+plt.figtext(.02, .5, lab2, horizontalalignment='center',
+            verticalalignment='center', fontsize=22, rotation='90')
+
+plt.figtext(.5, .98, title1, horizontalalignment='center',
+            verticalalignment='center', fontsize=22)
+
+plt.figtext(.2745, .92, lab3, horizontalalignment='center',
+            verticalalignment='center', fontsize=22)
+
+plt.figtext(.6845, .92, lab4, horizontalalignment='center',
+            verticalalignment='center', fontsize=22)
 
 plt.show()
