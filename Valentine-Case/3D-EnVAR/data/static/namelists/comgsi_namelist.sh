@@ -134,7 +134,7 @@ OBS_INPUT::
    uv_hyb_ens=.true.,
    aniso_a_en=.false.,generate_ens=.false.,
    n_ens=${nummem},
-   beta_s0=0.25,s_ens_h=300,s_ens_v=3,
+   beta_s0=0.75,s_ens_h=300,s_ens_v=3,
    regional_ensemble_option=3,
    pseudo_hybens = .false.,
    grid_ratio_ens =${grid_ratio},
