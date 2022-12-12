@@ -40,7 +40,7 @@ from py_plt_utilities import STR_INDT, get_anls, PROJ_ROOT
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_early_start_date_test'
+CTR_FLW = 'deterministic_forecast_vbc_early_start_date_test'
 
 # starting date and zero hour of forecast cycles
 START_DATE = '2019-02-11T00:00:00'

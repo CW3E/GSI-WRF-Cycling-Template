@@ -49,11 +49,11 @@ module load ncl_ncarg
 USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # define control flow to analyze 
-CTR_FLW="deterministic_forecast_early_start_date_test"
+CTR_FLW="deterministic_forecast_vbc_early_start_date_test"
 
 # define date range and forecast cycle interval
 START_DT="2019021100"
-END_DT="2019021100"
+END_DT="2019021400"
 CYCLE_INT="24"
 
 # WRF ISO date times defining range of data processed

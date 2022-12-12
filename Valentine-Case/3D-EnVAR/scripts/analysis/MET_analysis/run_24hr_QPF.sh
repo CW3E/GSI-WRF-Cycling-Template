@@ -48,7 +48,7 @@ set -x
 USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_early_start_date_test"
+CTR_FLW="deterministic_forecast_vbc_early_start_date_test"
 
 # define date range and forecast cycle interval inclusively
 START_DT="2019021100"

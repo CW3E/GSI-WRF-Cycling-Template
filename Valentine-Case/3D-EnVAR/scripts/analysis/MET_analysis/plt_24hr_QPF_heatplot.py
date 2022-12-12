@@ -45,7 +45,7 @@ from py_plt_utilities import PROJ_ROOT
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_early_start_date_test'
+CTR_FLW = 'deterministic_forecast_vbc_early_start_date_test'
 
 # starting date and zero hour of forecast cycles
 START_DATE = '2019-02-11T00:00:00'
@@ -58,6 +58,9 @@ VALID_DATE = '2019-02-15T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
+
+# MET stat column names to be made to heat plots / labels
+STATS = ['CSI', 'GSS']
 
 ##################################################################################
 # Begin plotting
@@ -79,6 +82,7 @@ f = open(in_path, 'rb')
 data = pickle.load(f)
 f.close()
 
+# all values below are taken from the raw data frame
 vals = [
         'VX_MASK',
         'FCST_LEAD',
@@ -88,7 +92,15 @@ vals = [
         'PODY_NCU',
         'PODN',
         'PODN_NCL',
-        'PODN_NCU'
+        'PODN_NCU',
+        'POFD',
+        'POFD_NCL',
+        'POFD_NCU',
+        'GSS',
+        'BAGSS',
+        'CSI',
+        'CSI_NCL',
+        'CSI_NCU',
        ]
 
 level_data = data['cts'][vals]
@@ -99,7 +111,6 @@ data_levels =  sorted(list(set(level_data['FCST_THRESH'].values)))
 data_leads = sorted(list(set(level_data['FCST_LEAD'].values)))[::-1]
 num_levels = len(data_levels)
 num_leads = len(data_leads)
-stats = ['PODY', 'PODN']
 
 # create array storage for probs
 tmp = np.zeros([num_levels, num_leads, 2])
@@ -110,7 +121,7 @@ for k in range(2):
             val = level_data.loc[(level_data['FCST_THRESH'] == data_levels[i]) &
                                  (level_data['FCST_LEAD'] == data_leads[j])]
             
-            tmp[i, j, k] = val[stats[k]]
+            tmp[i, j, k] = val[STATS[k]]
 
 # Create a figure
 fig = plt.figure(figsize=(11.25,8.63))
@@ -120,8 +131,20 @@ ax0 = fig.add_axes([.89, .10, .05, .8])
 ax1 = fig.add_axes([.08, .10, .39, .8])
 ax2 = fig.add_axes([.49, .10, .39, .8])
 
-max_scale = 1.0
-min_scale = 0.0
+# define the color bar scale depending on the stat
+stat1 = STATS[0]
+stat2 = STATS[1]
+if (stat1 == 'GSS') or\
+   (stat1 == 'BAGSS') or\
+   (stat2 == 'GSS') or\
+   (stat2 == 'BAGSS'):
+    min_scale = -1/3
+    max_scale = 1.0
+
+else:
+    max_scale = 1.0
+    min_scale = 0.0
+
 color_map = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True, reverse=True, dark=0.25)
 sns.heatmap(tmp[:,:,0], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale, vmax=max_scale, cmap=color_map)
 sns.heatmap(tmp[:,:,1], linewidth=0.5, ax=ax2, cbar_ax=ax0, vmin=min_scale, vmax=max_scale, cmap=color_map)
@@ -155,8 +178,8 @@ ax2.tick_params(
 title1='24hr accumulated precip at ' + VALID_DATE
 lab1='Forecast lead hrs'
 lab2='Precip Thresh mm'
-lab3='PODY'
-lab4='PODN'
+lab3=STATS[0]
+lab4=STATS[1]
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
