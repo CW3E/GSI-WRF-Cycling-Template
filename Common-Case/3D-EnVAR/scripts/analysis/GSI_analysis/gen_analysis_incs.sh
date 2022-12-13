@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --mem=120G
@@ -42,31 +42,37 @@
 # uncoment to make verbose for debugging
 #set -x
 
+# define location of git clone
+USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien"
+
+# define control flow to analyze 
+CTR_FLW="3dvar_treatment_run"
+
 # define date range and increments
-START_TIME=2019020800
-END_TIME=2019021512
-CYCLE_INT=6
+START_TIME=2021012000
+END_TIME=2021012800
+CYCLE_INT=24
 
 # define vertical level range and increments
 VERT_LEVS=(1)
 LEV=0
-MAX_LEV=70
-VERT_INT=10
+MAX_LEV=50
+VERT_INT=1
 
 # define the domain to compute the increments
 DMN=1
 
 # set local environment for ncl and dependencies
-eval `/bin/modulecmd ksh load ncl_ncarg`
-
-# set local root paths
-PROJ_HOME=/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR
-WORK_ROOT=${PROJ_HOME}/data/analysis/gsi_analysis_inc
-DATA_ROOT=${PROJ_HOME}/data/cycle_io
+eval `module load ncl_ncarg`
 
 #####################################################
 # Execute analyses
 #####################################################
+# define derived data paths
+proj_home=${USR_HME}/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR/
+work_root=${proj_home}/data/analysis/${CTR_FLW}
+data_root=${proj_home}/data/cycle_io/${CTR_FLW}
+
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
 if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
   start_time=`echo "${START_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
@@ -103,19 +109,19 @@ datestr=`date +%Y%m%d%H -d "${start_time} ${fcst_hour} hours"`
 # loop condition
 timestr=`date +%Y:%m:%d_%H -d "${start_time} ${fcst_hour} hours"`
 
-while [[ ! ${datestr} > ${end_time} ]]; do
+while [[ ! ${timestr} > ${end_time} ]]; do
   # define wrfout date string
   wrfdate=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst_hour} hours"`
 
   # define the data sources
   bkg="wrfout_d0${DMN}_${wrfdate}"
-  bkg=${DATA_ROOT}/${datestr}/bkg/ens_00/${bkg}
+  bkg=${data_root}/${datestr}/bkg/ens_00/${bkg}
 
   anl="wrfanl_ens_00.${datestr}"
-  anl=${DATA_ROOT}/${datestr}/gsiprd/d0${DMN}/${anl}
+  anl=${data_root}/${datestr}/gsiprd/d0${DMN}/${anl}
 
   # define the output directory and move there for analysis
-  outdir=${WORK_ROOT}/${datestr}
+  outdir=${work_root}/${datestr}
   mkdir -p ${outdir}
   cd ${outdir}
 
@@ -124,7 +130,7 @@ while [[ ! ${datestr} > ${end_time} ]]; do
 
   for lev in "${VERT_LEVS[@]}"; do
     # copy analysis script for sed of parameters
-    cp ${PROJ_HOME}/scripts/analysis/GSI_analysis/Analysis_increment.ncl ./
+    cp ${proj_home}/scripts/analysis/GSI_analysis/Analysis_increment.ncl ./
 
     # update the vertical level 
     cat Analysis_increment.ncl | sed "s/\(kmax\)=VERTICAL_LEVEL_INDEX\{1,\}/\1 = ${lev}/" \
