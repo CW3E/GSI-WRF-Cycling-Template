@@ -40,16 +40,16 @@
 # Preamble
 #####################################################
 # uncoment to make verbose for debugging
-#set -x
+set -x
 
 # define location of git clone
 USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien"
 
 # define control flow to analyze 
-CTR_FLW="3dvar_treatment_run"
+CTR_FLW="3dvar_control_run"
 
 # define date range and increments
-START_TIME=2021012000
+START_TIME=2021012200
 END_TIME=2021012800
 CYCLE_INT=24
 
@@ -69,8 +69,8 @@ eval `module load ncl_ncarg`
 # Execute analyses
 #####################################################
 # define derived data paths
-proj_home=${USR_HME}/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR/
-work_root=${proj_home}/data/analysis/${CTR_FLW}
+proj_home=${USR_HME}/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR
+work_root=${proj_home}/data/analysis/${CTR_FLW}/GSI_analysis/analysis_incs
 data_root=${proj_home}/data/cycle_io/${CTR_FLW}
 
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"

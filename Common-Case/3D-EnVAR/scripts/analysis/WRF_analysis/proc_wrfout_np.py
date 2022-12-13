@@ -73,7 +73,7 @@ OUT_VARS = ['geop', 'u', 'v', 'temp', 'rh', 'wspd']
 ##################################################################################
 # define derived paths
 data_root = PROJ_ROOT + '/data/forecast_io/' + CTR_FLW
-out_dir = PROJ_ROOT + '/data/analysis/' + CTR_FLW
+out_dir = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/WRF_analysis'
 in_path = data_root + '/' + START_DT + '/wrfprd/ens_00'
 out_path = out_dir + '/processed_numpy/' + START_DT
 os.system('mkdir -p ' + out_path)
