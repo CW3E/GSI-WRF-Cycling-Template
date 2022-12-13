@@ -59,13 +59,13 @@ START_DATE = '2021-01-21T18:00:00'
 # final date and zero hour of data
 END_DATE = '2021-01-28T18:00:00'
 
-# interval of forcast data outputs after zero hour
+# interval of forecast data outputs after zero hour
 FCST_INT = 3
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 6
 
-# max forecast lenght in hours
+# max forecast length in hours
 MAX_FCST = 6
 
 # root directory where date stamped sub-directories will collect data downloads

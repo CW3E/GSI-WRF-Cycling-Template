@@ -7,7 +7,7 @@
 #SBATCH -t 32:00:00
 #SBATCH -J batch_process_data 
 #SBATCH --export=ALL
-#SBATCH --array=0-1
+#SBATCH --array=0
 ##################################################################################
 # Description
 ##################################################################################
@@ -33,8 +33,6 @@
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
-set -x
-
 # set the control flow, git clone and working directory
 USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien"
 PRJ_DIR="${USR_HME}/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR"
@@ -43,14 +41,17 @@ CNT_FLW="3dvar_control_run"
 
 # define date range and increments for start time of simulations
 START_TIME=2021012200
-END_TIME=2021012300
+END_TIME=2021012200
 CYCLE_INT=24
 
-# interval of forecast data outputs after zero hour to process
+# starting forecast hour to process
+FCST_MIN=0
+
+# interval of forecast data outputs after FCST_MIN to process
 FCST_INT=6
 
-# max forecast hour to process (NOTE: defaults to including zero hour below)
-MAX_FCST=6
+# max forecast hour to process
+FCST_MAX=6
 
 ##################################################################################
 # Contruct job array and environment for submission
@@ -67,8 +68,13 @@ echo `conda list`
 
 # define derived paths
 wrk_dir="${PRJ_DIR}/scripts/analysis/WRF_analysis"
+echo "Work directory $wrk_dir"
+
 in_root="${PRJ_DIR}/data/${IO_TYPE}/${CNT_FLW}"
+echo "Data input root $in_root"
+
 out_root="${PRJ_DIR}/scripts/analysis/${CNT_FLW}/${IO_TYPE}/WRF_analysis"
+echo "Data output root $out_root"
 
 # create arrays to store the date dependent paths
 in_paths=()
@@ -93,16 +99,7 @@ else
 fi
 
 # end time is used a loop condition for date range
-end_time=`date +%Y:%m:%d_%H:%M:%S -d "${end_time}"`
-
-# construct array of forecast hours
-fcst_hrs=(0)
-hr=0
-
-while [[ ${hr} -lt ${MAX_FCST} ]]; do
-  (( hr += ${FCST_INT} ))
-  fcst_hrs+=($hr)
-done
+end_time=`date +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
 
 # loop through the date range and construct the IO paths
 cycle_num=0
@@ -112,20 +109,21 @@ start_hour=0
 datestr=`date +%Y%m%d%H -d "${start_time} ${start_hour} hours"`
 
 # loop condition and start time iso string
-timestr=`date +%Y:%m:%d_%H:%M:%S -d "${start_time} ${start_hour} hours"`
+timestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${start_hour} hours"`
 
 # initialize array for start times of forecasts in iso format
 start_times=()
 
+echo "For each start time:"
 while [[ ! ${timestr} > ${end_time} ]]; do
   # update the date string for directory names
   datestr=`date +%Y%m%d%H -d "${start_time} ${start_hour} hours"`
   in_paths+=("${in_root}/${datestr}/wrfprd/ens_00")
   out_paths+=("${out_root}/${datestr}")
 
-  # store and update time string for lexicographical comparison and read in python
+  # update time string for lexicographical comparison and read in python
+  timestr=`date +%Y:%m:%d_%H:%M:%S -d "${start_time} ${start_hour} hours"`
   start_times+=("${timestr}")
-  timestr=`date +%Y:%m:%d_%H -d "${start_time} ${start_hour} hours"`
 
   # update the cycle number
   (( cycle_num += 1))
@@ -136,7 +134,7 @@ done
 ##################################################################################
 # run the processing script calling the data paths, start times and fcst hrs
 cd ${wrk_dir}
-echo ${pwd}
+echo "Running from working directory `pwd`"
 indx=${SLURM_ARRAY_TASK_ID}
 
 echo "Processing data for job index ${indx}"
@@ -144,12 +142,13 @@ in_i=${in_paths[$indx]}
 out_i=${out_paths[$indx]}
 start_i=${start_times[$indx]}
 
-statment="python -u proc_wrfout_np.py ${in_i} ${out_i} ${start_i} ${fcst_hrs} \
- >> process_${start_i}.log 2>&1"
+statement="python -u proc_wrfout_np.py ${in_i} ${out_i} ${start_i} ${FCST_MIN}"
+statement+=" ${FCST_INT} ${FCST_MAX} > process_${start_i}.log 2>&1"
 
 echo ${statement}
 eval ${statement}
 
 ##################################################################################
 # end
+
 exit 0
