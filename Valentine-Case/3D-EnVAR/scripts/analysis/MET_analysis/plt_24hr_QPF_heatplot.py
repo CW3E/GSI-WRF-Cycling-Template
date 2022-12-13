@@ -1,10 +1,14 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This will plot IWV, wind and pressure contour data generated from the companion
-# script proc_wrfout_np.py.  The plotting script will null out values of the
-# parent domain lying in nested domains, currently only developed for two
-# domains.  
+# This script is designed to generate heat plots in Matplotlib from MET grid_stat
+# output files, preprocessed with the companion script proc_24hr_QPF.py.  This
+# plotting scheme is designed to plot precipitation threshold level in the
+# vertical axis and the number of lead hours to the valid time for verification
+# from the forecast initialization in the horizontal axis. The global parameters
+# for the script below control the initial times for the forecast initializations,
+# as well as the valid date of the verification. Stats to compare can be reset 
+# in the global parameters with heat map color bar changing scale dynamically.
 #
 ##################################################################################
 # License Statement
@@ -60,13 +64,18 @@ VALID_DATE = '2019-02-15T00:00:00'
 CYCLE_INT = 24
 
 # MET stat column names to be made to heat plots / labels
-STATS = ['CSI', 'GSS']
+STATS = ['PODY', 'POFD']
+
+# landmask for verification region -- need to be set in earlier preprocessing
+LND_MSK = 'CALatLonPoints'
 
 ##################################################################################
 # Begin plotting
 ##################################################################################
 # define derived data paths 
 data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/MET_analysis'
+stat1 = STATS[0]
+stat2 = STATS[1]
 
 # convert to date times
 start_date = dt.fromisoformat(START_DATE)
@@ -78,11 +87,15 @@ in_path = data_root + '/grid_stats_lead_' + START_DATE +\
           '_to_' + END_DATE + '_valid_' + VALID_DATE +\
           '.bin'
 
+out_path = data_root + '/' + VALID_DATE + '_' + LND_MSK + '_' + stat1 + '_' +\
+           stat2 + '_heatplot.png'
+
 f = open(in_path, 'rb')
 data = pickle.load(f)
 f.close()
 
-# all values below are taken from the raw data frame
+# all values below are taken from the raw data frame, some may be set
+# in the above STATS as valid heat plot options
 vals = [
         'VX_MASK',
         'FCST_LEAD',
@@ -103,10 +116,9 @@ vals = [
         'CSI_NCU',
        ]
 
-level_data = data['cts'][vals]
-
 # cut down df to CA region and obtain levels of data 
-level_data = level_data.loc[(level_data['VX_MASK'] == 'CALatLonPoints')]
+level_data = data['cts'][vals]
+level_data = level_data.loc[(level_data['VX_MASK'] == LND_MSK)]
 data_levels =  sorted(list(set(level_data['FCST_THRESH'].values)))
 data_leads = sorted(list(set(level_data['FCST_LEAD'].values)))[::-1]
 num_levels = len(data_levels)
@@ -126,14 +138,12 @@ for k in range(2):
 # Create a figure
 fig = plt.figure(figsize=(11.25,8.63))
 
-# Set the GeoAxes to the projection used by WRF
+# Set the axes
 ax0 = fig.add_axes([.89, .10, .05, .8])
 ax1 = fig.add_axes([.08, .10, .39, .8])
 ax2 = fig.add_axes([.49, .10, .39, .8])
 
 # define the color bar scale depending on the stat
-stat1 = STATS[0]
-stat2 = STATS[1]
 if (stat1 == 'GSS') or\
    (stat1 == 'BAGSS') or\
    (stat2 == 'GSS') or\
@@ -145,11 +155,17 @@ else:
     max_scale = 1.0
     min_scale = 0.0
 
-color_map = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True, reverse=True, dark=0.25)
-sns.heatmap(tmp[:,:,0], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale, vmax=max_scale, cmap=color_map)
-sns.heatmap(tmp[:,:,1], linewidth=0.5, ax=ax2, cbar_ax=ax0, vmin=min_scale, vmax=max_scale, cmap=color_map)
+color_map = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
+                                  reverse=True, dark=0.25)
+sns.heatmap(tmp[:,:,0], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
+            vmax=max_scale, cmap=color_map)
+sns.heatmap(tmp[:,:,1], linewidth=0.5, ax=ax2, cbar_ax=ax0, vmin=min_scale,
+            vmax=max_scale, cmap=color_map)
 
+##################################################################################
+# define display parameters
 
+# generate tic labels based on hour values
 for i in range(num_leads):
     data_leads[i] = data_leads[i][:2]
 
@@ -158,17 +174,17 @@ ax1.set_yticklabels(data_levels)
 ax2.set_xticklabels(data_leads)
 ax2.set_yticklabels(data_levels)
 
-
+# tick parameters
 ax0.tick_params(
-        labelsize=20
+        labelsize=18
         )
 
 ax1.tick_params(
-        labelsize=20
+        labelsize=18
         )
 
 ax2.tick_params(
-        labelsize=20,
+        labelsize=18,
         left=False,
         labelleft=False,
         right=False,
@@ -176,6 +192,7 @@ ax2.tick_params(
         )
 
 title1='24hr accumulated precip at ' + VALID_DATE
+title2='Verification region -- ' + LND_MSK
 lab1='Forecast lead hrs'
 lab2='Precip Thresh mm'
 lab3=STATS[0]
@@ -189,10 +206,18 @@ plt.figtext(.02, .5, lab2, horizontalalignment='center',
 plt.figtext(.5, .98, title1, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.2745, .92, lab3, horizontalalignment='center',
+plt.figtext(.5, .93, title2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.6845, .92, lab4, horizontalalignment='center',
+plt.figtext(.08, .92, lab3, horizontalalignment='left',
             verticalalignment='center', fontsize=22)
 
+plt.figtext(.88, .92, lab4, horizontalalignment='right',
+            verticalalignment='center', fontsize=22)
+
+# save figure and display
+plt.savefig(out_path)
 plt.show()
+
+##################################################################################
+# end

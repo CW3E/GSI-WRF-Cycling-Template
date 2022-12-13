@@ -132,7 +132,7 @@ line_labs = ['Cost', 'Gradient Norm', 'Outer loop 1', 'Outer loop 2']
 ##################################################################################
 # define display parameters
 
-#plot bounds
+# plot bounds
 ax0.set_xlim([0,index])
 ax1.set_xlim([0,index])
 ax1.set_yscale('log')

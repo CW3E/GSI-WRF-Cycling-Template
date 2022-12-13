@@ -1,10 +1,11 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This script reads in grid_stat_* files from a MET analysis and creates a Pandas
-# dataframe containing a time series versus lead time to a verification period.
-# The dataframes are saved into a Pickled dictionary organized by MET file
-# extension
+# This script reads in arbitrary grid_stat_* output files from a MET analysis
+# and creates Pandas dataframes containing a time series for each file type
+# versus lead time to a verification period. The dataframes are saved into a
+# Pickled dictionary organized by MET file extension as key names, taken
+# agnostically from bash wildcard patterns.
 #
 ##################################################################################
 # License Statement
