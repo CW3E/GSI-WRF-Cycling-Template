@@ -46,7 +46,7 @@ from wrf_py_utilities import (
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
-
+##################################################################################
 # I/O parameters
 CTR_FLW = 'deterministic_forecast'
 DOMAIN = 'd02'
@@ -79,9 +79,6 @@ PLS = [
        986.0666,  1013.9476, 1042.2319, 1070.9170, 1100.0000,
       ]
 N_PLS = len(PLS)
-print('Interpolating ' + str(N_PLS) + ' pressure levels:')
-for name in PLS:
-    print(STR_INDT + str(name))
 
 # 2D variables to extract
 D2_VARS = [
@@ -90,9 +87,6 @@ D2_VARS = [
            'LANDMASK', 'SSTSK', 'TSK', 'PSFC', 'Q2', 'T2'
           ]
 D2_VARS = sorted(D2_VARS)
-print('Extracting 2D Vars')
-for name in D2_VARS:
-    print(STR_INDT + name)
 
 # 3D variables to extract and interpolate, see utilities below
 D3_RAW_VARS = ['QVAPOR', 'CLDFRA'] 
@@ -103,10 +97,6 @@ D3_VARS = ['height', 'temp',]
 D3_units = ['dm', 'K',] 
 N_D3 = len(D3_VARS)
 D3_INT_VARS = sorted(D3_VARS + D3_RAW_VARS)  
-
-print('Interpolating 3D Vars to pressure levels:')
-for name in D3_INT_VARS:
-    print(STR_INDT + name)
 
 # cache variables
 CACHE_VARS = ['P', 'PSFC', 'PB', 'PH', 'PHB', 'T', 'QVAPOR', 'HGT', 'U', 'V', 'W']
@@ -267,6 +257,19 @@ def batch_process_netcdf(names):
 
 ##################################################################################
 # process data
+
+# Read out variables and pressure levels to process
+print('Extracting 2D Vars')
+for name in D2_VARS:
+    print(STR_INDT + name)
+
+print('Interpolating ' + str(N_PLS) + ' pressure levels:')
+for name in PLS:
+    print(STR_INDT + str(name))
+
+print('Interpolating 3D Vars to pressure levels:')
+for name in D3_INT_VARS:
+    print(STR_INDT + name)
 
 # time processing
 t0 = time.time()
