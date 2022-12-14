@@ -14,14 +14,14 @@
   <!-- END USER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
-  <!ENTITY FLOW_NAME           "3dvar">
+  <!ENTITY EXP_NAME            "3dvar_treatment_run">
   <!ENTITY PROJ_HOME           "&WORK_SPACE;/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR">
   <!ENTITY SCRIPTS             "&PROJ_HOME;/scripts">
   <!ENTITY DRIVERS             "&SCRIPTS;/drivers">
   <!ENTITY ENVIRONMENTS        "&SCRIPTS;/environments">
   <!ENTITY PROJ_DATA           "&PROJ_HOME;/data">
-  <!ENTITY LOG                 "&PROJ_DATA;/log/&FLOW_NAME;">
-  <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/cycle_io/&FLOW_NAME;">
+  <!ENTITY LOG                 "&PROJ_DATA;/log/&EXP_NAME;">
+  <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/simulation_io/&EXP_NAME;">
   <!ENTITY STATIC_DATA         "&PROJ_DATA;/static">
   <!-- END WORKFLOW SETTINGS -->
 
