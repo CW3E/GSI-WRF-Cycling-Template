@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH -p compute 
-#SBATCH --nodes=1
+#SBATCH --nodes=7
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=6
 #SBATCH --mem-per-cpu=5G
-#SBATCH -t 32:00:00
+#SBATCH -t 04:00:00
 #SBATCH -J batch_process_data 
 #SBATCH --export=ALL
-#SBATCH --array=0
+#SBATCH --array=0-25
 ##################################################################################
 # Description
 ##################################################################################
@@ -37,12 +37,12 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien"
 PRJ_DIR="${USR_HME}/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR"
 IO_TYPE="cycle_io"
-CNT_FLW="3dvar_control_run"
+CNT_FLW="3dvar_treatment_run"
 
 # define date range and increments for start time of simulations
 START_TIME=2021012200
-END_TIME=2021012200
-CYCLE_INT=24
+END_TIME=2021012800
+CYCLE_INT=6
 
 # starting forecast hour to process
 FCST_MIN=0
@@ -73,7 +73,7 @@ echo "Work directory $wrk_dir"
 in_root="${PRJ_DIR}/data/${IO_TYPE}/${CNT_FLW}"
 echo "Data input root $in_root"
 
-out_root="${PRJ_DIR}/scripts/analysis/${CNT_FLW}/${IO_TYPE}/WRF_analysis"
+out_root="${PRJ_DIR}/data/analysis/${CNT_FLW}/${IO_TYPE}/WRF_analysis"
 echo "Data output root $out_root"
 
 # create arrays to store the date dependent paths
@@ -122,7 +122,7 @@ while [[ ! ${timestr} > ${end_time} ]]; do
   out_paths+=("${out_root}/${datestr}")
 
   # update time string for lexicographical comparison and read in python
-  timestr=`date +%Y:%m:%d_%H:%M:%S -d "${start_time} ${start_hour} hours"`
+  timestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${start_hour} hours"`
   start_times+=("${timestr}")
 
   # update the cycle number

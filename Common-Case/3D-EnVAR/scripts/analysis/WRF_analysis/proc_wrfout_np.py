@@ -88,6 +88,7 @@ print('Processing variables:')
 for i in range(n_vars):
     print(STR_INDT + IN_VARS[i] + ' in units ' + UNITS[i] + ' to ' + OUT_VARS[i])
     
+domains = []
 print('Over domains:')
 for i in range(1, MAX_DOM + 1):
     print(STR_INDT + 'd0%s'%i)
@@ -97,11 +98,10 @@ for i in range(1, MAX_DOM + 1):
 for hr in anl_hrs:
     # output formatted analysis date time string
     anl_dt = start_dt + timedelta(hours=hr)
-    anl_dt = anl_dt.strftime('%Y:%m:%d_%H:%M:%S')
+    anl_dt = anl_dt.strftime('%Y-%m-%d_%H:%M:%S')
     print(STR_INDT + 'Begin analysis of simulation hour ' + anl_dt)
 
-    # define domains and corresponding files
-    domains = []
+    # define storage for each domain's output files
     nc_files = []
     p_ds = []
     lats = []
@@ -113,7 +113,7 @@ for hr in anl_hrs:
     
     for i in range(MAX_DOM):
         # Open the NetCDF files
-        fname = in_path + '/wrfout_' + domains[i] + '_' + anl_dt
+        fname = IN_DIR + '/wrfout_' + domains[i] + '_' + anl_dt
         print(STR_INDT * 2 + 'Opening file ' + fname)
         nc_files.append(Dataset(fname))
     
