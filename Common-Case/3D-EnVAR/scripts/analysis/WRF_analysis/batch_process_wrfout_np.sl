@@ -36,8 +36,7 @@
 # set the control flow, git clone and working directory
 USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien"
 PRJ_DIR="${USR_HME}/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR"
-IO_TYPE="cycle_io"
-CNT_FLW="3dvar_treatment_run"
+CTR_FLW="3dvar_treatment_run"
 
 # define date range and increments for start time of simulations
 START_TIME=2021012200
@@ -70,10 +69,10 @@ echo `conda list`
 wrk_dir="${PRJ_DIR}/scripts/analysis/WRF_analysis"
 echo "Work directory $wrk_dir"
 
-in_root="${PRJ_DIR}/data/${IO_TYPE}/${CNT_FLW}"
+in_root="${PRJ_DIR}/data/${CTR_FLW}"
 echo "Data input root $in_root"
 
-out_root="${PRJ_DIR}/data/analysis/${CNT_FLW}/${IO_TYPE}/WRF_analysis"
+out_root="${PRJ_DIR}/data/analysis/${CTR_FLW}/WRF_analysis"
 echo "Data output root $out_root"
 
 # create arrays to store the date dependent paths
