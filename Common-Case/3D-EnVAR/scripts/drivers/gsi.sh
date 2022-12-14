@@ -378,12 +378,12 @@ else
 
   # unpack nested directory structure
   prepbufr_nest=(`find ${prepbufr_dir} -type f`)
-  nest_indx=1
+  nest_indx=0
   while [ ${nest_indx} -le ${#prepbufr_nest[@]} ]; do
     mv ${prepbufr_nest[${nest_indx}]} ${prepbufr_dir}
     (( nest_indx += 1))
   done
-  rmdir ${prepburf_dir}/*
+  rmdir ${prepbufr_dir}/*
 
   if [ ! -r "${prepbufr}" ]; then
     echo "ERROR: file '${prepbufr}' does not exist!"
@@ -504,27 +504,45 @@ while [ ${dmn} -le ${max_dom} ]; do
        ii=0
 
        while [[ ${ii} -lt ${len} ]]; do
+          cd ${obs_root}
           tar_file=${obs_root}/${srcobsfile[$ii]}.${anl_date}.tar.gz
+	  obs_dir=${obs_root}/${anl_date}.${srcobsfile[$ii]}
+	  mkdir -p ${obs_dir}
+
           if [ -r "${tar_file}" ]; then
-            cd ${obs_root}
-            tar -xvf `basename ${tar_file}`
+	    # untar to specified directory
+            tar -xvf ${tar_file} -C ${obs_dir}
+
+            # unpack nested directory structure, if exists
+            obs_nest=(`find ${obs_dir} -type f`)
+            nest_indx=0
+            while [ ${nest_indx} -le ${#obs_nest[@]} ]; do
+              mv ${obs_nest[${nest_indx}]} ${obs_dir}
+              (( nest_indx += 1))
+            done
+            rmdir ${obs_dir}/*
+	    # NOTE: differences in data file types for "satwnd"
             if [[ ${srcobsfile[$ii]} = "satwnd" ]]; then
-              obs_file=${obs_root}/${anl_date}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.txt
-            elif [[ ${srcobsfile[$ii]} = "airsev" ]]; then
-              obs_file=${obs_root}/${anl_date}.airssev/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.bufr
+              obs_file=${obs_dir}/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.txt
             else
-              obs_file=${obs_root}/${anl_date}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.bufr
+              obs_file=${obs_dir}/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.bufr
             fi
+
             if [ -r "${obs_file}" ]; then
                echo "Link source obs file ${obs_file}"
                cd ${workdir}
                ln -sf ${obs_file} ./${gsiobsfile[$ii]}
+
             else
-               echo "Source obs file ${srcobsfile[$ii]} not found, skipping ${gsiobsfile[$ii]} data"
+               echo "ERROR: obs file ${srcobsfile[$ii]} not found!"
+               exit 1
             fi
+
           else
-            echo "${srctarfile[$ii]} not found, skipping ${gisobsfile[$ii]} data"
+            echo "ERROR: file ${tar_file} not found!"
+            exit 1
           fi
+
           cd ${workdir}
           (( ii += 1 ))
        done
@@ -670,7 +688,7 @@ while [ ${dmn} -le ${max_dom} ]; do
 
 	  # unpack nested directory structure
 	  bias_nest=(`find ${bias_dir} -type f`)
-          nest_indx=1
+          nest_indx=0
           while [ ${nest_indx} -le ${#bias_nest[@]} ]; do
             mv ${bias_nest[${nest_indx}]} ${bias_dir}
             (( nest_indx += 1))
