@@ -1,11 +1,12 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This module contains utility methods for plotting and data analysis
-# to be used separately from the wrf_py environment.
-#
+# This module is designed to provide utility methods for the download scripts
+# for NCEP and ECMWF datasets with common variables and routines.  Download
+# scripts import the methods and global variable definitions below.
+# 
 ##################################################################################
-# License Statement
+# License Statement:
 ##################################################################################
 #
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
@@ -31,42 +32,40 @@ from datetime import timedelta
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
-
-# standard string indentation
-STR_INDT = "    "
-
-# define location of git clone 
-USR_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien'
-
-# define project space
-PROJ_ROOT = USR_HME + '/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR'
+# directory of git clone
+PROJ_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien'
 
 ##################################################################################
 # UTILITY METHODS
 ##################################################################################
-# generates analysis times based on script parameters
 
-def get_anls(start_date, end_date, cycle_int):
-    anl_dates = []
-    anl_strng = []
+STR_INDT = '    '
+
+def get_reqs(start_date, end_date, fcst_int, cycle_int, max_fcst):
+    # generates requests based on script parameters
+    date_reqs = []
+    fcst_reqs = []
     delta = end_date - start_date
     hours_range = delta.total_seconds() / 3600
+    fcst_steps = int(max_fcst / fcst_int)
 
     if cycle_int == 0 or delta.total_seconds() == 0:
-        # for a zero cycle interval or start date equal end date, only process 
-        # the start date time directory
-        anl_dates.append(start_date)
-        anl_strng.append(start_date.strftime('%Y%m%d%H'))
+        # for a zero cycle interval or start date equal end date, only download
+        # at start date / hour
+        date_reqs.append(start_date)
 
     else:
-        # define the analysis times over range of cycle intervals
+        # define the zero hours for forecasts over range of cycle intervals
         cycle_steps = int(hours_range / cycle_int)
         for i in range(cycle_steps + 1):
-            anl_date = start_date + timedelta(hours=(i * cycle_int))
-            anl_dates.append(anl_date)
-            anl_strng.append(anl_date.strftime('%Y%m%d%H'))
+            fcst_start = start_date + timedelta(hours=(i * cycle_int))
+            date_reqs.append(fcst_start)
 
-    return zip(anl_dates, anl_strng)
+    for i in range(fcst_steps + 1):
+        # define strings of forecast hours, padd to necessary size in scripts
+        fcst_reqs.append(str(i * fcst_int))
+
+    return date_reqs, fcst_reqs
 
 ##################################################################################
 # end

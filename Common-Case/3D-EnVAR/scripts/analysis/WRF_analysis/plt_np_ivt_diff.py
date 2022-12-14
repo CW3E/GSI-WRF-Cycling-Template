@@ -42,39 +42,63 @@ import numpy as np
 import pickle
 import os
 import copy
+from datetime import datetime as dt
+from datetime import timedelta
 from py_plt_utilities import PROJ_ROOT
+import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
-# define control flow to analyze 
-CTR_FLW = 'deterministic_forecast'
+# define control flows to analyze, first is control second is treatment 
+CTR_FLW1 = '3dvar_control_run'
+CTR_FLW2 = '3dvar_treatment_run'
 
-# start date time of WRF forecast in YYYYMMDDHH
-# or set to 'era5' to compare versus the ERA5 reanalysis
-START_DT1 = '2019021100' 
-START_DT2 = 'era5'
+# start date time of WRF forecasts 1 and 2
+# set START_DT1 to 'era5' to compare versus the ERA5 reanalysis
+START_DT1 = '2021-01-23_00:00:00' 
+START_DT2 = '2021-01-23_00:00:00' 
 
-# valid date for data
-ANL_DT = '2019-02-14_00:00:00'
+# valid date time for analysis
+ANL_DT = '2021-01-23_00:00:00'
+
+# max domain to plot
+MAX_DOM = 1
 
 ##################################################################################
 # Begin plotting
 ##################################################################################
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW
-in_path1 = data_root + '/processed_numpy/' + START_DT1
-in_path2 = data_root + '/processed_numpy/' + START_DT2
-out_path = data_root + '/ivt_diff_plots'
+data_root = PROJ_ROOT + '/data/analysis'
+
+# convert from iso times
+ipdb.set_trace()
+anl_dt = dt.fromisoformat(ANL_DT)
+if START_DT1 == 'era5':
+    start_dt1 = START_DT1
+    in_path1 = data_root + '/' + CTR_FLW1 + '/' + 'WRF_analysis' +\
+            '/' + start_dt1
+else:
+    start_dt1 = dt.fromisoformat(START_DT1)
+    in_path1 = data_root + '/' + CTR_FLW1 + '/' + 'WRF_analysis' +\
+            '/' + start_dt1.strftime('%Y%m%d%H')
+
+start_dt2 = dt.fromisoformat(START_DT2)
+in_path2 = data_root + '/' + CTR_FLW2 + '/' + 'WRF_analysis' +\
+        '/' + start_dt2.strftime('%Y%m%d%H')
+
+out_path = data_root + '/ivt_diff_plots/' + CTR_FLW2 + '_diff_' + CTR_FLW1
 os.system('mkdir -p ' + out_path)
 
-# load data file 1 which is used as the reference data
-f1 = open(in_path1 + '/start_' + START_DT1 + '_forecast_' + ANL_DT + '.bin', 'rb')
+# load control data file 1 which we subtract from treatment data
+f1 = open(in_path1 + '/start_' + START_DT1 + '_forecast_' +\
+        ANL_DT + '.bin', 'rb')
 dataf1 = pickle.load(f1)
 f1.close()
 
-# load data file 2 which we compute divergence with
-f2 = open(in_path2 + '/start_' + START_DT2 + '_forecast_' + ANL_DT + '.bin', 'rb')
+# load data file 2 which is used as the treatment data
+f2 = open(in_path2 + '/start_' + START_DT2 + '_forecast_' +\
+        ANL_DT + '.bin', 'rb')
 dataf2 = pickle.load(f2)
 f2.close()
 
@@ -90,13 +114,13 @@ ax1 = fig.add_axes([.05, .10, .8, .8], projection=cart_proj)
 
 # unpack variables and compute the divergence from f2
 f1_d01 = dataf1['d01']['ivtm'].flatten()
-f1_d02 = dataf1['d02']['ivtm'].flatten()
-
 f2_d01 = dataf2['d01']['ivtm'].flatten()
-f2_d02 = dataf2['d02']['ivtm'].flatten()
+h_diff_d01 = f2_d01 - f1_d01
 
-h_diff_d01 = f1_d01 - f2_d01
-h_diff_d02 = f1_d02 - f2_d02
+if MAX_DOM == 2:
+    f1_d02 = dataf1['d02']['ivtm'].flatten()
+    f2_d02 = dataf2['d02']['ivtm'].flatten()
+    h_diff_d02 = f2_d02 - f1_d02
 
 # optional method for asymetric divergence plots
 class MidpointNormalize(nrm):
@@ -115,7 +139,11 @@ class MidpointNormalize(nrm):
 abs_scale = 400
 
 ## make the scales of d01 / d02 equivalent in color map
-#scale = np.append(h_diff_d01.data, h_diff_d02.data)
+#ipdb.set_trace()
+#scale = np.append(h_diff_d01.data)
+#if MAX_DOM == 2:
+#    scale = np.append(h_diff_d02.data)
+#
 #scale = scale[~np.isnan(scale.data)]
 #
 ## find the max / min value over the inner 100 - alpha percentile range of the data
@@ -129,8 +157,9 @@ abs_scale = 400
 cnorm = nrm(vmin=-abs_scale, vmax=abs_scale)
 color_map = sns.diverging_palette(145, 300, s=60, as_cmap=True)
 
-# NaN out all values of d01 that lie in d02
-h_diff_d01[dataf1['d02']['indx']] = np.nan
+if MAX_DOM == 2:
+    # NaN out all values of d01 that lie in d02
+    h_diff_d01[dataf1['d02']['indx']] = np.nan
 
 # plot ivtm as intensity in scatter / heat plot for parent domain
 ax1.scatter(x=dataf1['d01']['lons'], y=dataf1['d01']['lats'],
@@ -143,52 +172,53 @@ ax1.scatter(x=dataf1['d01']['lons'], y=dataf1['d01']['lats'],
             transform=crs.PlateCarree(),
            )
 
-# plot ivtm as intensity in scatter / heat plot for nested domain
-ax1.scatter(x=dataf1['d02']['lons'], y=dataf1['d02']['lats'],
-            c=h_diff_d02.data,
-            cmap=color_map,
-            norm=cnorm,
-            marker='.',
-            s=1,
-            edgecolor='none',
-            transform=crs.PlateCarree(),
-           )
+if MAX_DOM == 2:
+    # plot ivtm as intensity in scatter / heat plot for nested domain
+    ax1.scatter(x=dataf1['d02']['lons'], y=dataf1['d02']['lats'],
+                c=h_diff_d02.data,
+                cmap=color_map,
+                norm=cnorm,
+                marker='.',
+                s=1,
+                edgecolor='none',
+                transform=crs.PlateCarree(),
+               )
 
-# bottom boundary
-ax1.plot(
-         [dataf1['d02']['x_lim'][0], dataf1['d02']['x_lim'][1]],
-         [dataf1['d02']['y_lim'][0], dataf1['d02']['y_lim'][0]],
-         linestyle='-',
-         linewidth=1.5,
-         color='k',
-        )
-
-# top boundary
-ax1.plot(
-         [dataf1['d02']['x_lim'][0], dataf1['d02']['x_lim'][1]],
-         [dataf1['d02']['y_lim'][1], dataf1['d02']['y_lim'][1]],
-         linestyle='-',
-         linewidth=1.5,
-         color='k',
-        )
-
-# left boundary
-ax1.plot(
-         [dataf1['d02']['x_lim'][0], dataf1['d02']['x_lim'][0]],
-         [dataf1['d02']['y_lim'][0], dataf1['d02']['y_lim'][1]],
-         linestyle='-',
-         linewidth=1.5,
-         color='k',
-        )
-
-# right boundary
-ax1.plot(
-         [dataf1['d02']['x_lim'][1], dataf1['d02']['x_lim'][1]],
-         [dataf1['d02']['y_lim'][0], dataf1['d02']['y_lim'][1]],
-         linestyle='-',
-         linewidth=1.5,
-         color='k',
-        )
+    # bottom boundary
+    ax1.plot(
+             [dataf1['d02']['x_lim'][0], dataf1['d02']['x_lim'][1]],
+             [dataf1['d02']['y_lim'][0], dataf1['d02']['y_lim'][0]],
+             linestyle='-',
+             linewidth=1.5,
+             color='k',
+            )
+    
+    # top boundary
+    ax1.plot(
+             [dataf1['d02']['x_lim'][0], dataf1['d02']['x_lim'][1]],
+             [dataf1['d02']['y_lim'][1], dataf1['d02']['y_lim'][1]],
+             linestyle='-',
+             linewidth=1.5,
+             color='k',
+            )
+    
+    # left boundary
+    ax1.plot(
+             [dataf1['d02']['x_lim'][0], dataf1['d02']['x_lim'][0]],
+             [dataf1['d02']['y_lim'][0], dataf1['d02']['y_lim'][1]],
+             linestyle='-',
+             linewidth=1.5,
+             color='k',
+            )
+    
+    # right boundary
+    ax1.plot(
+             [dataf1['d02']['x_lim'][1], dataf1['d02']['x_lim'][1]],
+             [dataf1['d02']['y_lim'][0], dataf1['d02']['y_lim'][1]],
+             linestyle='-',
+             linewidth=1.5,
+             color='k',
+            )
 
 # add geog / cultural features
 ax1.add_feature(cfeature.COASTLINE)
@@ -209,23 +239,32 @@ ax1.set_ylim(dataf1['d01']['y_lim'])
 ax1.gridlines(color='black', linestyle='dotted')
 
 # make title and save figure
-d1 = copy.copy(START_DT1) 
-d1 = d1[:4] + '-' + d1[4:6] + '-' + d1[6:8] + '_' + d1[8:]
+d2 = start_dt2.strftime('%Y-%m-%d_%H') 
 
-if START_DT2 == 'era5':
-    d2 = 'ERA5 reanalysis'
-    out_name = out_path + '/' + ANL_DT[:13] + '_ivtm_diff_plot_fzh1_' + d1 + '_fzh2_' + START_DT2 + '.png' 
+if START_DT1 == 'era5':
+    d1 = 'ERA5 reanalysis'
+    out_name = out_path + '/' + anl_dt.strftime('%Y-%m-%d_%H') +\
+            '_ivtm_' +\
+            d2 + '_' + CTR_FLW2 +\
+            '_minus_' +\
+            START_DT1 + '_' + CTR_FLW1 +\
+            '.png' 
+
 else:
-    d2 = copy.copy(START_DT2)
-    d2 = d2[:4] + ':' + d2[4:6] + ':' + d2[6:8] + '_' + d2[8:]
-    out_name = out_path + '/' + ANL_DT[:13] + '_ivtm_diff_plot_fzh1_' + d1 + '_fzh2_' + d2 + '.png' 
+    d1 = start_dt1.strftime('%Y-%m-%d_%H') 
+    out_name = out_path + '/' +  anl_dt.strftime('%Y-%m-%d_%H') +\
+            '_ivtm_' +\
+            d2 + '_' + CTR_FLW2 +\
+            '_minus_' +\
+            d1 + '_' + CTR_FLW1 +\
+            '.png' 
 
-title1 = 'ivtm - ' + ANL_DT[:13]
+title1 = 'ivtm - ' + anl_dt.strftime('%Y-%m-%d_%H') 
 
-if START_DT2 == 'era5':
-    title2 = 'fzh - ' + d1 + ' minus ' + d2
+if START_DT1 == 'era5':
+    title2 = 'fzh - ' + d2 + ' minus ' + d1
 else:
-    title2 = 'fzh - ' + d1 + ' minus fzh -' + d2
+    title2 = 'fzh - ' + d2 + ' minus fzh -' + d1
 
 plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=22)
 plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=22)

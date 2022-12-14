@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --mem=120G
 #SBATCH -t 24:00:00
-#SBATCH --job-name="wrfout_cf"
+#SBATCH --job-name="24hr_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp130
 #SBATCH --mail-user cgrudzien@ucsd.edu
@@ -13,11 +13,13 @@
 #####################################################
 # Description
 #####################################################
-# This driver script is designed as a companion to the WRF preprocessing script
-# wrfout_to_cf.ncl to ready WRF outputs for MET. This script is based on original
-# source code provided by Rachel Weihs and Caroline Papadopoulos.  This is
-# re-written to homogenize project structure and to include flexibility with
-# processing date ranges of data.
+# This driver script is based on original source code provided by Rachel Weihs
+# and Caroline Papadopoulos.  This is re-written to homogenize project structure
+# and to include flexibility with batch processing date ranges of data.
+#
+# The purpose of this script is to compute grid statistics using MET
+# after pre-procssing WRF forecast data and StageIV precip data for
+# validating the forecast peformance.
 #
 #####################################################
 # License Statement
@@ -42,34 +44,33 @@
 # uncoment to make verbose for debugging
 set -x
 
-# set local environment for ncl and dependencies
-module load ncl_ncarg
-
 # root directory for git clone
 USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
-# define control flow to analyze 
+# control flow to be processed
 CTR_FLW="deterministic_forecast_vbc_early_start_date_test"
 
-# define date range and forecast cycle interval
+# define date range and forecast cycle interval inclusively
 START_DT="2019021100"
 END_DT="2019021400"
 CYCLE_INT="24"
 
-# WRF ISO date times defining range of data processed
+# WRF ISO date times defining range of data processed for each forecast
+# initialization as above
 ANL_START="2019-02-14_00:00:00"
 ANL_END="2019-02-15_00:00:00"
-
-# verification domain for the forecast data
-DMN="2"
 
 #####################################################
 # Process data
 #####################################################
-# define derived data paths
+# define derived paths
 proj_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
-work_root="${proj_root}/data/analysis/${CTR_FLW}/MET_analysis"
-data_root="${proj_root}/data/forecast_io/${CTR_FLW}"
+data_root="${proj_root}/data"
+scripts_home="${proj_root}/scripts/analysis/MET_analysis"
+stageiv_root="${USR_HME}/DATA/stageIV"
+met_root="${USR_HME}/MET_CODE"
+met_src="${met_root}/met-10.0.1.sif"
+mask_root="${met_root}/polygons"
 
 # Convert START_DT from 'YYYYMMDDHH' format to start_dt in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
 if [ `echo "${START_DT}" | awk '/^[[:digit:]]{10}$/'` ]; then
@@ -102,24 +103,70 @@ datestr=`date +%Y%m%d%H -d "${start_dt} ${fcst_hour} hours"`
 timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
 
 while [[ ! ${timestr} > ${end_dt} ]]; do
-  # set input paths
-  input_path="${data_root}/${datestr}/wrfprd/ens_00"
+  # set working directory based on looped forecast start date
+  work_root="${data_root}/analysis/${CTR_FLW}/MET_analysis/${datestr}"
+
+  # Set forecast initialization string
+  inityear=${datestr:0:4}
+  initmon=${datestr:4:2}
+  initday=${datestr:6:2}
+  inithr=${datestr:8:2}
+
+  # Set up valid time for verification
+  validyear=${ANL_END:0:4}
+  validmon=${ANL_END:5:2}
+  validday=${ANL_END:8:2}
+  validhr=${ANL_END:11:2}
   
-  # set input file names
-  file_1="wrfout_d0${DMN}_${ANL_START}"
-  file_2="wrfout_d0${DMN}_${ANL_END}"
-  
-  # set output path
-  output_path="${work_root}/${datestr}"
-  mkdir -p ${output_path}
-  
-  # set output file name
-  output_file="wrf_post_${ANL_START}_to_${ANL_END}.nc"
-  
-  statement="ncl 'file_in=\"${input_path}/${file_2}\"' 'file_prev=\"${input_path}/${file_1}\"                               
-      ' 'file_out=\"${output_path}/${output_file}\"' wrfout_to_cf.ncl "
-  
+  # Set up singularity container
+  statement="singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/root_stageiv:rw,${mask_root}:/mask_root:ro,${scripts_home}:/scripts:ro ${met_src} met1"
+
+  echo ${statement}
   eval ${statement}
+
+  # Combine precip to 24 hour 
+  # NOTE: this should be re-written in an future version for arbitrary leads
+  # based on analysis times
+  statement="singularity exec instance://met1 pcp_combine \
+  -sum ${inityear}${initmon}${initday}_${inithr}0000 24\
+  ${validyear}${validmon}${validday}_${validhr}0000 24 \
+  /work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+  -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"24hr_qpf\" \
+  -pcpdir /work_root \
+  -pcprx \"wrf_post_${ANL_START}_to_${ANL_END}.nc\" "
+
+  echo ${statement}
+  eval ${statement}
+  
+  # Regrid to Stage-IV
+  statement="singularity exec instance://met1 regrid_data_plane \
+  /work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+  /root_stageiv/StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc \
+  /work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc -field 'name=\"24hr_qpf\"; \
+  level=\"(*,*)\";' -method BILIN -width 2 -v 1"
+
+  echo ${statement}
+  eval ${statement}
+  
+  statement="singularity exec instance://met1 gen_vx_mask -v 10 \
+  /work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+  -type poly \
+  /mask_root/region/CALatLonPoints.txt \
+  /work_root/CA_mask_regridded_with_StageIV.nc"
+  echo ${statement}
+  eval ${statement}
+  
+  # RUN GRIDSTAT
+  statement="singularity exec instance://met1 grid_stat -v 10 \
+  /work_root/regridded_wrf_${ANL_START}_to_${ANL_END}.nc
+  /root_stageiv/StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc \
+  /scripts/GridStatConfig
+  -outdir /work_root"
+  echo ${statement}
+  eval ${statement}
+  
+  # End MET Process and singularity stop
+  singularity instance stop met1
 
   # update the cycle number
   (( cycle_num += 1))

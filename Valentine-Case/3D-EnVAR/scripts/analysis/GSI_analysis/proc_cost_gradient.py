@@ -53,13 +53,13 @@ import os
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3denvar_downscale'
+CTR_FLW = '3denvar_downscale_vbc_early_start_date_test'
 
 # starting date and zero hour of data
-START_DATE = '2019-02-08T00:00:00'
+START_DT = '2019-02-08T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-08T06:00:00'
+END_DT = '2019-02-15T06:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 6
@@ -72,16 +72,16 @@ MAX_DOM = 1
 ##################################################################################
 # define derived data paths
 data_root = PROJ_ROOT + '/data/cycle_io' + '/' + CTR_FLW
-out_dir = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW
+out_dir = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
 os.system('mkdir -p ' + out_dir)
 
 # convert to date times
-start_date = dt.fromisoformat(START_DATE)
-end_date = dt.fromisoformat(END_DATE)
+start_date = dt.fromisoformat(START_DT)
+end_date = dt.fromisoformat(END_DT)
 
 # define the output name
-out_path = out_dir + '/GSI_cost_grad_anl_' + START_DATE +\
-           '_to_' + END_DATE + '.bin'
+out_path = out_dir + '/GSI_cost_grad_anl_' + START_DT +\
+           '_to_' + END_DT + '.bin'
 
 # generate the date range for the analyses
 analyses = get_anls(start_date, end_date, CYCLE_INT)

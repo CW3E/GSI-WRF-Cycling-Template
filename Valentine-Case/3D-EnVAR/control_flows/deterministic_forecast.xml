@@ -35,8 +35,8 @@
   <!-- CYCLING SETTINGS -->
   <!-- Forecasts with same end-time but different start time are performed as unique workflows currently -->
   <!-- I.e., CYCLE_START=CYCLE_END, and a single cycle with unique forecast length is defined -->
-  <!ENTITY CYCLE_START         "201902130000">
-  <!ENTITY CYCLE_END           "201902130000">
+  <!ENTITY CYCLE_START         "201902140000">
+  <!ENTITY CYCLE_END           "20190214000">
   <!ENTITY CYCLE_INTERVAL      "01:00:00">
   <!-- END CYCLING SETTINGS -->
 
@@ -61,7 +61,9 @@
   <!-- JOB SETTINGS -->
   <!ENTITY SCHED               "slurm">
   <!ENTITY PROJECT             "--account=cwp130">
-  <!ENTITY PARTITION           "--partition=compute"> 
+  <!ENTITY PART_COMPU          "--partition=compute"> 
+  <!ENTITY PART_DEBUG          "--partition=shared"> 
+  <!ENTITY PART_RAPID          "--partition=compute"> 
   <!ENTITY MPIRUN              "mpirun">
   <!ENTITY WPS_PROC            "24"> <!-- WPS parallel / REAL procs, all serial hard-coded as 1 -->
   <!ENTITY WPS_MEM             "5G">
@@ -72,7 +74,7 @@
   <!ENTITY WRF_MEM             "5G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
-  <!ENTITY WRF_WC              "18:00:00">
+  <!ENTITY WRF_WC              "24:00:00">
   <!-- END JOB SETTINGS -->
 ]>
 
@@ -80,14 +82,14 @@
   <cycledef group="day">&CYCLE_START; &CYCLE_END; &CYCLE_INTERVAL;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
   
-  <task name="ungrib" maxtries="3" cycledefs="day">
+  <task name="ungrib" maxtries="8" cycledefs="day">
     <command>&DRIVERS;/ungrib.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>ungrib_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/ungrib/ungrib_ens_00_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
@@ -138,14 +140,14 @@
     </envar>
   </task>
 
-  <task name="metgrid" maxtries="3" cycledefs="day">
+  <task name="metgrid" maxtries="8" cycledefs="day">
     <command>&DRIVERS;/metgrid.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>metgrid_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/metgrid/metgrid_ens_00_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
@@ -199,14 +201,14 @@
     </dependency>
   </task>
 
-  <task name="real" maxtries="3" cycledefs="day">
+  <task name="real" maxtries="8" cycledefs="day">
     <command>&DRIVERS;/real.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/real/real_ens_00_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
@@ -268,14 +270,14 @@
     </dependency>
   </task>
 
-  <task name="wrfda_latbc" maxtries="4" cycledefs="day">
+  <task name="wrfda_latbc" maxtries="8" cycledefs="day">
     <command>&DRIVERS;/wrfda.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>wrfda_latbc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/wrfda/wrfda_latbc_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WPS_NODES;</native>
@@ -325,14 +327,14 @@
     </dependency>
   </task>
 
-  <task name="wrf" maxtries="3" cycledefs="day">
+  <task name="wrf" maxtries="8" cycledefs="day">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>
     <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
-    <native>&PARTITION;</native>
+    <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
     <native>--nodes=&WRF_NODES;</native>

@@ -60,13 +60,13 @@ from gsi_py_utilities import PROJ_ROOT
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3denvar_downscale'
+CTR_FLW = '3denvar_downscale_vbc_early_start_date_test'
 
 # starting date and zero hour of data
 START_DATE = '2019-02-08T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-08T06:00:00'
+END_DATE = '2019-02-15T06:00:00'
 
 # define domain to plot
 DOM = 1
@@ -75,7 +75,7 @@ DOM = 1
 # Begin plotting
 ##################################################################################
 # define derived data paths
-data_root = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW
+data_root = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
 in_path = data_root + '/GSI_cost_grad_anl_' + START_DATE + '_to_' +\
           END_DATE + '.bin'
 
@@ -132,7 +132,7 @@ line_labs = ['Cost', 'Gradient Norm', 'Outer loop 1', 'Outer loop 2']
 ##################################################################################
 # define display parameters
 
-#plot bounds
+# plot bounds
 ax0.set_xlim([0,index])
 ax1.set_xlim([0,index])
 ax1.set_yscale('log')

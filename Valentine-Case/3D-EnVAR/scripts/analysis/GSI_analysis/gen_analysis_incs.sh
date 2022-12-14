@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --mem=120G
@@ -20,7 +20,7 @@
 # increments with dynamic naming.
 #
 #####################################################
-# License Statement:
+# License Statement
 #####################################################
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
 #
@@ -37,55 +37,61 @@
 #     limitations under the License.
 #
 #####################################################
-# Preamble
+# SET GLOBAL PARAMETERS 
 #####################################################
 # uncoment to make verbose for debugging
 #set -x
 
-# define date range and increments
-START_TIME=2019020800
-END_TIME=2019021512
-CYCLE_INT=6
+# set local environment for ncl and dependencies
+module load ncl_ncarg
+
+# root directory for git clone
+USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
+
+# define control flow to analyze 
+CTR_FLW="3denvar_downscale"
+
+# define date range and cycling interval
+START_DT="2019020800"
+END_DT="2019020812"
+CYCLE_INT="6"
 
 # define vertical level range and increments
-VERT_LEVS=(1)
-LEV=0
-MAX_LEV=70
-VERT_INT=10
+VERT_LEVS=("1")
+LEV="0"
+MAX_LEV="70"
+VERT_INT="10"
 
 # define the domain to compute the increments
-DMN=1
-
-# set local environment for ncl and dependencies
-eval `/bin/modulecmd ksh load ncl_ncarg`
-
-# set local root paths
-PROJ_HOME=/cw3e/mead/projects/cwp130/scratch/cgrudzien/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR
-WORK_ROOT=${PROJ_HOME}/data/analysis/gsi_analysis_inc
-DATA_ROOT=${PROJ_HOME}/data/cycle_io
+DMN="1"
 
 #####################################################
-# Execute analyses
+# Process data
 #####################################################
-# Convert START_TIME from 'YYYYMMDDHH' format to start_time in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
-if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  start_time=`echo "${START_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
+# define derived data paths
+proj_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
+work_root="${proj_root}/data/analysis/${CTR_FLW}/gsi_analysis_inc"
+data_root="${proj_root}/data/cycle_io/${CTR_FLW}"
+
+# Convert START_DT from 'YYYYMMDDHH' format to start_dt in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
+if [ `echo "${START_DT}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  start_dt=`echo "${START_DT}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
-  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  echo "ERROR: start time, '${START_DT}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
 
-start_time=`date -d "${start_time}"`
+start_dt=`date -d "${start_dt}"`
 
-# Convert END_TIME from 'YYYYMMDDHH' format to end_time in isoformat YYYY:MM:DD_HH
-if [ `echo "${END_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  end_time=`echo "${END_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
+# Convert END_DT from 'YYYYMMDDHH' format to end_dt in isoformat YYYY:MM:DD_HH
+if [ `echo "${END_DT}" | awk '/^[[:digit:]]{10}$/'` ]; then
+  end_dt=`echo "${END_DT}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
 else
-  echo "ERROR: end time, '${END_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
+  echo "ERROR: end time, '${END_DT}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
   exit 1
 fi
 
-end_time=`date +%Y:%m:%d_%H -d "${end_time}"`
+end_dt=`date +%Y:%m:%d_%H -d "${end_dt}"`
 
 # construct vertical level array for looping, incrementing with VERT_INT
 while [[ ${LEV} -lt ${MAX_LEV} ]]; do
@@ -98,24 +104,24 @@ cycle_num=0
 fcst_hour=0
 
 # directory string
-datestr=`date +%Y%m%d%H -d "${start_time} ${fcst_hour} hours"`
+datestr=`date +%Y%m%d%H -d "${start_dt} ${fcst_hour} hours"`
 
 # loop condition
-timestr=`date +%Y:%m:%d_%H -d "${start_time} ${fcst_hour} hours"`
+timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
 
-while [[ ! ${timestr} > ${end_time} ]]; do
+while [[ ! ${datestr} > ${end_dt} ]]; do
   # define wrfout date string
-  wrfdate=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst_hour} hours"`
+  wrfdate=`date +%Y-%m-%d_%H:%M:%S -d "${start_dt} ${fcst_hour} hours"`
 
   # define the data sources
   bkg="wrfout_d0${DMN}_${wrfdate}"
-  bkg=${DATA_ROOT}/${datestr}/bkg/ens_00/${bkg}
+  bkg="${data_root}/${datestr}/bkg/ens_00/${bkg}"
 
   anl="wrfanl_ens_00.${datestr}"
-  anl=${DATA_ROOT}/${datestr}/gsiprd/d0${DMN}/${anl}
+  anl="${data_root}/${datestr}/gsiprd/d0${DMN}/${anl}"
 
   # define the output directory and move there for analysis
-  outdir=${WORK_ROOT}/${datestr}
+  outdir="${work_root}/${datestr}"
   mkdir -p ${outdir}
   cd ${outdir}
 
@@ -124,7 +130,7 @@ while [[ ! ${timestr} > ${end_time} ]]; do
 
   for lev in "${VERT_LEVS[@]}"; do
     # copy analysis script for sed of parameters
-    cp ${PROJ_HOME}/scripts/analysis/GSI_analysis/Analysis_increment.ncl ./
+    cp ${proj_root}/scripts/analysis/GSI_analysis/Analysis_increment.ncl ./
 
     # update the vertical level 
     cat Analysis_increment.ncl | sed "s/\(kmax\)=VERTICAL_LEVEL_INDEX\{1,\}/\1 = ${lev}/" \
@@ -145,10 +151,10 @@ while [[ ! ${timestr} > ${end_time} ]]; do
   (( fcst_hour = cycle_num * CYCLE_INT )) 
 
   # update the date string for directory names
-  datestr=`date +%Y%m%d%H -d "${start_time} ${fcst_hour} hours"`
+  datestr=`date +%Y%m%d%H -d "${start_dt} ${fcst_hour} hours"`
 
   # update time string for lexicographical comparison
-  timestr=`date +%Y:%m:%d_%H -d "${start_time} ${fcst_hour} hours"`
+  timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
 done
 
 #####################################################

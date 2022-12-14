@@ -1,8 +1,7 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This module contains utility methods for plotting and data analysis
-# to be used separately from the wrf_py environment.
+# This module contains utility methods for plotting and data analysis.
 #
 ##################################################################################
 # License Statement
@@ -36,10 +35,10 @@ from datetime import timedelta
 STR_INDT = "    "
 
 # define location of git clone 
-USR_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien'
+USR_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
 # define project space
-PROJ_ROOT = USR_HME + '/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR'
+PROJ_ROOT = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
 
 ##################################################################################
 # UTILITY METHODS

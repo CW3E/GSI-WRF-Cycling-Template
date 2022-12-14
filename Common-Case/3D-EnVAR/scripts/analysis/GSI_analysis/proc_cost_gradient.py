@@ -53,13 +53,13 @@ import os
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3denvar_downscale'
+CTR_FLW = '3dvar_treatment_run'
 
 # starting date and zero hour of data
-START_DATE = '2019-02-08T00:00:00'
+START_DATE = '2021-01-20T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-08T06:00:00'
+END_DATE = '2021-01-28T12:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 6
@@ -72,7 +72,7 @@ MAX_DOM = 1
 ##################################################################################
 # define derived data paths
 data_root = PROJ_ROOT + '/data/cycle_io' + '/' + CTR_FLW
-out_dir = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW
+out_dir = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
 os.system('mkdir -p ' + out_dir)
 
 # convert to date times

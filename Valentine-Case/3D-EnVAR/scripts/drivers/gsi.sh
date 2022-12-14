@@ -56,7 +56,6 @@
 # if_oneob    = Yes   : Do single observation test
 #
 #####################################################
-
 # uncomment to run verbose for debugging / testing
 set -x
 
@@ -335,7 +334,8 @@ gsi_exe=${GSI_ROOT}/build/bin/gsi.x
 gsi_namelist=${STATIC_DATA}/namelists/comgsi_namelist.sh
 crtm_root=${GSI_ROOT}/CRTM_v${CRTM_VERSION}
 prepbufr_tar=${obs_root}/prepbufr.${anl_date}.nr.tar.gz
-prepbufr=${obs_root}/${anl_date}.nr/prepbufr.gdas.${anl_date}.t${hh}z.nr
+prepbufr_dir=${obs_root}/${anl_date}.nr
+prepbufr=${prepbufr_dir}/prepbufr.gdas.${anl_date}.t${hh}z.nr
 
 if [ ! -d "${obs_root}" ]; then
   echo "ERROR: obs_root directory '${obs_root}' does not exist!"
@@ -371,8 +371,20 @@ if [ ! -r "${prepbufr_tar}" ]; then
   echo "ERROR: file '${prepbufr_tar}' does not exist!"
   exit 1
 else
-  cd ${obs_root}
-  tar -xvf `basename ${prepbufr_tar}`
+  # untar prepbufr data to predefined directory
+  # define prepbufr directory
+  mkdir -p ${prepbufr_dir}
+  tar -xvf ${prepbufr_tar} -C ${prepbufr_dir}
+
+  # unpack nested directory structure
+  prepbufr_nest=(`find ${prepbufr_dir} -type f`)
+  nest_indx=0
+  while [ ${nest_indx} -le ${#prepbufr_nest[@]} ]; do
+    mv ${prepbufr_nest[${nest_indx}]} ${prepbufr_dir}
+    (( nest_indx += 1))
+  done
+  rmdir ${prepbufr_dir}/*
+
   if [ ! -r "${prepbufr}" ]; then
     echo "ERROR: file '${prepbufr}' does not exist!"
     exit 1
@@ -421,44 +433,44 @@ while [ ${dmn} -le ${max_dom} ]; do
        srcobsfile=()
        gsiobsfile=()
 
-       srcobsfile+=("1bamua")
-       gsiobsfile+=("amsuabufr")
+       #srcobsfile+=("1bamua")
+       #gsiobsfile+=("amsuabufr")
 
        #srcobsfile+=("1bamub")
        #gsiobsfile+=("amsubbufr")
 
-       srcobsfile+=("1bhrs4")
-       gsiobsfile+=("hirs4bufr")
+       #srcobsfile+=("1bhrs4")
+       #gsiobsfile+=("hirs4bufr")
 
-       srcobsfile+=("1bmhs")
-       gsiobsfile+=("mhsbufr")
+       #srcobsfile+=("1bmhs")
+       #gsiobsfile+=("mhsbufr")
 
-       srcobsfile+=("airsev")
-       gsiobsfile+=("airsbufr")
+       #srcobsfile+=("airsev")
+       #gsiobsfile+=("airsbufr")
 
        #srcobsfile+=("amsr2")
        #gsiobsfile+=("amsrebufr")
 
-       srcobsfile+=("atms")
-       gsiobsfile+=("atmsbufr")
+       #srcobsfile+=("atms")
+       #gsiobsfile+=("atmsbufr")
 
        #srcobsfile+=("esamua")
        #gsiobsfile+=("amsuabufrears")
 
-       srcobsfile+=("eshrs3")
-       gsiobsfile+=("hirs3bufrears")
+       #srcobsfile+=("eshrs3")
+       #gsiobsfile+=("hirs3bufrears")
 
-       srcobsfile+=("esmhs")
-       gsiobsfile+=("mhsbufrears")
+       #srcobsfile+=("esmhs")
+       #gsiobsfile+=("mhsbufrears")
 
-       srcobsfile+=("geoimr")
-       gsiobsfile+=("gimgrbufr")
+       #srcobsfile+=("geoimr")
+       #gsiobsfile+=("gimgrbufr")
 
-       srcobsfile+=("goesfv")
-       gsiobsfile+=("gsnd1bufr")
+       #srcobsfile+=("goesfv")
+       #gsiobsfile+=("gsnd1bufr")
 
-       srcobsfile+=("gome")
-       gsiobsfile+=("gomebufr")
+       #srcobsfile+=("gome")
+       #gsiobsfile+=("gomebufr")
 
        srcobsfile+=("gpsro")
        gsiobsfile+=("gpsrobufr")
@@ -466,8 +478,8 @@ while [ ${dmn} -le ${max_dom} ]; do
        #srcobsfile+=("lgycld")
        #gsiobsfile+=("larcglb")
 
-       srcobsfile+=("mtiasi")
-       gsiobsfile+=("iasibufr")
+       #srcobsfile+=("mtiasi")
+       #gsiobsfile+=("iasibufr")
 
        #srcobsfile+=("nexrad")
        #gsiobsfile+=("l2rbufr")
@@ -475,14 +487,14 @@ while [ ${dmn} -le ${max_dom} ]; do
        #srcobsfile+=("omi")
        #gsiobsfile+=("omibufr")
 
-       srcobsfile+=("osbuv8")
-       gsiobsfile+=("sbuvbufr")
+       #srcobsfile+=("osbuv8")
+       #gsiobsfile+=("sbuvbufr")
 
-       srcobsfile+=("satwnd")
-       gsiobsfile+=("satwndbufr")
+       #srcobsfile+=("satwnd")
+       #gsiobsfile+=("satwndbufr")
 
-       srcobsfile+=("ssmisu")
-       gsiobsfile+=("ssmirrbufr")
+       #srcobsfile+=("ssmisu")
+       #gsiobsfile+=("ssmirrbufr")
 
        #srcobsfile+=("sevcsr")
        #gsiobsfile+=("seviribufr")
@@ -492,27 +504,45 @@ while [ ${dmn} -le ${max_dom} ]; do
        ii=0
 
        while [[ ${ii} -lt ${len} ]]; do
+          cd ${obs_root}
           tar_file=${obs_root}/${srcobsfile[$ii]}.${anl_date}.tar.gz
+	  obs_dir=${obs_root}/${anl_date}.${srcobsfile[$ii]}
+	  mkdir -p ${obs_dir}
+
           if [ -r "${tar_file}" ]; then
-            cd ${obs_root}
-            tar -xvf `basename ${tar_file}`
+	    # untar to specified directory
+            tar -xvf ${tar_file} -C ${obs_dir}
+
+            # unpack nested directory structure, if exists
+            obs_nest=(`find ${obs_dir} -type f`)
+            nest_indx=0
+            while [ ${nest_indx} -le ${#obs_nest[@]} ]; do
+              mv ${obs_nest[${nest_indx}]} ${obs_dir}
+              (( nest_indx += 1))
+            done
+            rmdir ${obs_dir}/*
+	    # NOTE: differences in data file types for "satwnd"
             if [[ ${srcobsfile[$ii]} = "satwnd" ]]; then
-              obs_file=${obs_root}/${anl_date}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.txt
-            elif [[ ${srcobsfile[$ii]} = "airsev" ]]; then
-              obs_file=${obs_root}/${anl_date}.airssev/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.bufr
+              obs_file=${obs_dir}/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.txt
             else
-              obs_file=${obs_root}/${anl_date}.${srcobsfile[$ii]}/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.bufr
+              obs_file=${obs_dir}/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.bufr
             fi
+
             if [ -r "${obs_file}" ]; then
                echo "Link source obs file ${obs_file}"
                cd ${workdir}
                ln -sf ${obs_file} ./${gsiobsfile[$ii]}
+
             else
-               echo "Source obs file ${srcobsfile[$ii]} not found, skipping ${gsiobsfile[$ii]} data"
+               echo "ERROR: obs file ${srcobsfile[$ii]} not found!"
+               exit 1
             fi
+
           else
-            echo "${srctarfile[$ii]} not found, skipping ${gisobsfile[$ii]} data"
+            echo "ERROR: file ${tar_file} not found!"
+            exit 1
           fi
+
           cd ${workdir}
           (( ii += 1 ))
        done
@@ -571,7 +601,7 @@ while [ ${dmn} -le ${max_dom} ]; do
 
     satangl=${fix_root}/global_satangbias.txt
     satinfo=${fix_root}/global_satinfo.txt
-    convinfo=${fix_root}/global_convinfo.txt
+    convinfo=${fix_root}/global_convinfo_profiler_ascat.txt
     ozinfo=${fix_root}/global_ozinfo.txt
     pcpinfo=${fix_root}/global_pcpinfo.txt
     lightinfo=${fix_root}/global_lightinfo.txt
@@ -631,6 +661,10 @@ while [ ${dmn} -le ${max_dom} ]; do
       tar_files+=(${obs_root}/abias.${anl_date}.tar.gz)
       tar_files+=(${obs_root}/abiaspc.${anl_date}.tar.gz)
 
+      bias_dirs=()
+      bias_dirs+=(${obs_root}/${anl_date}.abias)
+      bias_dirs+=(${obs_root}/${anl_date}.abiaspc)
+
       bias_files=()
       bias_files+=(${obs_root}/${anl_date}.abias/gdas.abias.t${hh}z.${anl_date}.txt)
       bias_files+=(${obs_root}/${anl_date}.abiaspc/gdas.abiaspc.t${hh}z.${anl_date}.txt)
@@ -645,13 +679,24 @@ while [ ${dmn} -le ${max_dom} ]; do
 
       while [[ ${ii} -lt ${len} ]]; do
 	tar_file=${tar_files[$ii]}
+	bias_dir=${bias_dirs[$ii]}
 	bias_file=${bias_files[$ii]}
         if [ -r "${tar_file}" ]; then
-          cd ${obs_root}
-          tar -xvf `basename ${tar_file}`
+	  # untar to specified directory
+	  mkdir -p ${bias_dir}
+          tar -xvf ${tar_file} -C ${bias_dir}
+
+	  # unpack nested directory structure
+	  bias_nest=(`find ${bias_dir} -type f`)
+          nest_indx=0
+          while [ ${nest_indx} -le ${#bias_nest[@]} ]; do
+            mv ${bias_nest[${nest_indx}]} ${bias_dir}
+            (( nest_indx += 1))
+          done
+	  rmdir ${bias_dir}/*
+
           if [ -r "${bias_file}" ]; then
             echo "Link the GDAS bias correction file ${bias_file} for loop zero of analysis"
-            cd ${workdir}
             ln -sf ${bias_file} ./${bias_in_files[$ii]}
           else
             echo "GDAS bias correction file not readable at ${bias_file}"

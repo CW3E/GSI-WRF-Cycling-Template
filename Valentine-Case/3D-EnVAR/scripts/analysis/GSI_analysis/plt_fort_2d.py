@@ -60,13 +60,13 @@ from gsi_py_utilities import PROJ_ROOT
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3denvar_downscale'
+CTR_FLW = '3denvar_downscale_vbc_early_start_date_test'
 
 # starting date and zero hour of data
 START_DATE = '2019-02-08T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-08T06:00:00'
+END_DATE = '2019-02-15T06:00:00'
 
 # define domain to plot
 DOM = 1
@@ -78,7 +78,7 @@ FORT='201'
 # Begin plotting
 ##################################################################################
 # define derived data paths
-data_root = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW
+data_root = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
 in_path = data_root + '/GSI_fort_' + FORT + '_' + START_DATE + '_to_' +\
           END_DATE + '.bin'
 out_path = data_root + '/GSI_fort_' + FORT + '_' + str(DOM) + '_' +\

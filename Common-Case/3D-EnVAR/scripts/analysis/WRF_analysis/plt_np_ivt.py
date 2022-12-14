@@ -41,32 +41,40 @@ import cartopy.feature as cfeature
 import numpy as np
 import pickle
 import os
+from datetime import datetime as dt
+from datetime import timedelta
 from py_plt_utilities import PROJ_ROOT
 
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast'
+CTR_FLW = '3dvar_treatment_run'
 
-# start date time of WRF forecast in YYYYMMDDHH
-START_DT = '2019021100'
+# start date time of WRF forecast
+START_DT = '2021-01-23_00:00:00'
 
-# analysis date time of inputs / outputs 
-ANL_DT = '2019-02-14_00:00:00'
+# valid date time for analysis
+ANL_DT = '2021-01-23_00:00:00'
+
+# max domain to plot
+MAX_DOM = 1
 
 ##################################################################################
 # Begin plotting
 ##################################################################################
+# convert from iso times
+anl_dt = dt.fromisoformat(ANL_DT)
+start_dt = dt.fromisoformat(START_DT)
+
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW
-in_path = data_root + '/processed_numpy/' + START_DT
+data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/WRF_analysis'
+in_path = data_root + '/' + start_dt.strftime('%Y%m%d%H')
 out_path = data_root + '/ivt_plots'
 os.system('mkdir -p ' + out_path)
 
 # load data
-f = open(in_path + '/' + '/start_' + START_DT + '_forecast_' +\
-         ANL_DT + '.bin', 'rb')
+f = open(in_path + '/start_' + START_DT + '_forecast_' + ANL_DT + '.bin', 'rb')
 data = pickle.load(f)
 f.close()
 
@@ -89,83 +97,89 @@ cnorm = nrm(vmin=ivtm_min, vmax=ivtm_max)
 color_map = sns.color_palette('flare', as_cmap=True)
 
 # extract ivtm
-ivtm_d01 = data['d01']['ivtm'].flatten()
-ivtm_d02 = data['d02']['ivtm'].flatten()
-ivtms = [ivtm_d01, ivtm_d02]
+if MAX_DOM == 2:
+    ivtm_d02 = data['d02']['ivtm'].flatten()
+    ivtms = [ivtm_d01, ivtm_d02]
+else:
+    ivtm_d01 = data['d01']['ivtm'].flatten()
+    ivtms = [ivtm_d01]
 
 # find the index of values that lie below the ivtm_min
 indxs = [[], []]
-for i in range(2):
+for i in range(MAX_DOM):
     for k in range(len(ivtms[i])):
         if ivtms[i][k] < ivtm_min:
             indxs[i].append(k)
 
-# NaN out all values of d01 that lie in d02
-ivtm_d01[data['d02']['indx']] = np.nan
+if MAX_DOM == 2:
+    # NaN out all values of d01 that lie in d02
+    ivtm_d01[data['d02']['indx']] = np.nan
 
 # NaN out all values of both domains that lie below the threshold
 ivtm_d01[indxs[0]] = np.nan
-ivtm_d02[indxs[1]] = np.nan
+if MAX_DOM == 2:
+    ivtm_d02[indxs[1]] = np.nan
 
 # plot ivtm as intensity in scatter / heat plot for parent domain
 ax1.scatter(x=data['d01']['lons'], y=data['d01']['lats'],
             c=ivtm_d01,
-            alpha=0.600,
+            alpha=1.000,
             cmap=color_map,
             norm=cnorm,
             marker='.',
-            s=9,
+            s=20,
             edgecolor='none',
             transform=crs.PlateCarree(),
            )
 
-# plot ivtm as intensity in scatter / heat plot for nested domain
-ax1.scatter(x=data['d02']['lons'], y=data['d02']['lats'],
-            c=ivtm_d02,
-            alpha=0.600,
-            cmap=color_map,
-            norm=cnorm,
-            marker='.',
-            s=1,
-            edgecolor='none',
-            transform=crs.PlateCarree(),
-           )
+if MAX_DOM == 2:
+    # plot ivtm as intensity in scatter / heat plot for nested domain
+    ax1.scatter(x=data['d02']['lons'], y=data['d02']['lats'],
+                c=ivtm_d02,
+                alpha=0.600,
+                cmap=color_map,
+                norm=cnorm,
+                marker='.',
+                s=1,
+                edgecolor='none',
+                transform=crs.PlateCarree(),
+               )
 
-# bottom boundary
-ax1.plot(
-         [data['d02']['x_lim'][0], data['d02']['x_lim'][1]],
-         [data['d02']['y_lim'][0], data['d02']['y_lim'][0]],
-         linestyle='-',
-         linewidth=1.5,
-         color='k',
-        )
-
-# top boundary
-ax1.plot(
-         [data['d02']['x_lim'][0], data['d02']['x_lim'][1]],
-         [data['d02']['y_lim'][1], data['d02']['y_lim'][1]],
-         linestyle='-',
-         linewidth=1.5,
-         color='k',
-        )
-
-# left boundary
-ax1.plot(
-         [data['d02']['x_lim'][0], data['d02']['x_lim'][0]],
-         [data['d02']['y_lim'][0], data['d02']['y_lim'][1]],
-         linestyle='-',
-         linewidth=1.5,
-         color='k',
-        )
-
-# right boundary
-ax1.plot(
-         [data['d02']['x_lim'][1], data['d02']['x_lim'][1]],
-         [data['d02']['y_lim'][0], data['d02']['y_lim'][1]],
-         linestyle='-',
-         linewidth=1.5,
-         color='k',
-        )
+    # bottom boundary
+    ax1.plot(
+             [data['d02']['x_lim'][0], data['d02']['x_lim'][1]],
+             [data['d02']['y_lim'][0], data['d02']['y_lim'][0]],
+             linestyle='-',
+             linewidth=1.5,
+             color='k',
+            )
+    
+    # top boundary
+    ax1.plot(
+             [data['d02']['x_lim'][0], data['d02']['x_lim'][1]],
+             [data['d02']['y_lim'][1], data['d02']['y_lim'][1]],
+             linestyle='-',
+             linewidth=1.5,
+             color='k',
+            )
+    
+    # left boundary
+    ax1.plot(
+             [data['d02']['x_lim'][0], data['d02']['x_lim'][0]],
+             [data['d02']['y_lim'][0], data['d02']['y_lim'][1]],
+             linestyle='-',
+             linewidth=1.5,
+             color='k',
+            )
+    
+    # right boundary
+    ax1.plot(
+             [data['d02']['x_lim'][1], data['d02']['x_lim'][1]],
+             [data['d02']['y_lim'][0], data['d02']['y_lim'][1]],
+             linestyle='-',
+             linewidth=1.5,
+             color='k',
+            )
 
 # add slp contour plot
 c_pl = ''
@@ -205,7 +219,7 @@ ax1.add_feature(cfeature.STATES)
 ax1.add_feature(cfeature.BORDERS)
 
 # Add ivt u / v directional barbs plotting every w_kth point above the threshold
-w_k = 4000
+w_k = 1000
 lats = np.array(data['d01']['lats'])
 lons = np.array(data['d01']['lons'])
 ivtx = lons.flatten()
@@ -288,19 +302,17 @@ ax2.set_position(ax1.get_position())
 ax1.gridlines(color='black', linestyle='dotted')
 
 # make title and save figure
-title1 = ANL_DT[:13] + r' - IVT $kg $ $m^{-1} s^{-1}$ ' +  c_pl +\
-        ' ' + c_var + ' contours'
-start_dt = START_DT[:4] + '-' + START_DT[4:6] + '-' + START_DT[6:8] + '_' +\
-        START_DT[8:]
-title2 = 'fzh - ' + start_dt
+title1 = anl_dt.strftime('%Y-%m-%d_%H') + r' - IVT $kg $ $m^{-1} s^{-1}$ ' +\
+        c_pl + ' ' + c_var + ' contours'
+title2 = 'fzh - ' + start_dt.strftime('%Y-%m-%d_%H')
 
 plt.figtext(.50, .96, title1, horizontalalignment='center',
         verticalalignment='center', fontsize=22)
 plt.figtext(.50, .91, title2, horizontalalignment='center',
         verticalalignment='center', fontsize=22)
 
-fig.savefig(out_path + '/' + ANL_DT[:13] + '_fzh_' + start_dt + '_ivt_' +\
-            c_var + '.png')
+fig.savefig(out_path + '/' + anl_dt.strftime('%Y-%m-%d_%H') + '_fzh_' +\
+        start_dt.strftime('%Y-%m-%d_%H') + '_ivt_' + c_var + '.png')
 plt.show()
 
 ##################################################################################
