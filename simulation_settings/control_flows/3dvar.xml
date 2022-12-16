@@ -18,7 +18,7 @@
   <!ENTITY EXP_NAME            "3dvar_treatment_run">
   <!ENTITY EXP_HOME            "&CLONE_ROOT;/simulation_io/&EXP_NAME;">
   <!ENTITY EXP_LOG             "&CLONE_ROOT;/logs/&EXP_NAME;">
-  <!ENTITY EXP_CONFIGS         "&CLONE_ROOT;/simulation_settings/namelists/&EXP_NAME;">
+  <!ENTITY EXP_CONFIG          "&CLONE_ROOT;/simulation_settings/&EXP_NAME;">
   <!ENTITY SCRIPTS             "&CLONE_ROOT;/scripts">
   <!ENTITY DRIVERS             "&SCRIPTS;/drivers">
   <!ENTITY ENVIRONMENTS        "&SCRIPTS;/environments">
@@ -29,8 +29,8 @@
   <!ENTITY WPS_PARALLEL_ROOT   "&SOFT_ROOT;/WRF_CODE/WRF_4.4/WPS_parallel">
   <!ENTITY WRF_ROOT            "&SOFT_ROOT;/WRF_CODE/WRF_4.4/WRF">
   <!ENTITY WRFDA_ROOT          "&SOFT_ROOT;/WRF_CODE/WRF_4.4/WRFDA">
-  <!ENTITY GSI_ROOT            "&SOFT_ROOT;/GSI_CODE/comGSIv3.7_EnKFv1.3">
-  <!ENTITY CRTM_ROOT           "&SOFT_ROOT;/CRTM_CODE/CRTM_v2.3.0">
+  <!ENTITY GSI_EXE             "&SOFT_ROOT;/GSI_CODE/comGSIv3.7_EnKFv1.3/build/bin/gsi.x">
+  <!ENTITY CRTM_ROOT           "&SOFT_ROOT;/CRTM_CODE/CRTM_v2.3.0/Big_Endian">
   <!-- END SOFTWARE SETTINGS -->
 
   <!-- CYCLING SETTINGS -->
@@ -62,6 +62,7 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.sh">
+  <!ENTITY FIX_ROOT            "&EXP_CONFIG;/fix">
   <!ENTITY IF_SATRAD           "Yes">
   <!ENTITY MAX_BC_LOOP         "2">
   <!-- END GSI SETTINGS -->
@@ -145,8 +146,8 @@
       <value>&WPS_SERIAL_ROOT;</value>
     </envar>
     <envar>
-      <name>EXPS_CONFIGS</name>
-      <value>&EXPS_CONFIGS;</value>
+      <name>EXP_CONFIG</name>
+      <value>&EXP_CONFIG;</value>
     </envar>
     <envar>
       <name>CYCLE_HOME</name>
@@ -416,12 +417,12 @@
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>GSI_ROOT</name>
-      <value>&GSI_ROOT;</value>
+      <name>GSI_EXE</name>
+      <value>&GSI_EXE;</value>
     </envar>
     <envar>
-      <name>CRTM_VERSION</name>
-      <value>&CRTM_VERSION;</value>
+      <name>CRTM_ROOT</name>
+      <value>&CRTM_ROOT;</value>
     </envar>
     <envar>
       <name>STATIC_DATA</name>

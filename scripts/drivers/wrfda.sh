@@ -1,7 +1,7 @@
 #!/bin/bash
-#####################################################
+##################################################################################
 # Description
-#####################################################
+##################################################################################
 # This driver script utilizes WRFDA to update lower and lateral boundary
 # conditions in conjunction with GSI updating the initial conditions.
 #
@@ -12,15 +12,13 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WRFDA environment
-# in a WRF_constants.sh script to be sourced in the below.  Variables
+# in a WRF_constants.sh script to be sourced in the below.  Variable
 # aliases in this script are based on conventions defined in the
-# companion WRF_constants.sh with this driver.
+# WRF_constants.sh and the control flow .xml driving this script.
 #
-# SEE THE README FOR FURTHER INFORMATION
-#
-#####################################################
+##################################################################################
 # License Statement:
-#####################################################
+##################################################################################
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,19 +33,19 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 #
-#####################################################
+##################################################################################
 # Preamble
-#####################################################
+##################################################################################
 # Options below are hard-coded based on the type of experiment
 # (i.e., these not expected to change within DA cycles).
 #
-#####################################################
+##################################################################################
 # uncomment to run verbose for debugging / testing
 set -x
 
-#####################################################
+##################################################################################
 # Read in WRF constants for local environment
-#####################################################
+##################################################################################
 
 if [ ! -x "${CONSTANT}" ]; then
   echo "ERROR: ${CONSTANT} does not exist or is not executable"
@@ -57,9 +55,9 @@ fi
 # Read constants into the current shell
 . ${CONSTANT}
 
-#####################################################
+##################################################################################
 # Make checks for WRFDA settings
-#####################################################
+##################################################################################
 # Options below are defined in cycling.xml
 #
 # N_ENS             = Max ensemble index (use 00 for control alone)
@@ -75,7 +73,7 @@ fi
 # date_str          = Defined by the ANL_TIME variable, to be used as path
 #                     name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
-#####################################################
+##################################################################################
 
 if [ ! "${N_ENS}" ]; then
   echo "ERROR: \$N_ENS is not defined!"
@@ -116,9 +114,9 @@ if [ ! ${WRF_ENS_DOM} ]; then
   exit 1
 fi
 
-#####################################################
+##################################################################################
 # Define REAL workflow dependencies
-#####################################################
+##################################################################################
 # Below variables are defined in cycling.xml workflow variables
 #
 # WRFDA_ROOT     = Root directory of a WRFDA build 
@@ -127,7 +125,7 @@ fi
 # INPUT_DATAROOT = Start time named directory for input data, containing
 #                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
 #
-#####################################################
+##################################################################################
 
 if [ ! "${WRFDA_ROOT}" ]; then
   echo "ERROR: \$WRFDA_ROOT is not defined"
@@ -149,9 +147,9 @@ if [ ! -d ${INPUT_DATAROOT} ]; then
   exit 1
 fi
 
-#####################################################
+##################################################################################
 # Begin pre-WRFDA setup
-#####################################################
+##################################################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
 # work_root      = Working directory where da_update_bc.exe runs and outputs updated files
@@ -161,7 +159,7 @@ fi
 # bkg_dir        = Working directory with forecast data from WRF linked for the current cycle
 # update_bc_exe  = Path and name of the update executable
 #
-#####################################################
+##################################################################################
 
 if [[ ${IF_ENS_COLD_START} = ${YES} ]]; then
   # skip the boundary updates for the ensemble, perform on control alone
@@ -244,9 +242,9 @@ while [ ${ens_n} -le ${n_ens} ]; do
         cp ${real_dir}/${wrfinput} ./
       fi
   
-      #####################################################
+      ##################################################################################
       #  Build da_update_bc namelist
-      #####################################################
+      ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
       cp ${STATIC_DATA}/namelists/parame.in ./
   
@@ -272,9 +270,9 @@ while [ ${ens_n} -le ${n_ens} ]; do
          > parame.in.new
       mv parame.in.new parame.in
   
-      #####################################################
+      ##################################################################################
       # Run update_bc_exe
-      #####################################################
+      ##################################################################################
       # Print run parameters
       echo
       echo "ENS_N          = ${iimem}"
@@ -290,9 +288,9 @@ while [ ${ens_n} -le ${n_ens} ]; do
       echo "da_update_bc.exe started at ${now}"
       ${update_bc_exe}
   
-      #####################################################
+      ##################################################################################
       # Run time error check
-      #####################################################
+      ##################################################################################
       error=$?
       
       if [ ${error} -ne 0 ]; then
@@ -337,9 +335,9 @@ while [ ${ens_n} -le ${n_ens} ]; do
         cp ${wrfbdy} ${wrfbdy_name} 
       fi
   
-      #####################################################
+      ##################################################################################
       #  Build da_update_bc namelist
-      #####################################################
+      ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
       cp ${STATIC_DATA}/namelists/parame.in ./
   
@@ -365,9 +363,9 @@ while [ ${ens_n} -le ${n_ens} ]; do
          > parame.in.new
       mv parame.in.new parame.in
   
-      #####################################################
+      ##################################################################################
       # Run update_bc_exe
-      #####################################################
+      ##################################################################################
       # Print run parameters
       echo
       echo "WRFDA_ROOT     = ${WRFDA_ROOT}"
@@ -382,9 +380,9 @@ while [ ${ens_n} -le ${n_ens} ]; do
       echo "da_update_bc.exe started at ${now}"
       ${update_bc_exe}
   
-      #####################################################
+      ##################################################################################
       # Run time error check
-      #####################################################
+      ##################################################################################
       error=$?
       
       if [ ${error} -ne 0 ]; then
@@ -425,9 +423,9 @@ while [ ${ens_n} -le ${n_ens} ]; do
         cp ${wrfbdy} ${wrfbdy_name} 
       fi
   
-      #####################################################
+      ##################################################################################
       #  Build da_update_bc namelist
-      #####################################################
+      ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
       cp ${STATIC_DATA}/namelists/parame.in ./
   
@@ -453,9 +451,9 @@ while [ ${ens_n} -le ${n_ens} ]; do
          > parame.in.new
       mv parame.in.new parame.in
   
-      #####################################################
+      ##################################################################################
       # Run update_bc_exe
-      #####################################################
+      ##################################################################################
       # Print run parameters
       echo
       echo "WRFDA_ROOT     = ${WRFDA_ROOT}"
@@ -470,9 +468,9 @@ while [ ${ens_n} -le ${n_ens} ]; do
       echo "da_update_bc.exe started at ${now}"
       ${update_bc_exe}
   
-      #####################################################
+      ##################################################################################
       # Run time error check
-      #####################################################
+      ##################################################################################
       error=$?
       
       if [ ${error} -ne 0 ]; then

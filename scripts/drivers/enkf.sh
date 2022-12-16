@@ -1,10 +1,11 @@
 #!/bin/bash
-#####################################################
+##################################################################################
 # Description
-#####################################################
+##################################################################################
 # This driver script is a major fork and rewrite of the standard EnKF.ksh
 # driver script as discussed in the documentation:
-# https://dtcenter.ucar.edu/EnKF/users/docs/enkf_users_guide/html_v1.3/enkf_ch3.html
+# 
+#   https://dtcenter.ucar.edu/EnKF/users/docs/enkf_users_guide/html_v1.3/enkf_ch3.html
 #
 # The purpose of this fork is to work in a Rocoto-based
 # Observation-Analysis-Forecast cycle with WRF for data denial
@@ -13,15 +14,13 @@
 # WRF driver script of Christopher Harrop.
 #
 # One should write machine specific options for the GSI environment
-# in a GSI_constants.sh script to be sourced in the below.  Variables
+# in a GSI_constants.sh script to be sourced in the below.  Variable
 # aliases in this script are based on conventions defined in the
-# companion GSI_constants.sh with this driver.
+# GSI_constants.sh and the control flow .xml driving this script.
 #
-# SEE THE README FOR FURTHER INFORMATION
-#
-#####################################################
+##################################################################################
 # License Statement:
-#####################################################
+##################################################################################
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,9 +35,9 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 #
-#####################################################
+##################################################################################
 # Preamble
-#####################################################
+##################################################################################
 # Options below are hard-coded based on the type of experiment
 # (i.e., these not expected to change within DA cycles).
 #
@@ -47,7 +46,7 @@
 # ens_prfx = Prefix for the local links for ensemble member names of the form
 #            ${ens_prfx}xxx
 #
-#####################################################
+##################################################################################
 
 # uncomment to run verbose for debugging / testing
 set -x
@@ -56,9 +55,9 @@ if_arw=.true.
 if_nmm=.false.
 ens_prfx=wrf_en
 
-#####################################################
+##################################################################################
 # Read in GSI constants for local environment
-#####################################################
+##################################################################################
 
 if [ ! -x "${CONSTANT}" ]; then
   echo "ERROR: \$CONSTANT does not exist or is not executable!"
@@ -67,15 +66,15 @@ fi
 
 . ${CONSTANT}
 
-#####################################################
+##################################################################################
 # Make checks for DA method settings
-#####################################################
+##################################################################################
 # Options below are defined in cycling.xml (case insensitive)
 #
 # N_ENS         = INT   : Max ensemble index (00 for control alone) 
 # MAX_DOM       = INT   : GSI analyzes the domain d0${dmn} for dmn -le ${MAX_DOM}
 #
-#####################################################
+##################################################################################
 
 if [ ! ${N_ENS} -ge 03 ]; then
 	echo "ERROR: \$N_ENS must be specified to the number of ensemble perturbations (greater than 2)"
@@ -87,9 +86,9 @@ if [ ! ${MAX_DOM} ]; then
   exit 1
 fi
 
-#####################################################
+##################################################################################
 # Define GSI workflow dependencies
-#####################################################
+##################################################################################
 # Below variables are defined in cycling.xml workflow variables
 #
 # ANL_TIME       = Analysis time YYYYMMDDHH
@@ -106,7 +105,7 @@ fi
 # date_str       = Defined by the ANL_TIME variable, to be used as path
 #                  name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
-#####################################################
+##################################################################################
 
 if [ ! "${ANL_TIME}" ]; then
   echo "ERROR: \$ANL_TIME is not defined!"
@@ -158,7 +157,7 @@ if [ -z "${GSI_PROC}" ]; then
   exit 1
 fi
 
-#####################################################
+##################################################################################
 # The following paths are relative to cycling.xml supplied root paths
 #
 # work_root     = Working directory where EnKF runs
@@ -166,7 +165,7 @@ fi
 # enkf_exe      = comGSI enkf_wrf.x executable
 # enkf_namelist = Path and name of the enkf namelist constructor script
 #
-#####################################################
+##################################################################################
 
 work_root=${INPUT_DATAROOT}/enkfprd
 fix_root=${GSI_ROOT}/fix
@@ -188,9 +187,9 @@ if [ ! -x "${enkf_namelist}" ]; then
   exit 1
 fi
 
-#####################################################
+##################################################################################
 # Begin pre-EnKF setup, running one domain at a time
-#####################################################
+##################################################################################
 # Create the work directory organized by domain analyzed and cd into it
 dmn=1
 
@@ -250,9 +249,9 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   
   ${MPIRUN} -n ${GSI_PROC} ${enkf_exe} < enkf.nml > stdout 2>&1
   
-  ##################################################################
+  ###############################################################################################
   # Run time error check
-  ##################################################################
+  ###############################################################################################
   error=$?
   
   if [ ${error} -ne 0 ]; then

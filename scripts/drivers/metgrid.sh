@@ -13,11 +13,9 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WPS environment
-# in a WPS_constants.sh script to be sourced in the below.  Variables
+# in a WPS_constants.sh script to be sourced in the below.  Variable
 # aliases in this script are based on conventions defined in the
-# companion WPS_constants.sh with this driver.
-#
-# SEE THE README FOR FURTHER INFORMATION
+# WPS_constants.sh and the control flow .xml driving this script.
 #
 ##################################################################################
 # License Statement:
@@ -92,7 +90,7 @@
 set -x
 
 if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: ${CONSTANT} does not exist or is not executable"
+  echo "ERROR: ${CONSTANT} does not exist or is not executable."
   exit 1
 fi
 
@@ -113,7 +111,7 @@ fi
 ##################################################################################
 
 if [ ! "${ENS_N}"  ]; then
-  echo "ERROR: \$ENS_N is not defined"
+  echo "ERROR: \${ENS_N} is not defined."
   exit 1
 fi
 
@@ -121,17 +119,17 @@ fi
 ens_n=`printf %02d $(( 10#${ENS_N} ))`
 
 if [ ! "${FCST_LENGTH}" ]; then
-  echo "ERROR: \$FCST_LENGTH is not defined"
+  echo "ERROR: \${FCST_LENGTH} is not defined."
   exit 1
 fi
 
 if [ ! "${DATA_INTERVAL}" ]; then
-  echo "ERROR: \$DATA_INTERVAL is not defined"
+  echo "ERROR: \${DATA_INTERVAL} is not defined."
   exit 1
 fi
 
 if [ ! "${START_TIME}" ]; then
-  echo "ERROR: \$START_TIME is not defined!"
+  echo "ERROR: \${START_TIME} is not defined."
   exit 1
 fi
 
@@ -139,14 +137,14 @@ fi
 if [ ! ${#START_TIME} -e 10 ]; then
   start_time="${START_TIME:0:8} ${START_TIME:8:2}"
 else
-  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format" 
+  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format."
   exit 1
 fi
 start_time=`date -d "${start_time}"`
 end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
 if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \$MAX_DOM is not defined!"
+  echo "ERROR: \${MAX_DOM} is not defined."
   exit 1
 fi
 
@@ -155,54 +153,54 @@ fi
 ##################################################################################
 # Below variables are defined in workflow variables
 #
-# WPS_ROOT     = Root directory of a "clean" WPS build
-# EXPS_CONFIGS = Root directory containing sub-directories for namelists
-#                vtables, geogrid data, etc.
-# CYCLE_HOME   = Start time named directory for cycling data containing
-#                bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# DATA_ROOT    = Directory for all forcing data files, including grib files,
-#                obs files, etc.
+# WPS_ROOT   = Root directory of a "clean" WPS build
+# EXP_CONFIG = Root directory containing sub-directories for namelists
+#              vtables, geogrid data, GSI fix files, etc.
+# CYCLE_HOME = Start time named directory for cycling data containing
+#              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
+# DATA_ROOT  = Directory for all forcing data files, including grib files,
+#              obs files, etc.
 #
 ##################################################################################
 
 if [ ! "${WPS_ROOT}" ]; then
-  echo "ERROR: \${WPS_ROOT} is not defined"
+  echo "ERROR: \${WPS_ROOT} is not defined."
   exit 1
 fi
 
 if [ ! -d "${WPS_ROOT}" ]; then
-  echo "ERROR: \${WPS_ROOT} directory ${WPS_ROOT} does not exist"
+  echo "ERROR: \${WPS_ROOT} directory ${WPS_ROOT} does not exist."
   exit 1
 fi
 
-if [ ! -d ${EXPS_CONFIGS} ]; then
-  echo "ERROR: \${EXPS_CONFIGS} directory ${EXPS_CONFIGS} does not exist"
+if [ ! -d ${EXP_CONFIG} ]; then
+  echo "ERROR: \${EXP_CONFIG} directory ${EXP_CONFIG} does not exist."
   exit 1
 fi
 
 if [ -z ${CYCLE_HOME} ]; then
-  echo "ERROR: \${CYCLE_HOME} directory name is not defined"
+  echo "ERROR: \${CYCLE_HOME} directory name is not defined."
   exit 1
 fi
 
 if [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: \${DATA_ROOT} directory ${DATA_ROOT} does not exist"
+  echo "ERROR: \${DATA_ROOT} directory ${DATA_ROOT} does not exist."
   exit 1
 fi
 
 if [ ! "${MPIRUN}" ]; then
-  echo "ERROR: \${MPIRUN} is not defined!"
+  echo "ERROR: \${MPIRUN} is not defined."
   exit 1
 fi
 
 if [ ! "${WPS_PROC}" ]; then
-  echo "ERROR: \${WPS_PROC} is not defined"
+  echo "ERROR: \${WPS_PROC} is not defined."
   exit 1
 fi
 
 if [ -z "${WPS_PROC}" ]; then
   msg="ERROR: The variable \${WPS_PROC} must be set to the number"
-  msg+=" of processors to run WPS"
+  msg+=" of processors to run WPS."
   echo ${msg}
   exit 1
 fi
@@ -221,7 +219,7 @@ fi
 
 work_root=${CYCLE_HOME}/wpsprd/ens_${ens_n}
 if [ ! -d ${work_root} ]; then
-  echo "ERROR: \${work_root} directory ${work_root} does not exist"
+  echo "ERROR: \${work_root} directory ${work_root} does not exist."
   exit 1
 else
   cd ${work_root}
@@ -231,7 +229,7 @@ wps_dat_files=(${WPS_ROOT}/*)
 metgrid_exe=${WPS_ROOT}/metgrid.exe
 
 if [ ! -x ${metgrid_exe} ]; then
-  echo "ERROR: ${metgrid_exe} does not exist, or is not executable"
+  echo "ERROR: ${metgrid_exe} does not exist, or is not executable."
   exit 1
 fi
 
@@ -247,9 +245,9 @@ rm -f geo_em.d0*
 # are available and make links to them
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
-  geoinput_name=${EXPS_CONFIGS}/geogrid/geo_em.d0${dmn}.nc
+  geoinput_name=${EXP_CONFIG}/geogrid/geo_em.d0${dmn}.nc
   if [ ! -r "${geoinput_name}" ]; then
-    echo "ERROR: Input file '${geoinput_name}' is missing"
+    echo "ERROR: Input file '${geoinput_name}' is missing."
     exit 1
   fi
   ln -sf ${geoinput_name} ./
@@ -261,7 +259,7 @@ done
 ##################################################################################
 # Copy the wrf namelist from the static dir
 # NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-cp ${EXP_CONFIGS}/namelists/namelist.wps .
+cp ${EXP_CONFIG}/namelists/namelist.wps .
 
 # Update max_dom in namelist
 in_dom="\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}"
@@ -306,7 +304,7 @@ rm -f met_em.d0*.*.nc
 echo
 echo "ENS_N          = ${ENS_N}"
 echo "WPS_ROOT       = ${WPS_ROOT}"
-echo "EXPS_CONFIGS   = ${EXPS_CONFIGS}"
+echo "EXP_CONFIG     = ${EXP_CONFIG}"
 echo "CYCLE_HOME     = ${CYCLE_HOME}"
 echo "DATA_ROOT      = ${DATA_ROOT}"
 echo
@@ -318,7 +316,7 @@ echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
 echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
-echo "metgrid started at ${now}"
+echo "metgrid started at ${now}."
 
 ${MPIRUN} -n ${WPS_PROC} ${metgrid_exe}
 
@@ -336,7 +334,7 @@ mv metgrid.log* ${log_dir}
 cp namelist.wps ${log_dir}
 
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${metgrid_exe} exited with status ${error}"
+  echo "ERROR: ${metgrid_exe} exited with status ${error}."
   exit ${error}
 fi
 
@@ -347,7 +345,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
     time_str=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
     if [ ! -e "met_em.d0${dmn}.${time_str}.nc" ]; then
-      echo "${metgrid_exe} for d0${dmn} failed to complete"
+      echo "${metgrid_exe} for d0${dmn} failed to complete."
       exit 1
     fi
     (( fcst += DATA_INTERVAL ))
@@ -363,7 +361,7 @@ done
 # Remove namelist
 rm -f namelist.wps
 
-echo "metgrid.sh completed successfully at `date`"
+echo "metgrid.sh completed successfully at `date`."
 
 ##################################################################################
 # end

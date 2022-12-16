@@ -13,11 +13,9 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WRF environment
-# in a WRF_constants.sh script to be sourced in the below.  Variables
+# in a WRF_constants.sh script to be sourced in the below.  Variable
 # aliases in this script are based on conventions defined in the
-# companion WRF_constants.sh with this driver.
-#
-# SEE THE README FOR FURTHER INFORMATION
+# WRF_constants.sh and the control flow .xml driving this script.
 #
 ##################################################################################
 # License Statement:
@@ -88,19 +86,15 @@
 ##################################################################################
 # Preamble
 ##################################################################################
-# Options below are hard-coded based on the type of experiment
-# (i.e., these not expected to change within DA cycles).
-#
-# io_restart = 2 for regular or 102 for split restart files
-#              (currently only 2 supported)
-#
-##################################################################################
 # uncomment to run verbose for debugging / testing
 set -x
+
+# io_restart = 2 for regular or 102 for split restart files (currently only
+# 2 supported)
 io_restart=2
 
 if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: ${CONSTANT} does not exist or is not executable"
+  echo "ERROR: ${CONSTANT} does not exist or is not executable."
   exit 1
 fi
 
@@ -130,17 +124,15 @@ fi
 ##################################################################################
 
 if [ ! "${ENS_N}" ]; then
-  echo "ERROR: \${ENS_N} is not defined!"
+  echo "ERROR: \${ENS_N} is not defined."
   exit 1
 fi
 
 # Ensure padding to two digits is included
 ens_n=`printf %02d $(( 10#${ENS_N} ))`
-# Make three digit padding for GSI conventions
-iiimem=`printf %03d $(( 10#${ens_n} ))`
 
 if [ ! "${BKG_DATA}"  ]; then
-  echo "ERROR: \${BKG_DATA} is not defined"
+  echo "ERROR: \${BKG_DATA} is not defined."
   exit 1
 fi
 
@@ -152,27 +144,27 @@ if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
 fi
 
 if [ ! ${FCST_LENGTH} ]; then
-  echo "ERROR: \${FCST_LENGTH} is not defined!"
+  echo "ERROR: \${FCST_LENGTH} is not defined."
   exit 1
 fi
 
 if [ ! ${FCST_INTERVAL} ]; then
-  echo "ERROR: \${FCST_INTERVAL} is not defined!"
+  echo "ERROR: \${FCST_INTERVAL} is not defined."
   exit 1
 fi
 
 if [ ! "${DATA_INTERVAL}" ]; then
-  echo "ERROR: \${DATA_INTERVAL} is not defined"
+  echo "ERROR: \${DATA_INTERVAL} is not defined."
   exit 1
 fi
 
 if [ ! "${CYCLE_INTERVAL}" ]; then
-  echo "ERROR: \${CYCLE_INTERVAL} is not defined"
+  echo "ERROR: \${CYCLE_INTERVAL} is not defined."
   exit 1
 fi
 
 if [ ! "${START_TIME}" ]; then
-  echo "ERROR: \${START_TIME} is not defined"
+  echo "ERROR: \${START_TIME} is not defined."
   exit 1
 fi
 
@@ -180,45 +172,45 @@ fi
 if [ ! ${#START_TIME} -e 10 ]; then
   start_time="${START_TIME:0:8} ${START_TIME:8:2}"
 else
-  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format" 
+  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format."
   exit 1
 fi
 start_time=`date -d "${start_time}"`
 end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
 if [ ! "${MAX_DOM}" ]; then
-  echo "ERROR: \${MAX_DOM} is not defined"
+  echo "ERROR: \${MAX_DOM} is not defined."
   exit 1
 fi
 
 if [ ! "${DOWN_DOM}" ]; then
-  echo "ERROR: \${DOWN_DOM} is not defined"
+  echo "ERROR: \${DOWN_DOM} is not defined."
   exit 1
 fi
 
 if [[ ${IF_CYCLING} != ${YES} && ${IF_CYCLING} != ${NO} ]]; then
-  echo "ERROR: \${IF_CYCLING} must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \${IF_CYCLING} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
 
 if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
-  echo "SST Update turned on"
+  echo "SST Update turned on."
   sst_update=1
 elif [[ ${IF_SST_UPDATE} = ${NO} ]]; then
   sst_update=0
 else
-  echo "ERROR: \${IF_SST_UPDATE} must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \${IF_SST_UPDATE} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
 
 if [[ ${IF_FEEDBACK} = ${YES} ]]; then
-  echo "Two-way WRF nesting is turned on"
+  echo "Two-way WRF nesting is turned on."
   feedback=1
 elif [[ ${IF_FEEDBACK} = ${NO} ]]; then
-  echo "One-way WRF nesting is turned on"
+  echo "One-way WRF nesting is turned on."
   feedback=0
 else
-  echo "ERROR: \${IF_FEEDBACK} must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \${IF_FEEDBACK} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
 
@@ -227,57 +219,59 @@ fi
 ##################################################################################
 # Below variables are defined in workflow variables
 #
-# WRF_ROOT       = Root directory of a "clean" WRF build WRF/run directory
-# EXPS_CONFIGS = Root directory containing sub-directories for namelists
-#                vtables, geogrid data, etc.
-# CYCLE_HOME   = Start time named directory for cycling data containing
-#                bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# DATA_ROOT    = Directory for all forcing data files, including grib files,
-#                obs files, etc.
-# MPIRUN         = MPI Command to execute WRF
-# WRF_PROC       = The total number of processes to run WRF with MPI
-# NIO_GROUPS     = Number of Quilting groups -- only used for NIO_TPG > 0
-# NIO_TPG        = Quilting tasks per group, set=0 if no quilting IO is to be used
+# WRF_ROOT   = Root directory of a "clean" WRF build WRF/run directory
+# EXP_CONFIG = Root directory containing sub-directories for namelists
+#              vtables, geogrid data, GSI fix files, etc.
+# CYCLE_HOME = Start time named directory for cycling data containing
+#              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
+# DATA_ROOT  = Directory for all forcing data files, including grib files,
+#              obs files, etc.
+# MPIRUN     = MPI Command to execute WRF
+# WRF_PROC   = The total number of processes to run WRF with MPI
+# NIO_GROUPS = Number of Quilting groups -- only used for NIO_TPG > 0
+# NIO_TPG    = Quilting tasks per group, set=0 if no quilting IO is to be used
 #
 ##################################################################################
 
 if [ ! "${WRF_ROOT}" ]; then
-  echo "ERROR: \${WRF_ROOT} is not defined"
+  echo "ERROR: \${WRF_ROOT} is not defined."
   exit 1
 fi
 
 if [ ! -d ${WRF_ROOT} ]; then
-  echo "ERROR: \${WRF_ROOT} directory ${WRF_ROOT} does not exist"
+  echo "ERROR: \${WRF_ROOT} directory ${WRF_ROOT} does not exist."
   exit 1
 fi
 
-if [ ! -d ${EXPS_CONFIGS} ]; then
-  echo "ERROR: \${EXPS_CONFIGS} directory ${EXPS_CONFIGS} does not exist"
+if [ ! -d ${EXP_CONFIG} ]; then
+  echo "ERROR: \${EXP_CONFIG} directory ${EXP_CONFIG} does not exist."
   exit 1
 fi
 
 if [ -z ${CYCLE_HOME} ]; then
-  echo "ERROR: \${CYCLE_HOME} directory name is not defined"
+  echo "ERROR: \${CYCLE_HOME} directory name is not defined."
   exit 1
 fi
 
 if [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: \${DATA_ROOT} directory ${DATA_ROOT} does not exist"
+  echo "ERROR: \${DATA_ROOT} directory ${DATA_ROOT} does not exist."
   exit 1
 fi
 
 if [ ! "${MPIRUN}" ]; then
-  echo "ERROR: \${MPIRUN} is not defined!"
+  echo "ERROR: \${MPIRUN} is not defined."
   exit 1
 fi
 
 if [ ! "${WRF_PROC}" ]; then
-  echo "ERROR: \${WRF_PROC} is not defined"
+  echo "ERROR: \${WRF_PROC} is not defined."
   exit 1
 fi
 
 if [ -z "${WRF_PROC}" ]; then
-  echo "ERROR: The variable \${WRF_PROC} must be set to the number of processors to run WRF"
+  msg="ERROR: The variable \${WRF_PROC} must be set to the number of "
+  msg+="processors to run WRF."
+  echo ${msg}
   exit 1
 fi
 
@@ -294,7 +288,7 @@ fi
 #
 ##################################################################################
 
-work_root=${INPUT_DATAROOT}/wrfprd/ens_${ens_n}
+work_root=${CYCLE_HOME}/wrfprd/ens_${ens_n}
 mkdir -p ${work_root}
 cd ${work_root}
 
@@ -302,7 +296,7 @@ wrf_dat_files=(${WRF_ROOT}/run/*)
 wrf_exe=${WRF_ROOT}/main/wrf.exe
 
 if [ ! -x ${wrf_exe} ]; then
-  echo "ERROR: ${wrf_exe} does not exist, or is not executable"
+  echo "ERROR: ${wrf_exe} does not exist, or is not executable."
   exit 1
 fi
 
@@ -322,12 +316,12 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   if [[ ${IF_CYCLING} = ${YES} && ${dmn} -lt ${DOWN_DOM} ]]; then
     if [[ ${dmn} = 1 ]]; then
       # obtain the input and boundary files from the lateral boundary update by WRFDA 
-      wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}
+      wrfda_outname=${CYCLE_HOME}/wrfdaprd/ens_${ens_n}
       wrfda_outname=${wrfda_outname}/lateral_bdy_update/wrfvar_output 
       ln -sf ${wrfda_outname} ./${wrfinput_name}
       if [ ! -r ./${wrfinput_name} ]; then
-        msg="ERROR: ${work_root}/${wrfinput_name} does not exist, or is not "
-	msg+="readable, check source ${wrfda_outname}"
+        msg="ERROR: wrfinput ${work_root}/${wrfinput_name} does not exist,"
+	msg+=" or is not readable, check source ${wrfda_outname}."
         echo ${msg}
         exit 1
       fi
@@ -336,27 +330,27 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       # link from GSI / EnKF analysis or downscaling start
       if [ ${ens_n} -eq 00 ]; then
 	# control solution is indexed 00, analyzed with GSI
-        gsi_outname=${INPUT_DATAROOT}/gsiprd/d0${dmn}
+        gsi_outname=${CYCLE_HOME}/gsiprd/d0${dmn}
 	gsi_outname=${gsi_outname}/wrfanl_ens_${ens_n}.${START_TIME}
       else
 	# ensemble perturbations are updated with EnKF step
-        gsi_outname=${INPUT_DATAROOT}/enkfprd/d0${dmn}/analysis.${iiimem}
+        gsi_outname=${CYCLE_HOME}/enkfprd/d0${dmn}/analysis.${ens_n}
       fi
       ln -sf ${gsi_outname} ./${wrfinput_name}
       if [ ! -r ./${wrfinput_name} ]; then
         msg="ERROR: ${work_root}/${wrfinput_name} does not exist, or is not "
-	msg+="readable, check source ${gsi_outname}"
+	msg+="readable, check source ${gsi_outname}."
         echo ${msg}
         exit 1
       fi
     fi
   else
     # else get initial conditions from real.exe
-    real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/${wrfinput_name}
+    real_outname=${CYCLE_HOME}/realprd/ens_${ens_n}/${wrfinput_name}
     ln -sf ${real_outname} ./
     if [ ! -r ./${wrfinput_name} ]; then
-      msg="ERROR: ${work_root}/${wrfinput_name} does not exist, or is not "
-      msg+="readable, check source ${real_outname}"
+      msg="ERROR: wrfinput ${work_root}/${wrfinput_name} does not exist,"
+      msg+=" or is not readable, check source ${real_outname}."
       echo ${msg}
       exit 1
     fi
@@ -364,11 +358,11 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   # NOTE: THIS LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
   if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
     wrflowinp_name=wrflowinp_d0${dmn}
-    real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/${wrflowinp_name}
+    real_outname=${CYCLE_HOME}/realprd/ens_${ens_n}/${wrflowinp_name}
     ln -sf ${real_outname} ./
     if [ ! -s ${wrflowinp_name} ]; then
-      msg="ERROR: ${work_root}/${wrflowinp_name} does not exist, or is not "
-      msg+="readable, check source ${real_outname}"
+      msg="ERROR: wrflwinp ${work_root}/${wrflowinp_name} does not exist,"
+      msg+=" or is not readable, check source ${real_outname}."
       echo ${msg}
     fi
   fi
@@ -377,44 +371,44 @@ done
 
 if [[ ${IF_CYCLING} = ${YES} ]]; then
   # Link the wrfbdy_d01 file from the WRFDA updated BCs
-  wrfda_outname=${INPUT_DATAROOT}/wrfdaprd/ens_${ens_n}
+  wrfda_outname=${CYCLE_HOME}/wrfdaprd/ens_${ens_n}
   wrfda_outname=${wrfda_outname}/lateral_bdy_update/wrfbdy_d01
   ln -sf ${wrfda_outname} ./wrfbdy_d01
   if [ ! -r ${work_root}/wrfbdy_d01 ]; then
     msg="ERROR: ${work_root}/wrfbdy_d01 does not exist, or is not readable, "
-    msg+="check source in ${wrfda_outname}"
+    msg+="check source in ${wrfda_outname}."
     echo ${msg}
     exit 1
   fi
 else
   # Link the wrfbdy_d01 file from real.exe
-  real_outname=${INPUT_DATAROOT}/realprd/ens_${ens_n}/wrfbdy_d01
+  real_outname=${CYCLE_HOME}/realprd/ens_${ens_n}/wrfbdy_d01
   ln -sf ${real_outname} ./wrfbdy_d01
   if [ ! -r ${work_root}/wrfbdy_d01 ]; then
     msg="ERROR: ${work_root}/wrfbdy_d01 does not exist, or is not readable, "
-    msg+="check source in ${real_outname}"
+    msg+="check source in ${real_outname}."
     echo 
     exit 1
   fi
 fi
 
 # Move existing rsl files to a subdir if there are any
-echo "Checking for pre-existing rsl files"
+echo "Checking for pre-existing rsl files."
 if [ -f "rsl.out.0000" ]; then
   rsldir=rsl.wrf.`ls -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | cut -d" " -f 6`
   mkdir ${rsldir}
-  echo "Moving pre-existing rsl files to ${rsldir}"
+  echo "Moving pre-existing rsl files to ${rsldir}."
   mv rsl.out.* ${rsldir}
   mv rsl.error.* ${rsldir}
 else
-  echo "No pre-existing rsl files were found"
+  echo "No pre-existing rsl files were found."
 fi
 
 ##################################################################################
 #  Build WRF namelist
 ##################################################################################
 # Copy the wrf namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-namelist=${STATIC_DATA}/namelists/namelist.${BKG_DATA}
+namelist=${EXP_CONFIG}/namelists/namelist.${BKG_DATA}
 cp ${namelist} ./namelist.input
 
 # Get the start and end time components
@@ -530,25 +524,25 @@ fi
 ##################################################################################
 # Print run parameters
 echo
-echo "ENS_N          = ${ENS_N}"
-echo "BKG_DATA       = ${BKG_DATA}"
-echo "WRF_ROOT       = ${WRF_ROOT}"
-echo "EXPS_CONFIGS   = ${EXPS_CONFIGS}"
-echo "CYCLE_HOME     = ${CYCLE_HOME}"
-echo "DATA_ROOT      = ${DATA_ROOT}"
+echo "ENS_N         = ${ENS_N}"
+echo "BKG_DATA      = ${BKG_DATA}"
+echo "WRF_ROOT      = ${WRF_ROOT}"
+echo "EXP_CONFIG    = ${EXP_CONFIG}"
+echo "CYCLE_HOME    = ${CYCLE_HOME}"
+echo "DATA_ROOT     = ${DATA_ROOT}"
 echo
-echo "FCST LENGTH    = ${FCST_LENGTH}"
-echo "FCST INTERVAL  = ${FCST_INTERVAL}"
-echo "MAX_DOM        = ${MAX_DOM}"
-echo "IF_CYCLING     = ${IF_CYCLING}"
-echo "IF_SST_UPDATE  = ${IF_SST_UPDATE}"
-echo "IF_FEEDBACK    = ${IF_FEEDBACK}"
+echo "FCST LENGTH   = ${FCST_LENGTH}"
+echo "FCST INTERVAL = ${FCST_INTERVAL}"
+echo "MAX_DOM       = ${MAX_DOM}"
+echo "IF_CYCLING    = ${IF_CYCLING}"
+echo "IF_SST_UPDATE = ${IF_SST_UPDATE}"
+echo "IF_FEEDBACK   = ${IF_FEEDBACK}"
 echo
-echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
-echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo "START TIME    = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
+echo "END TIME      = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
-echo "wrf started at ${now}"
+echo "wrf started at ${now}."
 
 ${MPIRUN} -n ${WRF_PROC} ${wrf_exe}
 
@@ -565,7 +559,7 @@ mv rsl.error.* ${rsldir}
 cp namelist.* ${rsldir}
 
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${wrf_exe} exited with status ${error}"
+  echo "ERROR: ${wrf_exe} exited with status ${error}."
   exit ${error}
 fi
 
@@ -574,8 +568,8 @@ nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE WRF/' | wc -l`
 (( ntotal=(WRF_PROC - NIO_GROUPS * NIO_TASKS_PER_GROUP ) * 2 ))
 echo "Found ${nsuccess} of ${ntotal} completion messages"
 if [ ${nsuccess} -ne ${ntotal} ]; then
-  msg="ERROR: ${wrf_exe} did not complet successfully, missing completion "
-  msg+="messages in RLS files"
+  msg="ERROR: ${wrf_exe} did not complete successfully, missing completion "
+  msg+="messages in rsl.* files."
   echo 
 fi
 
@@ -583,7 +577,7 @@ fi
 cycle_intv=`date +%H -d "${CYCLE_INTERVAL}"`
 datestr=`date +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
 new_bkg=${datestr}/bkg/ens_${ens_n}
-mkdir -p ${INPUT_DATAROOT}/../${new_bkg}
+mkdir -p ${CYCLE_HOME}/../${new_bkg}
 
 # Check for all wrfout files on FCST_INTERVAL and link files to
 # the appropriate bkg directory
@@ -594,11 +588,11 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     datestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
     if [ ! -s "wrfout_d0${dmn}_${datestr}" ]; then
       msg="WRF failed to complete, wrfout_d0${dmn}_${datestr} "
-      msg+="is missing or empty!"
+      msg+="is missing or empty."
       echo ${msg}
       exit 1
     else
-      ln -sfr wrfout_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
+      ln -sfr wrfout_d0${dmn}_${datestr} ${CYCLE_HOME}/../${new_bkg}/
     fi
 
     (( fcst += FCST_INTERVAL ))
@@ -606,11 +600,11 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 
   if [ ! -s "wrfrst_d0${dmn}_${datestr}" ]; then
     msg="WRF failed to complete, wrfrst_d0${dmn}_${datestr} is "
-    msg+="missing or empty!"
+    msg+="missing or empty."
     echo 
     exit 1
   else
-    ln -sfr wrfrst_d0${dmn}_${datestr} ${INPUT_DATAROOT}/../${new_bkg}/
+    ln -sfr wrfrst_d0${dmn}_${datestr} ${CYCLE_HOME}/../${new_bkg}/
   fi
 
   (( dmn += 1 ))
@@ -621,7 +615,7 @@ for file in ${wrf_dat_files[@]}; do
     rm -f `basename ${file}`
 done
 
-echo "wrf.sh completed successfully at `date`"
+echo "wrf.sh completed successfully at `date`."
 
 ##################################################################################
 # end

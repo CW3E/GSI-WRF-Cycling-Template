@@ -12,12 +12,10 @@
 # to match a companion major fork of the standard gsi.ksh
 # driver script provided in the GSI tutorials.
 #
-# One should write machine specific options for the WRF environment
-# in a WRF_constants.sh script to be sourced in the below.  Variables
+# One should write machine specific options for the WPS environment
+# in a WPS_constants.sh script to be sourced in the below.  Variable
 # aliases in this script are based on conventions defined in the
-# companion WRF_constants.sh with this driver.
-#
-# SEE THE README FOR FURTHER INFORMATION
+# WPS_constants.sh and the control flow .xml driving this script.
 #
 ##################################################################################
 # License Statement:
@@ -92,7 +90,7 @@
 set -x
 
 if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: ${CONSTANT} does not exist or is not executable"
+  echo "ERROR: ${CONSTANT} does not exist or is not executable."
   exit 1
 fi
 
@@ -110,13 +108,13 @@ fi
 # DATA_INTERVAL = Interval of input data in HH
 # START_TIME    = Simulation start time in YYMMDDHH
 # MAX_DOM       = Max number of domains to use in namelist settings
-# IF_SST_UPDATE = "Yes" or "No" switch to compute dynamic SST forcing, (must include auxinput4 path and
-#                  timing in namelist) case insensitive
+# IF_SST_UPDATE = "Yes" or "No" switch to compute dynamic SST forcing, (must
+#                 include auxinput4 path and timing in namelist) case insensitive
 #
 ##################################################################################
 
 if [ ! "${ENS_N}"  ]; then
-  echo "ERROR: \$ENS_N is not defined"
+  echo "ERROR: \${ENS_N} is not defined."
   exit 1
 fi
 
@@ -124,7 +122,7 @@ fi
 ens_n=`printf %02d $(( 10#${ENS_N} ))`
 
 if [ ! "${BKG_DATA}"  ]; then
-  echo "ERROR: \${BKG_DATA} is not defined"
+  echo "ERROR: \${BKG_DATA} is not defined."
   exit 1
 fi
 
@@ -136,17 +134,17 @@ if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
 fi
 
 if [ ! "${FCST_LENGTH}" ]; then
-  echo "ERROR: \${FCST_LENGTH} is not defined"
+  echo "ERROR: \${FCST_LENGTH} is not defined."
   exit 1
 fi
 
 if [ ! "${DATA_INTERVAL}" ]; then
-  echo "ERROR: \${DATA_INTERVAL} is not defined"
+  echo "ERROR: \${DATA_INTERVAL} is not defined."
   exit 1
 fi
 
 if [ ! "${START_TIME}" ]; then
-  echo "ERROR: \${START_TIME} is not defined!"
+  echo "ERROR: \${START_TIME} is not defined."
   exit 1
 fi
 
@@ -154,24 +152,24 @@ fi
 if [ ! ${#START_TIME} -e 10 ]; then
   start_time="${START_TIME:0:8} ${START_TIME:8:2}"
 else
-  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format" 
+  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format."
   exit 1
 fi
 start_time=`date -d "${start_time}"`
 end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
 if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \$MAX_DOM is not defined!"
+  echo "ERROR: \${MAX_DOM} is not defined."
   exit 1
 fi
 
 if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
-  echo "SST Update turned on"
+  echo "SST Update turned on."
   sst_update=1
 elif [[ ${IF_SST_UPDATE} = ${NO} ]]; then
   sst_update=0
 else
-  echo "ERROR: \$IF_SST_UPDATE must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \${IF_SST_UPDATE} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
 
@@ -180,56 +178,56 @@ fi
 ##################################################################################
 # Below variables are defined in workflow variables
 #
-# WRF_ROOT     = Root directory of a "clean" WRF build WRF/run directory
-# EXPS_CONFIGS = Root directory containing sub-directories for namelists
-#                vtables, geogrid data, etc.
-# CYCLE_HOME   = Start time named directory for cycling data containing
-#                bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# DATA_ROOT    = Directory for all forcing data files, including grib files,
-#                obs files, etc.
-# MPIRUN       = MPI Command to execute real 
-# WPS_PROC     = The total number of processes to run real.exe with MPI
+# WRF_ROOT   = Root directory of a "clean" WRF build WRF/run directory
+# EXP_CONFIG = Root directory containing sub-directories for namelists
+#              vtables, geogrid data, GSI fix files, etc.
+# CYCLE_HOME = Start time named directory for cycling data containing
+#              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
+# DATA_ROOT  = Directory for all forcing data files, including grib files,
+#              obs files, etc.
+# MPIRUN     = MPI Command to execute real 
+# WPS_PROC   = The total number of processes to run real.exe with MPI
 #
 ##################################################################################
 
 if [ ! "${WRF_ROOT}" ]; then
-  echo "ERROR: \${WRF_ROOT} is not defined"
+  echo "ERROR: \${WRF_ROOT} is not defined."
   exit 1
 fi
 
 if [ ! -d "${WRF_ROOT}" ]; then
-  echo "ERROR: \${WRF_ROOT} directory ${WRF_ROOT} does not exist"
+  echo "ERROR: \${WRF_ROOT} directory ${WRF_ROOT} does not exist."
   exit 1
 fi
 
-if [ ! -d ${EXPS_CONFIGS} ]; then
-  echo "ERROR: \${EXPS_CONFIGS} directory ${EXPS_CONFIGS} does not exist"
+if [ ! -d ${EXP_CONFIG} ]; then
+  echo "ERROR: \${EXP_CONFIG} directory ${EXP_CONFIG} does not exist."
   exit 1
 fi
 
 if [ -z ${CYCLE_HOME} ]; then
-  echo "ERROR: \${CYCLE_HOME} directory name is not defined"
+  echo "ERROR: \${CYCLE_HOME} directory name is not defined."
   exit 1
 fi
 
 if [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: \${DATA_ROOT} directory ${DATA_ROOT} does not exist"
+  echo "ERROR: \${DATA_ROOT} directory ${DATA_ROOT} does not exist."
   exit 1
 fi
 
 if [ ! "${MPIRUN}" ]; then
-  echo "ERROR: \${MPIRUN} is not defined!"
+  echo "ERROR: \${MPIRUN} is not defined."
   exit 1
 fi
 
 if [ ! "${WPS_PROC}" ]; then
-  echo "ERROR: \${WPS_PROC} is not defined"
+  echo "ERROR: \${WPS_PROC} is not defined."
   exit 1
 fi
 
 if [ -z "${WPS_PROC}" ]; then
   msg="ERROR: The variable \${WPS_PROC} must be set to the number"
-  msg+=" of processors to run WPS"
+  msg+=" of processors to run real."
   echo ${msg}
   exit 1
 fi
@@ -255,7 +253,7 @@ wrf_dat_files=(${WRF_ROOT}/run/*)
 real_exe=${WRF_ROOT}/main/real.exe
 
 if [ ! -x ${real_exe} ]; then
-  echo "ERROR: ${real_exe} does not exist, or is not executable"
+  echo "ERROR: ${real_exe} does not exist, or is not executable."
   exit 1
 fi
 
@@ -278,7 +276,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     realinput_name=met_em.d0${dmn}.${time_str}.nc
     wps_dir=${CYCLE_HOME}/wpsprd/ens_${ens_n}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then
-      echo "ERROR: Input file '${CYCLE_HOME}/${realinput_name}' is missing"
+      echo "ERROR: Input file '${CYCLE_HOME}/${realinput_name}' is missing."
       exit 1
     fi
     ln -sf ${wps_dir}/${realinput_name} ./
@@ -304,7 +302,7 @@ fi
 ##################################################################################
 # Copy the wrf namelist from the static dir
 # NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-namelist=${EXPS_CONFIGS}/namelists/namelist.${BKG_DATA}
+namelist=${EXP_CONFIG}/namelists/namelist.${BKG_DATA}
 cp ${namelist} ./namelist.input
 
 # Get the start and end time components
@@ -399,7 +397,7 @@ echo
 echo "ENS_N          = ${ENS_N}"
 echo "BKG_DATA       = ${BKG_DATA}"
 echo "WRF_ROOT       = ${WRF_ROOT}"
-echo "EXPS_CONFIGS   = ${EXPS_CONFIGS}"
+echo "EXP_CONFIG     = ${EXP_CONFIG}"
 echo "CYCLE_HOME     = ${CYCLE_HOME}"
 echo "DATA_ROOT      = ${DATA_ROOT}"
 echo
@@ -412,7 +410,7 @@ echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
 echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
-echo "real started at ${now}"
+echo "real started at ${now}."
 
 ${MPIRUN} -n ${WPS_PROC} ${real_exe}
 
@@ -429,17 +427,17 @@ mv rsl.error.* ${rsldir}
 cp namelist.* ${rsldir}
 
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${real_exe} exited with status ${error}"
+  echo "ERROR: ${real_exe} exited with status ${error}."
   exit ${error}
 fi
 
 # Look for successful completion messages in rsl files
 nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE REAL/' | wc -l`
 (( ntotal = WPS_PROC * 2 ))
-echo "Found ${nsuccess} of ${ntotal} completion messages"
+echo "Found ${nsuccess} of ${ntotal} completion messages."
 if [ ${nsuccess} -ne ${ntotal} ]; then
   msg="ERROR: ${real_exe} did not complete sucessfully, missing "
-  msg+="completion messages in RSL files"
+  msg+="completion messages in rsl.* files."
   echo ${msg}
   exit 1
 fi
@@ -447,7 +445,7 @@ fi
 # check to see if the BC output is generated
 bc_file=wrfbdy_d01
 if [ ! -s ${bc_file} ]; then
-  echo "${real_exe} failed to generate boundary conditions ${bc_file}"
+  echo "${real_exe} failed to generate boundary conditions ${bc_file}."
   exit 1
 fi
 
@@ -457,7 +455,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   ic_file=wrfinput_d0${dmn}
   if [ ! -s ${ic_file} ]; then
     msg="${real_exe} failed to generate initial conditions ${ic_file} "
-    msg+="for domain d0${dmn}"
+    msg+="for domain d0${dmn}."
     echo ${msg}
     exit 1
   fi
@@ -471,7 +469,7 @@ if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
     sst_file=wrflowinp_d0${dmn}
     if [ ! -s ${sst_file} ]; then
       msg="${real_exe} failed to generate SST update file ${sst_file} "
-      msg+="for domain d0${dmn}"
+      msg+="for domain d0${dmn}."
       echo ${msg}
       exit 1
     fi
@@ -487,7 +485,7 @@ for file in ${wrf_dat_files[@]}; do
     rm -f `basename ${file}`
 done
 
-echo "real.sh completed successfully at `date`"
+echo "real.sh completed successfully at `date`."
 
 ##################################################################################
 # end
