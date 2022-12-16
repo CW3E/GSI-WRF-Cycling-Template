@@ -62,8 +62,6 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.sh">
-  <!ENTITY FIX_ROOT            "&EXP_CONFIG;/fix">
-  <!ENTITY IF_SATRAD           "Yes">
   <!ENTITY MAX_BC_LOOP         "2">
   <!-- END GSI SETTINGS -->
  
