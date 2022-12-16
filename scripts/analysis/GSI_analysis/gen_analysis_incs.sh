@@ -46,7 +46,7 @@ set -x
 USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien"
 
 # define control flow to analyze 
-CTR_FLW="3dvar_control_run"
+CTR_FLW="3dvar_treatment_run"
 
 # define date range and increments
 START_TIME=2021012200
@@ -63,7 +63,7 @@ VERT_INT=1
 DMN=1
 
 # set local environment for ncl and dependencies
-eval `module load ncl_ncarg`
+module load ncl_ncarg
 
 #####################################################
 # Execute analyses
@@ -71,7 +71,7 @@ eval `module load ncl_ncarg`
 # define derived data paths
 proj_home=${USR_HME}/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR
 work_root=${proj_home}/data/analysis/${CTR_FLW}/GSI_analysis/analysis_incs
-data_root=${proj_home}/data/cycle_io/${CTR_FLW}
+data_root=${proj_home}/data/simulation_io/${CTR_FLW}
 
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
 if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then

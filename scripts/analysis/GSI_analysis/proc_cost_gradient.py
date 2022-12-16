@@ -56,7 +56,7 @@ import os
 CTR_FLW = '3dvar_treatment_run'
 
 # starting date and zero hour of data
-START_DATE = '2021-01-20T00:00:00'
+START_DATE = '2021-01-22T00:00:00'
 
 # final date and zero hour of data
 END_DATE = '2021-01-28T12:00:00'
@@ -71,8 +71,8 @@ MAX_DOM = 1
 # Process data
 ##################################################################################
 # define derived data paths
-data_root = PROJ_ROOT + '/data/cycle_io' + '/' + CTR_FLW
-out_dir = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
+data_root = PROJ_ROOT + '/data/simulation_io/' + CTR_FLW
+out_dir = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/GSI_analysis'
 os.system('mkdir -p ' + out_dir)
 
 # convert to date times
