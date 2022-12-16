@@ -54,13 +54,13 @@ import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 from matplotlib.ticker import PercentFormatter
-from gsi_py_utilities import PROJ_ROOT
+from gsi_py_utilities import USR_HME
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3dvar_control_run'
+CTR_FLW = '3dvar_treatment'
 
 # starting date and zero hour of data
 START_DATE = '2021-01-22T00:00:00'
@@ -78,7 +78,7 @@ FORT='201'
 # Begin plotting
 ##################################################################################
 # define derived data paths
-data_root = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW
+data_root = USR_HME + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
 in_path = data_root + '/GSI_fort_' + FORT + '_' + START_DATE + '_to_' +\
           END_DATE + '.bin'
 out_path = data_root + '/GSI_fort_' + FORT + '_' + str(DOM) + '_' +\

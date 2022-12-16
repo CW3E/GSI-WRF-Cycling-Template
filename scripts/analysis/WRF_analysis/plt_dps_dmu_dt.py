@@ -56,19 +56,19 @@ import matplotlib
 # use this setting on COMET / Skyriver for x forwarding
 matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
-from py_plt_utilities import PROJ_ROOT
+from py_plt_utilities import USR_HME
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3denvar_downscale'
+CTR_FLW = '3dvar_control'
 
 # starting date and zero hour of data
-START_DATE = '2019-02-07T18:00:00'
+START_DATE = '2021-01-21T18:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-08T06:00:00'
+END_DATE = '2021-01-28T18:00:00'
 
 # define domain to plot
 DOM = 1
@@ -77,9 +77,11 @@ DOM = 1
 # Begin plotting
 ##################################################################################
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW
-in_path = data_root + '/WRF_dps_dmu_dt_' + START_DATE + '_to_' + END_DATE + '.bin'
-out_path = data_root + '/WRF_spin_up_' + START_DATE + '_to_' + END_DATE + '.png'
+data_root = USR_HME + '/data/analysis/' + CTR_FLW + '/WRF_analysis'
+in_path = data_root + '/' + CTR_FLW + '_WRF_dps_dmu_dt_' + START_DATE + '_to_' +\
+          END_DATE + '.bin'
+out_path = data_root + '/' + CTR_FLW + '_WRF_spin_up_' + START_DATE + '_to_' +\
+          END_DATE + '.png'
 
 # load and plot data
 f = open(in_path, 'rb')

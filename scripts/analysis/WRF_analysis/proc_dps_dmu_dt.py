@@ -51,19 +51,19 @@ import copy
 import glob
 from datetime import datetime as dt
 from datetime import timedelta
-from py_plt_utilities import STR_INDT, get_anls, PROJ_ROOT
+from py_plt_utilities import STR_INDT, get_anls, USR_HME
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3denvar_downscale'
+CTR_FLW = '3dvar_control'
 
 # starting date and zero hour of data
-START_DATE = '2019-02-07T18:00:00'
+START_DATE = '2021-01-21T18:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-08T06:00:00'
+END_DATE = '2021-01-28T18:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 6
@@ -75,15 +75,15 @@ MAX_DOM = 1
 # Process data
 ##################################################################################
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/cycle_io/' + CTR_FLW
-out_dir = PROJ_ROOT + '/data/analysis/' + CTR_FLW
+data_root = USR_HME + '/data/simulation_io/' + CTR_FLW
+out_dir = USR_HME + '/data/analysis/' + CTR_FLW + '/WRF_analysis'
 
 # convert to date times
 start_date = dt.fromisoformat(START_DATE)
 end_date = dt.fromisoformat(END_DATE)
 
 # define the output name
-out_path = out_dir + '/WRF_dps_dmu_dt_' + START_DATE +\
+out_path = out_dir + '/' + CTR_FLW + '_WRF_dps_dmu_dt_' + START_DATE +\
            '_to_' + END_DATE + '.bin'
 
 # generate the date range for the analyses

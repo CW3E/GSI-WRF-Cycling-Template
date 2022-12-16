@@ -46,20 +46,20 @@ import pandas as pd
 import pickle
 import copy
 from datetime import datetime as dt
-from gsi_py_utilities import PROJ_ROOT, STR_INDT, get_anls
+from gsi_py_utilities import USR_HME, STR_INDT, get_anls
 import os
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3dvar_treatment_run'
+CTR_FLW = '3dvar_control'
 
 # starting date and zero hour of data
 START_DATE = '2021-01-22T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2021-01-28T12:00:00'
+END_DATE = '2021-01-28T18:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 6
@@ -71,8 +71,8 @@ MAX_DOM = 1
 # Process data
 ##################################################################################
 # define derived data paths
-data_root = PROJ_ROOT + '/data/simulation_io/' + CTR_FLW
-out_dir = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/GSI_analysis'
+data_root = USR_HME + '/data/simulation_io/' + CTR_FLW
+out_dir = USR_HME + '/data/analysis/' + CTR_FLW + '/GSI_analysis'
 os.system('mkdir -p ' + out_dir)
 
 # convert to date times

@@ -100,11 +100,11 @@ color_map = sns.hls_palette(n_colors=40, h=0.68, s=0.9, l=0.55,
 cnorm = nrm(vmin=iwv_min, vmax=iwv_max)
 
 # extract iwv
+iwv_d01 = data['d01']['iwv'].flatten()
 if MAX_DOM == 2:
     iwv_d02 = data['d02']['iwv'].flatten()
     iwvs = [iwv_d01, iwv_d02]
 else:
-    iwv_d01 = data['d01']['iwv'].flatten()
     iwvs = [iwv_d01]
 
 # find the index of values that lie below the iwv_min

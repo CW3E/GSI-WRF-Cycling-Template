@@ -97,11 +97,11 @@ cnorm = nrm(vmin=ivtm_min, vmax=ivtm_max)
 color_map = sns.color_palette('flare', as_cmap=True)
 
 # extract ivtm
+ivtm_d01 = data['d01']['ivtm'].flatten()
 if MAX_DOM == 2:
     ivtm_d02 = data['d02']['ivtm'].flatten()
     ivtms = [ivtm_d01, ivtm_d02]
 else:
-    ivtm_d01 = data['d01']['ivtm'].flatten()
     ivtms = [ivtm_d01]
 
 # find the index of values that lie below the ivtm_min

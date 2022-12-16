@@ -54,19 +54,19 @@ import matplotlib
 # use this setting on COMET / Skyriver for x forwarding
 matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
-from gsi_py_utilities import PROJ_ROOT
+from gsi_py_utilities import USR_HME
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3dvar_treatment_run'
+CTR_FLW = '3dvar_control'
 
 # starting date and zero hour of data
 START_DATE = '2021-01-22T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2021-01-028T12:00:00'
+END_DATE = '2021-01-28T18:00:00'
 
 # define domain to plot
 DOM = 1
@@ -75,7 +75,7 @@ DOM = 1
 # Begin plotting
 ##################################################################################
 # define derived data paths
-data_root = PROJ_ROOT + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
+data_root = USR_HME + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
 in_path = data_root + '/GSI_cost_grad_anl_' + START_DATE + '_to_' +\
           END_DATE + '.bin'
 
