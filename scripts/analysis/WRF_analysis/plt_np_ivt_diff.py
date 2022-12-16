@@ -41,20 +41,25 @@ import cartopy.feature as cfeature
 import numpy as np
 import pickle
 import os
-import copy
 from datetime import datetime as dt
 from datetime import timedelta
-from py_plt_utilities import PROJ_ROOT
+from py_plt_utilities import USR_HME
 
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # define control flows to analyze, first is control second is treatment 
-CTR_FLW1 = 'deterministic_forecast_control_run'
-CTR_FLW2 = 'deterministic_forecast_treatment_run'
+CTR_ROOT = 'deterministic_forecast'
+CTR_FLW1 = CTR_ROOT + '_control'
+CTR_FLW2 = CTR_ROOT + '_treatment'
+
+#CTR_FLW1 = CTR_ROOT + '_control'
+#CTR_FLW2 = CTR_ROOT + '_control'
+#
+#CTR_FLW1 = CTR_ROOT + '_treatment'
+#CTR_FLW2 = CTR_ROOT + '_treatment'
 
 # start date time of WRF forecasts 1 and 2
-# set START_DT1 to 'era5' to compare versus the ERA5 reanalysis
 START_DT1 = '2021-01-23_00:00:00' 
 START_DT2 = '2021-01-23_00:00:00' 
 
@@ -68,18 +73,13 @@ MAX_DOM = 1
 # Begin plotting
 ##################################################################################
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/analysis'
+data_root = USR_HME + '/data/analysis'
 
 # convert from iso times
 anl_dt = dt.fromisoformat(ANL_DT)
-if START_DT1 == 'era5':
-    start_dt1 = START_DT1
-    in_path1 = data_root + '/' + CTR_FLW1 + '/' + 'WRF_analysis' +\
-            '/' + start_dt1
-else:
-    start_dt1 = dt.fromisoformat(START_DT1)
-    in_path1 = data_root + '/' + CTR_FLW1 + '/' + 'WRF_analysis' +\
-            '/' + start_dt1.strftime('%Y%m%d%H')
+start_dt1 = dt.fromisoformat(START_DT1)
+in_path1 = data_root + '/' + CTR_FLW1 + '/' + 'WRF_analysis' +\
+        '/' + start_dt1.strftime('%Y%m%d%H')
 
 start_dt2 = dt.fromisoformat(START_DT2)
 in_path2 = data_root + '/' + CTR_FLW2 + '/' + 'WRF_analysis' +\
@@ -107,8 +107,8 @@ cart_proj = dataf1['cart_proj']
 fig = plt.figure(figsize=(11.25,8.63))
 
 # Set the GeoAxes to the projection used by WRF
-ax0 = fig.add_axes([.86, .10, .05, .8])
-ax1 = fig.add_axes([.05, .10, .8, .8], projection=cart_proj)
+ax0 = fig.add_axes([.86, .07, .05, .8])
+ax1 = fig.add_axes([.05, .07, .8, .8], projection=cart_proj)
 
 # unpack variables and compute the divergence from f2
 f1_d01 = dataf1['d01']['ivtm'].flatten()
@@ -165,7 +165,7 @@ ax1.scatter(x=dataf1['d01']['lons'], y=dataf1['d01']['lats'],
             cmap=color_map,
             norm=cnorm,
             marker='.',
-            s=9,
+            s=16,
             edgecolor='none',
             transform=crs.PlateCarree(),
            )
@@ -237,35 +237,34 @@ ax1.set_ylim(dataf1['d01']['y_lim'])
 ax1.gridlines(color='black', linestyle='dotted')
 
 # make title and save figure
-d2 = start_dt2.strftime('%Y-%m-%d_%H') 
+d1 = start_dt1.strftime('%Y-%m-%dT%H') 
+d2 = start_dt2.strftime('%Y-%m-%dT%H') 
 
-if START_DT1 == 'era5':
-    d1 = 'ERA5 reanalysis'
-    out_name = out_path + '/' + anl_dt.strftime('%Y-%m-%d_%H') +\
-            '_ivtm_' +\
-            d2 + '_' + CTR_FLW2 +\
-            '_minus_' +\
-            START_DT1 + '_' + CTR_FLW1 +\
-            '.png' 
+ctr_flw1 = CTR_FLW1.split('_')
+ctr_flw2 = CTR_FLW2.split('_')
 
-else:
-    d1 = start_dt1.strftime('%Y-%m-%d_%H') 
-    out_name = out_path + '/' +  anl_dt.strftime('%Y-%m-%d_%H') +\
-            '_ivtm_' +\
-            d2 + '_' + CTR_FLW2 +\
-            '_minus_' +\
-            d1 + '_' + CTR_FLW1 +\
-            '.png' 
+out_name = out_path + '/' +  anl_dt.strftime('%Y-%m-%dT%H') +\
+        '_ivtm_' +\
+        d2 + '_' + CTR_FLW2 +\
+        '_minus_' +\
+        d1 + '_' + CTR_FLW1 +\
+        '.png' 
 
-title1 = 'ivtm - ' + anl_dt.strftime('%Y-%m-%d_%H') 
+title1 = 'ivtm - valid date ' + anl_dt.strftime('%Y-%m-%dT%H') 
+title2 = ''
+for i in range(len(ctr_flw2)):
+    title2 += ctr_flw2[i] + ' '
+title2 = title2 + ' fzh - ' + d2
+title3 ='minus'
+title4 = ''
+for i in range(len(ctr_flw1)):
+    title4 += ctr_flw1[i] + ' '
+title4 = title4 + ' fzh - ' + d1
 
-if START_DT1 == 'era5':
-    title2 = 'fzh - ' + d2 + ' minus ' + d1
-else:
-    title2 = 'fzh - ' + d2 + ' minus fzh -' + d1
-
-plt.figtext(.50, .96, title1, horizontalalignment='center', verticalalignment='center', fontsize=22)
-plt.figtext(.50, .91, title2, horizontalalignment='center', verticalalignment='center', fontsize=22)
+plt.figtext(.50, .03, title1, horizontalalignment='center', verticalalignment='center', fontsize=22)
+plt.figtext(.50, .98, title2, horizontalalignment='center', verticalalignment='center', fontsize=20)
+plt.figtext(.50, .94, title3, horizontalalignment='center', verticalalignment='center', fontsize=20)
+plt.figtext(.50, .90, title4, horizontalalignment='center', verticalalignment='center', fontsize=20)
 plt.savefig(out_name)
 plt.show()
 

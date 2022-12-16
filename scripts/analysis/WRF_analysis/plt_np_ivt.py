@@ -43,19 +43,19 @@ import pickle
 import os
 from datetime import datetime as dt
 from datetime import timedelta
-from py_plt_utilities import PROJ_ROOT
+from py_plt_utilities import USR_HME
 
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3dvar_treatment_run'
+CTR_FLW = 'deterministic_forecast_treatment'
 
 # start date time of WRF forecast
 START_DT = '2021-01-23_00:00:00'
 
 # valid date time for analysis
-ANL_DT = '2021-01-23_00:00:00'
+ANL_DT = '2021-01-28_00:00:00'
 
 # max domain to plot
 MAX_DOM = 1
@@ -68,7 +68,7 @@ anl_dt = dt.fromisoformat(ANL_DT)
 start_dt = dt.fromisoformat(START_DT)
 
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/WRF_analysis'
+data_root = USR_HME + '/data/analysis/' + CTR_FLW + '/WRF_analysis'
 in_path = data_root + '/' + start_dt.strftime('%Y%m%d%H')
 out_path = data_root + '/ivt_plots'
 os.system('mkdir -p ' + out_path)
@@ -85,10 +85,10 @@ cart_proj = data['cart_proj']
 fig = plt.figure(figsize=(11.25,8.63))
 
 # Set the GeoAxes to the projection used by WRF
-ax0 = fig.add_axes([.86, .10, .05, .8])
-ax1 = fig.add_axes([.05, .10, .8, .8], projection=cart_proj)
+ax0 = fig.add_axes([.86, .08, .05, .8])
+ax1 = fig.add_axes([.05, .08, .8, .8], projection=cart_proj)
 ax2 = fig.add_axes(ax1.get_position(), frameon=False)
-ax3 = fig.add_axes([0.0, .05, .8, .05], frameon=False)
+ax3 = fig.add_axes([0.0, .03, .8, .05], frameon=False)
 
 # hard set the ivt magnitude threshold to target ARs
 ivtm_min = 250
@@ -219,7 +219,7 @@ ax1.add_feature(cfeature.STATES)
 ax1.add_feature(cfeature.BORDERS)
 
 # Add ivt u / v directional barbs plotting every w_kth point above the threshold
-w_k = 1000
+w_k = 400
 lats = np.array(data['d01']['lats'])
 lons = np.array(data['d01']['lons'])
 ivtx = lons.flatten()
@@ -302,17 +302,17 @@ ax2.set_position(ax1.get_position())
 ax1.gridlines(color='black', linestyle='dotted')
 
 # make title and save figure
-title1 = anl_dt.strftime('%Y-%m-%d_%H') + r' - IVT $kg $ $m^{-1} s^{-1}$ ' +\
+title1 = anl_dt.strftime('%Y-%m-%dT%H') + r' - IVT $kg $ $m^{-1} s^{-1}$ ' +\
         c_pl + ' ' + c_var + ' contours'
-title2 = 'fzh - ' + start_dt.strftime('%Y-%m-%d_%H')
+title2 = 'fzh - ' + start_dt.strftime('%Y-%m-%dT%H')
 
 plt.figtext(.50, .96, title1, horizontalalignment='center',
         verticalalignment='center', fontsize=22)
 plt.figtext(.50, .91, title2, horizontalalignment='center',
         verticalalignment='center', fontsize=22)
 
-fig.savefig(out_path + '/' + anl_dt.strftime('%Y-%m-%d_%H') + '_fzh_' +\
-        start_dt.strftime('%Y-%m-%d_%H') + '_ivt_' + c_var + '.png')
+fig.savefig(out_path + '/' + CTR_FLW + '_' + anl_dt.strftime('%Y-%m-%dT%H') +\
+        '_fzh_' + start_dt.strftime('%Y-%m-%dT%H') + '_ivt_' + c_var + '.png')
 plt.show()
 
 ##################################################################################

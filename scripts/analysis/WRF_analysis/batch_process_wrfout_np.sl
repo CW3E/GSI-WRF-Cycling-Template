@@ -34,8 +34,7 @@
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # set the control flow, git clone and working directory
-USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien"
-PRJ_DIR="${USR_HME}/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR"
+USR_HME="/cw3e/mead/projects/cwp106/scratch"
 CTR_FLW="deterministic_forecast_treatment_run"
 
 # define date range and increments for start time of simulations
@@ -66,38 +65,27 @@ conda activate wrf_py
 echo `conda list`
 
 # define derived paths
-wrk_dir="${PRJ_DIR}/scripts/analysis/WRF_analysis"
-echo "Work directory $wrk_dir"
+wrk_dir="${USR_HME}/scripts/analysis/WRF_analysis"
+echo "Work directory ${wrk_dir}"
 
-in_root="${PRJ_DIR}/data/simulation_io/${CTR_FLW}"
-echo "Data input root $in_root"
+in_root="${USR_HME}/data/simulation_io/${CTR_FLW}"
+echo "Data input root ${in_root}"
 
-out_root="${PRJ_DIR}/data/analysis/${CTR_FLW}/WRF_analysis"
-echo "Data output root $out_root"
+out_root="${USR_HME}/data/analysis/${CTR_FLW}/WRF_analysis"
+echo "Data output root ${out_root}"
 
 # create arrays to store the date dependent paths
 in_paths=()
 out_paths=()
 
-# Convert START_TIME from 'YYYYMMDDHH' format to start_time in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
-if [ `echo "${START_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  start_time=`echo "${START_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
-else
-  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
-  exit 1
-fi
-
+# Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format
+start_time="${START_TIME:0:8} ${START_TIME:8:2}"
 start_time=`date -d "${start_time}"`
 
-# Convert END_TIME from 'YYYYMMDDHH' format to end_time in isoformat YYYY:MM:DD_HH
-if [ `echo "${END_TIME}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  end_time=`echo "${END_TIME}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
-else
-  echo "ERROR: end time, '${END_TIME}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
-  exit 1
-fi
-
+# Convert END_TIME from 'YYYYMMDDHH' format to start_time Unix date format
 # end time is used a loop condition for date range
+end_time="${END_TIME:0:8} ${END_TIME:8:2}"
+end_time=`date -d "${end_time}"`
 end_time=`date +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
 
 # loop through the date range and construct the IO paths

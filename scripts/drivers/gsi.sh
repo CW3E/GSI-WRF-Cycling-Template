@@ -513,7 +513,7 @@ while [ ${dmn} -le ${max_dom} ]; do
     #
     #   berror    = Forecast model background error statistics
     #   oberror   = Conventional obs error file
-    #   anavinfo  =
+    #   anavinfo  = Information file to set control and analysis variables
     #   specoef   = CRTM spectral coefficients
     #   trncoef   = CRTM transmittance coefficients
     #   emiscoef  = CRTM coefficients for IR sea surface emissivity model
