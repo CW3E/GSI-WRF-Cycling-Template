@@ -14,14 +14,14 @@
   <!-- END USER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
-  <!ENTITY FLOW_NAME           "deterministic_forecast">
+  <!ENTITY EXP_NAME           "deterministic_forecast_treatment_run">
   <!ENTITY PROJ_HOME           "&WORK_SPACE;/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR">
   <!ENTITY SCRIPTS             "&PROJ_HOME;/scripts">
   <!ENTITY DRIVERS             "&SCRIPTS;/drivers">
   <!ENTITY ENVIRONMENTS        "&SCRIPTS;/environments">
   <!ENTITY PROJ_DATA           "&PROJ_HOME;/data">
-  <!ENTITY LOG                 "&PROJ_DATA;/log/&FLOW_NAME;">
-  <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/forecast_io/&FLOW_NAME;">
+  <!ENTITY LOG                 "&PROJ_DATA;/log/&EXP_NAME;">
+  <!ENTITY INPUT_DATAROOT      "&PROJ_DATA;/simulation_io/&EXP_NAME;">
   <!ENTITY STATIC_DATA         "&PROJ_DATA;/static">
   <!-- END WORKFLOW SETTINGS -->
 
@@ -35,8 +35,8 @@
   <!-- CYCLING SETTINGS -->
   <!-- Forecasts with same end-time but different start time are performed as unique workflows currently -->
   <!-- I.e., CYCLE_START=CYCLE_END, and a single cycle with unique forecast length is defined -->
-  <!ENTITY CYCLE_START         "202101220000">
-  <!ENTITY CYCLE_END           "202101220000">
+  <!ENTITY CYCLE_START         "202101280000">
+  <!ENTITY CYCLE_END           "202101280000">
   <!ENTITY CYCLE_INTERVAL      "01:00:00">
   <!-- END CYCLING SETTINGS -->
 
@@ -49,7 +49,7 @@
   <!ENTITY WRF_CONSTANT        "&ENVIRONMENTS;/WRF_constants.sh">
   <!ENTITY WRF_CTR_DOM         "1"> <!-- Max domain for control simulation -->
   <!ENTITY WRF_DOWN_DOM        "1"> <!-- Domain index to have ICs downscaled from d01 -->
-  <!ENTITY FCST_LENGTH         "168">
+  <!ENTITY FCST_LENGTH         "24">
   <!ENTITY FCST_INTERVAL       "01">
   <!ENTITY CTR_DATA_INTERVAL   "03"> <!-- This setting is applied to all WRF preprocessing and WRF control run -->
   <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->

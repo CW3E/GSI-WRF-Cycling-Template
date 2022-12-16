@@ -60,13 +60,13 @@ from gsi_py_utilities import PROJ_ROOT
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3denvar_downscale'
+CTR_FLW = '3dvar_control_run'
 
 # starting date and zero hour of data
-START_DATE = '2019-02-08T00:00:00'
+START_DATE = '2021-01-22T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2019-02-08T06:00:00'
+END_DATE = '2021-01-28T18:00:00'
 
 # define domain to plot
 DOM = 1

@@ -41,12 +41,12 @@ USR_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien'
 RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
 # name of .xml workflow WITHOUT the extension
-CTR_FLW = '3dvar'
+#CTR_FLW = '3dvar'
 #CTR_FLW = '3denvar_wps_perts'
 #CTR_FLW = '3denvar_enkf'
 #CTR_FLW = '3denvar_downscale'
 #CTR_FLW = 'ensemble_forecast'
-#CTR_FLW = 'deterministic_forecast'
+CTR_FLW = 'deterministic_forecast'
 
 ##################################################################################
 # Derived paths

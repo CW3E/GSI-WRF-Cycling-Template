@@ -36,21 +36,21 @@
 # set the control flow, git clone and working directory
 USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien"
 PRJ_DIR="${USR_HME}/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR"
-CTR_FLW="3dvar_treatment_run"
+CTR_FLW="deterministic_forecast_treatment_run"
 
 # define date range and increments for start time of simulations
 START_TIME=2021012200
 END_TIME=2021012800
-CYCLE_INT=6
+CYCLE_INT=24
 
 # starting forecast hour to process
 FCST_MIN=0
 
 # interval of forecast data outputs after FCST_MIN to process
-FCST_INT=6
+FCST_INT=24
 
 # max forecast hour to process
-FCST_MAX=6
+FCST_MAX=120
 
 ##################################################################################
 # Contruct job array and environment for submission
@@ -69,7 +69,7 @@ echo `conda list`
 wrk_dir="${PRJ_DIR}/scripts/analysis/WRF_analysis"
 echo "Work directory $wrk_dir"
 
-in_root="${PRJ_DIR}/data/${CTR_FLW}"
+in_root="${PRJ_DIR}/data/simulation_io/${CTR_FLW}"
 echo "Data input root $in_root"
 
 out_root="${PRJ_DIR}/data/analysis/${CTR_FLW}/WRF_analysis"

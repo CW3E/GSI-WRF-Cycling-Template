@@ -45,14 +45,13 @@ import copy
 from datetime import datetime as dt
 from datetime import timedelta
 from py_plt_utilities import PROJ_ROOT
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # define control flows to analyze, first is control second is treatment 
-CTR_FLW1 = '3dvar_control_run'
-CTR_FLW2 = '3dvar_treatment_run'
+CTR_FLW1 = 'deterministic_forecast_control_run'
+CTR_FLW2 = 'deterministic_forecast_treatment_run'
 
 # start date time of WRF forecasts 1 and 2
 # set START_DT1 to 'era5' to compare versus the ERA5 reanalysis
@@ -60,7 +59,7 @@ START_DT1 = '2021-01-23_00:00:00'
 START_DT2 = '2021-01-23_00:00:00' 
 
 # valid date time for analysis
-ANL_DT = '2021-01-23_00:00:00'
+ANL_DT = '2021-01-28_00:00:00'
 
 # max domain to plot
 MAX_DOM = 1
@@ -72,7 +71,6 @@ MAX_DOM = 1
 data_root = PROJ_ROOT + '/data/analysis'
 
 # convert from iso times
-ipdb.set_trace()
 anl_dt = dt.fromisoformat(ANL_DT)
 if START_DT1 == 'era5':
     start_dt1 = START_DT1
@@ -136,22 +134,22 @@ class MidpointNormalize(nrm):
         return np.ma.masked_array(np.interp(value, x, y))
 
 # hard code the scale for intercomparability
-abs_scale = 400
+#abs_scale = 400
 
-## make the scales of d01 / d02 equivalent in color map
-#ipdb.set_trace()
-#scale = np.append(h_diff_d01.data)
-#if MAX_DOM == 2:
-#    scale = np.append(h_diff_d02.data)
-#
-#scale = scale[~np.isnan(scale.data)]
-#
-## find the max / min value over the inner 100 - alpha percentile range of the data
-#alpha = 1
-#max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
-#
-## find the largest magnitude divergence of the above data
-#abs_scale = np.max([abs(max_scale), abs(min_scale)])
+# make the scales of d01 / d02 equivalent in color map
+scale = np.array([])
+scale = np.append(scale, h_diff_d01.data)
+if MAX_DOM == 2:
+    scale = np.append(scale, h_diff_d02.data)
+
+scale = scale[~np.isnan(scale.data)]
+
+# find the max / min value over the inner 100 - alpha percentile range of the data
+alpha = 1
+max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
+
+# find the largest magnitude divergence of the above data
+abs_scale = np.max([abs(max_scale), abs(min_scale)])
 
 # make a symmetric color map about zero
 cnorm = nrm(vmin=-abs_scale, vmax=abs_scale)
