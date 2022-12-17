@@ -49,6 +49,7 @@ from py_plt_utilities import USR_HME
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # define control flow to analyze 
+#CTR_FLW = 'deterministic_forecast_control'
 CTR_FLW = 'deterministic_forecast_treatment'
 
 # start date time of WRF forecast

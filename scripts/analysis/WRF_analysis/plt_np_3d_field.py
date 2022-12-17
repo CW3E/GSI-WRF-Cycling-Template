@@ -60,8 +60,8 @@ ANL_DT = '2021-01-28_00:00:00'
 MAX_DOM = 1
 
 # heat plot pressure level and variable
-H_PL = 925
-H_VAR = 'temp'
+H_PL = 500
+H_VAR = 'rh'
 
 # contour plot pressure level and variable, leave pressure level '' for sea level
 C_PL = ''

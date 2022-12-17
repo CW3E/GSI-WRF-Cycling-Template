@@ -34,19 +34,19 @@
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # set the control flow, git clone and working directory
-USR_HME="/cw3e/mead/projects/cwp106/scratch"
-CTR_FLW="deterministic_forecast_treatment_run"
+USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
+CTR_FLW="deterministic_forecast_treatment"
 
 # define date range and increments for start time of simulations
 START_TIME=2021012200
-END_TIME=2021012800
+END_TIME=2021012300
 CYCLE_INT=24
 
 # starting forecast hour to process
 FCST_MIN=0
 
 # interval of forecast data outputs after FCST_MIN to process
-FCST_INT=24
+FCST_INT=12
 
 # max forecast hour to process
 FCST_MAX=120

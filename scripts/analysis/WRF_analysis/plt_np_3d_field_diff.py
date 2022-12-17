@@ -50,18 +50,18 @@ from py_plt_utilities import USR_HME
 ##################################################################################
 # define control flows to analyze, first is control second is treatment 
 CTR_ROOT = '3dvar'
-#CTR_FLW1 = CTR_ROOT + '_control'
-#CTR_FLW2 = CTR_ROOT + '_treatment'
+CTR_FLW1 = CTR_ROOT + '_control'
+CTR_FLW2 = CTR_ROOT + '_treatment'
 
 #CTR_FLW1 = CTR_ROOT + '_control'
 #CTR_FLW2 = CTR_ROOT + '_control'
 
-CTR_FLW1 = CTR_ROOT + '_treatment'
-CTR_FLW2 = CTR_ROOT + '_treatment'
+#CTR_FLW1 = CTR_ROOT + '_treatment'
+#CTR_FLW2 = CTR_ROOT + '_treatment'
 
 # start date time of WRF forecasts 1 and 2
 START_DT1 = '2021-01-28_00:00:00' 
-START_DT2 = '2021-01-27_18:00:00' 
+START_DT2 = '2021-01-28_00:00:00' 
 
 # valid date time for analysis
 ANL_DT = '2021-01-28_00:00:00'
@@ -71,7 +71,7 @@ MAX_DOM = 1
 
 # heat plot pressure level and variable
 H_PL = 500
-H_VAR = 'rh'
+H_VAR = 'temp'
 
 ##################################################################################
 # Begin plotting
@@ -153,7 +153,8 @@ alpha = 1
 max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
 
 # find the largest magnitude divergence of the above data
-abs_scale = np.max([abs(max_scale), abs(min_scale)])
+#abs_scale = np.max([abs(max_scale), abs(min_scale)])
+abs_scale = 4.5
 
 # hard code the scale for intercomparability
 if H_VAR == "rh":
@@ -162,7 +163,8 @@ if H_VAR == "rh":
 
 elif H_VAR == "temp":
     #abs_scale = 2.0
-    color_map = sns.diverging_palette(150, 30, l=65, as_cmap=True)
+    #color_map = sns.diverging_palette(150, 30, l=65, as_cmap=True)
+    color_map = sns.diverging_palette(220, 20, as_cmap=True)
 
 else:
     # make a symmetric color map about zero

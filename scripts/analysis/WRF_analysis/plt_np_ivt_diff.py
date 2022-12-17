@@ -64,7 +64,7 @@ START_DT1 = '2021-01-23_00:00:00'
 START_DT2 = '2021-01-23_00:00:00' 
 
 # valid date time for analysis
-ANL_DT = '2021-01-28_00:00:00'
+ANL_DT = '2021-01-27_12:00:00'
 
 # max domain to plot
 MAX_DOM = 1
@@ -134,7 +134,7 @@ class MidpointNormalize(nrm):
         return np.ma.masked_array(np.interp(value, x, y))
 
 # hard code the scale for intercomparability
-#abs_scale = 400
+abs_scale = 400
 
 # make the scales of d01 / d02 equivalent in color map
 scale = np.array([])
@@ -149,11 +149,12 @@ alpha = 1
 max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
 
 # find the largest magnitude divergence of the above data
-abs_scale = np.max([abs(max_scale), abs(min_scale)])
+#abs_scale = np.max([abs(max_scale), abs(min_scale)])
 
 # make a symmetric color map about zero
 cnorm = nrm(vmin=-abs_scale, vmax=abs_scale)
-color_map = sns.diverging_palette(145, 300, s=60, as_cmap=True)
+#color_map = sns.diverging_palette(145, 300, s=60, as_cmap=True)
+color_map = sns.color_palette("coolwarm", as_cmap=True)
 
 if MAX_DOM == 2:
     # NaN out all values of d01 that lie in d02
