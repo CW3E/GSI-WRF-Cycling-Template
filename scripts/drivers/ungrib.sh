@@ -90,7 +90,7 @@
 set -x
 
 if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: ${CONSTANT} does not exist or is not executable."
+  echo "ERROR: constants file ${CONSTANT} does not exist or is not executable."
   exit 1
 fi
 
@@ -127,7 +127,7 @@ if [ ! "${BKG_DATA}"  ]; then
 fi
 
 if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
-  echo "ERROR: \${BKG_DATA} must equal \"GFS\" or \"GEFS\" as currently supported inputs."
+  echo "ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS' as currently supported inputs."
   exit 1
 fi
 
@@ -155,7 +155,7 @@ fi
 if [ ! ${#START_TIME} -e 10 ]; then
   start_time="${START_TIME:0:8} ${START_TIME:8:2}"
 else
-  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format." 
+  echo "ERROR: \${START_TIME}, '${START_TIME}', is not in 'yyyymmddhh' format." 
   exit 1
 fi
 start_time=`date -d "${start_time}"`

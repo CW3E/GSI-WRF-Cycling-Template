@@ -36,19 +36,11 @@
 ##################################################################################
 # Preamble
 ##################################################################################
-# Options below are hard-coded based on the type of experiment
-# (i.e., these not expected to change within DA cycles).
-#
-##################################################################################
 # uncomment to run verbose for debugging / testing
 set -x
 
-##################################################################################
-# Read in WRF constants for local environment
-##################################################################################
-
 if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: ${CONSTANT} does not exist or is not executable"
+  echo "ERROR: constants file ${CONSTANT} does not exist or is not executable."
   exit 1
 fi
 
@@ -58,7 +50,7 @@ fi
 ##################################################################################
 # Make checks for WRFDA settings
 ##################################################################################
-# Options below are defined in cycling.xml
+# Options below are defined in control flow xml
 #
 # N_ENS             = Max ensemble index (use 00 for control alone)
 # ANL_TIME          = Analysis time YYYYMMDDHH
@@ -68,7 +60,7 @@ fi
 # WRF_CTR_DOM       = Max domain index of control forecast
 # WRF_ENS_DOM       = Max domain index of ensemble perturbations
 #
-# Below variabs are derived by cycling.xml variables for convenience
+# Below variabs are derived by control flow variables for convenience
 #
 # date_str          = Defined by the ANL_TIME variable, to be used as path
 #                     name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
@@ -76,87 +68,89 @@ fi
 ##################################################################################
 
 if [ ! "${N_ENS}" ]; then
-  echo "ERROR: \$N_ENS is not defined!"
+  echo "ERROR: \${N_ENS} is not defined."
   exit 1
 fi
 
 if [ ! "${ANL_TIME}" ]; then
-  echo "ERROR: \$ANL_TIME is not defined!"
+  echo "ERROR: \${ANL_TIME} is not defined."
   exit 1
 fi
 
-hh=`echo ${ANL_TIME} | cut -c9-10`
-anal_date=`echo ${ANL_TIME} | cut -c1-8`
-date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anal_date} ${hh} hours"`
-
-if [ -z "${date_str}"]; then
-  echo "ERROR: \$date_str is not defined correctly, check format of \$ANL_TIME!"
+# Convert ANL_TIME from 'YYYYMMDDHH' format to date_str Unix date format
+if [ ! ${#ANL_TIME} -e 10 ]; then
+  start_time="${START_TIME:0:8} ${START_TIME:8:2}"
+  anl_date=${ANL_TIME:0:8}
+  hh=${ANL_TIME:8:2}
+  date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anl_date} ${hh} hours"`
+else
+  echo "ERROR: \${ANL_TIME}, '${ANL_TIME}', is not in 'yyyymmddhh' format." 
   exit 1
 fi
 
 if [[ ${IF_ENS_COLD_START} != ${YES} && ${IF_ENS_COLD_START} != ${NO} ]]; then
-  echo "ERROR: \$IF_ENS_COLD_START must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \${IF_ENS_COLD_START} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
 
 if [[ ${IF_LOWER} != ${YES} && ${IF_LOWER} != ${NO} ]]; then
-  echo "ERROR: \$IF_LOWER must equal 'Yes' or 'No' (case insensitive)"
+  echo "ERROR: \${IF_LOWER} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
 
 if [ ! ${WRF_CTR_DOM} ]; then
-  echo "ERROR: \$WRF_CTR_DOM is not defined!"
+  echo "ERROR: \${WRF_CTR_DOM} is not defined."
   exit 1
 fi
 
 if [ ! ${WRF_ENS_DOM} ]; then
-  echo "ERROR: \$WRF_ENS_DOM is not defined!"
+  echo "ERROR: \${WRF_ENS_DOM} is not defined."
   exit 1
 fi
 
 ##################################################################################
-# Define REAL workflow dependencies
+# Define wrfda dependencies
 ##################################################################################
-# Below variables are defined in cycling.xml workflow variables
+# Below variables are defined in control flow variables
 #
-# WRFDA_ROOT     = Root directory of a WRFDA build 
-# STATIC_DATA    = Root directory containing sub-directories for constants, namelists
-#                  grib data, geogrid data, obs tar files etc.
-# INPUT_DATAROOT = Start time named directory for input data, containing
-#                  subdirectories bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd
+# WRFDA_ROOT = Root directory of a WRFDA build 
+# EXP_CONFIG = Root directory containing sub-directories for namelists
+#              vtables, geogrid data, GSI fix files, etc.
+# CYCLE_HOME = Start time named directory for cycling data containing
+#              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 #
 ##################################################################################
 
 if [ ! "${WRFDA_ROOT}" ]; then
-  echo "ERROR: \$WRFDA_ROOT is not defined"
+  echo "ERROR: \${WRFDA_ROOT} is not defined."
   exit 1
 fi
 
 if [ ! -d "${WRFDA_ROOT}" ]; then
-  echo "ERROR: WRFDA_ROOT directory ${WRFDA_ROOT} does not exist"
+  echo "ERROR: \${WRFDA_ROOT} directory ${WRFDA_ROOT} does not exist."
   exit 1
 fi
 
-if [ ! -d ${STATIC_DATA} ]; then
-  echo "ERROR: \$STATIC_DATA directory ${STATIC_DATA} does not exist"
+if [ ! -d ${EXP_CONFIG} ]; then
+  echo "ERROR: \${EXP_CONFIG} directory ${EXP_CONFIG} does not exist."
   exit 1
 fi
 
-if [ ! -d ${INPUT_DATAROOT} ]; then
-  echo "ERROR: \$INPUT_DATAROOT directory ${INPUT_DATAROOT} does not exist"
+if [ -z ${CYCLE_HOME} ]; then
+  echo "ERROR: \${CYCLE_HOME} directory name is not defined."
   exit 1
 fi
 
 ##################################################################################
 # Begin pre-WRFDA setup
 ##################################################################################
-# The following paths are relative to cycling.xml supplied root paths
+# The following paths are relative to control flow supplied root paths
 #
-# work_root      = Working directory where da_update_bc.exe runs and outputs updated files
-# gsi_dir        = Working directory where GSI produces control analysis in the current cycle
-# enkf_dir       = Working directory where EnKF produces the analysis ensemble perturbations
-# real_dir       = Working directory real.exe runs and outputs IC and BC files for the current cycle
-# bkg_dir        = Working directory with forecast data from WRF linked for the current cycle
+# work_root      = Directory where da_update_bc.exe runs
+# gsi_dir        = Directory where GSI produces control analysis
+# enkf_dir       = Directory where EnKF produces the analysis ensemble
+# real_dir       = Directory real.exe runs and outputs IC and BC files
+# bkg_dir        = Directory with forecast data from WRF linked
 # update_bc_exe  = Path and name of the update executable
 #
 ##################################################################################
@@ -175,29 +169,28 @@ while [ ${ens_n} -le ${n_ens} ]; do
   # define two zero padded string for GEFS 
   iimem=`printf %02d $(( 10#${ens_n} ))`
 
-  # define three zero padded string for GSI
-  iiimem=`printf %03d $(( 10#${ens_n} ))`
-  
-  work_root=${INPUT_DATAROOT}/wrfdaprd/ens_${iimem}
-  gsi_dir=${INPUT_DATAROOT}/gsiprd
-  enkf_dir=${INPUT_DATAROOT}/enkfprd
-  real_dir=${INPUT_DATAROOT}/realprd/ens_${iimem}
-  bkg_dir=${INPUT_DATAROOT}/bkg/ens_${iimem}
+  work_root=${CYCLE_HOME}/wrfdaprd/ens_${iimem}
+  gsi_dir=${CYCLE_HOME}/gsiprd
+  enkf_dir=${CYCLE_HOME}/enkfprd
+  real_dir=${CYCLE_HOME}/realprd/ens_${iimem}
+  bkg_dir=${CYCLE_HOME}/bkg/ens_${iimem}
   update_bc_exe=${WRFDA_ROOT}/var/da/da_update_bc.exe
   
   if [ ! -d ${real_dir} ]; then
-    echo "ERROR: \$real_dir directory ${real_dir} does not exist"
+    echo "ERROR: \${real_dir} directory ${real_dir} does not exist."
     exit 1
   fi
   
   if [ ! -x ${update_bc_exe} ]; then
-    echo "ERROR: ${update_bc_exe} does not exist, or is not executable"
+    echo "ERROR: ${update_bc_exe} does not exist, or is not executable."
     exit 1
   fi
   
   # create working directory and cd into it
   mkdir -p ${work_root}
-  cd ${work_root}
+  cmd="cd ${work_root}"
+  echo ${cmd}
+  eval ${cmd}
   
   # Remove IC/BC in the directory if old data present
   rm -f wrfout_*
@@ -210,7 +203,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
   if [[ ${IF_LOWER} = ${YES} ]]; then 
 
     if [ ! -d ${bkg_dir} ]; then
-      echo "ERROR: \$bkg_dir directory ${bkg_dir} does not exist"
+      echo "ERROR: \${bkg_dir} directory ${bkg_dir} does not exist."
       exit 1
     fi
     
@@ -221,6 +214,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
     fi
 
     # Check to make sure the input files are available and copy them
+    echo "Copying background and input files."
     while [ ${dmn} -le ${max_dom} ]; do
       # update the lower BC for the output file to pass to GSI
       wrfout=wrfout_d0${dmn}_${date_str}
@@ -229,44 +223,55 @@ while [ ${ens_n} -le ${n_ens} ]; do
       wrfinput=wrfinput_d0${dmn}
   
       if [ ! -r "${bkg_dir}/${wrfout}" ]; then
-        echo "ERROR: Input file '${wrfout}' is missing"
+        echo "ERROR: Input file '${bkg_dir}/${wrfout}' is missing."
         exit 1
       else
-        cp ${bkg_dir}/${wrfout} ./
+        cmd="cp ${bkg_dir}/${wrfout} ./"
+	echo ${cmd}
+	eval ${cmd}
       fi
   
       if [ ! -r "${real_dir}/${wrfnput}" ]; then
-        echo "ERROR: Input file '${wrfinput}' is missing"
+        echo "ERROR: Input file '${real_dir}/${wrfinput}' is missing."
         exit 1
       else
-        cp ${real_dir}/${wrfinput} ./
+        cmd="cp ${real_dir}/${wrfinput} ./"
+	echo ${cmd}
+	eval ${cmd}
       fi
   
       ##################################################################################
       #  Build da_update_bc namelist
       ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-      cp ${STATIC_DATA}/namelists/parame.in ./
+      cmd="cp ${EXP_CONFIG}/namelists/parame.in ./"
+      echo ${cmd}
+      eval ${cmd}
   
       # Update the namelist for the domain id 
-      cat parame.in | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfout}'/" \
+      cat parame.in \
+	 | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfout}'/" \
          > parame.in.new
       mv parame.in.new parame.in
   
-      cat parame.in | sed "s/\(${WRF}_${INPUT}\)${EQUAL}.*/\1 = '\.\/${wrfinput}'/" \
+      cat parame.in \
+	 | sed "s/\(${WRF}_${INPUT}\)${EQUAL}.*/\1 = '\.\/${wrfinput}'/" \
          > parame.in.new
       mv parame.in.new parame.in
   
-      cat parame.in | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+      cat parame.in \
+	 | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
          > parame.in.new
       mv parame.in.new parame.in
   
       # Update the namelist for lower boundary update 
-      cat parame.in | sed "s/\(${UPDATE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
+      cat parame.in \
+	 | sed "s/\(${UPDATE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
          > parame.in.new
       mv parame.in.new parame.in
   
-      cat parame.in | sed "s/\(${UPDATE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
+      cat parame.in \
+	 | sed "s/\(${UPDATE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
          > parame.in.new
       mv parame.in.new parame.in
   
@@ -275,17 +280,17 @@ while [ ${ens_n} -le ${n_ens} ]; do
       ##################################################################################
       # Print run parameters
       echo
-      echo "ENS_N          = ${iimem}"
-      echo "WRFDA_ROOT     = ${WRFDA_ROOT}"
-      echo "STATIC_DATA    = ${STATIC_DATA}"
-      echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+      echo "ENS_N      = ${iimem}"
+      echo "WRFDA_ROOT = ${WRFDA_ROOT}"
+      echo "EXP_CONFIG = ${EXP_CONFIG}"
+      echo "CYCLE_HOME = ${CYCLE_HOME}"
       echo
-      echo "IF_LOWER       = ${IF_LOWER}"
-      echo "DOMAIN         = ${dmn}"
-      echo "ENS_N          = ${ens_n}"
+      echo "IF_LOWER   = ${IF_LOWER}"
+      echo "DOMAIN     = ${dmn}"
+      echo "ENS_N      = ${ens_n}"
       echo
       now=`date +%Y%m%d%H%M%S`
-      echo "da_update_bc.exe started at ${now}"
+      echo "da_update_bc.exe started at ${now}."
       ${update_bc_exe}
   
       ##################################################################################
@@ -294,7 +299,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
       error=$?
       
       if [ ${error} -ne 0 ]; then
-        echo "ERROR: ${update_bc_exe} exited with status ${error}"
+        echo "ERROR: ${update_bc_exe} exited with status ${error}."
         exit ${error}
       fi
   
@@ -312,7 +317,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
   else
     if [ ${ens_n} -eq 0 ]; then
       if [ ! -d ${gsi_dir} ]; then
-        echo "ERROR: \$gsi_dir directory ${gsi_dir} does not exist"
+        echo "ERROR: \${gsi_dir} directory ${gsi_dir} does not exist."
         exit 1
       fi
 
@@ -322,44 +327,55 @@ while [ ${ens_n} -le ${n_ens} ]; do
       wrfbdy_name=wrfbdy_d01
   
       if [ ! -r "${wrfanl}" ]; then
-        echo "ERROR: Input file '${wrfanl}' is missing"
+        echo "ERROR: Input file '${wrfanl}' is missing."
         exit 1
       else
-        cp ${wrfanl} ${wrfvar_outname}
+        cmd="cp ${wrfanl} ${wrfvar_outname}"
+	echo ${cmd}
+	eval ${cmd}
       fi
   
       if [ ! -r "${wrfbdy}" ]; then
-        echo "ERROR: Input file '${wrfbdy}' is missing"
+        echo "ERROR: Input file '${wrfbdy}' is missing."
         exit 1
       else
-        cp ${wrfbdy} ${wrfbdy_name} 
+        cmd="cp ${wrfbdy} ${wrfbdy_name}"
+	echo ${cmd}
+	eval ${cmd}
       fi
   
       ##################################################################################
       #  Build da_update_bc namelist
       ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-      cp ${STATIC_DATA}/namelists/parame.in ./
+      cmd="cp ${EXP_CONFIG}/namelists/parame.in ./"
+      echo ${cmd}
+      eval ${cmd}
   
       # Update the namelist for the domain id 
-      cat parame.in | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfvar_outname}'/" \
+      cat parame.in \
+	 | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfvar_outname}'/" \
          > parame.in.new
       mv parame.in.new parame.in
   
-      cat parame.in | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+      cat parame.in \
+	 | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
          > parame.in.new
       mv parame.in.new parame.in
   
       # Update the namelist for lower boundary update 
-      cat parame.in | sed "s/\(${WRF}_${BDY}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfbdy_name}'/" \
+      cat parame.in \
+	 | sed "s/\(${WRF}_${BDY}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfbdy_name}'/" \
          > parame.in.new
       mv parame.in.new parame.in
   
-      cat parame.in | sed "s/\(${UPDATE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
+      cat parame.in \
+	 | sed "s/\(${UPDATE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
          > parame.in.new
       mv parame.in.new parame.in
   
-      cat parame.in | sed "s/\(${UPDATE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
+      cat parame.in \
+	 | sed "s/\(${UPDATE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
          > parame.in.new
       mv parame.in.new parame.in
   
@@ -368,16 +384,17 @@ while [ ${ens_n} -le ${n_ens} ]; do
       ##################################################################################
       # Print run parameters
       echo
-      echo "WRFDA_ROOT     = ${WRFDA_ROOT}"
-      echo "STATIC_DATA    = ${STATIC_DATA}"
-      echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+      echo "WRFDA_ROOT = ${WRFDA_ROOT}"
+      echo "EXP_CONFIG = ${EXP_CONFIG}"
+      echo "EXP_CONFIG = ${EXP_CONFIG}"
+      echo "CYCLE_HOME = ${CYCLE_HOME}"
       echo
-      echo "IF_LOWER       = ${IF_LOWER}"
-      echo "DOMAIN         = ${dmn}"
-      echo "ENS_N          = ${ens_n}"
+      echo "IF_LOWER   = ${IF_LOWER}"
+      echo "DOMAIN     = ${dmn}"
+      echo "ENS_N      = ${ens_n}"
       echo
       now=`date +%Y%m%d%H%M%S`
-      echo "da_update_bc.exe started at ${now}"
+      echo "da_update_bc.exe started at ${now}."
       ${update_bc_exe}
   
       ##################################################################################
@@ -386,7 +403,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
       error=$?
       
       if [ ${error} -ne 0 ]; then
-        echo "ERROR: ${update_bc_exe} exited with status ${error}"
+        echo "ERROR: ${update_bc_exe} exited with status ${error}."
         exit ${error}
       fi
   
@@ -400,54 +417,65 @@ while [ ${ens_n} -le ${n_ens} ]; do
 
     else
       if [ ! -d ${enkf_dir} ]; then
-        echo "ERROR: \$enkf_dir directory ${enkf_dir} does not exist"
+        echo "ERROR: \${enkf_dir directory} ${enkf_dir} does not exist."
         exit 1
       fi
 
-      wrfanl=${enkf_dir}/d01/analysis.mem${iiimem}
+      wrfanl=${enkf_dir}/d01/analysis.mem${iimem}
       wrfbdy=${real_dir}/wrfbdy_d01
       wrfvar_outname=wrfvar_output
       wrfbdy_name=wrfbdy_d01
   
       if [ ! -r "${wrfanl}" ]; then
-        echo "ERROR: Input file '${wrfanl}' is missing"
+        echo "ERROR: Input file '${wrfanl}' is missing."
         exit 1
       else
-        cp ${wrfanl} ${wrfvar_outname}
+        cmd="cp ${wrfanl} ${wrfvar_outname}"
+	echo ${cmd}
+	eval ${cmd}
       fi
   
       if [ ! -r "${wrfbdy}" ]; then
         echo "ERROR: Input file '${wrfbdy}' is missing"
         exit 1
       else
-        cp ${wrfbdy} ${wrfbdy_name} 
+        cmd="cp ${wrfbdy} ${wrfbdy_name}"
+	echo ${cmd}
+	eval ${cmd}
       fi
   
       ##################################################################################
       #  Build da_update_bc namelist
       ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-      cp ${STATIC_DATA}/namelists/parame.in ./
+      cmd="cp ${EXP_CONFIG}/namelists/parame.in ./"
+      echo ${cmd}
+      eval ${cmd}
   
       # Update the namelist for the domain id 
-      cat parame.in | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfvar_outname}'/" \
+      cat parame.in \
+	 | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfvar_outname}'/" \
          > parame.in.new
       mv parame.in.new parame.in
   
-      cat parame.in | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+      cat parame.in \
+	 | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
          > parame.in.new
       mv parame.in.new parame.in
   
       # Update the namelist for lower boundary update 
-      cat parame.in | sed "s/\(${WRF}_${BDY}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfbdy_name}'/" \
+      cat parame.in \
+	 | sed "s/\(${WRF}_${BDY}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfbdy_name}'/" \
          > parame.in.new
       mv parame.in.new parame.in
   
-      cat parame.in | sed "s/\(${UPDATE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
+      cat parame.in \
+	 | sed "s/\(${UPDATE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
          > parame.in.new
       mv parame.in.new parame.in
   
-      cat parame.in | sed "s/\(${UPDATE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
+      cat parame.in \
+	 | sed "s/\(${UPDATE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
          > parame.in.new
       mv parame.in.new parame.in
   
@@ -456,16 +484,17 @@ while [ ${ens_n} -le ${n_ens} ]; do
       ##################################################################################
       # Print run parameters
       echo
-      echo "WRFDA_ROOT     = ${WRFDA_ROOT}"
-      echo "STATIC_DATA    = ${STATIC_DATA}"
-      echo "INPUT_DATAROOT = ${INPUT_DATAROOT}"
+      echo "WRFDA_ROOT = ${WRFDA_ROOT}"
+      echo "EXP_CONFIG = ${EXP_CONFIG}"
+      echo "EXP_CONFIG = ${EXP_CONFIG}"
+      echo "CYCLE_HOME = ${CYCLE_HOME}"
       echo
-      echo "IF_LOWER       = ${IF_LOWER}"
-      echo "DOMAIN         = ${dmn}"
-      echo "ENS_N          = ${ens_n}"
+      echo "IF_LOWER   = ${IF_LOWER}"
+      echo "DOMAIN     = ${dmn}"
+      echo "ENS_N      = ${ens_n}"
       echo
       now=`date +%Y%m%d%H%M%S`
-      echo "da_update_bc.exe started at ${now}"
+      echo "da_update_bc.exe started at ${now}."
       ${update_bc_exe}
   
       ##################################################################################
@@ -474,7 +503,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
       error=$?
       
       if [ ${error} -ne 0 ]; then
-        echo "ERROR: ${update_bc_exe} exited with status ${error}"
+        echo "ERROR: ${update_bc_exe} exited with status ${error}."
         exit ${error}
       fi
   
@@ -491,6 +520,8 @@ while [ ${ens_n} -le ${n_ens} ]; do
   (( ens_n += 1 ))
 done
 
-echo "wrfda.sh completed successfully at `date`"
+echo "wrfda.sh completed successfully at `date`."
+
+##################################################################################
 
 exit 0

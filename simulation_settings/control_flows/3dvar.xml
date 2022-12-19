@@ -15,7 +15,7 @@
   <!-- END USER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
-  <!ENTITY EXP_NAME            "3dvar_treatment_run">
+  <!ENTITY EXP_NAME            "3dvar_test_run">
   <!ENTITY EXP_HOME            "&CLONE_ROOT;/simulation_io/&EXP_NAME;">
   <!ENTITY EXP_LOG             "&CLONE_ROOT;/logs/&EXP_NAME;">
   <!ENTITY EXP_CONFIG          "&CLONE_ROOT;/simulation_settings/&EXP_NAME;">
@@ -207,12 +207,16 @@
       <value>&WPS_PARALLEL_ROOT;</value>
     </envar>
     <envar>
-      <name>STATIC_DATA</name>
-      <value>&STATIC_DATA;</value>
+      <name>EXP_CONFIG</name>
+      <value>&EXP_CONFIG;</value>
     </envar>
     <envar>
-      <name>INPUT_DATAROOT</name>
-      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      <name>CYCLE_HOME</name>
+      <value><cyclestr>&EXP_HOME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
     </envar>
     <envar>
       <name>MPIRUN</name>
@@ -276,12 +280,16 @@
       <value>&WRF_ROOT;</value>
     </envar>
     <envar>
-      <name>STATIC_DATA</name>
-      <value>&STATIC_DATA;</value>
+      <name>EXP_CONFIG</name>
+      <value>&EXP_CONFIG;</value>
     </envar>
     <envar>
-      <name>INPUT_DATAROOT</name>
-      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      <name>CYCLE_HOME</name>
+      <value><cyclestr>&EXP_HOME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
     </envar>
     <envar>
       <name>MPIRUN</name>
@@ -323,7 +331,7 @@
     <!-- Update the lower boundary conditions of ensemble for convenience w/ IO linking, though this has no effect -->
     <envar>
       <name>IF_ENS_COLD_START</name>
-      <value>No</value>
+      <value>Yes</value>
     </envar>
     <envar>
       <name>IF_LOWER</name>
@@ -342,12 +350,12 @@
       <value>&WRFDA_ROOT;</value>
     </envar>
     <envar>
-      <name>STATIC_DATA</name>
-      <value>&STATIC_DATA;</value>
+      <name>EXP_CONFIG</name>
+      <value>&EXP_CONFIG;</value>
     </envar>
     <envar>
-      <name>INPUT_DATAROOT</name>
-      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      <name>CYCLE_HOME</name>
+      <value><cyclestr>&EXP_HOME;/@Y@m@d@H</cyclestr></value>
     </envar>
     <dependency> 
       <taskdep task="real_ens_00" state="SUCCEEDED"/>
@@ -423,12 +431,16 @@
       <value>&CRTM_ROOT;</value>
     </envar>
     <envar>
-      <name>STATIC_DATA</name>
-      <value>&STATIC_DATA;</value>
+      <name>EXP_CONFIG</name>
+      <value>&EXP_CONFIG;</value>
     </envar>
     <envar>
-      <name>INPUT_DATAROOT</name>
-      <value>&INPUT_DATAROOT;/<cyclestr>@Y@m@d@H</cyclestr></value>
+      <name>CYCLE_HOME</name>
+      <value><cyclestr>&EXP_HOME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
     </envar>
     <envar>
       <name>MPIRUN</name>
@@ -489,12 +501,16 @@
       <value>&WRFDA_ROOT;</value>
     </envar>
     <envar>
-      <name>STATIC_DATA</name>
-      <value>&STATIC_DATA;</value>
+      <name>EXP_CONFIG</name>
+      <value>&EXP_CONFIG;</value>
     </envar>
     <envar>
-      <name>INPUT_DATAROOT</name>
-      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      <name>CYCLE_HOME</name>
+      <value><cyclestr>&EXP_HOME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
     </envar>
     <dependency> 
       <taskdep task="gsi_analysis" state="SUCCEEDED"/>
@@ -558,12 +574,16 @@
       <value>&WRF_ROOT;</value>
     </envar>
     <envar>
-      <name>STATIC_DATA</name>
-      <value>&STATIC_DATA;</value>
+      <name>EXP_CONFIG</name>
+      <value>&EXP_CONFIG;</value>
     </envar>
     <envar>
-      <name>INPUT_DATAROOT</name>
-      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      <name>CYCLE_HOME</name>
+      <value><cyclestr>&EXP_HOME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
     </envar>
     <envar>
       <name>MPIRUN</name>
@@ -667,12 +687,16 @@
       <value>&WRF_ROOT;</value>
     </envar>
     <envar>
-      <name>STATIC_DATA</name>
-      <value>&STATIC_DATA;</value>
+      <name>EXP_CONFIG</name>
+      <value>&EXP_CONFIG;</value>
     </envar>
     <envar>
-      <name>INPUT_DATAROOT</name>
-      <value><cyclestr>&INPUT_DATAROOT;/@Y@m@d@H</cyclestr></value>
+      <name>CYCLE_HOME</name>
+      <value><cyclestr>&EXP_HOME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
     </envar>
     <envar>
       <name>MPIRUN</name>

@@ -3,7 +3,7 @@
 # Description
 ##################################################################################
 # This driver script is a major fork and rewrite of the Rocoto workflow
-# real.exe driver script of Christopher Harrop Licensed for modification /
+# metgrid.exe driver script of Christopher Harrop Licensed for modification /
 # redistribution in the License Statement below.
 #
 # The purpose of this fork is to work in a Rocoto-based
@@ -90,7 +90,7 @@
 set -x
 
 if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: ${CONSTANT} does not exist or is not executable."
+  echo "ERROR: constants file ${CONSTANT} does not exist or is not executable."
   exit 1
 fi
 

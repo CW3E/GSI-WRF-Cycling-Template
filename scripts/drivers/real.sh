@@ -90,7 +90,7 @@
 set -x
 
 if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: ${CONSTANT} does not exist or is not executable."
+  echo "ERROR: constants file ${CONSTANT} does not exist or is not executable."
   exit 1
 fi
 
@@ -127,7 +127,7 @@ if [ ! "${BKG_DATA}"  ]; then
 fi
 
 if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
-  msg="ERROR: \${BKG_DATA} must equal \"GFS\" or \"GEFS\""
+  msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
   msg+=" as currently supported inputs."
   echo ${msg}
   exit 1
@@ -286,15 +286,15 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 done
 
 # Move existing rsl files to a subdir if there are any
-echo "Checking for pre-existing rsl files"
+echo "Checking for pre-existing rsl files."
 if [ -f "rsl.out.0000" ]; then
   rsldir=rsl.`ls -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | cut -d" " -f 7`
   mkdir ${rsldir}
-  echo "Moving pre-existing rsl files to ${rsldir}"
+  echo "Moving pre-existing rsl files to ${rsldir}."
   mv rsl.out.* ${rsldir}
   mv rsl.error.* ${rsldir}
 else
-  echo "No pre-existing rsl files were found"
+  echo "No pre-existing rsl files were found."
 fi
 
 ##################################################################################
