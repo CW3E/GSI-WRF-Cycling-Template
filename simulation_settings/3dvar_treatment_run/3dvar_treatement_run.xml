@@ -4,7 +4,7 @@
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
-  <!ENTITY CLONE_ROOT          "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template">
+  <!ENTITY CLONE_ROOT          "/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template">
   <!ENTITY SOFT_ROOT           "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
   <!ENTITY DATA_ROOT           "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR/data/static/">
   <!-- END COMPUTER-DEPENDENT -->
@@ -95,7 +95,7 @@
   <cycledef group="q_daily">&SECOND_CYCLE; &CYCLE_END; &CYCLE_INTERVAL;</cycledef>
   <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
   
-  <task name="ungrib_ens_00" maxtries="12" cycledefs="first_cycle,q_daily">
+  <task name="ungrib_ens_00" maxtries="1" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/ungrib.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
@@ -166,7 +166,7 @@
     </dependency>
   </task>
 
-  <task name="metgrid_ens_00" maxtries="12" cycledefs="first_cycle,q_daily">
+  <task name="metgrid_ens_00" maxtries="1" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/metgrid.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
@@ -231,7 +231,7 @@
     </dependency>
   </task>
 
-  <task name="real_ens_00" maxtries="12" cycledefs="first_cycle,q_daily">
+  <task name="real_ens_00" maxtries="1" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/real.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
@@ -304,7 +304,7 @@
     </dependency>
   </task>
 
-  <task name="wrfda_lowbc" maxtries="12" cycledefs="q_daily">
+  <task name="wrfda_lowbc" maxtries="1" cycledefs="q_daily">
     <command>&DRIVERS;/wrfda.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
@@ -362,7 +362,7 @@
     </dependency>
   </task>
 
-  <task name="gsi_analysis" maxtries="12" cycledefs="q_daily">
+  <task name="gsi_analysis" maxtries="1" cycledefs="q_daily">
     <command>&DRIVERS;/gsi.sh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
@@ -455,7 +455,7 @@
     </dependency>
   </task>
 
-  <task name="wrfda_latbc" maxtries="12" cycledefs="q_daily">
+  <task name="wrfda_latbc" maxtries="1" cycledefs="q_daily">
     <command>&DRIVERS;/wrfda.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
@@ -517,7 +517,7 @@
     </dependency>
   </task>
 
-  <task name="first_wrf_ens_00" maxtries="12" cycledefs="first_cycle">
+  <task name="first_wrf_ens_00" maxtries="1" cycledefs="first_cycle">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
@@ -618,7 +618,7 @@
     </dependency>
   </task>
 
-  <task name="wrf_ens_00" maxtries="12" cycledefs="q_daily">
+  <task name="wrf_ens_00" maxtries="1" cycledefs="q_daily">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>

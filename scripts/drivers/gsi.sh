@@ -333,7 +333,7 @@ fi
 
 obs_root=${DATA_ROOT}/obs_data
 fix_root=${EXP_CONFIG}/fix
-satlist=${EXP_CONFIG}/namelists/satlist.txt
+satlist=${fix_root}/satlist.txt
 gsi_namelist=${EXP_CONFIG}/namelists/comgsi_namelist.sh
 prepbufr_tar=${obs_root}/prepbufr.${anl_date}.nr.tar.gz
 prepbufr_dir=${obs_root}/${anl_date}.nr

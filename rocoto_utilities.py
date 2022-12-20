@@ -44,12 +44,8 @@ RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS =[
-           'common_case_3dvar',
-           #'common_case_3denvar_wps_perts',
-           #'common_case_3denvar_enkf',
-           #'common_case_3denvar_downscale',
-           #'common_case_ensemble_forecast',
-           #'common_case_deterministic_forecast',
+           '3dvar_test_treatement_run',
+           '3dvar_test_control_run',
           ]
 
 ##################################################################################
@@ -59,7 +55,7 @@ CTR_FLWS =[
 pathroc = RCT_HME + '/rocoto'
 
 # path to .xml control flows 
-flw_dir =  USR_HME + '/simulation_settings/control_flows'
+settings_dir =  USR_HME + '/simulation_settings'
 
 # path to database
 dbs_dir = USR_HME + '/workflow_status'
@@ -68,19 +64,19 @@ dbs_dir = USR_HME + '/workflow_status'
 # Rocoto utility commands
 ##################################################################################
 # The following commands are wrappers for the native rocoto functions described
-# in the documentation:
+# in its documentation:
 #
 #     http://christopherwharrop.github.io/rocoto/
 #
 # The rocoto run and stat commands require no arguments and are defined by the
 # global parameters in the above sections. For the boot and rewind commands, one
-# should supply a list of strings corresponding to the cycle / task names.  One
-# can, e.g., loop through ensemble indexed tasks this way with an iterator of
-# the form:
+# should supply a list of strings corresponding to the control flow, cycle date
+# time and the corresponding task names to boot or rewind.  One can, e.g., loop
+# through ensemble indexed tasks this way with an iterator of the form:
 #
 #    run_rocotoboot(
-#                   ['3denvar_downscale'],
-#                   ['201902090000'],
+#                   ['3denvar_test_run'],
+#                   ['201902081800'],
 #                   ['ungrib_ens_' + str(i).zfill(2) for i in range(21)]
 #                  )
 #
@@ -91,7 +87,7 @@ dbs_dir = USR_HME + '/workflow_status'
 def run_rocotorun():
     for ctr_flw in CTR_FLWS:
         cmd = pathroc + '/bin/rocotorun -w ' +\
-              flw_dir + '/' + ctr_flow + '.xml' +\
+              settings_dir + '/' + ctr_flw + '/' + ctr_flow + '.xml' +\
               ' -d ' + dbs_dir + '/' + ctr_flow + '.store -v 10'  
 
         os.system(cmd)
@@ -99,7 +95,7 @@ def run_rocotorun():
 def run_rocotostat():
     for ctr_flw in CTR_FLWS:
         cmd = pathroc + '/bin/rocotostat -w ' +\
-              flw_dir + '/' + ctr_flow + '.xml' +\
+              settings_dir + '/' + ctr_flw + '/' + ctr_flow + '.xml' +\
               ' -d ' + dbs_dir + '/' + ctr_flow + '.store -c all'+\
               ' > ' + dbs_dir + '/' + ctr_flow + '_workflow_status.txt'
 
@@ -110,7 +106,7 @@ def run_rocotoboot(flows, cycles, tasks):
         for cycle in cycles:
             for task in tasks:
                 cmd = pathroc + '/bin/rocotoboot -w ' +\
-                      flw_dir + '/' + ctr_flow + '.xml' +\
+                      settings_dir + '/' + ctr_flw + '/' + ctr_flow + '.xml' +\
                       ' -d ' + dbs_dir + '/' + ctr_flow + '.store' +\
                       ' -c ' + cycle + ' -t ' + task
 
@@ -121,7 +117,7 @@ def run_rocotorewind(flows, cycles, tasks):
         for cycle in cycles:
             for task in tasks:
                 cmd = pathroc + '/bin/rocotorewind -w ' +\
-                      flw_dir + '/' + ctr_flow + '.xml' +\
+                      settings_dir + '/' + ctr_flw + '/' + ctr_flow + '.xml' +\
                       ' -d ' + dbs_dir + '/' + ctr_flow + '.store' +\
                       ' -c ' + cycle + ' -t ' + task
 
