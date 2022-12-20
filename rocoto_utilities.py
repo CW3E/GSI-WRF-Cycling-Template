@@ -44,7 +44,7 @@ RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS =[
-           '3dvar_treatement',
+           '3dvar_treatment',
            '3dvar_control',
           ]
 
