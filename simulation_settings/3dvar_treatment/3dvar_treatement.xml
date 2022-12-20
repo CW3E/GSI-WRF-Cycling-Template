@@ -2,6 +2,9 @@
 <!DOCTYPE workflow
 [
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
+  <!-- NAME OF CONTROL FLOW -->
+  <!ENTITY EXP_NAME            "3dvar_treatment">
+  <!-- NAME OF CONTROL FLOW -->
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
   <!ENTITY CLONE_ROOT          "/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template">
@@ -15,7 +18,6 @@
   <!-- END USER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
-  <!ENTITY EXP_NAME            "3dvar_test_run">
   <!ENTITY EXP_HOME            "&CLONE_ROOT;/simulation_io/&EXP_NAME;">
   <!ENTITY EXP_LOG             "&CLONE_ROOT;/logs/&EXP_NAME;">
   <!ENTITY EXP_CONFIG          "&CLONE_ROOT;/simulation_settings/&EXP_NAME;">
@@ -93,7 +95,7 @@
 <workflow realtime="F" scheduler="&SCHED;">
   <cycledef group="first_cycle">&CYCLE_START; &CYCLE_START; &CYCLE_INTERVAL;</cycledef>
   <cycledef group="q_daily">&SECOND_CYCLE; &CYCLE_END; &CYCLE_INTERVAL;</cycledef>
-  <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
+  <log verbosity="10"><cyclestr>&EXP_LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
   
   <task name="ungrib_ens_00" maxtries="1" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/ungrib.sh</command>
@@ -101,7 +103,7 @@
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>ungrib_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/ungrib/ungrib_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&EXP_LOG;/ungrib/ungrib_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -172,7 +174,7 @@
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>metgrid_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/metgrid/metgrid_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&EXP_LOG;/metgrid/metgrid_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -237,7 +239,7 @@
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/real/real_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&EXP_LOG;/real/real_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -310,7 +312,7 @@
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>wrfda_lowbc_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/wrfda/wrfda_lowbc_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&EXP_LOG;/wrfda/wrfda_lowbc_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -368,7 +370,7 @@
     <cores>&GSI_PROC;</cores>
     <walltime>&GSI_WC;</walltime>
     <jobname><cyclestr>gsi_analysis_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/gsi/gsi_analysis_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&EXP_LOG;/gsi/gsi_analysis_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_RAPID;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -461,7 +463,7 @@
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>wrfda_latbc_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/wrfda/wrfda_latbc_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&EXP_LOG;/wrfda/wrfda_latbc_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -523,7 +525,7 @@
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>
     <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&EXP_LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -624,7 +626,7 @@
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>
     <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&EXP_LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>

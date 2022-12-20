@@ -44,8 +44,8 @@ RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS =[
-           '3dvar_test_treatement_run',
-           '3dvar_test_control_run',
+           '3dvar_treatement',
+           '3dvar_control',
           ]
 
 ##################################################################################
@@ -87,17 +87,17 @@ dbs_dir = USR_HME + '/workflow_status'
 def run_rocotorun():
     for ctr_flw in CTR_FLWS:
         cmd = pathroc + '/bin/rocotorun -w ' +\
-              settings_dir + '/' + ctr_flw + '/' + ctr_flow + '.xml' +\
-              ' -d ' + dbs_dir + '/' + ctr_flow + '.store -v 10'  
+              settings_dir + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+              ' -d ' + dbs_dir + '/' + ctr_flw + '.store -v 10'  
 
         os.system(cmd)
 
 def run_rocotostat():
     for ctr_flw in CTR_FLWS:
         cmd = pathroc + '/bin/rocotostat -w ' +\
-              settings_dir + '/' + ctr_flw + '/' + ctr_flow + '.xml' +\
-              ' -d ' + dbs_dir + '/' + ctr_flow + '.store -c all'+\
-              ' > ' + dbs_dir + '/' + ctr_flow + '_workflow_status.txt'
+              settings_dir + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+              ' -d ' + dbs_dir + '/' + ctr_flw + '.store -c all'+\
+              ' > ' + dbs_dir + '/' + ctr_flw + '_workflow_status.txt'
 
         os.system(cmd) 
 
@@ -106,8 +106,8 @@ def run_rocotoboot(flows, cycles, tasks):
         for cycle in cycles:
             for task in tasks:
                 cmd = pathroc + '/bin/rocotoboot -w ' +\
-                      settings_dir + '/' + ctr_flw + '/' + ctr_flow + '.xml' +\
-                      ' -d ' + dbs_dir + '/' + ctr_flow + '.store' +\
+                      settings_dir + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                      ' -d ' + dbs_dir + '/' + ctr_flw + '.store' +\
                       ' -c ' + cycle + ' -t ' + task
 
                 os.system(cmd) 
@@ -117,8 +117,8 @@ def run_rocotorewind(flows, cycles, tasks):
         for cycle in cycles:
             for task in tasks:
                 cmd = pathroc + '/bin/rocotorewind -w ' +\
-                      settings_dir + '/' + ctr_flw + '/' + ctr_flow + '.xml' +\
-                      ' -d ' + dbs_dir + '/' + ctr_flow + '.store' +\
+                      settings_dir + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                      ' -d ' + dbs_dir + '/' + ctr_flw + '.store' +\
                       ' -c ' + cycle + ' -t ' + task
 
                 os.system(cmd) 
