@@ -346,7 +346,7 @@ mv namelist.input.new namelist.input
 # Update the start time in wrf namelist (propagates settings to three domains)
 cat namelist.input \
   | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${s_Y}, ${s_Y}, ${s_Y}/" \
-  | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${sm}, ${sm}, ${sm}/" \
+  | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_m}, ${s_m}, ${s_m}/" \
   | sed "s/\(${START}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_d}, ${s_d}, ${s_d}/" \
   | sed "s/\(${START}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_H}, ${s_H}, ${s_H}/" \
   | sed "s/\(${START}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_M}, ${s_M}, ${s_M}/" \

@@ -286,9 +286,9 @@ cat namelist.wps \
 mv namelist.wps.new namelist.wps
 
 # Update interval in namelist
+(( data_interval_sec = DATA_INTERVAL * 3600 ))
 in_int="\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}"
 out_int="\1 = ${data_interval_sec}"
-(( data_interval_sec = DATA_INTERVAL * 3600 ))
 cat namelist.wps \
   | sed "s/${in_int}/${out_int}/" \
   > namelist.wps.new

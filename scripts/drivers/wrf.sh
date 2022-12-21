@@ -412,12 +412,12 @@ namelist=${EXP_CONFIG}/namelists/namelist.${BKG_DATA}
 cp ${namelist} ./namelist.input
 
 # Get the start and end time components
-sY=`date +%Y -d "${start_time}"`
-sm=`date +%m -d "${start_time}"`
-sd=`date +%d -d "${start_time}"`
-sH=`date +%H -d "${start_time}"`
-sM=`date +%M -d "${start_time}"`
-sS=`date +%S -d "${start_time}"`
+s_Y=`date +%Y -d "${start_time}"`
+s_m=`date +%m -d "${start_time}"`
+s_d=`date +%d -d "${start_time}"`
+s_H=`date +%H -d "${start_time}"`
+s_M=`date +%M -d "${start_time}"`
+s_S=`date +%S -d "${start_time}"`
 e_Y=`date +%Y -d "${end_time}"`
 e_m=`date +%m -d "${end_time}"`
 e_d=`date +%d -d "${end_time}"`
@@ -462,12 +462,12 @@ mv namelist.input.new namelist.input
 
 # Update the start time in wrf namelist (propagates settings to three domains)
 cat namelist.input \
-  | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${sY}, ${sY}, ${sY}/" \
-  | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${sm}, ${sm}, ${sm}/" \
-  | sed "s/\(${START}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${sd}, ${sd}, ${sd}/" \
-  | sed "s/\(${START}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${sH}, ${sH}, ${sH}/" \
-  | sed "s/\(${START}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${sM}, ${sM}, ${sM}/" \
-  | sed "s/\(${START}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${sS}, ${sS}, ${sS}/" \
+  | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${s_Y}, ${s_Y}, ${s_Y}/" \
+  | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_m}, ${s_m}, ${s_m}/" \
+  | sed "s/\(${START}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_d}, ${s_d}, ${s_d}/" \
+  | sed "s/\(${START}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_H}, ${s_H}, ${s_H}/" \
+  | sed "s/\(${START}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_M}, ${s_M}, ${s_M}/" \
+  | sed "s/\(${START}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_S}, ${s_S}, ${s_S}/" \
    > namelist.input.new
 mv namelist.input.new namelist.input
 
