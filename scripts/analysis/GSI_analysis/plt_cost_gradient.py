@@ -25,6 +25,10 @@
 # with MAX_DOM to control the number of domains processed.  Testing on more
 # than one domain is still pending.
 #
+# NOTE: this has the number of iterations hard coded in the loop at 50 + 0 for
+# first guess, but this may not be correct if there are errors in GSI.  Need to
+# fix.
+#
 ##################################################################################
 # License Statement
 ##################################################################################

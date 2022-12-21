@@ -223,14 +223,14 @@ if [ ! "${ANL_TIME}" ]; then
 fi
 
 # Convert ANL_TIME from 'YYYYMMDDHH' format to start_time Unix date format
-if [ ! ${#ANL_TIME} -e 10 ]; then
+if [ ${#ANL_TIME} -ne 10 ]; then
+  echo "ERROR: start time, '${ANL_TIME}', is not in 'yyyymmddhh' format."
+  exit 1
+else
   # Define directory path name variable date_str=YYMMDDHH from ANL_TIME
   hh=${ANL_TIME:8:2}
   anl_date=${ANL_TIME:0:8}
   date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anl_date} ${hh} hours"`
-else
-  echo "ERROR: start time, '${ANL_TIME}', is not in 'yyyymmddhh' format."
-  exit 1
 fi
 
 if [ ! "${GSI_EXE}" ]; then

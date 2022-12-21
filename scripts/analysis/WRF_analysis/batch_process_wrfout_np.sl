@@ -35,21 +35,21 @@
 ##################################################################################
 # set the control flow, git clone and working directory
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
-CTR_FLW="deterministic_forecast_treatment"
+CTR_FLW="3dvar_control"
 
 # define date range and increments for start time of simulations
-START_TIME=2021012200
-END_TIME=2021012300
-CYCLE_INT=24
+START_TIME=2021012812
+END_TIME=2021012900
+CYCLE_INT=6
 
 # starting forecast hour to process
 FCST_MIN=0
 
 # interval of forecast data outputs after FCST_MIN to process
-FCST_INT=12
+FCST_INT=6
 
 # max forecast hour to process
-FCST_MAX=120
+FCST_MAX=6
 
 ##################################################################################
 # Contruct job array and environment for submission

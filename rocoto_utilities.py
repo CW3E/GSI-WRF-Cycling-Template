@@ -92,6 +92,9 @@ def run_rocotorun():
 
         os.system(cmd)
 
+    # update workflow statuses after loops
+    run_rocotostat()
+
 def run_rocotostat():
     for ctr_flw in CTR_FLWS:
         cmd = pathroc + '/bin/rocotostat -w ' +\
@@ -112,6 +115,9 @@ def run_rocotoboot(flows, cycles, tasks):
 
                 os.system(cmd) 
 
+    # update workflow statuses after loops
+    run_rocotostat()
+
 def run_rocotorewind(flows, cycles, tasks):
     for ctr_flw in flows:
         for cycle in cycles:
@@ -123,6 +129,9 @@ def run_rocotorewind(flows, cycles, tasks):
 
                 os.system(cmd) 
 
+    # update workflow statuses after loops
+    run_rocotostat()
+
 ##################################################################################
 # Execute the following lines as script
 ##################################################################################
@@ -131,7 +140,6 @@ if __name__ == '__main__':
     # monitor and advance the jobs
     while (True):
         run_rocotorun()
-        run_rocotostat()
         time.sleep(60)
 
 ##################################################################################

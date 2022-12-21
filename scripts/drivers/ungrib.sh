@@ -152,11 +152,11 @@ if [ ! "${BKG_START_TIME}" ]; then
 fi
 
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format
-if [ ! ${#START_TIME} -e 10 ]; then
-  start_time="${START_TIME:0:8} ${START_TIME:8:2}"
-else
-  echo "ERROR: \${START_TIME}, '${START_TIME}', is not in 'yyyymmddhh' format." 
+if [ ${#START_TIME} -ne 10 ]; then
+  echo "ERROR: \${START_TIME}, '${START_TIME}', is not in 'YYYYMMDDHH' format." 
   exit 1
+else
+  start_time="${START_TIME:0:8} ${START_TIME:8:2}"
 fi
 start_time=`date -d "${start_time}"`
 end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
@@ -262,7 +262,7 @@ if [! -d ${grib_dataroot} ]; then
   exit 1
 fi
 
-if [ -z `ls -A ${grib_dataroot}`]; then
+if [ `ls -l ${grib_dataroot} | wc -l` -lt 2 ]; then
   msg="ERROR: ${grib_dataroot} is emtpy, put grib data in this location"
   msg+=" for preprocessing."
   echo ${msg}

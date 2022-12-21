@@ -55,16 +55,16 @@ CTR_FLW2 = CTR_ROOT + '_treatment'
 
 #CTR_FLW1 = CTR_ROOT + '_control'
 #CTR_FLW2 = CTR_ROOT + '_control'
-#
+
 #CTR_FLW1 = CTR_ROOT + '_treatment'
 #CTR_FLW2 = CTR_ROOT + '_treatment'
 
 # start date time of WRF forecasts 1 and 2
-START_DT1 = '2021-01-23_00:00:00' 
-START_DT2 = '2021-01-23_00:00:00' 
+START_DT1 = '2021-01-24_00:00:00' 
+START_DT2 = '2021-01-24_00:00:00' 
 
 # valid date time for analysis
-ANL_DT = '2021-01-27_12:00:00'
+ANL_DT = '2021-01-28_00:00:00'
 
 # max domain to plot
 MAX_DOM = 1

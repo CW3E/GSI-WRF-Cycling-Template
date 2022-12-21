@@ -134,11 +134,11 @@ if [ ! "${START_TIME}" ]; then
 fi
 
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format
-if [ ! ${#START_TIME} -e 10 ]; then
-  start_time="${START_TIME:0:8} ${START_TIME:8:2}"
-else
+if [ ${#START_TIME} -ne 10 ]; then
   echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format."
   exit 1
+else
+  start_time="${START_TIME:0:8} ${START_TIME:8:2}"
 fi
 start_time=`date -d "${start_time}"`
 end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`

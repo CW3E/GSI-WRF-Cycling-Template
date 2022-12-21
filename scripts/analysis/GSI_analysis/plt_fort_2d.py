@@ -60,7 +60,7 @@ from gsi_py_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3dvar_treatment'
+CTR_FLW = '3dvar_control'
 
 # starting date and zero hour of data
 START_DATE = '2021-01-22T00:00:00'

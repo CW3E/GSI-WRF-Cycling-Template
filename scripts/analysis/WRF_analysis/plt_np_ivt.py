@@ -50,13 +50,13 @@ from py_plt_utilities import USR_HME
 ##################################################################################
 # define control flow to analyze 
 #CTR_FLW = 'deterministic_forecast_control'
-CTR_FLW = 'deterministic_forecast_treatment'
+CTR_FLW = 'deterministic_forecast_control'
 
 # start date time of WRF forecast
-START_DT = '2021-01-23_00:00:00'
+START_DT = '2021-01-25_00:00:00'
 
 # valid date time for analysis
-ANL_DT = '2021-01-28_00:00:00'
+ANL_DT = '2021-01-29_00:00:00'
 
 # max domain to plot
 MAX_DOM = 1

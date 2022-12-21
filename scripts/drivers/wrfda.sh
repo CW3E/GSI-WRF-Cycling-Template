@@ -78,14 +78,14 @@ if [ ! "${ANL_TIME}" ]; then
 fi
 
 # Convert ANL_TIME from 'YYYYMMDDHH' format to date_str Unix date format
-if [ ! ${#ANL_TIME} -e 10 ]; then
+if [ ${#ANL_TIME} -ne 10 ]; then
+  echo "ERROR: \${ANL_TIME}, '${ANL_TIME}', is not in 'yyyymmddhh' format." 
+  exit 1
+else
   start_time="${START_TIME:0:8} ${START_TIME:8:2}"
   anl_date=${ANL_TIME:0:8}
   hh=${ANL_TIME:8:2}
   date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anl_date} ${hh} hours"`
-else
-  echo "ERROR: \${ANL_TIME}, '${ANL_TIME}', is not in 'yyyymmddhh' format." 
-  exit 1
 fi
 
 if [[ ${IF_ENS_COLD_START} != ${YES} && ${IF_ENS_COLD_START} != ${NO} ]]; then

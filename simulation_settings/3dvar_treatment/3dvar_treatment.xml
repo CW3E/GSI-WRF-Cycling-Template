@@ -9,7 +9,7 @@
   <!-- COMPUTER-DEPENDENT ITEMS -->
   <!ENTITY CLONE_ROOT          "/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template">
   <!ENTITY SOFT_ROOT           "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
-  <!ENTITY DATA_ROOT           "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR/data/static/">
+  <!ENTITY DATA_ROOT           "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR/data/static">
   <!-- END COMPUTER-DEPENDENT -->
 
   <!-- USER-DEPENDENT ITEMS -->
@@ -18,7 +18,7 @@
   <!-- END USER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
-  <!ENTITY EXP_HOME            "&CLONE_ROOT;/simulation_io/&EXP_NAME;">
+  <!ENTITY EXP_HOME            "&CLONE_ROOT;/data/simulation_io/&EXP_NAME;">
   <!ENTITY EXP_LOG             "&CLONE_ROOT;/logs/&EXP_NAME;">
   <!ENTITY EXP_CONFIG          "&CLONE_ROOT;/simulation_settings/&EXP_NAME;">
   <!ENTITY SCRIPTS             "&CLONE_ROOT;/scripts">
@@ -395,10 +395,6 @@
     <envar>
       <name>IF_ENS_COLD_START</name>
       <value>No</value>
-    </envar>
-    <envar>
-      <name>IF_SATRAD</name>
-      <value>&IF_SATRAD;</value>
     </envar>
     <envar>
       <name>IF_HYBRID</name>
