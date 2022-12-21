@@ -326,10 +326,10 @@ e_S=`date +%S -d "${end_time}"`
 # Update max_dom in namelist
 in_dom="\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}"
 out_dom="\1 = ${MAX_DOM}"
-cat namelist.wps \
+cat namelist.input \
   | sed "s/${in_dom}/${out_dom}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
+  > namelist.input.new
+mv namelist.input.new namelist.input
 
 # Update the run_days in wrf namelist.input
 cat namelist.input \
