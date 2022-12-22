@@ -322,6 +322,8 @@ else
   max_dom=${WRF_ENS_DOM}
 fi
 
+
+# NOTE: NEED TO CASE THIS SWITCH IN ORDER TO ACCOMODATE STATIC ENSEMBLES
 if [[ ${IF_CTR_COLD_START} = ${NO} ]]; then
   # NOTE: the background files are taken from the WRFDA outputs when cycling,
   # having updated the lower BCs

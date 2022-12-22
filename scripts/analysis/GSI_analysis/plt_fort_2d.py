@@ -60,13 +60,16 @@ from gsi_py_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3dvar_control'
+CTR_FLW = '3denvar_b25'
+
+# define the case-wise sub-directory
+CSE = 'VD'
 
 # starting date and zero hour of data
-START_DATE = '2021-01-22T00:00:00'
+START_DT = '2019-02-09T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2021-01-28T18:00:00'
+END_DT = '2019-02-15T00:00:00'
 
 # define domain to plot
 DOM = 1
@@ -78,11 +81,12 @@ FORT='201'
 # Begin plotting
 ##################################################################################
 # define derived data paths
-data_root = USR_HME + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
-in_path = data_root + '/GSI_fort_' + FORT + '_' + START_DATE + '_to_' +\
-          END_DATE + '.bin'
+cse = CSE + '/' + CTR_FLW
+data_root = USR_HME + '/data/analysis' + '/' + cse + '/GSI_analysis'
+in_path = data_root + '/GSI_fort_' + FORT + '_' + START_DT + '_to_' +\
+          END_DT + '.bin'
 out_path = data_root + '/GSI_fort_' + FORT + '_' + str(DOM) + '_' +\
-           START_DATE + '_to_' + END_DATE + '.png'
+           START_DT + '_to_' + END_DT + '.png'
 
 # load and plot data
 f = open(in_path, 'rb')

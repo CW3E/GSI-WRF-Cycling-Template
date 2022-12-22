@@ -35,22 +35,25 @@ import copy
 import glob
 from datetime import datetime as dt
 from datetime import timedelta
-from py_plt_utilities import STR_INDT, get_anls, PROJ_ROOT
+from py_plt_utilities import STR_INDT, get_anls, USR_HME
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_vbc_early_start_date_test'
+CTR_FLW = 'deterministic_forecast_b25'
+
+# define the case-wise sub-directory
+CSE = 'VD'
 
 # starting date and zero hour of forecast cycles
-START_DATE = '2019-02-11T00:00:00'
+START_DT = '2019-02-11T00:00:00'
 
 # final date and zero hour of data of forecast cycles
-END_DATE = '2019-02-14T00:00:00'
+END_DT = '2019-02-14T00:00:00'
 
 # valid date for the verification
-VALID_DATE = '2019-02-15T00:00:00'
+VALID_DT = '2019-02-15T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
@@ -59,25 +62,25 @@ CYCLE_INT = 24
 # Process data
 ##################################################################################
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/MET_analysis'
+cse = CSE + '/' + CTR_FLW
+data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
 
 # convert to date times
-start_date = dt.fromisoformat(START_DATE)
-end_date = dt.fromisoformat(END_DATE)
-valid_date = dt.fromisoformat(VALID_DATE)
+start_dt = dt.fromisoformat(START_DT)
+end_dt = dt.fromisoformat(END_DT)
 
 # define the output name
-out_path = data_root + '/grid_stats_lead_' + START_DATE +\
-           '_to_' + END_DATE + '_valid_' + VALID_DATE +\
+out_path = data_root + '/grid_stats_lead_' + START_DT +\
+           '_to_' + END_DT + '_valid_' + VALID_DT +\
            '.bin'
 
 # generate the date range for the analyses
-analyses = get_anls(start_date, end_date, CYCLE_INT)
+analyses = get_anls(start_dt, end_dt, CYCLE_INT)
 
 # initiate empty dictionary for storage of dataframes by keyname
 data_dict = {}
 
-print('Processing dates ' + START_DATE + ' to ' + END_DATE)
+print('Processing dates ' + START_DT + ' to ' + END_DT)
 for (anl_date, anl_strng) in analyses:
     # define the gridstat files to open based on the analysis date
     in_paths = data_root + '/' + anl_strng + '/grid_stat_*.txt'

@@ -61,13 +61,16 @@ import os
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3dvar_treatment'
+CTR_FLW = '3denvar_b25'
+
+# define the case-wise sub-directory
+CSE = 'VD'
 
 # starting date and zero hour of data
-START_DATE = '2021-01-22T00:00:00'
+START_DT = '2019-02-09T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2021-01-28T18:00:00'
+END_DT = '2019-02-15T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 6
@@ -82,20 +85,21 @@ FORT='201'
 # Process data
 ##################################################################################
 # define derived data paths
-data_root = USR_HME + '/data/simulation_io' + '/' + CTR_FLW
-out_dir = USR_HME + '/data/analysis' + '/' + CTR_FLW + '/GSI_analysis'
+cse = CSE + '/' + CTR_FLW
+data_root = USR_HME + '/data/simulation_io' + '/' + cse
+out_dir = USR_HME + '/data/analysis' + '/' + cse + '/GSI_analysis'
 os.system('mkdir -p ' + out_dir)
 
 # convert to date times
-start_date = dt.fromisoformat(START_DATE)
-end_date = dt.fromisoformat(END_DATE)
+start_dt = dt.fromisoformat(START_DT)
+end_dt = dt.fromisoformat(END_DT)
 
 # define the output name
-out_path = out_dir + '/GSI_fort_' + FORT + '_' + START_DATE +\
-           '_to_' + END_DATE + '.bin'
+out_path = out_dir + '/GSI_fort_' + FORT + '_' + START_DT +\
+           '_to_' + END_DT + '.bin'
 
 # generate the date range for the analyses
-analyses = get_anls(start_date, end_date, CYCLE_INT)
+analyses = get_anls(start_dt, end_dt, CYCLE_INT)
 
 # initiate empty dataframe / dictionary
 d0 = pd.DataFrame.from_dict({

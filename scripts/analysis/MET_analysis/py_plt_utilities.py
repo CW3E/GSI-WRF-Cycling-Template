@@ -35,10 +35,7 @@ from datetime import timedelta
 STR_INDT = "    "
 
 # define location of git clone 
-USR_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
-
-# define project space
-PROJ_ROOT = USR_HME + '/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR'
+USR_HME = '/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template'
 
 ##################################################################################
 # UTILITY METHODS

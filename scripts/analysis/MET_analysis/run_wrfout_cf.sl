@@ -10,18 +10,18 @@
 #SBATCH --mail-type BEGIN
 #SBATCH --mail-type END
 #SBATCH --mail-type FAIL
-#####################################################
+#################################################################################
 # Description
-#####################################################
+#################################################################################
 # This driver script is designed as a companion to the WRF preprocessing script
 # wrfout_to_cf.ncl to ready WRF outputs for MET. This script is based on original
 # source code provided by Rachel Weihs and Caroline Papadopoulos.  This is
 # re-written to homogenize project structure and to include flexibility with
 # processing date ranges of data.
 #
-#####################################################
+#################################################################################
 # License Statement
-#####################################################
+#################################################################################
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,20 +36,23 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 #
-#####################################################
+#################################################################################
 # SET GLOBAL PARAMETERS 
-#####################################################
+#################################################################################
 # uncoment to make verbose for debugging
-set -x
+#set -x
 
 # set local environment for ncl and dependencies
 module load ncl_ncarg
 
 # root directory for git clone
-USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
+USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # define control flow to analyze 
-CTR_FLW="deterministic_forecast_vbc_early_start_date_test"
+CTR_FLW="deterministic_forecast_b25"
+
+# define the case-wise sub-directory
+CSE="VD"
 
 # define date range and forecast cycle interval
 START_DT="2019021100"
@@ -63,32 +66,27 @@ ANL_END="2019-02-15_00:00:00"
 # verification domain for the forecast data
 DMN="2"
 
-#####################################################
+#################################################################################
 # Process data
-#####################################################
+#################################################################################
 # define derived data paths
-proj_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
-work_root="${proj_root}/data/analysis/${CTR_FLW}/MET_analysis"
-data_root="${proj_root}/data/forecast_io/${CTR_FLW}"
+cse="${CSE}/${CTR_FLW}"
+out_root="${USR_HME}/data/analysis/${cse}/MET_analysis"
+in_root="${USR_HME}/data/simulation_io/${cse}"
+scripts_home="${USR_HME}/scripts/analysis/MET_analysis"
 
-# Convert START_DT from 'YYYYMMDDHH' format to start_dt in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
-if [ `echo "${START_DT}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  start_dt=`echo "${START_DT}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
-else
-  echo "ERROR: start time, '${START_DT}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
-  exit 1
-fi
+# change to scripts directory
+cmd="cd ${scripts_home}"
+echo ${cmd}
+eval ${cmd}
 
+# Convert START_DT from 'YYYYMMDDHH' format to start_dt Unix date format
+start_dt="${START_DT:0:8} ${START_DT:8:2}"
 start_dt=`date -d "${start_dt}"`
 
-# Convert END_DT from 'YYYYMMDDHH' format to end_dt in isoformat YYYY:MM:DD_HH
-if [ `echo "${END_DT}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  end_dt=`echo "${END_DT}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
-else
-  echo "ERROR: end time, '${END_DT}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
-  exit 1
-fi
-
+# Convert END_DT from 'YYYYMMDDHH' format to end_dt iso format 
+end_dt="${END_DT:0:8} ${END_DT:8:2}"
+end_dt=`date -d "${end_dt}"`
 end_dt=`date +%Y:%m:%d_%H -d "${end_dt}"`
 
 # loop through the date range
@@ -103,23 +101,24 @@ timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
 
 while [[ ! ${timestr} > ${end_dt} ]]; do
   # set input paths
-  input_path="${data_root}/${datestr}/wrfprd/ens_00"
+  input_path="${in_root}/${datestr}/wrfprd/ens_00"
   
   # set input file names
   file_1="wrfout_d0${DMN}_${ANL_START}"
   file_2="wrfout_d0${DMN}_${ANL_END}"
   
   # set output path
-  output_path="${work_root}/${datestr}"
+  output_path="${out_root}/${datestr}"
   mkdir -p ${output_path}
   
   # set output file name
   output_file="wrf_post_${ANL_START}_to_${ANL_END}.nc"
   
-  statement="ncl 'file_in=\"${input_path}/${file_2}\"' 'file_prev=\"${input_path}/${file_1}\"                               
-      ' 'file_out=\"${output_path}/${output_file}\"' wrfout_to_cf.ncl "
+  cmd="ncl 'file_in=\"${input_path}/${file_2}\"' 'file_prev=\"${input_path}/${file_1}\"'" 
+  cmd="${cmd} 'file_out=\"${output_path}/${output_file}\"' wrfout_to_cf.ncl "
   
-  eval ${statement}
+  echo ${cmd}
+  eval ${cmd}
 
   # update the cycle number
   (( cycle_num += 1))
@@ -132,7 +131,9 @@ while [[ ! ${timestr} > ${end_dt} ]]; do
   timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
 done
 
-#####################################################
+echo "Script completed at `date`, verify outputs at out_root ${out_root}"
+
+#################################################################################
 # end
 
 exit 0

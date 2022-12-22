@@ -2,8 +2,9 @@
 <!DOCTYPE workflow
 [
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
+
   <!-- NAME OF CONTROL FLOW -->
-  <!ENTITY EXP_NAME            "3dvar_control">
+  <!ENTITY EXP_NAME            "3denvar_static_perts">
   <!-- NAME OF CONTROL FLOW -->
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
@@ -35,16 +36,19 @@
   <!ENTITY CRTM_ROOT           "&SOFT_ROOT;/CRTM_CODE/CRTM_v2.3.0/Big_Endian">
   <!-- END SOFTWARE SETTINGS -->
 
+
   <!-- CYCLING SETTINGS -->
-  <!ENTITY CYCLE_START         "202101211800">
-  <!ENTITY SECOND_CYCLE        "202101220000">
-  <!ENTITY CYCLE_END           "202101281800">
+  <!ENTITY CYCLE_START         "201902081800">
+  <!ENTITY SECOND_CYCLE        "201902090000">
+  <!ENTITY CYCLE_END           "201902150000">
   <!ENTITY CYCLE_INTERVAL      "06:00:00">
-  <!ENTITY N_ENS               "00"> <!-- Must equal the max index of the ENS_LIST above or 00 if not hybrid DA -->
+  <!ENTITY ENS_LIST            "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
+  <!ENTITY N_ENS               "20"> <!-- Must equal the max index of the ENS_LIST above or 00 if not hybrid DA -->
   <!-- END CYCLING SETTINGS -->
 
   <!-- UNGRIB SETTINGS -->
-  <!ENTITY CTR_BKG_DATA        "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
+  <!ENTITY CTR_BKG_DATA        "GFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
+  <!ENTITY ENS_BKG_DATA        "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
   <!ENTITY WPS_CONSTANT        "&ENVIRONMENTS;/WPS_constants.sh">
   <!-- END UNGRIB SETTINGS -->
 
@@ -56,6 +60,7 @@
   <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01"> <!-- Output interval for WRF in HH -->
   <!ENTITY CTR_DATA_INTERVAL   "03"> <!-- This setting is applied to all WRF preprocessing and WRF control run -->
+  <!ENTITY ENS_DATA_INTERVAL   "06"> <!-- This setting is applied to all WRF preprocessing and WRF ensemble runs -->
   <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->
   <!ENTITY IF_FEEDBACK         "No"> <!-- This setting defines 1- or 2-way nesting with WRF domains -->
   <!ENTITY NIO_TPG             "0"> <!-- Set NIO_TPG=0 for default TURN OFF QUILTING --> 
@@ -64,6 +69,7 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY GSI_CONSTANT        "&ENVIRONMENTS;/GSI_constants.sh">
+  <!ENTITY IF_SATRAD           "Yes">
   <!ENTITY MAX_BC_LOOP         "2">
   <!-- END GSI SETTINGS -->
  
@@ -83,27 +89,27 @@
   <!ENTITY WRF_MEM             "5G">
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
-  <!ENTITY WRF_WC              "00:30:00">
+  <!ENTITY WRF_WC              "01:30:00">
   <!ENTITY GSI_PROC            "384">
   <!ENTITY GSI_MEM             "5G">
   <!ENTITY GSI_NODESIZE        "24">
   <!ENTITY GSI_NODES           "16">
-  <!ENTITY GSI_WC              "00:30:00">
+  <!ENTITY GSI_WC              "06:30:00">
   <!-- END JOB SETTINGS -->
 ]>
 
 <workflow realtime="F" scheduler="&SCHED;">
   <cycledef group="first_cycle">&CYCLE_START; &CYCLE_START; &CYCLE_INTERVAL;</cycledef>
   <cycledef group="q_daily">&SECOND_CYCLE; &CYCLE_END; &CYCLE_INTERVAL;</cycledef>
-  <log verbosity="10"><cyclestr>&EXP_LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
+  <log verbosity="10"><cyclestr>&LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
   
-  <task name="ungrib_ens_00" maxtries="12" cycledefs="first_cycle,q_daily">
+  <task name="ungrib_ens_00" maxtries="6" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/ungrib.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>ungrib_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&EXP_LOG;/ungrib/ungrib_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/ungrib/ungrib_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -168,13 +174,13 @@
     </dependency>
   </task>
 
-  <task name="metgrid_ens_00" maxtries="12" cycledefs="first_cycle,q_daily">
+  <task name="metgrid_ens_00" maxtries="6" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/metgrid.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>metgrid_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&EXP_LOG;/metgrid/metgrid_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/metgrid/metgrid_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -233,13 +239,13 @@
     </dependency>
   </task>
 
-  <task name="real_ens_00" maxtries="12" cycledefs="first_cycle,q_daily">
+  <task name="real_ens_00" maxtries="6" cycledefs="first_cycle,q_daily">
     <command>&DRIVERS;/real.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&EXP_LOG;/real/real_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/real/real_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -306,13 +312,13 @@
     </dependency>
   </task>
 
-  <task name="wrfda_lowbc" maxtries="12" cycledefs="q_daily">
+  <task name="wrfda_lowbc" maxtries="6" cycledefs="q_daily">
     <command>&DRIVERS;/wrfda.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>wrfda_lowbc_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&EXP_LOG;/wrfda/wrfda_lowbc_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/wrfda/wrfda_lowbc_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -333,7 +339,7 @@
     <!-- Update the lower boundary conditions of ensemble for convenience w/ IO linking, though this has no effect -->
     <envar>
       <name>IF_ENS_COLD_START</name>
-      <value>Yes</value>
+      <value>No</value>
     </envar>
     <envar>
       <name>IF_LOWER</name>
@@ -364,13 +370,13 @@
     </dependency>
   </task>
 
-  <task name="gsi_analysis" maxtries="12" cycledefs="q_daily">
+  <task name="gsi_analysis" maxtries="6" cycledefs="q_daily">
     <command>&DRIVERS;/gsi.sh</command>
     <nodesize>&GSI_NODESIZE;</nodesize>
     <cores>&GSI_PROC;</cores>
     <walltime>&GSI_WC;</walltime>
     <jobname><cyclestr>gsi_analysis_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&EXP_LOG;/gsi/gsi_analysis_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/gsi/gsi_analysis_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_RAPID;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -397,8 +403,12 @@
       <value>No</value>
     </envar>
     <envar>
+      <name>IF_SATRAD</name>
+      <value>&IF_SATRAD;</value>
+    </envar>
+    <envar>
       <name>IF_HYBRID</name>
-      <value>No</value>
+      <value>Yes</value>
     </envar>
     <envar>
       <name>IF_OBSERVER</name>
@@ -421,12 +431,12 @@
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>GSI_EXE</name>
-      <value>&GSI_EXE;</value>
+      <name>GSI_ROOT</name>
+      <value>&GSI_ROOT;</value>
     </envar>
     <envar>
-      <name>CRTM_ROOT</name>
-      <value>&CRTM_ROOT;</value>
+      <name>CRTM_VERSION</name>
+      <value>&CRTM_VERSION;</value>
     </envar>
     <envar>
       <name>EXP_CONFIG</name>
@@ -453,13 +463,13 @@
     </dependency>
   </task>
 
-  <task name="wrfda_latbc" maxtries="12" cycledefs="q_daily">
+  <task name="wrfda_latbc" maxtries="6" cycledefs="q_daily">
     <command>&DRIVERS;/wrfda.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_WC;</walltime>
     <jobname><cyclestr>wrfda_latbc_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&EXP_LOG;/wrfda/wrfda_latbc_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/wrfda/wrfda_latbc_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -515,13 +525,13 @@
     </dependency>
   </task>
 
-  <task name="first_wrf_ens_00" maxtries="12" cycledefs="first_cycle">
+  <task name="first_wrf_ens_00" maxtries="6" cycledefs="first_cycle">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>
     <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&EXP_LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -616,13 +626,13 @@
     </dependency>
   </task>
 
-  <task name="wrf_ens_00" maxtries="12" cycledefs="q_daily">
+  <task name="wrf_ens_00" maxtries="6" cycledefs="q_daily">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_WC;</walltime>
     <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&EXP_LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <join><cyclestr>&LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -716,5 +726,3 @@
      <taskdep task="wrfda_latbc" state="SUCCEEDED"/>
     </dependency>
   </task>
-
-</workflow>

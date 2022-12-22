@@ -43,22 +43,25 @@ import seaborn as sns
 import numpy as np
 import pickle
 import os
-from py_plt_utilities import PROJ_ROOT
+from py_plt_utilities import USR_HME
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_vbc_early_start_date_test'
+CTR_FLW = 'deterministic_forecast_b75'
+
+# define case-wise sub-directory
+CSE = 'VD'
 
 # starting date and zero hour of forecast cycles
-START_DATE = '2019-02-11T00:00:00'
+START_DT = '2019-02-11T00:00:00'
 
 # final date and zero hour of data of forecast cycles
-END_DATE = '2019-02-14T00:00:00'
+END_DT = '2019-02-14T00:00:00'
 
 # valid date for the verification
-VALID_DATE = '2019-02-15T00:00:00'
+VALID_DT = '2019-02-15T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
@@ -73,21 +76,17 @@ LND_MSK = 'CALatLonPoints'
 # Begin plotting
 ##################################################################################
 # define derived data paths 
-data_root = PROJ_ROOT + '/data/analysis/' + CTR_FLW + '/MET_analysis'
+cse = CSE + '/' + CTR_FLW
+data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
 stat1 = STATS[0]
 stat2 = STATS[1]
 
-# convert to date times
-start_date = dt.fromisoformat(START_DATE)
-end_date = dt.fromisoformat(END_DATE)
-valid_date = dt.fromisoformat(VALID_DATE)
-
 # define the output name
-in_path = data_root + '/grid_stats_lead_' + START_DATE +\
-          '_to_' + END_DATE + '_valid_' + VALID_DATE +\
+in_path = data_root + '/grid_stats_lead_' + START_DT +\
+          '_to_' + END_DT + '_valid_' + VALID_DT +\
           '.bin'
 
-out_path = data_root + '/' + VALID_DATE + '_' + LND_MSK + '_' + stat1 + '_' +\
+out_path = data_root + '/' + VALID_DT + '_' + LND_MSK + '_' + stat1 + '_' +\
            stat2 + '_heatplot.png'
 
 f = open(in_path, 'rb')
@@ -119,7 +118,7 @@ vals = [
 # cut down df to CA region and obtain levels of data 
 level_data = data['cts'][vals]
 level_data = level_data.loc[(level_data['VX_MASK'] == LND_MSK)]
-data_levels =  sorted(list(set(level_data['FCST_THRESH'].values)))
+data_levels =  sorted(list(set(level_data['FCST_THRESH'].values)))[::-1]
 data_leads = sorted(list(set(level_data['FCST_LEAD'].values)))[::-1]
 num_levels = len(data_levels)
 num_leads = len(data_leads)
@@ -191,7 +190,7 @@ ax2.tick_params(
         labelright=False,
         )
 
-title1='24hr accumulated precip at ' + VALID_DATE
+title1='24hr accumulated precip at ' + VALID_DT
 title2='Verification region -- ' + LND_MSK
 lab1='Forecast lead hrs'
 lab2='Precip Thresh mm'

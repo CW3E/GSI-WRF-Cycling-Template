@@ -10,9 +10,9 @@
 #SBATCH --mail-type BEGIN
 #SBATCH --mail-type END
 #SBATCH --mail-type FAIL
-#####################################################
+#################################################################################
 # Description
-#####################################################
+#################################################################################
 # This driver script is based on original source code provided by Rachel Weihs
 # and Caroline Papadopoulos.  This is re-written to homogenize project structure
 # and to include flexibility with batch processing date ranges of data.
@@ -21,9 +21,9 @@
 # after pre-procssing WRF forecast data and StageIV precip data for
 # validating the forecast peformance.
 #
-#####################################################
+#################################################################################
 # License Statement
-#####################################################
+#################################################################################
 # Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,17 +38,26 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 #
-#####################################################
+#################################################################################
 # SET GLOBAL PARAMETERS 
-#####################################################
+#################################################################################
 # uncoment to make verbose for debugging
-set -x
+#set -x
 
 # root directory for git clone
-USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
+USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_vbc_early_start_date_test"
+CTR_FLW="deterministic_forecast_b25"
+
+# define the case-wise sub-directory
+CSE="VD"
+
+# root directory for verification data
+DATA_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
+
+# root directory for MET software
+SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # define date range and forecast cycle interval inclusively
 START_DT="2019021100"
@@ -60,36 +69,32 @@ CYCLE_INT="24"
 ANL_START="2019-02-14_00:00:00"
 ANL_END="2019-02-15_00:00:00"
 
-#####################################################
+#################################################################################
 # Process data
-#####################################################
+#################################################################################
 # define derived paths
-proj_root="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
-data_root="${proj_root}/data"
-scripts_home="${proj_root}/scripts/analysis/MET_analysis"
-stageiv_root="${USR_HME}/DATA/stageIV"
-met_root="${USR_HME}/MET_CODE"
-met_src="${met_root}/met-10.0.1.sif"
-mask_root="${met_root}/polygons"
+cse="${CSE}/${CTR_FLW}"
+in_root="${USR_HME}/data/simulation_io/${cse}"
+out_root="${USR_HME}/data/analysis/${cse}/MET_analysis"
+scripts_home="${USR_HME}/scripts/analysis/MET_analysis"
 
-# Convert START_DT from 'YYYYMMDDHH' format to start_dt in Unix date format, e.g. "Fri May  6 19:50:23 GMT 2005"
-if [ `echo "${START_DT}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  start_dt=`echo "${START_DT}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
-else
-  echo "ERROR: start time, '${START_DT}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
-  exit 1
-fi
+# software and data deps.
+stageiv_root="${DATA_ROOT}/DATA/stageIV"
+met_src="${SOFT_ROOT}/MET_CODE/met-10.0.1.sif"
+mask_root="${SOFT_ROOT}/MET_CODE/polygons"
 
+# change to scripts directory
+cmd="cd ${scripts_home}"
+echo ${cmd}
+eval ${cmd}
+
+# Convert START_DT from 'YYYYMMDDHH' format to start_dt Unix date format
+start_dt="${START_DT:0:8} ${START_DT:8:2}"
 start_dt=`date -d "${start_dt}"`
 
-# Convert END_DT from 'YYYYMMDDHH' format to end_dt in isoformat YYYY:MM:DD_HH
-if [ `echo "${END_DT}" | awk '/^[[:digit:]]{10}$/'` ]; then
-  end_dt=`echo "${END_DT}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/'`
-else
-  echo "ERROR: end time, '${END_DT}', is not in 'yyyymmddhh' or 'yyyymmdd hh' format"
-  exit 1
-fi
-
+# Convert END_DT from 'YYYYMMDDHH' format to end_dt iso format 
+end_dt="${END_DT:0:8} ${END_DT:8:2}"
+end_dt=`date -d "${end_dt}"`
 end_dt=`date +%Y:%m:%d_%H -d "${end_dt}"`
 
 # loop through the date range
@@ -104,7 +109,7 @@ timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
 
 while [[ ! ${timestr} > ${end_dt} ]]; do
   # set working directory based on looped forecast start date
-  work_root="${data_root}/analysis/${CTR_FLW}/MET_analysis/${datestr}"
+  work_root="${out_root}/${datestr}"
 
   # Set forecast initialization string
   inityear=${datestr:0:4}
@@ -179,7 +184,9 @@ while [[ ! ${timestr} > ${end_dt} ]]; do
   timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
 done
 
-#####################################################
+echo "Script completed at `date`, verify outputs at out_root ${out_root}"
+
+#################################################################################
 # end
 
 exit 0
