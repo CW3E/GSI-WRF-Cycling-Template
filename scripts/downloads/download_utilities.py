@@ -33,7 +33,7 @@ from datetime import timedelta
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # directory of git clone
-PROJ_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien'
+USR_HME = '/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template'
 
 ##################################################################################
 # UTILITY METHODS

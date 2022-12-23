@@ -77,25 +77,20 @@ fi
 ##################################################################################
 # Options below are defined in control flow xml (case insensitive)
 #
-# WRF_CTR_DOM       = INT : GSI analyzes the control domain d0${dmn} for 
-#                           dmn -le ${WRF_CTR_DOM}
-# WRF_ENS_DOM       = INT : GSI utilizes ensemble perturbations on d0${dmn}
-#                           for dmn -le ${WRF_ENS_DOM}
-# IF_CTR_COLD_START = Yes : GSI analyzes wrfinput control file instead
-#                           of wrfout control file
-# IF_ENS_COLD_START = Yes : GSI uses ensemble perturbations from wrfinput files
-#                           instead of wrfout files
-#                     No  : GSI uses conventional data alone
-#
-# IF_HYBRID         = Yes : Run GSI as 3D/4D EnVAR
-# IF_OBSERVER       = Yes : Only used as observation operator for EnKF
-# N_ENS             = INT : Max ensemble index (00 for control alone)
-#                           NOTE: this must be set when `IF_HYBRID=Yes` and
-#                           when `IF_OBSERVER=Yes`
-# MAX_BC_LOOP       = INT : Maximum number of times to iteratively generate
-#                           variational bias correction files, loop zero starts
-#                           with GDAS defaults
-# IF_4DENVAR        = Yes : Run GSI as 4D EnVar
+# WRF_CTR_DOM = INT : GSI analyzes the control domain d0${dmn} for 
+#                     dmn -le ${WRF_CTR_DOM}
+# WRF_ENS_DOM = INT : GSI utilizes ensemble perturbations on d0${dmn}
+#                     for dmn -le ${WRF_ENS_DOM}
+# IF_HYBRID   = Yes : Run GSI as 3D/4D EnVAR
+# IF_OBSERVER = Yes : Only used as observation operator for EnKF
+# N_ENS       = INT : Max ensemble index (00 for control alone)
+#                     NOTE: this must be set when `IF_HYBRID=Yes` and
+#                     when `IF_OBSERVER=Yes`
+# MAX_BC_LOOP = INT : Maximum number of times to iteratively generate
+#                     variational bias correction files, loop zero starts
+#                     with GDAS defaults
+# BETA        = FLT : Scaling float in [0,1], 0 - full ensemble, 1 - full static
+# IF_4DENVAR  = Yes : Run GSI as 4D EnVar
 #
 ##################################################################################
 
@@ -138,7 +133,18 @@ if [[ ${IF_HYBRID} = ${YES} ]]; then
     echo "ERROR: ensemble size \${N_ENS} + 1 must be three or greater."
     exit 1
   fi
-  echo "GSI performs hybrid ensemble variational DA with ensemble size ${N_ENS}."
+  if [ ! "${BETA}" ]; then
+    msg="ERROR: \${BETA} must be specified to the weight "
+    msg+="between ensemble and static covariance."
+    echo ${msg}
+    exit 1
+    if [ ${BETA} -lt 0 || ${BETA} -gt 1 ]; then
+      echo "ERROR: ${BETA} must be between 0 and 1."
+      exit 1
+    fi
+  fi
+  echo "GSI performs hybrid ensemble variational DA with ensemble size ${N_ENS}"
+  echo "Background covariance weight ${BETA}."
   ifhyb=".true."
 elif [[ ${IF_HYBRID} = ${NO} ]]; then
   echo "GSI performs variational DA without ensemble."
@@ -207,13 +213,14 @@ fi
 #              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # DATA_ROOT  = Directory for all forcing data files, including grib files,
 #              obs files, etc.
+# ENS_ROOT   = Background ensemble located at ${ENS_ROOT}/ens_${ens_n}/wrfout* 
 # MPIRUN     = MPI Command to execute GSI
 # GSI_PROC   = Number of workers for MPI command to exectute on
 #
-# Below variables are derived by cycling.xml variables for convenience
+# Below variables are derived from control flow variables for convenience
 #
-# date_str   = Defined by the ANL_TIME variable, to be used as path
-#              name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
+# anl_iso    = Defined by the ANL_TIME variable, to be used as path
+#              name variable in iso format for wrfout
 #
 ##################################################################################
 
@@ -224,13 +231,13 @@ fi
 
 # Convert ANL_TIME from 'YYYYMMDDHH' format to start_time Unix date format
 if [ ${#ANL_TIME} -ne 10 ]; then
-  echo "ERROR: start time, '${ANL_TIME}', is not in 'yyyymmddhh' format."
+  echo "ERROR: start time, '${ANL_TIME}', is not in 'YYYYMMDDHH' format."
   exit 1
 else
-  # Define directory path name variable date_str=YYMMDDHH from ANL_TIME
+  # Define directory path name variable anl_iso from ANL_TIME
   hh=${ANL_TIME:8:2}
   anl_date=${ANL_TIME:0:8}
-  date_str=`date +%Y-%m-%d_%H:%M:%S -d "${anl_date} ${hh} hours"`
+  anl_iso=`date +%Y-%m-%d_%H:%M:%S -d "${anl_date} ${hh} hours"`
 fi
 
 if [ ! "${GSI_EXE}" ]; then
@@ -273,6 +280,26 @@ if [ ! -d "${CYCLE_HOME}" ]; then
   exit 1
 fi
 
+if [ ! "${DATA_ROOT}" ]; then
+  echo "ERROR: \${DATA_ROOT} is not defined."
+  exit 1
+fi
+
+if [ ! -d "${DATA_ROOT}" ]; then
+  echo "ERROR: \${DATA_ROOT} directory ${DATA_ROOT} does not exist."
+  exit 1
+fi
+
+if [ ! "${ENS_ROOT}" ]; then
+  echo "ERROR: \${ENS_ROOT} is not defined."
+  exit 1
+fi
+
+if [ ! -d "${ENS_ROOT}" ]; then
+  echo "ERROR: \${ENS_ROOT} directory ${ENS_ROOT} does not exist."
+  exit 1
+fi
+
 if [ ! "${MPIRUN}" ]; then
   echo "ERROR: \${MPIRUN} is not defined."
   exit 1
@@ -295,8 +322,6 @@ fi
 #
 # work_root    = Working directory where GSI runs, either to analyze the control
 #                as the observer for EnKF
-# bkg_root     = Path for root directory of control from WRFDA or real, depending
-#                on cycling settings
 # obs_root     = Path of observations files
 # fix_root     = Path of fix files
 # gsi_namelist = Path and name of the gsi namelist constructor script
@@ -322,17 +347,6 @@ else
   max_dom=${WRF_ENS_DOM}
 fi
 
-
-# NOTE: NEED TO CASE THIS SWITCH IN ORDER TO ACCOMODATE STATIC ENSEMBLES
-if [[ ${IF_CTR_COLD_START} = ${NO} ]]; then
-  # NOTE: the background files are taken from the WRFDA outputs when cycling,
-  # having updated the lower BCs
-  bkg_root=${CYCLE_HOME}/wrfdaprd
-else
-  # otherwise, the background files are take from wrfinput generated by real.exe
-  bkg_root=${CYCLE_HOME}/realprd
-fi
-
 obs_root=${DATA_ROOT}/obs_data
 fix_root=${EXP_CONFIG}/fix
 satlist=${fix_root}/satlist.txt
@@ -343,11 +357,6 @@ prepbufr=${prepbufr_dir}/prepbufr.gdas.${anl_date}.t${hh}z.nr
 
 if [ ! -d "${obs_root}" ]; then
   echo "ERROR: \${obs_root} directory '${obs_root}' does not exist."
-  exit 1
-fi
-
-if [ ! -d "${bkg_root}" ]; then
-  echo "ERROR: \${bkg_root} directory '${bkg_root}' does not exist."
   exit 1
 fi
 
@@ -712,11 +721,8 @@ while [ ${dmn} -le ${max_dom} ]; do
     #
     ##################################################################################
 
-    if [[ ${IF_CTR_COLD_START} = ${NO} ]]; then
-      bkg_file=${bkg_root}/ens_00/lower_bdy_update/wrfout_d0${dmn}_${date_str}
-    else
-      bkg_file=${bkg_root}/ens_00/wrfinput_d0${dmn}
-    fi
+    bkg_dir="${CYCLE_HOME}/wrfdaprd/lower_boundary_update/ens_00"
+    bkg_file="${bkg_dir}/wrfout_d0${dmn}_${anl_iso}"
 
     if [ ! -r "${bkg_file}" ]; then
       echo "ERROR: background file ${bkg_file} does not exist."
@@ -745,15 +751,6 @@ while [ ${dmn} -le ${max_dom} ]; do
     ##################################################################################
 
     if [[ ${IF_HYBRID} = ${YES} ]]; then
-
-      if [[ ${IF_ENS_COLD_START} = ${NO} ]]; then
-        # NOTE: the background files are taken from the WRFDA outputs when cycling, having updated the lower BCs
-        ens_root=${CYCLE_HOME}/wrfdaprd
-      else
-        # otherwise, the background files are take from wrfinput generated by real.exe
-        ens_root=${CYCLE_HOME}/realprd
-      fi
-
       if [ ${dmn} -le ${WRF_ENS_DOM} ]; then
         # take ensemble generated by WRF members
         echo " Copy ensemble perturbations to working directory."
@@ -762,15 +759,10 @@ while [ ${dmn} -le ${max_dom} ]; do
         while [ ${ens_n} -le ${N_ENS} ]; do
           # two zero padding for GEFS
           iimem=`printf %02d $(( 10#${ens_n} ))`
-
-          if [[ ${IF_ENS_COLD_START} = ${NO} ]]; then
-            ens_file=${ens_root}/ens_${iimem}/lower_bdy_update/wrfout_d0${dmn}_${date_str}
-          else
-            ens_file=${ens_root}/ens_${iimem}/wrfinput_d0${dmn}
-          fi
+          ens_file=${ENS_ROOT}/ens_${iimem}/wrfout_d0${dmn}_${anl_iso}
 
           if [ -r ${ens_file} ]; then
-            cmd="ln -sf ${ens_file} ./wrf_en${iimem}"
+            cmd="ln -sf ${ens_file} ./wrf_ens_${iimem}"
 	    echo ${cmd}; eval ${cmd}
           else
             echo "ERROR: ensemble file ${ens_file} does not exist."
@@ -779,7 +771,7 @@ while [ ${dmn} -le ${max_dom} ]; do
           (( ens_n += 1 ))
         done
 
-        ls ./wrf_en* > filelist02
+        ls ./wrf_ens_* > filelist02
 
         # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
         #if [[ ${IF_4DENVAR} = ${YES} ]]; then
@@ -832,8 +824,8 @@ while [ ${dmn} -le ${max_dom} ]; do
     echo "N_ENS             = ${N_ENS}"
     echo "IF_OBSERVER       = ${IF_OBSERVER}"
     echo "IF_4DENVAR        = ${IF_4DENVAR}"
-    echo "WRF_CTR_DOM       =${WRF_CTR_DOM}"
-    echo "WRF_ENS_DOM       =${WRF_ENS_DOM}"
+    echo "WRF_CTR_DOM       = ${WRF_CTR_DOM}"
+    echo "WRF_ENS_DOM       = ${WRF_ENS_DOM}"
     echo
     echo "ANL_TIME          = ${ANL_TIME}"
     echo "GSI_EXE           = ${GSI_EXE}"
@@ -841,10 +833,12 @@ while [ ${dmn} -le ${max_dom} ]; do
     echo "EXP_CONFIG        = ${EXP_CONFIG}"
     echo "CYCLE_HOME        = ${CYCLE_HOME}"
     echo "DATA_ROOT         = ${DATA_ROOT}"
+    echo "BKG               = ${bkg_file}"
+    echo "ENS_ROOT          = ${ENS_ROOT}"
     echo
     now=`date +%Y%m%d%H%M%S`
     echo "gsi analysis started at ${now} on domain d0${dmn}."
-    cmd="${MPIRUN} -n ${GSI_PROC} ${GSI_EXE} > stdout_ens_00.anl.${ANL_TIME} 2>&1"
+    cmd="${MPIRUN} -n ${GSI_PROC} ${GSI_EXE} > stdout.anl.${anl_iso} 2>&1"
     echo ${cmd}; eval ${cmd}
 
     ##################################################################################
@@ -857,8 +851,8 @@ while [ ${dmn} -le ${max_dom} ]; do
       exit ${error}
     fi
 
-    # Rename the output to more understandable names
-    cmd="cp wrf_inout wrfanl_ens_00.${ANL_TIME}"
+    # Copy the output to cycling naming convention
+    cmd="cp wrf_inout wrfanl_ens_00_${anl_iso}"
     echo ${cmd}; eval ${cmd}
 
     ##################################################################################
@@ -902,7 +896,7 @@ while [ ${dmn} -le ${max_dom} ]; do
       for type in ${listall}; do
          count=`ls pe*${type}_${loop}* | wc -l`
          if [[ ${count} -gt 0 ]]; then
-            cat pe*${type}_${loop}* > diag_${type}_${string}.${ANL_TIME}
+            cat pe*${type}_${loop}* > diag_${type}_${string}.${anl_iso}
          fi
       done
     done
@@ -926,8 +920,8 @@ while [ ${dmn} -le ${max_dom} ]; do
     if [[ ${IF_OBSERVER} = ${YES} ]]; then
       string=ges
       for type in ${listall}; do
-        if [[ -f diag_${type}_${string}.${ANL_TIME} ]]; then
-           cmd="mv diag_${type}_${string}.${ANL_TIME} diag_${type}_${string}.ensmean"
+        if [[ -f diag_${type}_${string}.${anl_iso} ]]; then
+           cmd="mv diag_${type}_${string}.${anl_iso} diag_${type}_${string}.ensmean"
            echo ${cmd}; eval ${cmd}
         fi
       done
@@ -953,14 +947,14 @@ while [ ${dmn} -le ${max_dom} ]; do
           rm wrf_inout
         fi
 
-        ens_file="./wrf_en${iimem}"
+        ens_file="./wrf_ens_${iimem}"
         echo "Copying ${ens_file} for GSI observer."
         cmd="cp ${ens_file} wrf_inout"
 	echo ${cmd}; eval ${cmd}
 
         # run GSI
         echo "Run GSI observer for member ${iimem}."
-        cmd="${MPIRUN} ${GSI_EXE} > stdout_ens_${iimem}.anl.${ANL_TIME} 2>&1"
+        cmd="${MPIRUN} ${GSI_EXE} > stdout_ens_${iimem}.anl.${anl_iso} 2>&1"
 	echo ${cmd}; eval ${cmd}
 
         # run time error check and save run time file status

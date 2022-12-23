@@ -170,7 +170,7 @@ fi
 
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format
 if [ ${#START_TIME} -ne 10 ]; then
-  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format."
+  echo "ERROR: start time, '${START_TIME}', is not in 'YYYYMMDDHH' format."
   exit 1
 else
   start_time="${START_TIME:0:8} ${START_TIME:8:2}"
@@ -308,89 +308,83 @@ done
 # Remove any old WRF outputs in the directory
 rm -f wrfout_*
 
-# Link WRF initial conditions from real.exe or GSI analysis depending on IF_CYCLING
+# Link WRF initial conditions from WPS real or GSI analysis depending on IF_CYCLING
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
-  wrfinput_name=wrfinput_d0${dmn}
+  wrfinput=wrfinput_d0${dmn}
+  datestr=`date +%Y-%m-%-d_%H:%M:%S -d "${start_time}"`
   # if cycling AND analyzing this domain, get initial conditions from last analysis
   if [[ ${IF_CYCLING} = ${YES} && ${dmn} -lt ${DOWN_DOM} ]]; then
     if [[ ${dmn} = 1 ]]; then
-      # obtain the input and boundary files from the lateral boundary update by WRFDA 
-      wrfda_outname=${CYCLE_HOME}/wrfdaprd/ens_${ens_n}
-      wrfda_outname=${wrfda_outname}/lateral_bdy_update/wrfvar_output 
-      ln -sf ${wrfda_outname} ./${wrfinput_name}
-      if [ ! -r ./${wrfinput_name} ]; then
-        msg="ERROR: wrfinput ${work_root}/${wrfinput_name} does not exist,"
-	msg+=" or is not readable, check source ${wrfda_outname}."
-        echo ${msg}
+      # obtain the boundary files from the lateral boundary update by WRFDA 
+      wrfanlroot="${CYCLE_HOME}/wrfdaprd/lateral_bdy_update/ens_${ens_n}"
+      wrfbdy="${wrfanlroot}/wrfbdy_d01"
+      cmd="ln -sf ${wrfbdy} ./wrfbdy_d01"
+      echo ${cmd}; eval ${cmd}
+      if [ ! -r "./wrfbdy_d01" ]; then
+        echo "ERROR: wrfinput ${wrfbdy} does not exist or is not readable."
         exit 1
       fi
+
     else
-      # Nested domains have boundary conditions defined by parent,
-      # link from GSI / EnKF analysis or downscaling start
+      # Nested domains have boundary conditions defined by parent
       if [ ${ens_n} -eq 00 ]; then
 	# control solution is indexed 00, analyzed with GSI
-        gsi_outname=${CYCLE_HOME}/gsiprd/d0${dmn}
-	gsi_outname=${gsi_outname}/wrfanl_ens_${ens_n}.${START_TIME}
+        wrfanl_root="${CYCLE_HOME}/gsiprd/d0${dmn}"
       else
 	# ensemble perturbations are updated with EnKF step
-        gsi_outname=${CYCLE_HOME}/enkfprd/d0${dmn}/analysis.${ens_n}
+        wrfanl_root="${CYCLE_HOME}/enkfprd/d0${dmn}"
       fi
-      ln -sf ${gsi_outname} ./${wrfinput_name}
-      if [ ! -r ./${wrfinput_name} ]; then
-        msg="ERROR: ${work_root}/${wrfinput_name} does not exist, or is not "
-	msg+="readable, check source ${gsi_outname}."
-        echo ${msg}
+    fi
+
+    # link the wrf inputs
+    wrfanl="${wrfanlroot}/wrfanl_ens_${ens_n}_${datestr}"
+    cmd="ln -sf ${wrfanl} ./${wrfinput}"
+    echo ${cmd}; eval ${cmd}
+    if [ ! -r "./${wrfinput}" ]; then
+      echo "ERROR: wrfinput ${wrfanl} does not exist or is not readable."
+      exit 1
+    fi
+
+  else
+    # else get initial and boundary conditions from real
+    realroot=${CYCLE_HOME}/realprd/ens_${ens_n}
+    if [[ ${dmn} = 1 ]]; then
+      # Link the wrfbdy_d01 file from real
+      wrfbdy="${realroot}/wrfbdy_d01"
+      cmd="ln -sf ${wrfbdy} ./wrfbdy_d01"
+      echo ${cmd}; eval ${cmd};
+
+      if [ ! -r "./wrfbdy_d01" ]; then
+        echo "ERROR: ${wrfbdy} does not exist or is not readable."
         exit 1
       fi
     fi
-  else
-    # else get initial conditions from real.exe
-    real_outname=${CYCLE_HOME}/realprd/ens_${ens_n}/${wrfinput_name}
-    ln -sf ${real_outname} ./
-    if [ ! -r ./${wrfinput_name} ]; then
-      msg="ERROR: wrfinput ${work_root}/${wrfinput_name} does not exist,"
-      msg+=" or is not readable, check source ${real_outname}."
-      echo ${msg}
+    realname="${realroot}/${wrfinput}"
+    cmd="ln -sf ${realname} ./"
+    echo ${cmd}; eval ${cmd}
+
+    if [ ! -r ./${wrfinput} ]; then
+      echo "ERROR: wrfinput ${realname} does not exist or is not readable."
+      exit 1
+    fi
+
+  fi
+
+  # NOTE: THIS LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
+  if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+    wrflowinp=wrflowinp_d0${dmn}
+    realname=${CYCLE_HOME}/realprd/ens_${ens_n}/${wrflowinp}
+    cmd="ln -sf ${realname} ./"
+    echo ${cmd}; eval ${cmd}
+    if [ ! -r ${wrflowinp} ]; then
+      echo "ERROR: wrflwinp ${wrflowinp} does not exist or is not readable."
       exit 1
     fi
   fi
-  # NOTE: THIS LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
-  if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
-    wrflowinp_name=wrflowinp_d0${dmn}
-    real_outname=${CYCLE_HOME}/realprd/ens_${ens_n}/${wrflowinp_name}
-    ln -sf ${real_outname} ./
-    if [ ! -s ${wrflowinp_name} ]; then
-      msg="ERROR: wrflwinp ${work_root}/${wrflowinp_name} does not exist,"
-      msg+=" or is not readable, check source ${real_outname}."
-      echo ${msg}
-    fi
-  fi
+
   (( dmn += 1 ))
 done
-
-if [[ ${IF_CYCLING} = ${YES} ]]; then
-  # Link the wrfbdy_d01 file from the WRFDA updated BCs
-  wrfda_outname=${CYCLE_HOME}/wrfdaprd/ens_${ens_n}
-  wrfda_outname=${wrfda_outname}/lateral_bdy_update/wrfbdy_d01
-  ln -sf ${wrfda_outname} ./wrfbdy_d01
-  if [ ! -r ${work_root}/wrfbdy_d01 ]; then
-    msg="ERROR: ${work_root}/wrfbdy_d01 does not exist, or is not readable, "
-    msg+="check source in ${wrfda_outname}."
-    echo ${msg}
-    exit 1
-  fi
-else
-  # Link the wrfbdy_d01 file from real.exe
-  real_outname=${CYCLE_HOME}/realprd/ens_${ens_n}/wrfbdy_d01
-  ln -sf ${real_outname} ./wrfbdy_d01
-  if [ ! -r ${work_root}/wrfbdy_d01 ]; then
-    msg="ERROR: ${work_root}/wrfbdy_d01 does not exist, or is not readable, "
-    msg+="check source in ${real_outname}."
-    echo 
-    exit 1
-  fi
-fi
 
 # Move existing rsl files to a subdir if there are any
 echo "Checking for pre-existing rsl files."
@@ -490,7 +484,7 @@ mv namelist.input.new namelist.input
 
 # Update the quilting settings to the parameters set in the workflow
 cat namelist.input \
-  | sed "s/\(${NIO}_${TASK}[Ss]_${PER}_${GROUP}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_TASKS_PER_GROUP}/" \
+  | sed "s/\(${NIO}_${TASK}[Ss]_${PER}_${GROUP}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_TPG}/" \
   | sed "s/\(${NIO}_${GROUP}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_GROUPS}/" \
   > namelist.input.new
 mv namelist.input.new namelist.input
@@ -565,7 +559,7 @@ fi
 
 # Look for successful completion messages adjusted for quilting processes
 nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE WRF/' | wc -l`
-(( ntotal=(WRF_PROC - NIO_GROUPS * NIO_TASKS_PER_GROUP ) * 2 ))
+(( ntotal=(WRF_PROC - NIO_GROUPS * NIO_TPG ) * 2 ))
 echo "Found ${nsuccess} of ${ntotal} completion messages"
 if [ ${nsuccess} -ne ${ntotal} ]; then
   msg="ERROR: ${wrf_exe} did not complete successfully, missing completion "

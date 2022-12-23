@@ -48,7 +48,7 @@ import calendar
 import glob
 from datetime import datetime as dt
 from datetime import timedelta
-from download_utilities import PROJ_ROOT, STR_INDT, get_reqs
+from download_utilities import STR_INDT, get_reqs
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -66,11 +66,10 @@ FCST_INT = 3
 CYCLE_INT = 6
 
 # max forecast length in hours
-MAX_FCST = 6
+MAX_FCST = 18
 
 # root directory where date stamped sub-directories will collect data downloads
-DATA_ROOT = PROJ_ROOT +\
-    '/GSI-WRF-Cycling-Template/Common-Case/3D-EnVAR/data/static/gribbed/GEFS'
+DATA_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/CC/GEFS' 
 
 ##################################################################################
 # UTILITY METHODS

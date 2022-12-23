@@ -150,7 +150,7 @@ fi
 
 # Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format
 if [ ${#START_TIME} -ne 10 ]; then
-  echo "ERROR: start time, '${START_TIME}', is not in 'yyyymmddhh' format."
+  echo "ERROR: start time, '${START_TIME}', is not in 'YYYYMMDDHH' format."
   exit 1
 else
   start_time="${START_TIME:0:8} ${START_TIME:8:2}"

@@ -42,11 +42,15 @@ USR_HME = '/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template'
 # directory for rocoto install
 RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
+# Case study sub directories
+CSES = [
+        'VD',
+       ]
+
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
-CTR_FLWS =[
-           '3dvar_treatment',
-           '3dvar_control',
-          ]
+CTR_FLWS = [
+            '3denvar_b0.50',
+           ]
 
 ##################################################################################
 # Derived paths
@@ -85,52 +89,54 @@ dbs_dir = USR_HME + '/workflow_status'
 ##################################################################################
 
 def run_rocotorun():
-    for ctr_flw in CTR_FLWS:
-        cmd = pathroc + '/bin/rocotorun -w ' +\
-              settings_dir + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
-              ' -d ' + dbs_dir + '/' + ctr_flw + '.store -v 10'  
+    for cse in CSES:
+        for ctr_flw in CTR_FLWS:
+            cmd = pathroc + '/bin/rocotorun -w ' +\
+                  settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                  ' -d ' + dbs_dir + '/' + cse + '/' + ctr_flw + '.store -v 10'  
 
-        os.system(cmd)
+            os.system(cmd)
 
-    # update workflow statuses after loops
-    run_rocotostat()
+        # update workflow statuses after loops
+        run_rocotostat()
 
 def run_rocotostat():
-    for ctr_flw in CTR_FLWS:
-        cmd = pathroc + '/bin/rocotostat -w ' +\
-              settings_dir + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
-              ' -d ' + dbs_dir + '/' + ctr_flw + '.store -c all'+\
-              ' > ' + dbs_dir + '/' + ctr_flw + '_workflow_status.txt'
+    for cse in CSES:
+        for ctr_flw in CTR_FLWS:
+            cmd = pathroc + '/bin/rocotostat -w ' +\
+                  settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                  ' -d ' + dbs_dir + '/' + cse + '/' + ctr_flw + '.store -c all'+\
+                  ' > ' + dbs_dir + '/' + cse + '/' + ctr_flw + '_workflow_status.txt'
 
-        os.system(cmd) 
+            os.system(cmd) 
 
 def run_rocotoboot(flows, cycles, tasks):
-    for ctr_flw in flows:
-        for cycle in cycles:
-            for task in tasks:
-                cmd = pathroc + '/bin/rocotoboot -w ' +\
-                      settings_dir + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
-                      ' -d ' + dbs_dir + '/' + ctr_flw + '.store' +\
-                      ' -c ' + cycle + ' -t ' + task
+        for ctr_flw in flows:
+            for cycle in cycles:
+                for task in tasks:
+                    cmd = pathroc + '/bin/rocotoboot -w ' +\
+                          settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                          ' -d ' + dbs_dir + '/' + cse + '/' + ctr_flw + '.store' +\
+                          ' -c ' + cycle + ' -t ' + task
 
-                os.system(cmd) 
+                    os.system(cmd) 
 
-    # update workflow statuses after loops
-    run_rocotostat()
+        # update workflow statuses after loops
+        run_rocotostat()
 
 def run_rocotorewind(flows, cycles, tasks):
-    for ctr_flw in flows:
-        for cycle in cycles:
-            for task in tasks:
-                cmd = pathroc + '/bin/rocotorewind -w ' +\
-                      settings_dir + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
-                      ' -d ' + dbs_dir + '/' + ctr_flw + '.store' +\
-                      ' -c ' + cycle + ' -t ' + task
+        for ctr_flw in flows:
+            for cycle in cycles:
+                for task in tasks:
+                    cmd = pathroc + '/bin/rocotorewind -w ' +\
+                          settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                          ' -d ' + dbs_dir + '/' + cse + '/' + ctr_flw + '.store' +\
+                          ' -c ' + cycle + ' -t ' + task
 
-                os.system(cmd) 
+                    os.system(cmd) 
 
-    # update workflow statuses after loops
-    run_rocotostat()
+        # update workflow statuses after loops
+        run_rocotostat()
 
 ##################################################################################
 # Execute the following lines as script
