@@ -747,7 +747,8 @@ while [ ${dmn} -le ${max_dom} ]; do
         while [ ${ens_n} -le ${N_ENS} ]; do
           # two zero padding for GEFS
           iimem=`printf %02d $(( 10#${ens_n} ))`
-          ens_file=${ENS_ROOT}/ens_${iimem}/wrfout_d0${dmn}_${anl_iso}
+	  # NOTE: THIS NEEDS TO BE REVISED LATER FOR BETTER GENERALITY
+          ens_file=${ENS_ROOT}/bkg/ens_${iimem}/wrfout_d0${dmn}_${anl_iso}
 
           if [ -r ${ens_file} ]; then
             cmd="ln -sf ${ens_file} ./wrf_ens_${iimem}"
