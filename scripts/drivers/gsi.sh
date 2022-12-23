@@ -104,18 +104,6 @@ if [ ! ${WRF_ENS_DOM} ]; then
   exit 1
 fi
 
-if [[ ${IF_CTR_COLD_START} != ${YES} && ${IF_CTR_COLD_START} != ${NO} ]]; then
-  msg="ERROR: \${IF_CTR_COLD_START} must equal "
-  msg+="'Yes' or 'No' (case insensitive)."
-  echo ${msg}
-  exit 1
-fi
-
-if [[ ${IF_ENS_COLD_START} != ${YES} && ${IF_ENS_COLD_START} != ${NO} ]]; then
-  echo "ERROR: \${IF_ENS_COLD_START} must equal 'Yes' or 'No' (case insensitive)."
-  exit 1
-fi
-
 if [[ ${IF_OBSERVER} != ${YES} && ${IF_OBSERVER} != ${NO} ]]; then
   echo "ERROR: \${IF_OBSERVER} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
@@ -721,7 +709,7 @@ while [ ${dmn} -le ${max_dom} ]; do
     #
     ##################################################################################
 
-    bkg_dir="${CYCLE_HOME}/wrfdaprd/lower_boundary_update/ens_00"
+    bkg_dir="${CYCLE_HOME}/wrfdaprd/lower_bdy_update/ens_00"
     bkg_file="${bkg_dir}/wrfout_d0${dmn}_${anl_iso}"
 
     if [ ! -r "${bkg_file}" ]; then
@@ -818,10 +806,9 @@ while [ ${dmn} -le ${max_dom} ]; do
     ##################################################################################
     # Print run parameters
     echo
-    echo "IF_CTR_COLD_START = ${IF_CTR_COLD_START}"
-    echo "IF_ENS_COLD_START = ${IF_ENS_COLD_START}"
     echo "IF_HYBRID         = ${IF_HYBRID}"
     echo "N_ENS             = ${N_ENS}"
+    echo "BETA              = ${BETA}"
     echo "IF_OBSERVER       = ${IF_OBSERVER}"
     echo "IF_4DENVAR        = ${IF_4DENVAR}"
     echo "WRF_CTR_DOM       = ${WRF_CTR_DOM}"

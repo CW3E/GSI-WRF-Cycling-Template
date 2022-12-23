@@ -39,7 +39,6 @@
   <!ENTITY CRTM_ROOT           "&SOFT_ROOT;/CRTM_CODE/CRTM_v2.3.0/Big_Endian">
   <!-- END SOFTWARE SETTINGS -->
 
-
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYCLE_START         "201902081800">
   <!ENTITY SECOND_CYCLE        "201902090000">
@@ -331,9 +330,10 @@
       <name>ANL_TIME</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
+    <!-- Update the lower boundary conditions of ensemble for convenience w/ IO linking, though this has no effect -->
     <envar>
       <name>IF_ENS_UPDATE</name>
-      <value>No</value>
+      <value>YES</value>
     </envar>
     <envar>
       <name>BOUNDARY</name>
@@ -391,6 +391,14 @@
     <envar>
       <name>WRF_ENS_DOM</name>
       <value>&WRF_ENS_DOM;</value>
+    </envar>
+    <envar>
+      <name>IF_CTR_COLD_START</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>IF_ENS_COLD_START</name>
+      <value>No</value>
     </envar>
     <envar>
       <name>IF_HYBRID</name>
@@ -483,8 +491,8 @@
     </envar>
     <!-- Skip the lateral boundary condition update for the discarded ensemble -->
     <envar>
-      <name>IF_ENS_UPDATE</name>
-      <value>No</value>
+      <name>IF_ENS_COLD_START</name>
+      <value>Yes</value>
     </envar>
     <envar>
       <name>BOUNDARY</name>
