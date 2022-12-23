@@ -93,7 +93,7 @@ def run_rocotorun():
         for ctr_flw in CTR_FLWS:
             cmd = pathroc + '/bin/rocotorun -w ' +\
                   settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
-                  ' -d ' + dbs_dir + '/' + cse + '/' + ctr_flw + '.store -v 10'  
+                  ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store -v 10'  
 
             os.system(cmd)
 
@@ -105,18 +105,19 @@ def run_rocotostat():
         for ctr_flw in CTR_FLWS:
             cmd = pathroc + '/bin/rocotostat -w ' +\
                   settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
-                  ' -d ' + dbs_dir + '/' + cse + '/' + ctr_flw + '.store -c all'+\
-                  ' > ' + dbs_dir + '/' + cse + '/' + ctr_flw + '_workflow_status.txt'
+                  ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store -c all'+\
+                  ' > ' + dbs_dir + '/' + cse + '-' + ctr_flw + '_workflow_status.txt'
 
             os.system(cmd) 
 
-def run_rocotoboot(flows, cycles, tasks):
+def run_rocotoboot(cses, flows, cycles, tasks):
+    for cse in cses:
         for ctr_flw in flows:
             for cycle in cycles:
                 for task in tasks:
                     cmd = pathroc + '/bin/rocotoboot -w ' +\
                           settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
-                          ' -d ' + dbs_dir + '/' + cse + '/' + ctr_flw + '.store' +\
+                          ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store' +\
                           ' -c ' + cycle + ' -t ' + task
 
                     os.system(cmd) 
@@ -124,13 +125,14 @@ def run_rocotoboot(flows, cycles, tasks):
         # update workflow statuses after loops
         run_rocotostat()
 
-def run_rocotorewind(flows, cycles, tasks):
+def run_rocotorewind(cses, flows, cycles, tasks):
+    for cse in cses:
         for ctr_flw in flows:
             for cycle in cycles:
                 for task in tasks:
                     cmd = pathroc + '/bin/rocotorewind -w ' +\
                           settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
-                          ' -d ' + dbs_dir + '/' + cse + '/' + ctr_flw + '.store' +\
+                          ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store' +\
                           ' -c ' + cycle + ' -t ' + task
 
                     os.system(cmd) 
