@@ -562,30 +562,30 @@ while [ ${dmn} -le ${max_dom} ]; do
     done
 
     # CRTM Spectral and Transmittance coefficients
-    coefs=()
-    coefs+=( "Nalli.IRwater.EmisCoeff.bin" )
-    coefs+=( "NPOESS.IRice.EmisCoeff.bin" )
-    coefs+=( "NPOESS.IRland.EmisCoeff.bin" )
-    coefs+=( "NPOESS.IRsnow.EmisCoeff.bin" )
-    coefs+=( "NPOESS.VISice.EmisCoeff.bin" )
-    coefs+=( "NPOESS.VISland.EmisCoeff.bin" )
-    coefs+=( "NPOESS.VISsnow.EmisCoeff.bin" )
-    coefs+=( "NPOESS.VISwater.EmisCoeff.bin" )
-    coefs+=( "FASTEM6.MWwater.EmisCoeff.bin" )
-    coefs+=( "AerosolCoeff.bin" )
-    coefs+=( "CloudCoeff.bin" )
+    coeffs=()
+    coeffs+=( "Nalli.IRwater.EmisCoeff.bin" )
+    coeffs+=( "NPOESS.IRice.EmisCoeff.bin" )
+    coeffs+=( "NPOESS.IRland.EmisCoeff.bin" )
+    coeffs+=( "NPOESS.IRsnow.EmisCoeff.bin" )
+    coeffs+=( "NPOESS.VISice.EmisCoeff.bin" )
+    coeffs+=( "NPOESS.VISland.EmisCoeff.bin" )
+    coeffs+=( "NPOESS.VISsnow.EmisCoeff.bin" )
+    coeffs+=( "NPOESS.VISwater.EmisCoeff.bin" )
+    coeffs+=( "FASTEM6.MWwater.EmisCoeff.bin" )
+    coeffs+=( "AerosolCoeff.bin" )
+    coeffs+=( "CloudCoeff.bin" )
 
-    # loop over coefs 
-    len=${#srcobsfile[@]}
+    # loop over coeffs 
+    len=${#coeffs[@]}
     ii=0
     echo "Link CRTM coefficient files"
     while [[ ${ii} -lt ${len} ]]; do
-      coef_file=${CRTM_ROOT}/${coeffs[$ii]}
-      if [ -r ${coef_file} ]; then
+      coeff_file=${CRTM_ROOT}/${coeffs[$ii]}
+      if [ -r ${coeff_file} ]; then
         cmd="ln -s ${coeff_file}  ./"
 	echo ${cmd}; eval ${cmd}
       else
-        echo "ERROR: CRTM coefficient file ${coef_file} not readable."
+        echo "ERROR: CRTM coefficient file ${coeff_file} not readable."
 	exit 1
       fi
       (( ii += 1 ))
@@ -596,12 +596,12 @@ while [ ${dmn} -le ${max_dom} ]; do
      satinfo_coeffs=()
      satinfo_coeffs+=( "${CRTM_ROOT}/${file}.SpcCoeff.bin" )
      satinfo_coeffs+=( "${CRTM_ROOT}/${file}.TauCoeff.bin" )
-     for coef_file in ${satinfo_coeffs}; do
-       if [ -r ${coef_file} ]; then
-         cmd="ln -s ${coef_file} ./"
+     for coeff_file in ${satinfo_coeffs[@]}; do
+       if [ -r ${coeff_file} ]; then
+         cmd="ln -s ${coeff_file} ./"
 	 echo ${cmd}; eval ${cmd}
        else
-         echo "ERROR: CRTM coefficient file ${coef_file} not readable."
+         echo "ERROR: CRTM coefficient file ${coeff_file} not readable."
        fi
      done
     done
