@@ -158,8 +158,6 @@ fi
 #              vtables, geogrid data, GSI fix files, etc.
 # CYCLE_HOME = Start time named directory for cycling data containing
 #              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# DATA_ROOT  = Directory for all forcing data files, including grib files,
-#              obs files, etc.
 #
 ##################################################################################
 
@@ -180,11 +178,6 @@ fi
 
 if [ -z ${CYCLE_HOME} ]; then
   echo "ERROR: \${CYCLE_HOME} directory name is not defined."
-  exit 1
-fi
-
-if [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: \${DATA_ROOT} directory ${DATA_ROOT} does not exist."
   exit 1
 fi
 
@@ -306,7 +299,6 @@ echo "ENS_N          = ${ENS_N}"
 echo "WPS_ROOT       = ${WPS_ROOT}"
 echo "EXP_CONFIG     = ${EXP_CONFIG}"
 echo "CYCLE_HOME     = ${CYCLE_HOME}"
-echo "DATA_ROOT      = ${DATA_ROOT}"
 echo
 echo "FCST LENGTH    = ${FCST_LENGTH}"
 echo "DATA INTERVAL  = ${DATA_INTERVAL}"

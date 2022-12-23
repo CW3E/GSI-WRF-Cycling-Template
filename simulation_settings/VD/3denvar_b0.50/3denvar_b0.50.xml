@@ -13,7 +13,7 @@
   <!-- COMPUTER-DEPENDENT ITEMS -->
   <!ENTITY CLONE_ROOT          "/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template">
   <!ENTITY SOFT_ROOT           "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
-  <!ENTITY DATA_ROOT           "/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA">
+  <!ENTITY DATA_ROOT           "/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/&CSE_NAME;">
   <!-- END COMPUTER-DEPENDENT -->
 
   <!-- USER-DEPENDENT ITEMS -->
@@ -61,7 +61,7 @@ w
   <!ENTITY WRF_CTR_DOM         "1"> <!-- Max domain for control simulation -->
   <!ENTITY WRF_ENS_DOM         "1"> <!-- Max domain for ensemble simulation -->
   <!ENTITY WRF_DOWN_DOM        "2"> <!-- Domain index to have ICs downscaled from d01 -->
-  <!ENTITY WRF_ENS_ROOT        "&DATA_ROOT;/&CSE_NAME;/ensembles"> <!-- Static ensemble perturbations stored here --> 
+  <!ENTITY WRF_ENS_ROOT        "&DATA_ROOT;/ensembles"> <!-- Static ensemble perturbations stored here --> 
   <!ENTITY FCST_LENGTH         "06"> <!-- This setting is applied to all WRF preprocessing and WRF -->
   <!ENTITY FCST_INTERVAL       "01"> <!-- Output interval for WRF in HH -->
   <!ENTITY CTR_DATA_INTERVAL   "03"> <!-- This setting is applied to all WRF preprocessing and WRF control run -->
@@ -227,10 +227,6 @@ w
       <value><cyclestr>&EXP_HOME;/@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>DATA_ROOT</name>
-      <value>&DATA_ROOT;</value>
-    </envar>
-    <envar>
       <name>MPIRUN</name>
       <value>&MPIRUN;</value>
     </envar>
@@ -298,10 +294,6 @@ w
     <envar>
       <name>CYCLE_HOME</name>
       <value><cyclestr>&EXP_HOME;/@Y@m@d@H</cyclestr></value>
-    </envar>
-    <envar>
-      <name>DATA_ROOT</name>
-      <value>&DATA_ROOT;</value>
     </envar>
     <envar>
       <name>MPIRUN</name>
