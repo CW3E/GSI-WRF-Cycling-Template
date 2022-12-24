@@ -339,7 +339,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
         echo "ERROR: \${gsi_dir} directory ${gsi_dir} does not exist."
         exit 1
       else
-        wrfanl=${gsi_dir}/d01/wrfanl_ens_${ens_n}_${anl_iso}
+        wrfanl=${gsi_dir}/d01/wrfanl_ens_${iimem}_${anl_iso}
       fi
     else
       if [ ! -d ${enkf_dir} ]; then
@@ -347,12 +347,12 @@ while [ ${ens_n} -le ${n_ens} ]; do
         exit 1
       else
         # NOTE: ENKF SCRIPT NEED TO UPDATE OUTPUT NAMING CONVENTIONS
-        wrfanl=${enkf_dir}/d01/wrfanl_ens_${ens_n}_${anl_iso}
+        wrfanl=${enkf_dir}/d01/wrfanl_ens_${iimem}_${anl_iso}
       fi
     fi
 
     wrfbdy=${real_dir}/wrfbdy_d01
-    wrfvar_outname=wrfanl_ens_${ens_n}_${anl_iso}
+    wrfvar_outname=wrfanl_ens_${iimem}_${anl_iso}
     wrfbdy_name=wrfbdy_d01
   
     if [ ! -r "${wrfanl}" ]; then
