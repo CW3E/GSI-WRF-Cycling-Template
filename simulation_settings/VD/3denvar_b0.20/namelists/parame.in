@@ -1,0 +1,12 @@
+&control_param
+ da_file            = './wrfout_'
+ wrf_input          = './wrfvar_out'
+ wrf_bdy_file       = './wrfinput_d01'
+ domain_id          = 1
+ debug              = .true.
+ update_lateral_bdy = .false.
+ update_low_bdy     = .false.
+ update_lsm         = .false.
+ iswater            = 16
+ var4d_lbc          = .false.
+/

@@ -44,17 +44,30 @@ RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 
 # Case study sub directories
 CSES = [
-        'VD',
+        'CC',
+        #'VD',
        ]
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
-            '3denvar_b0.50',
+            #'3denvar_b0.00',
+            '3denvar_b0.10',
+            #'3denvar_b0.20',
+            #'3denvar_b0.30',
+            #'3denvar_b0.40',
+            #'3denvar_b0.50',
+            #'3denvar_b0.60',
+            #'3denvar_b0.70',
+            #'3denvar_b0.80',
+            #'3denvar_b0.90',
+            #'3denvar_b1.00',
            ]
 
 ##################################################################################
 # Derived paths
 ##################################################################################
+# path to rocoto binary root directory
+# path to rocoto binary root directory
 # path to rocoto binary root directory
 pathroc = RCT_HME + '/rocoto'
 
