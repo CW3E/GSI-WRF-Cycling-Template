@@ -312,7 +312,7 @@ rm -f wrfout_*
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   wrfinput=wrfinput_d0${dmn}
-  datestr=`date +%Y-%m-%-d_%H:%M:%S -d "${start_time}"`
+  datestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time}"`
   # if cycling AND analyzing this domain, get initial conditions from last analysis
   if [[ ${IF_CYCLING} = ${YES} && ${dmn} -lt ${DOWN_DOM} ]]; then
     if [[ ${dmn} = 1 ]]; then
