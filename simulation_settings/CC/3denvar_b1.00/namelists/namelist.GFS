@@ -79,8 +79,10 @@
  max_dom                             = 2,
  e_vert                              = 80,   80,
  p_top_requested                     = 1000,
- !! GFS setting !!
- num_metgrid_levels                  = 32,
+ !! GFS setting pre-2021 !!
+ !num_metgrid_levels                  = 32,
+ !! GFS setting 2021-on !!
+ num_metgrid_levels                  = 34,
  !! Default value, works for GFS and ERA5 !!
  num_metgrid_soil_levels             = 4,
  dx                                  = 9000, 3000,

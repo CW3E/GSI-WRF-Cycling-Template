@@ -81,7 +81,7 @@
   <!ENTITY PROJECT             "--account=cwp106">
   <!ENTITY PART_COMPU          "--partition=compute"> 
   <!ENTITY PART_DEBUG          "--partition=shared"> 
-  <!ENTITY PART_RAPID          "--partition=compute"> 
+  <!ENTITY PART_RAPID          "--partition=large-shared-normal"> 
   <!ENTITY MPIRUN              "mpirun">
   <!ENTITY WPS_PROC            "24"> <!-- WPS parallel / REAL procs, all serial hard-coded as 1 -->
   <!ENTITY WPS_MEM             "5G">
@@ -93,10 +93,10 @@
   <!ENTITY WRF_NODESIZE        "24">
   <!ENTITY WRF_NODES           "16">
   <!ENTITY WRF_WC              "01:30:00">
-  <!ENTITY GSI_PROC            "384">
-  <!ENTITY GSI_MEM             "5G">
-  <!ENTITY GSI_NODESIZE        "24">
-  <!ENTITY GSI_NODES           "16">
+  <!ENTITY GSI_PROC            "64">
+  <!ENTITY GSI_MEM             "21G">
+  <!ENTITY GSI_NODESIZE        "64">
+  <!ENTITY GSI_NODES           "1">
   <!ENTITY GSI_WC              "06:30:00">
   <!-- END JOB SETTINGS -->
 ]>
@@ -380,6 +380,7 @@
     <native>--export=ALL</native>
     <native>--nodes=&GSI_NODES;</native>
     <native>--mem-per-cpu=&GSI_MEM;</native>
+    <native>--qos=large-shared-normal</native>
     <envar>
       <name>CONSTANT</name>
       <value>&GSI_CONSTANT;</value>
