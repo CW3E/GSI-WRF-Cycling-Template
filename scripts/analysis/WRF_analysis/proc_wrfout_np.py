@@ -61,7 +61,7 @@ ANL_END = int(sys.argv[6])
 PLVS = [250, 500, 700, 850, 925]
 
 # domains to be processed, this assumes completely heirarchical nesting
-MAX_DOM = 1
+MAX_DOM = 2
 
 # 3D variables to extract and units
 IN_VARS = ['z',  'ua', 'va', 'temp', 'rh', 'wspd_wdir']
@@ -115,7 +115,11 @@ for hr in anl_hrs:
         # Open the NetCDF files
         fname = IN_DIR + '/wrfout_' + domains[i] + '_' + anl_dt
         print(STR_INDT * 2 + 'Opening file ' + fname)
-        nc_files.append(Dataset(fname))
+        try:
+            nc_files.append(Dataset(fname))
+        except:
+            print(fname + ' does not exist, skipping')
+            pass
     
         # extract the pressures in domain
         print(STR_INDT * 2 + 'Extracting pressure levels')

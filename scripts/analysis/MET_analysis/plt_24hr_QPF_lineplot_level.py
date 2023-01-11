@@ -52,8 +52,10 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            'deterministic_forecast_b0.25',
-            'deterministic_forecast_b0.75',
+            'deterministic_forecast_b0.50',
+            'deterministic_forecast_b0.80',
+            'deterministic_forecast_b0.90',
+            'deterministic_forecast_b1.00',
            ]
 
 # define case-wise sub-directory
@@ -62,8 +64,8 @@ CSE = 'VD'
 # threshold level to plot
 #LEV = '>0.0'
 #LEV = '>=10.0'
-#LEV = '>=25.4'
-LEV = '>=50.8'
+LEV = '>=25.4'
+#LEV = '>=50.8'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'
@@ -95,8 +97,8 @@ CNF_LV = True
 fig = plt.figure(figsize=(11.25,8.63))
 
 # set colors and storage for looping
-#line_colors = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a','#66a61e','#e6ab02','#a6761d']
-line_colors = ['#1b9e77', '#7570b3', '#d95f02', 'k']
+line_colors = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a','#66a61e','#e6ab02','#a6761d', 'k']
+#line_colors = ['#1b9e77', '#7570b3', '#d95f02', 'k']
 
 # Set the axes
 ax1 = fig.add_axes([.110, .10, .85, .33])

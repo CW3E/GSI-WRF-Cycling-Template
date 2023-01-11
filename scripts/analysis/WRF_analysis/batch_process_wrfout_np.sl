@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH -p compute 
-#SBATCH --nodes=7
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=6
 #SBATCH --mem-per-cpu=5G
-#SBATCH -t 04:00:00
+#SBATCH -t 01:00:00
 #SBATCH -J batch_process_data 
 #SBATCH --export=ALL
-#SBATCH --array=0-25
+#SBATCH --array=0-3
 ##################################################################################
 # Description
 ##################################################################################
@@ -33,23 +33,24 @@
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
-# set the control flow, git clone and working directory
+# set the  git clone directory, case study and control flow
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
-CTR_FLW="3dvar_control"
+CSE="VD"
+CTR_FLW="deterministic_forecast_b1.00"
 
 # define date range and increments for start time of simulations
-START_TIME=2021012812
-END_TIME=2021012900
-CYCLE_INT=6
+START_TIME=2019021100
+END_TIME=2019021400
+CYCLE_INT=24
 
 # starting forecast hour to process
-FCST_MIN=0
+FCST_MIN=24
 
 # interval of forecast data outputs after FCST_MIN to process
-FCST_INT=6
+FCST_INT=24
 
 # max forecast hour to process
-FCST_MAX=6
+FCST_MAX=96
 
 ##################################################################################
 # Contruct job array and environment for submission
@@ -68,10 +69,10 @@ echo `conda list`
 wrk_dir="${USR_HME}/scripts/analysis/WRF_analysis"
 echo "Work directory ${wrk_dir}"
 
-in_root="${USR_HME}/data/simulation_io/${CTR_FLW}"
+in_root="${USR_HME}/data/simulation_io/${CSE}/${CTR_FLW}"
 echo "Data input root ${in_root}"
 
-out_root="${USR_HME}/data/analysis/${CTR_FLW}/WRF_analysis"
+out_root="${USR_HME}/data/analysis/${CSE}/${CTR_FLW}/WRF_analysis"
 echo "Data output root ${out_root}"
 
 # create arrays to store the date dependent paths
@@ -102,7 +103,7 @@ timestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${start_hour} hours"`
 start_times=()
 
 echo "For each start time:"
-while [[ ! ${timestr} > ${end_time} ]]; do
+while [[ ${timestr} < ${end_time} ]]; do
   # update the date string for directory names
   datestr=`date +%Y%m%d%H -d "${start_time} ${start_hour} hours"`
   in_paths+=("${in_root}/${datestr}/wrfprd/ens_00")

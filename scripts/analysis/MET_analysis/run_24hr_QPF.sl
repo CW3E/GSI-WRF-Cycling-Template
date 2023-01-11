@@ -5,7 +5,7 @@
 #SBATCH -t 00:30:00
 #SBATCH --job-name="24hr_QPF"
 #SBATCH --export=ALL
-#SBATCH --account=cwp130
+#SBATCH --account=cwp106
 #SBATCH --mail-user cgrudzien@ucsd.edu
 #SBATCH --mail-type BEGIN
 #SBATCH --mail-type END
@@ -55,7 +55,7 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_b0.75"
+CTR_FLW="deterministic_forecast_b0.50"
 
 # define the case-wise sub-directory
 CSE="VD"

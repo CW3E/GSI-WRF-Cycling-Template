@@ -2,10 +2,10 @@
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 24:00:00
+#SBATCH -t 00:30:00
 #SBATCH --job-name="wrfout_cf"
 #SBATCH --export=ALL
-#SBATCH --account=cwp130
+#SBATCH --account=cwp106
 #SBATCH --mail-user cgrudzien@ucsd.edu
 #SBATCH --mail-type BEGIN
 #SBATCH --mail-type END
@@ -49,7 +49,7 @@ module load ncl_ncarg
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # define control flow to analyze 
-CTR_FLW="deterministic_forecast_b0.75"
+CTR_FLW="deterministic_forecast_b0.50"
 
 # define the case-wise sub-directory
 CSE="VD"

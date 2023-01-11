@@ -68,7 +68,7 @@
 
   <!-- JOB SETTINGS -->
   <!ENTITY SCHED               "slurm">
-  <!ENTITY PROJECT             "--account=cwp130">
+  <!ENTITY PROJECT             "--account=cwp106">
   <!ENTITY PART_COMPU          "--partition=compute"> 
   <!ENTITY PART_DEBUG          "--partition=shared"> 
   <!ENTITY PART_LRGMEM         "--partition=compute"> 
