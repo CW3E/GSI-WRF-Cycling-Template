@@ -53,7 +53,7 @@ wind_logic          = UNION;
 eclv_points         = 0.05;
 nc_pairs_var_name   = "";
 nc_pairs_var_suffix = "";
-rank_corr_flag      = FALSE;
+rank_corr_flag      = TRUE;
 
 //
 // Forecast and observation fields to be verified

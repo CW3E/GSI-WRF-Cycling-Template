@@ -60,7 +60,16 @@ from gsi_py_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3denvar_b0.50'
+CTR_FLWS = [
+            '3denvar_b0.25',
+            '3denvar_b0.50',
+            #'3denvar_b0.60',
+            '3denvar_b0.70',
+            #'3denvar_b0.75',
+            '3denvar_b0.80',
+            #'3denvar_b0.90',
+            '3denvar_b1.00',
+           ]
 
 # define the case-wise sub-directory
 CSE = 'VD'
@@ -71,6 +80,10 @@ START_DT = '2019-02-09T00:00:00'
 # final date and zero hour of data
 END_DT = '2019-02-15T00:00:00'
 
+# define the background or analysis to plot
+#STG = 'ANL'
+STG = 'BKG'
+
 # define domain to plot
 DOM = 1
 
@@ -80,71 +93,86 @@ FORT='201'
 ##################################################################################
 # Begin plotting
 ##################################################################################
-# define derived data paths
-cse = CSE + '/' + CTR_FLW
-data_root = USR_HME + '/data/analysis' + '/' + cse + '/GSI_analysis'
-in_path = data_root + '/GSI_fort_' + FORT + '_' + START_DT + '_to_' +\
-          END_DT + '.bin'
-out_path = data_root + '/GSI_fort_' + FORT + '_' + str(DOM) + '_' +\
-           START_DT + '_to_' + END_DT + '.png'
-
-# load and plot data
-f = open(in_path, 'rb')
-data = pickle.load(f)
-f.close()
-
-# load dataframe
-exec('data = data[\'d0%s\']'%DOM)
-
 # define two panel figure with pre-defined size
 fig = plt.figure(figsize=(16,8))
 ax1 = fig.add_axes([.110, .25, .85, .33])
 ax0 = fig.add_axes([.110, .58, .85, .33])
 
 # set colors and storage for looping
-line_colors = ['#1b9e77', '#7570b3', '#d95f02', 'k']
+line_colors = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a','#66a61e','#e6ab02','#a6761d', 'k']
+#line_colors = ['#1b9e77', '#7570b3', '#d95f02', 'k']
 
-# subset monitored data for clean rms calculation
-bkg_mon = data.loc[(data['use'] == 'mon') & (data['iter'] == 1.0)]
-anl_mon = data.loc[(data['use'] == 'mon') & (data['iter'] == 2.0)]
+num_flws = len(CTR_FLWS)
+line_list = []
+line_labs = []
 
-# subset assimilated data
-bkg_asm = data.loc[(data['use'] == 'asm') & (data['iter'] == 1.0)]
-anl_asm = data.loc[(data['use'] == 'asm') & (data['iter'] == 2.0)]
+for k in range(num_flws):
+    # loop on control flows
+    ctr_flw = CTR_FLWS[k]
+    param = ctr_flw.split('_')[-1]
 
-# subset rejected data
-bkg_rej = data.loc[(data['use'] == 'rej') & (data['iter'] == 1.0)]
-anl_rej = data.loc[(data['use'] == 'rej') & (data['iter'] == 2.0)]
+    # define derived data paths
+    cse = CSE + '/' + ctr_flw
+    data_root = USR_HME + '/data/analysis' + '/' + cse + '/GSI_analysis'
+    in_path = data_root + '/GSI_fort_' + FORT + '_' + START_DT + '_to_' +\
+              END_DT + '.bin'
+    out_path = data_root + '/GSI_fort_' + FORT + '_' + str(DOM) + '_' +\
+               START_DT + '_to_' + END_DT + '.png'
+    
+    # load and plot data
+    f = open(in_path, 'rb')
+    data = pickle.load(f)
+    f.close()
+    
+    # load dataframe
+    exec('data = data[\'d0%s\']'%DOM)
+    
+    # subset monitored data
+    bkg_mon = data.loc[(data['use'] == 'mon') & (data['iter'] == 1.0)]
+    anl_mon = data.loc[(data['use'] == 'mon') & (data['iter'] == 2.0)]
+    
+    # subset assimilated data
+    bkg_asm = data.loc[(data['use'] == 'asm') & (data['iter'] == 1.0)]
+    anl_asm = data.loc[(data['use'] == 'asm') & (data['iter'] == 2.0)]
+    
+    # subset rejected data
+    bkg_rej = data.loc[(data['use'] == 'rej') & (data['iter'] == 1.0)]
+    anl_rej = data.loc[(data['use'] == 'rej') & (data['iter'] == 2.0)]
+    
+    # define looping index
+    index = len(bkg_asm['rms'].values)
+    
+    # compute percent rejected
+    b_per_rej = np.zeros(index)
+    a_per_rej = np.zeros(index)
+    for i in range(index):
+        b_num_mon = bkg_mon['count'].values[i]
+        a_num_mon = anl_mon['count'].values[i]
+    
+        b_num_rej = bkg_rej['count'].values[i]
+        a_num_rej = anl_rej['count'].values[i]
+    
+        b_num_asm = bkg_asm['count'].values[i]
+        a_num_asm = anl_asm['count'].values[i]
+    
+        b_per_rej[i] = 100 * b_num_rej / (b_num_rej + b_num_asm)
+        a_per_rej[i] = 100 * a_num_rej / (a_num_rej + a_num_asm)
+    
+    # generate lines, saving values for legend
+    if STG == 'ANL':
+        rms = anl_asm['rms']
+        rej = a_per_rej
 
-# define looping index
-index = len(bkg_asm['rms'].values)
+    elif STG == 'BKG':
+        rms = bkg_asm['rms']
+        rej = b_per_rej
 
-# compute percent rejected
-b_per_rej = np.zeros(index)
-a_per_rej = np.zeros(index)
-for i in range(index):
-    b_num_mon = bkg_mon['count'].values[i]
-    a_num_mon = anl_mon['count'].values[i]
-
-    b_num_rej = bkg_rej['count'].values[i]
-    a_num_rej = anl_rej['count'].values[i]
-
-    b_num_asm = bkg_asm['count'].values[i]
-    a_num_asm = anl_asm['count'].values[i]
-
-    b_per_rej[i] = 100 * b_num_rej / (b_num_rej + b_num_asm)
-    a_per_rej[i] = 100 * a_num_rej / (a_num_rej + a_num_asm)
-
-# generate lines, saving values for legend
-l0, = ax0.plot(range(index), bkg_asm['rms'], linewidth=2, markersize=26, color=line_colors[0])
-l1, = ax0.plot(range(index), anl_asm['rms'], linewidth=2, markersize=26, color=line_colors[1])
-
-l2, = ax1.plot(range(index), b_per_rej, linewidth=2, markersize=26, color=line_colors[2])
-l3, = ax1.plot(range(index), a_per_rej, linewidth=2, markersize=26, color=line_colors[3])
-
-line_list = [l0, l1, l2, l3]
-line_labs = ['For RMSE', 'Anl RMSE', 'For % Rej', 'Anl % Rej']
-
+    l, = ax0.plot(range(index), rms, linewidth=2, markersize=26, color=line_colors[k])
+    ax1.plot(range(index), rej, linewidth=2, markersize=26, color=line_colors[k])
+    
+    line_list.append(l)
+    line_labs.append(param)
+    
 dates = bkg_mon['date'].values
 tic_mark = []
 tic_labs = []
@@ -185,7 +213,16 @@ ax1.tick_params(
 ax1.yaxis.set_major_formatter(PercentFormatter(decimals=0))
 
 # add legend and sub-titles
-fig.legend(line_list, line_labs, fontsize=22, ncol=4, loc='upper center')
+fig.legend(line_list, line_labs, fontsize=22, ncol=num_flws, loc='upper center')
+
+lab1 = STG + ' RMSE'
+lab2 = STG + ' % obs rej'
+plt.figtext(.05, .415, lab1, horizontalalignment='right', rotation=90,
+            verticalalignment='center', fontsize=22)
+
+plt.figtext(.05, .745, lab2, horizontalalignment='right', rotation=90,
+            verticalalignment='center', fontsize=22)
+
 
 # save figure and display
 plt.savefig(out_path)

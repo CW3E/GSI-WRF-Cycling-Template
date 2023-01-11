@@ -2,7 +2,7 @@
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 24:00:00
+#SBATCH -t 00:30:00
 #SBATCH --job-name="24hr_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp130
@@ -19,7 +19,14 @@
 #
 # The purpose of this script is to compute grid statistics using MET
 # after pre-procssing WRF forecast data and StageIV precip data for
-# validating the forecast peformance.
+# validating the forecast peformance.  Note, some options must be set in the
+# companion GridStatConfig file, e.g., the option
+#
+#   rank_corr_flag      = TRUE;
+#
+# directs the computation of robust statistics such as Spearman rank correlation.
+# These options are costly to compute and significantly increase run time.  For
+# rapid diagnostics this can be set to false. 
 #
 #################################################################################
 # License Statement
@@ -48,7 +55,7 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_b25"
+CTR_FLW="deterministic_forecast_b0.75"
 
 # define the case-wise sub-directory
 CSE="VD"

@@ -41,7 +41,7 @@ from py_plt_utilities import STR_INDT, get_anls, USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_b25'
+CTR_FLW = 'deterministic_forecast_b0.75'
 
 # define the case-wise sub-directory
 CSE = 'VD'

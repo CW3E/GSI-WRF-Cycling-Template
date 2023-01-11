@@ -51,6 +51,7 @@ CSES = [
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
             #'deterministic_forecast_b0.00',
+            'deterministic_forecast_b0.30',
             'deterministic_forecast_b0.50',
             'deterministic_forecast_b0.60',
             'deterministic_forecast_b0.70',
@@ -60,7 +61,7 @@ CTR_FLWS = [
             #'3denvar_b0.00',
             #'3denvar_b0.10',
             #'3denvar_b0.20',
-            #'3denvar_b0.30',
+            '3denvar_b0.30',
             #'3denvar_b0.40',
             #'3denvar_b0.50',
             #'3denvar_b0.60',
@@ -73,8 +74,6 @@ CTR_FLWS = [
 ##################################################################################
 # Derived paths
 ##################################################################################
-# path to rocoto binary root directory
-# path to rocoto binary root directory
 # path to rocoto binary root directory
 pathroc = RCT_HME + '/rocoto'
 

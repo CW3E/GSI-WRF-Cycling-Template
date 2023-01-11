@@ -64,7 +64,7 @@ from gsi_py_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = '3denvar_b25'
+CTR_FLW = '3denvar_b0.90'
 
 # define the case-wise sub-directory
 CSE = 'VD'
