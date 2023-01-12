@@ -45,25 +45,26 @@ RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
 # Case study sub directories
 CSES = [
         #'CC',
-        'VD',
+        #'VD',
+        'VD-lagged-ens',
        ]
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
             #'deterministic_forecast_b0.00',
-            'deterministic_forecast_b0.30',
+            #'deterministic_forecast_b0.30',
             #'deterministic_forecast_b0.50',
             #'deterministic_forecast_b0.60',
-            'deterministic_forecast_b0.70',
+            #'deterministic_forecast_b0.70',
             #'deterministic_forecast_b0.80',
             #'deterministic_forecast_b0.90',
             #'deterministic_forecast_b1.00',
             #'3denvar_b0.00',
             #'3denvar_b0.10',
-            '3denvar_b0.20',
-            '3denvar_b0.30',
+            #'3denvar_b0.20',
+            #'3denvar_b0.30',
             #'3denvar_b0.40',
-            #'3denvar_b0.50',
+            '3denvar_b0.50',
             #'3denvar_b0.60',
             #'3denvar_b0.70',
             #'3denvar_b0.80',
