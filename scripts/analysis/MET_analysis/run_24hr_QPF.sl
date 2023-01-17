@@ -55,7 +55,7 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_b0.50"
+CTR_FLW="deterministic_forecast_b0.70"
 
 # define the case-wise sub-directory
 CSE="VD"

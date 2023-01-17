@@ -113,6 +113,7 @@ fi
 # DATA_INTERVAL  = Interval of input data in HH
 # CYCLE_INTERVAL = Interval in HH on which DA is cycled in a cycling control flow
 # START_TIME     = Simulation start time in YYMMDDHH
+# CYCLE_TIME     = Simulation cycle date time in YYMMDDHH
 # MAX_DOM        = Max number of domains to use in namelist settings
 # DOWN_DOM       = First domain index to downscale ICs from d01, set parameter
 #                  less than MAX_DOM if downscaling to be used
@@ -178,6 +179,13 @@ fi
 start_time=`date -d "${start_time}"`
 end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
+# Convert CYCLE_TIME from 'YYYYMMDDHH' format to start_time Unix date format
+if [ ${#CYCLE_TIME} -ne 10 ]; then
+  echo "ERROR: start time, '${CYCLE_TIME}', is not in 'YYYYMMDDHH' format."
+  exit 1
+else
+  cycle_time="${CYCLE_TIME:0:8} ${CYCLE_TIME:8:2}"
+fi
 if [ ! "${MAX_DOM}" ]; then
   echo "ERROR: \${MAX_DOM} is not defined."
   exit 1
@@ -534,6 +542,7 @@ echo "IF_FEEDBACK   = ${IF_FEEDBACK}"
 echo
 echo "START TIME    = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
 echo "END TIME      = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo "CYCLE TIME    = "`date +"%Y/%m/%d %H:%M:%S" -d "${cycle_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
 echo "wrf started at ${now}."
@@ -569,7 +578,7 @@ fi
 
 # ensure that the cycle_io/date/bkg directory exists for starting next cycle
 cycle_intv=`date +%H -d "${CYCLE_INTERVAL}"`
-datestr=`date +%Y%m%d%H -d "${start_time} ${cycle_intv} hours"`
+datestr=`date +%Y%m%d%H -d "${cycle_time} ${cycle_intv} hours"`
 new_bkg=${datestr}/bkg/ens_${ens_n}
 mkdir -p ${CYCLE_HOME}/../${new_bkg}
 

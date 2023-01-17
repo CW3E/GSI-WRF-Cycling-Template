@@ -81,7 +81,7 @@
   <!ENTITY PROJECT             "--account=cwp106">
   <!ENTITY PART_COMPU          "--partition=compute"> 
   <!ENTITY PART_DEBUG          "--partition=shared"> 
-  <!ENTITY PART_RAPID          "--partition=large-shared-normal"> 
+  <!ENTITY PART_RAPID          "--partition=large-shared"> 
   <!ENTITY MPIRUN              "mpirun">
   <!ENTITY WPS_PROC            "24"> <!-- WPS parallel / REAL procs, all serial hard-coded as 1 -->
   <!ENTITY WPS_MEM             "5G">
@@ -667,6 +667,10 @@
     </envar>
     <envar>
       <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>CYCLE_TIME</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>

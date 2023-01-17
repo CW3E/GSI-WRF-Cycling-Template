@@ -51,7 +51,10 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
+            'deterministic_forecast_b0.30',
             'deterministic_forecast_b0.50',
+            'deterministic_forecast_b0.60',
+            'deterministic_forecast_b0.70',
             'deterministic_forecast_b0.80',
             'deterministic_forecast_b0.90',
             'deterministic_forecast_b1.00',
@@ -73,8 +76,8 @@ VALID_DT = '2019-02-15T00:00:00'
 CYCLE_INT = 24
 
 # MET stat column names to be made to heat plots / labels
-STATS = ['RMSE', 'PR_CORR']
-#STATS = ['MAD', 'SP_CORR']
+#STATS = ['RMSE', 'PR_CORR']
+STATS = ['MAD', 'SP_CORR']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'

@@ -49,17 +49,19 @@ from py_plt_utilities import USR_HME
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # define control flow to analyze 
-#CTR_FLW = 'deterministic_forecast_control'
-CTR_FLW = 'deterministic_forecast_control'
+CTR_FLW = 'deterministic_forecast_b1.00'
+
+# define case-wise sub-directory
+CSE="VD"
 
 # start date time of WRF forecast
-START_DT = '2021-01-25_00:00:00'
+START_DT = '2019-02-12_00:00:00'
 
 # valid date time for analysis
-ANL_DT = '2021-01-29_00:00:00'
+ANL_DT = '2019-02-15_00:00:00'
 
 # max domain to plot
-MAX_DOM = 1
+MAX_DOM = 2
 
 ##################################################################################
 # Begin plotting
@@ -69,7 +71,9 @@ anl_dt = dt.fromisoformat(ANL_DT)
 start_dt = dt.fromisoformat(START_DT)
 
 # define derived data paths 
-data_root = USR_HME + '/data/analysis/' + CTR_FLW + '/WRF_analysis'
+param = CTR_FLW.split('_')[-1]
+cse = CSE + '/' + CTR_FLW
+data_root = USR_HME + '/data/analysis/' + cse + '/WRF_analysis'
 in_path = data_root + '/' + start_dt.strftime('%Y%m%d%H')
 out_path = data_root + '/ivt_plots'
 os.system('mkdir -p ' + out_path)
@@ -220,7 +224,7 @@ ax1.add_feature(cfeature.STATES)
 ax1.add_feature(cfeature.BORDERS)
 
 # Add ivt u / v directional barbs plotting every w_kth point above the threshold
-w_k = 400
+w_k = 1000
 lats = np.array(data['d01']['lats'])
 lons = np.array(data['d01']['lons'])
 ivtx = lons.flatten()
@@ -305,7 +309,7 @@ ax1.gridlines(color='black', linestyle='dotted')
 # make title and save figure
 title1 = anl_dt.strftime('%Y-%m-%dT%H') + r' - IVT $kg $ $m^{-1} s^{-1}$ ' +\
         c_pl + ' ' + c_var + ' contours'
-title2 = 'fzh - ' + start_dt.strftime('%Y-%m-%dT%H')
+title2 = 'fzh - ' + start_dt.strftime('%Y-%m-%dT%H') + ' ' + param
 
 plt.figtext(.50, .96, title1, horizontalalignment='center',
         verticalalignment='center', fontsize=22)

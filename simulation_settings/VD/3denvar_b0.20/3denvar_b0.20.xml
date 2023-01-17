@@ -569,6 +569,10 @@
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
+      <name>CYCLE_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
       <name>MAX_DOM</name>
       <value>&WRF_CTR_DOM;</value>
     </envar>
@@ -667,6 +671,10 @@
     </envar>
     <envar>
       <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>CYCLE_TIME</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>

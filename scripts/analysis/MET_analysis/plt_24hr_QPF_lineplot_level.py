@@ -52,7 +52,10 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
+            'deterministic_forecast_b0.30',
             'deterministic_forecast_b0.50',
+            'deterministic_forecast_b0.60',
+            'deterministic_forecast_b0.70',
             'deterministic_forecast_b0.80',
             'deterministic_forecast_b0.90',
             'deterministic_forecast_b1.00',

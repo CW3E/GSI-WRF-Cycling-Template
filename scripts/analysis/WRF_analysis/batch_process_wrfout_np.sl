@@ -36,7 +36,7 @@
 # set the  git clone directory, case study and control flow
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 CSE="VD"
-CTR_FLW="deterministic_forecast_b1.00"
+CTR_FLW="deterministic_forecast_b0.70"
 
 # define date range and increments for start time of simulations
 START_TIME=2019021100

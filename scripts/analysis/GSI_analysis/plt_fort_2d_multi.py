@@ -61,13 +61,12 @@ from gsi_py_utilities import USR_HME
 ##################################################################################
 # define control flow to analyze 
 CTR_FLWS = [
-            '3denvar_b0.25',
+            '3denvar_b0.30',
             '3denvar_b0.50',
-            #'3denvar_b0.60',
+            '3denvar_b0.60',
             '3denvar_b0.70',
-            #'3denvar_b0.75',
             '3denvar_b0.80',
-            #'3denvar_b0.90',
+            '3denvar_b0.90',
             '3denvar_b1.00',
            ]
 
@@ -217,10 +216,10 @@ fig.legend(line_list, line_labs, fontsize=22, ncol=num_flws, loc='upper center')
 
 lab1 = STG + ' RMSE'
 lab2 = STG + ' % obs rej'
-plt.figtext(.05, .415, lab1, horizontalalignment='right', rotation=90,
+plt.figtext(.05, .415, lab2, horizontalalignment='right', rotation=90,
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.05, .745, lab2, horizontalalignment='right', rotation=90,
+plt.figtext(.05, .745, lab1, horizontalalignment='right', rotation=90,
             verticalalignment='center', fontsize=22)
 
 

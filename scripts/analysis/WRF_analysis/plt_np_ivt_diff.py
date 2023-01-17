@@ -50,30 +50,27 @@ from py_plt_utilities import USR_HME
 ##################################################################################
 # define control flows to analyze, first is control second is treatment 
 CTR_ROOT = 'deterministic_forecast'
-CTR_FLW1 = CTR_ROOT + '_control'
-CTR_FLW2 = CTR_ROOT + '_treatment'
+CTR_FLW1 = CTR_ROOT + '_b1.00'
+CTR_FLW2 = CTR_ROOT + '_b0.30'
 
-#CTR_FLW1 = CTR_ROOT + '_control'
-#CTR_FLW2 = CTR_ROOT + '_control'
-
-#CTR_FLW1 = CTR_ROOT + '_treatment'
-#CTR_FLW2 = CTR_ROOT + '_treatment'
+# define case-wise sub-directory
+CSE="VD"
 
 # start date time of WRF forecasts 1 and 2
-START_DT1 = '2021-01-24_00:00:00' 
-START_DT2 = '2021-01-24_00:00:00' 
+START_DT1 = '2019-02-11_00:00:00' 
+START_DT2 = '2019-02-11_00:00:00' 
 
 # valid date time for analysis
-ANL_DT = '2021-01-28_00:00:00'
+ANL_DT = '2019-02-15_00:00:00'
 
 # max domain to plot
-MAX_DOM = 1
+MAX_DOM = 2
 
 ##################################################################################
 # Begin plotting
 ##################################################################################
 # define derived data paths 
-data_root = USR_HME + '/data/analysis'
+data_root = USR_HME + '/data/analysis' + '/' + CSE
 
 # convert from iso times
 anl_dt = dt.fromisoformat(ANL_DT)

@@ -94,7 +94,7 @@
   <!ENTITY WRF_NODES           "16">
   <!ENTITY WRF_WC              "01:30:00">
   <!ENTITY GSI_PROC            "64">
-  <!ENTITY GSI_MEM             "1G">
+  <!ENTITY GSI_MEM             "21G">
   <!ENTITY GSI_NODESIZE        "64">
   <!ENTITY GSI_NODES           "1">
   <!ENTITY GSI_WC              "06:30:00">
@@ -569,6 +569,10 @@
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
+      <name>CYCLE_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
       <name>MAX_DOM</name>
       <value>&WRF_CTR_DOM;</value>
     </envar>
@@ -667,6 +671,10 @@
     </envar>
     <envar>
       <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>CYCLE_TIME</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
