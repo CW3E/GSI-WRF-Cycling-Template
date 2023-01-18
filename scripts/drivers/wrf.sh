@@ -181,7 +181,7 @@ end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
 # Convert CYCLE_TIME from 'YYYYMMDDHH' format to start_time Unix date format
 if [ ${#CYCLE_TIME} -ne 10 ]; then
-  echo "ERROR: start time, '${CYCLE_TIME}', is not in 'YYYYMMDDHH' format."
+  echo "ERROR: cycle time, '${CYCLE_TIME}', is not in 'YYYYMMDDHH' format."
   exit 1
 else
   cycle_time="${CYCLE_TIME:0:8} ${CYCLE_TIME:8:2}"

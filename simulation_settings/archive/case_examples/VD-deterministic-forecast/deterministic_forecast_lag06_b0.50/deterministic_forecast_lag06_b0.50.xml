@@ -60,7 +60,7 @@
   <!ENTITY FCST_LENGTH         "96">
   <!ENTITY FCST_INTERVAL       "03">
   <!ENTITY CTR_DATA_INTERVAL   "03"> <!-- This setting is applied to all WRF preprocessing and WRF control run -->
-  <!ENTITY WRF_ENS_ROOT        "&DATA_ROOT;"> <!-- Dummy argument for deterministic forecast, required for BC update --> 
+  <!ENTITY WRF_ENS_ROOT        "&DATA_ROOT;/ensembles/lag06"> <!-- Dummy argument for deterministic forecast, required for BC update --> 
   <!ENTITY IF_SST_UPDATE       "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->
   <!ENTITY IF_FEEDBACK         "No"> <!-- This setting defines 1- or 2-way nesting with WRF domains -->
   <!ENTITY NIO_TPG             "0"> <!-- Set NIO_TPG=0 for default TURN OFF QUILTING --> 
@@ -385,6 +385,10 @@
     </envar>
     <envar>
       <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>CYCLE_TIME</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
