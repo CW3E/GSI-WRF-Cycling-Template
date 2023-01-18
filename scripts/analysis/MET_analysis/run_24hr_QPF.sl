@@ -2,7 +2,7 @@
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 02:00:00
 #SBATCH --job-name="24hr_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
