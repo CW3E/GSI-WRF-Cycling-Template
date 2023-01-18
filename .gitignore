@@ -30,7 +30,6 @@
 *.sqlite
 *.e*
 *.o*
-*.txt
 rsl*
 
 # OS generated files #
