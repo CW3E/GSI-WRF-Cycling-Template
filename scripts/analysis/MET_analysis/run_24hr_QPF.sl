@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=compute
+#SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
 #SBATCH -t 01:00:00

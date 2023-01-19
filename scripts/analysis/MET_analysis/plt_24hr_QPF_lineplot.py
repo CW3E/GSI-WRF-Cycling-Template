@@ -44,7 +44,6 @@ import numpy as np
 import pickle
 import os
 from py_plt_utilities import USR_HME
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -75,9 +74,12 @@ VALID_DT = '2019-02-15T00:00:00'
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
 
+# MET stat file type -- should be non-leveled data
+TYPE = 'cnt'
+
 # MET stat column names to be made to heat plots / labels
-#STATS = ['RMSE', 'PR_CORR']
-STATS = ['MAD', 'SP_CORR']
+STATS = ['RMSE', 'PR_CORR']
+#STATS = ['MAD', 'SP_CORR']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'
@@ -122,23 +124,17 @@ for i in range(num_flws):
     data = pickle.load(f)
     f.close()
     
-    # all values below are taken from the raw data frame, SOME may be set
-    # in the above STATS as valid heat plot options
+    # load the values to be plotted along with landmask and lead
     vals = [
             'VX_MASK',
             'FCST_LEAD',
-            'RMSE',
-            'BCMSE',
-            'MSE',
-            'MAD',
-            'PR_CORR',
-            'SP_CORR',
            ]
+    vals += STATS
     
     # cut down df to specified region and obtain leads of data 
-    level_data = data['cnt'][vals]
-    level_data = level_data.loc[(level_data['VX_MASK'] == LND_MSK)]
-    data_leads = sorted(list(set(level_data['FCST_LEAD'].values)))[::-1]
+    stat_data = data[TYPE][vals]
+    stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+    data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)))[::-1]
     num_leads = len(data_leads)
     
     # create array storage for stats
@@ -146,7 +142,7 @@ for i in range(num_flws):
     
     for k in range(2):
         for j in range(num_leads):
-            val = level_data.loc[(level_data['FCST_LEAD'] == data_leads[j])]
+            val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
             tmp[j, k] = val[STATS[k]]
     
     l, = ax1.plot(range(num_leads), tmp[:, 1], linewidth=2, markersize=26,
@@ -203,7 +199,8 @@ plt.figtext(.05, .265, lab2, horizontalalignment='right', rotation=90,
 plt.figtext(.05, .595, lab3, horizontalalignment='right', rotation=90,
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=22, ncol=num_flws, loc='center', bbox_to_anchor=[0.5, 0.83])
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws, 6),
+           loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
 out_path = USR_HME + '/data/analysis/' + CSE + '/' + VALID_DT + '_' +\

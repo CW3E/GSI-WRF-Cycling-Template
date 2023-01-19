@@ -45,7 +45,6 @@ import numpy as np
 import pickle
 import os
 from py_plt_utilities import USR_HME
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -67,8 +66,9 @@ CSE = 'VD'
 # threshold level to plot
 #LEV = '>0.0'
 #LEV = '>=10.0'
-LEV = '>=25.4'
-#LEV = '>=50.8'
+#LEV = '>=25.4'
+LEV = '>=50.8'
+#LEV = '>=101.6'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'
@@ -82,16 +82,23 @@ VALID_DT = '2019-02-15T00:00:00'
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
 
+# MET stat file type -- should be leveled data
+#TYPE = 'cts'
+#TYPE = 'nbrcts'
+TYPE = 'nbrcnt'
+
 # MET stat column names to be made to heat plots / labels
 STATS = ['CSI', 'FAR']
 #STATS = ['PODY', 'POFD']
+#STATS = ['FSS', 'AFSS']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'
 #LND_MSK = 'FULL'
 
 # set bool if confidence interval to be included
-CNF_LV = True
+#CNF_LV = True
+CNF_LV = False
 
 ##################################################################################
 # Begin plotting
@@ -132,38 +139,16 @@ for i in range(num_flws):
     data = pickle.load(f)
     f.close()
     
-    # all values below are taken from the raw data frame, SOME may be set
-    # in the above STATS as valid heat plot options
+    # load the values to be plotted along with landmask, lead and threshold
     vals = [
             'VX_MASK',
             'FCST_LEAD',
             'FCST_THRESH',
-            'PODY',
-            'PODY_NCL',
-            'PODY_NCU',
-            'PODN',
-            'PODN_NCL',
-            'PODN_NCU',
-            'POFD',
-            'POFD_NCL',
-            'POFD_NCU',
-            'GSS',
-            'BAGSS',
-            'ACC',
-            'FBIAS',
-            'FAR',
-            'FAR_NCL',
-            'FAR_NCU',
-            'CSI',
-            'CSI_NCL',
-            'CSI_NCU',
-            'HK',
-            'HK_NCL',
-            'HK_NCU',
            ]
+    vals += STATS
     
     # cut down df to specified region and obtain leads of data 
-    level_data = data['cts'][vals]
+    level_data = data[TYPE][vals]
     level_data = level_data.loc[(level_data['FCST_THRESH'] == LEV)]
     level_data = level_data.loc[(level_data['VX_MASK'] == LND_MSK)]
     data_leads = sorted(list(set(level_data['FCST_LEAD'].values)))[::-1]
@@ -253,7 +238,8 @@ plt.figtext(.04, .265, lab2, horizontalalignment='right', rotation=90,
 plt.figtext(.05, .595, lab3, horizontalalignment='right', rotation=90,
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=22, ncol=num_flws, loc='center', bbox_to_anchor=[0.5, 0.83])
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws, 6),
+           loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
 out_path = USR_HME + '/data/analysis/' + CSE + '/' + VALID_DT + '_' +\

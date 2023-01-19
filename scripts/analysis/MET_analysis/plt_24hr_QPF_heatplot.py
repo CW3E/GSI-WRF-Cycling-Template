@@ -66,15 +66,16 @@ VALID_DT = '2019-02-15T00:00:00'
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
 
-
-# MET stat file type
-TYPE = 'nbrcnt'
+# MET stat file type -- should be leveled data
+#TYPE = 'cts'
+TYPE = 'nbrcts'
+#TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
 #STATS = ['HK', 'GSS']
 #STATS = ['PODY', 'POFD']
-#STATS = ['CSI', 'FAR']
-STATS = ['FSS', 'FBS']
+STATS = ['CSI', 'FAR']
+#STATS = ['FSS', 'AFSS']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'
@@ -87,9 +88,9 @@ LND_MSK = 'CALatLonPoints'
 fig = plt.figure(figsize=(11.25,8.63))
 
 # Set the axes
-ax0 = fig.add_axes([.89, .10, .05, .8])
-ax1 = fig.add_axes([.08, .10, .39, .8])
-ax2 = fig.add_axes([.49, .10, .39, .8])
+ax0 = fig.add_axes([.885, .10, .03, .8])
+ax1 = fig.add_axes([.085, .10, .39, .8])
+ax2 = fig.add_axes([.485, .10, .39, .8])
 
 # define derived data paths 
 param = CTR_FLW.split('_')[-1]
@@ -110,7 +111,7 @@ f = open(in_path, 'rb')
 data = pickle.load(f)
 f.close()
 
-# load the values to be plotted along with threshold and lead
+# load the values to be plotted along with landmask, lead and threshold
 vals = [
         'VX_MASK',
         'FCST_LEAD',
@@ -119,10 +120,10 @@ vals = [
 vals += STATS
 
 # cut down df to specified region and obtain levels of data 
-level_data = data[TYPE][vals]
-level_data = level_data.loc[(level_data['VX_MASK'] == LND_MSK)]
-data_levels =  sorted(list(set(level_data['FCST_THRESH'].values)))[::-1]
-data_leads = sorted(list(set(level_data['FCST_LEAD'].values)))[::-1]
+stat_data = data[TYPE][vals]
+stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+data_levels =  sorted(list(set(stat_data['FCST_THRESH'].values)))[::-1]
+data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)))[::-1]
 num_levels = len(data_levels)
 num_leads = len(data_leads)
 
@@ -132,8 +133,8 @@ tmp = np.zeros([num_levels, num_leads, 2])
 for k in range(2):
     for i in range(num_levels):
         for j in range(num_leads):
-            val = level_data.loc[(level_data['FCST_THRESH'] == data_levels[i]) &
-                                 (level_data['FCST_LEAD'] == data_leads[j])]
+            val = stat_data.loc[(stat_data['FCST_THRESH'] == data_levels[i]) &
+                                 (stat_data['FCST_LEAD'] == data_leads[j])]
             
             tmp[i, j, k] = val[STATS[k]]
 
