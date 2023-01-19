@@ -2,7 +2,7 @@
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 02:00:00
+#SBATCH -t 01:00:00
 #SBATCH --job-name="24hr_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -55,7 +55,7 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_b0.70"
+CTR_FLW="deterministic_forecast_b0.30"
 
 # define the case-wise sub-directory
 CSE="VD"

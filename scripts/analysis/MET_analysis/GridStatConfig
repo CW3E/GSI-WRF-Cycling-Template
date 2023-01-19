@@ -235,9 +235,9 @@ output_flag = {
    pjc    = NONE;
    prc    = NONE;
    eclv   = NONE;
-   nbrctc = NONE;
-   nbrcts = NONE;
-   nbrcnt = NONE;
+   nbrctc = BOTH;
+   nbrcts = BOTH;
+   nbrcnt = BOTH;
    grad   = NONE;
    dmap   = NONE;
 }
