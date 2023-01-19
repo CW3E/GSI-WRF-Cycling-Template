@@ -49,7 +49,7 @@ from py_plt_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_b0.30'
+CTR_FLW = 'deterministic_forecast_b1.00'
 
 # define case-wise sub-directory
 CSE = 'VD'
@@ -66,10 +66,15 @@ VALID_DT = '2019-02-15T00:00:00'
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
 
+
+# MET stat file type
+TYPE = 'nbrcnt'
+
 # MET stat column names to be made to heat plots / labels
 #STATS = ['HK', 'GSS']
 #STATS = ['PODY', 'POFD']
-STATS = ['CSI', 'FAR']
+#STATS = ['CSI', 'FAR']
+STATS = ['FSS', 'FBS']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'
@@ -105,26 +110,16 @@ f = open(in_path, 'rb')
 data = pickle.load(f)
 f.close()
 
-# all values below are taken from the raw data frame, SOME may be set
-# in the above STATS as valid heat plot options
+# load the values to be plotted along with threshold and lead
 vals = [
         'VX_MASK',
         'FCST_LEAD',
         'FCST_THRESH',
-        'PODY',
-        'PODN',
-        'POFD',
-        'GSS',
-        'BAGSS',
-        'ACC',
-        'FBIAS',
-        'FAR',
-        'CSI',
-        'HK',
        ]
+vals += STATS
 
 # cut down df to specified region and obtain levels of data 
-level_data = data['cts'][vals]
+level_data = data[TYPE][vals]
 level_data = level_data.loc[(level_data['VX_MASK'] == LND_MSK)]
 data_levels =  sorted(list(set(level_data['FCST_THRESH'].values)))[::-1]
 data_leads = sorted(list(set(level_data['FCST_LEAD'].values)))[::-1]
