@@ -67,8 +67,8 @@ CSE = 'VD'
 #LEV = '>0.0'
 #LEV = '>=10.0'
 #LEV = '>=25.4'
-LEV = '>=50.8'
-#LEV = '>=101.6'
+#LEV = '>=50.8'
+LEV = '>=101.6'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'
@@ -88,9 +88,9 @@ CYCLE_INT = 24
 TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
-STATS = ['CSI', 'FAR']
+#STATS = ['CSI', 'FAR']
 #STATS = ['PODY', 'POFD']
-#STATS = ['FSS', 'AFSS']
+STATS = ['FSS', 'AFSS']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'
@@ -184,12 +184,12 @@ for i in range(num_flws):
                 val = level_data.loc[(level_data['FCST_LEAD'] == data_leads[j])]
                 tmp[j, k] = val[STATS[k]]
         
-        l, = ax1.plot(range(num_leads), tmp[:, 1], linewidth=2, markersize=26,
-                color=line_colors[i])
+        l, = ax1.plot(range(num_leads), tmp[:, 1], linewidth=2,
+                marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
         line_list.append(l)
 
-        ax0.plot(range(num_leads), tmp[:, 0], linewidth=2, markersize=26,
-                color=line_colors[i])
+        ax0.plot(range(num_leads), tmp[:, 0], linewidth=2,
+                marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
 
 ##################################################################################
 # define display parameters

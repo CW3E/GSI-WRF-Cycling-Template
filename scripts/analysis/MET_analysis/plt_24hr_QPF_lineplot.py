@@ -145,12 +145,12 @@ for i in range(num_flws):
             val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
             tmp[j, k] = val[STATS[k]]
     
-    l, = ax1.plot(range(num_leads), tmp[:, 1], linewidth=2, markersize=26,
-            color=line_colors[i])
+    l, = ax1.plot(range(num_leads), tmp[:, 1], linewidth=2,
+            marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
     line_list.append(l)
 
-    ax0.plot(range(num_leads), tmp[:, 0], linewidth=2, markersize=26,
-            color=line_colors[i])
+    ax0.plot(range(num_leads), tmp[:, 0], linewidth=2,
+            marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
 
 ##################################################################################
 # define display parameters
