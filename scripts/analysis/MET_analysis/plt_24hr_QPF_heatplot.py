@@ -49,7 +49,7 @@ from py_plt_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_b1.00'
+CTR_FLW = 'deterministic_forecast_b0.30'
 
 # define case-wise sub-directory
 CSE = 'VD'
@@ -74,6 +74,7 @@ TYPE = 'nbrcts'
 # MET stat column names to be made to heat plots / labels
 #STATS = ['HK', 'GSS']
 #STATS = ['PODY', 'POFD']
+#STATS = ['CSI', 'FBIAS']
 STATS = ['CSI', 'FAR']
 #STATS = ['FSS', 'AFSS']
 
@@ -122,8 +123,17 @@ vals += STATS
 # cut down df to specified region and obtain levels of data 
 stat_data = data[TYPE][vals]
 stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
-data_levels =  sorted(list(set(stat_data['FCST_THRESH'].values)))[::-1]
-data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)))[::-1]
+
+# NOTE: sorting below is designed to handle the issue of string sorting with
+# symbols and non-left-padded decimals
+
+# sorts first on length of integer expansion with inequalities, secondly on char
+data_levels = sorted(list(set(stat_data['FCST_THRESH'].values)),
+                     key=lambda x:(len(x.split('.')[0]), x), reverse=True)
+
+# sorts first on length of integer expansion for hours, secondly on char
+data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+                    key=lambda x:(len(x), x), reverse=True)
 num_levels = len(data_levels)
 num_leads = len(data_leads)
 

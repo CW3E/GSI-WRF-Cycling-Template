@@ -41,7 +41,7 @@ from py_plt_utilities import STR_INDT, get_anls, USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_b1.00'
+CTR_FLW = 'deterministic_forecast_b0.30'
 
 # define the case-wise sub-directory
 CSE = 'VD'
@@ -117,20 +117,30 @@ for (anl_date, anl_strng) in analyses:
             split_line = line.split()
 
             for i in range(len(split_line)):
-                tmp_dict[cols[i]] = split_line[i]
+                val = split_line[i]
 
-            tmp_dict['step'] = [int(df_indx)]
+                # filter NA vals
+                if val == 'NA':
+                    val = np.nan
+                tmp_dict[cols[i]] = val
+
+            tmp_dict['line'] = [df_indx]
             tmp_dict = pd.DataFrame.from_dict(tmp_dict, orient='columns')
             fname_df = pd.concat([fname_df, tmp_dict], axis=0)
             df_indx += 1
-        
-        fname_df = fname_df.set_index('step')
 
+        fname_df['line'] = fname_df['line'].astype(int)
+        
         if postfix in data_dict.keys():
+            last_indx = data_dict[postfix].index[-1]
+            fname_df['line'] = fname_df['line'].add(last_indx)
+            fname_df = fname_df.set_index('line')
             data_dict[postfix] = pd.concat([data_dict[postfix], fname_df], axis=0)
 
         else:
+            fname_df = fname_df.set_index('line')
             data_dict[postfix] = fname_df
+
 
         print(STR_INDT + 'Closing file ' + in_path)
         f.close()
