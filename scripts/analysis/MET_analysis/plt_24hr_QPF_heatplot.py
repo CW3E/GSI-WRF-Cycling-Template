@@ -49,7 +49,7 @@ from py_plt_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_b1.00'
+CTR_FLW = 'deterministic_forecast_b0.30'
 
 # define case-wise sub-directory
 CSE = 'VD'
@@ -68,15 +68,15 @@ CYCLE_INT = 24
 
 # MET stat file type -- should be leveled data
 #TYPE = 'cts'
-TYPE = 'nbrcts'
-#TYPE = 'nbrcnt'
+#TYPE = 'nbrcts'
+TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
 #STATS = ['HK', 'GSS']
 #STATS = ['PODY', 'POFD']
 #STATS = ['CSI', 'FBIAS']
-STATS = ['CSI', 'FAR']
-#STATS = ['FSS', 'AFSS']
+#STATS = ['FAR', 'POFD']
+STATS = ['FSS', 'AFSS']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'
@@ -155,8 +155,13 @@ if (stat1 == 'GSS') or\
    (stat2 == 'GSS') or\
    (stat2 == 'BAGSS') or\
    (stat2 == 'HK'):
-    min_scale = -1.0
+    min_scale = -0.25
     max_scale = 1.0
+
+elif (stat1 == 'FBIAS') or\
+     (stat2 == 'FBIAS'):
+    min_scale = 0.0
+    max_scale = 1.25
 
 else:
     max_scale = 1.0

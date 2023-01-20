@@ -45,6 +45,7 @@ import numpy as np
 import pickle
 import os
 from py_plt_utilities import USR_HME
+import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -87,18 +88,17 @@ CYCLE_INT = 24
 #TYPE = 'nbrcts'
 TYPE = 'nbrcnt'
 
-# MET stat column names to be made to heat plots / labels
-#STATS = ['CSI', 'FAR']
+# MET stat column names to be made to leveled line data
+#STATS = ['HK', 'GSS']
 #STATS = ['PODY', 'POFD']
+#STATS = ['CSI', 'FAR']
+#STATS = ['CSI', 'FBIAS']
+#STATS = ['FAR', 'POFD']
 STATS = ['FSS', 'AFSS']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'
 #LND_MSK = 'FULL'
-
-# set bool if confidence interval to be included
-#CNF_LV = True
-CNF_LV = False
 
 ##################################################################################
 # Begin plotting
@@ -111,8 +111,8 @@ line_colors = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a','#66a61e','#e6ab02','#
 #line_colors = ['#1b9e77', '#7570b3', '#d95f02', 'k']
 
 # Set the axes
-ax1 = fig.add_axes([.110, .10, .85, .33])
 ax0 = fig.add_axes([.110, .43, .85, .33])
+ax1 = fig.add_axes([.110, .10, .85, .33])
 
 num_flws = len(CTR_FLWS)
 line_list = []
@@ -127,8 +127,8 @@ for i in range(num_flws):
     # define derived data paths 
     cse = CSE + '/' + ctr_flw
     data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
-    stat1 = STATS[0]
-    stat2 = STATS[1]
+    stat0 = STATS[0]
+    stat1 = STATS[1]
     
     # define the output name
     in_path = data_root + '/grid_stats_lead_' + START_DT +\
@@ -146,50 +146,67 @@ for i in range(num_flws):
             'FCST_THRESH',
            ]
     vals += STATS
-    
+
+    # infer existence of confidence intervals with precedence for bootstrap
+    cnf_lvs = []
+    for k in range(2):
+        stat = STATS[k]
+        if stat + '_BCL' in data[TYPE] and\
+            not (data[TYPE][stat + '_BCL'].isnull().values.any()):
+                vals.append(stat + '_BCL')
+                vals.append(stat + '_BCU')
+                cnf_lvs.append('_BC')
+
+        elif stat + '_NCL' in data[TYPE] and\
+            not (data[TYPE][stat + '_NCL'].isnull().values.any()):
+                vals.append(stat + '_NCL')
+                vals.append(stat + '_NCU')
+                cnf_lvs.append('_NC')
+
+        else:
+            cnf_lvs.append(False)
+
     # cut down df to specified region and obtain leads of data 
-    level_data = data[TYPE][vals]
-    level_data = level_data.loc[(level_data['FCST_THRESH'] == LEV)]
-    level_data = level_data.loc[(level_data['VX_MASK'] == LND_MSK)]
-    data_leads = sorted(list(set(level_data['FCST_LEAD'].values)))[::-1]
+    stat_data = data[TYPE][vals]
+    stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == LEV)]
+    stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+    data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+                        key=lambda x:(len(x), x), reverse=True)
     num_leads = len(data_leads)
     
-    # create array storage for stats
-    if CNF_LV:
-        tmp = np.zeros([num_leads, 3, 2])
+    # create array storage for stats and plot
+    for k in range(2):
+        exec('ax = ax%s'%k)
+        if cnf_lvs[k]:
+            tmp = np.zeros([num_leads, 3])
     
-        for k in range(2):
             for j in range(num_leads):
-                val = level_data.loc[(level_data['FCST_LEAD'] == data_leads[j])]
-                tmp[j, 0, k] = val[STATS[k]]
-                tmp[j, 1, k] = val[STATS[k] + '_NCL']
-                tmp[j, 2, k] = val[STATS[k] + '_NCU']
+                val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
+                tmp[j, 0] = val[STATS[k]]
+                tmp[j, 1] = val[STATS[k] + cnf_lvs[k] + 'L']
+                tmp[j, 2] = val[STATS[k] + cnf_lvs[k] + 'U']
+            
+            ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5,
+                    color=line_colors[i])
+            l, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2,
+                    marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
+
+        else:
+            tmp = np.zeros([num_leads])
         
-        l, = ax1.plot(range(num_leads), tmp[:, 0, 1], linewidth=2, markersize=26,
-                color=line_colors[i])
-        ax1.fill_between(range(num_leads), tmp[:, 1, 1], tmp[:, 2, 1], alpha=0.2,
-                color=line_colors[i])
-        line_list.append(l)
-
-        ax0.plot(range(num_leads), tmp[:, 0, 0], linewidth=2, markersize=26,
-                color=line_colors[i])
-        ax0.fill_between(range(num_leads), tmp[:, 1, 0], tmp[:, 2, 0], alpha=0.2,
-                color=line_colors[i])
-
-    else:
-        tmp = np.zeros([num_leads, 2])
-    
-        for k in range(2):
             for j in range(num_leads):
-                val = level_data.loc[(level_data['FCST_LEAD'] == data_leads[j])]
-                tmp[j, k] = val[STATS[k]]
-        
-        l, = ax1.plot(range(num_leads), tmp[:, 1], linewidth=2,
-                marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
-        line_list.append(l)
+                val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
+                tmp[j] = val[STATS[k]]
+            
+            l, = ax.plot(range(num_leads), tmp[:], linewidth=2,
+                    marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
 
-        ax0.plot(range(num_leads), tmp[:, 0], linewidth=2,
-                marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
+            ax.plot(range(num_leads), tmp[:], linewidth=2,
+                    marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
+        
+        
+    # add the line type to the legend
+    line_list.append(l)
 
 ##################################################################################
 # define display parameters
@@ -220,22 +237,22 @@ ax0.tick_params(
 
 title1='24hr accumulated precip at ' + VALID_DT
 title2='Verification region -- ' + LND_MSK + ' Threshold ' + LEV + ' mm'
-lab1='Forecast lead hrs'
-lab2=STATS[1]
-lab3=STATS[0]
-plt.figtext(.5, .02, lab1, horizontalalignment='center',
-            verticalalignment='center', fontsize=22)
-
+lab0=STATS[0]
+lab1=STATS[1]
+lab2='Forecast lead hrs'
 plt.figtext(.5, .98, title1, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
 plt.figtext(.5, .93, title2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.04, .265, lab2, horizontalalignment='right', rotation=90,
+plt.figtext(.05, .595, lab0, horizontalalignment='right', rotation=90,
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.05, .595, lab3, horizontalalignment='right', rotation=90,
+plt.figtext(.04, .265, lab1, horizontalalignment='right', rotation=90,
+            verticalalignment='center', fontsize=22)
+
+plt.figtext(.5, .02, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
 fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws, 6),
@@ -243,8 +260,8 @@ fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws, 6),
 
 # save figure and display
 out_path = USR_HME + '/data/analysis/' + CSE + '/' + VALID_DT + '_' +\
-           LND_MSK + '_' + stat1 + '_' +\
-           stat2 + '_lev_' + LEV + '_lineplot.png'
+           LND_MSK + '_' + stat0 + '_' +\
+           stat1 + '_lev_' + LEV + '_lineplot.png'
     
 plt.savefig(out_path)
 plt.show()
