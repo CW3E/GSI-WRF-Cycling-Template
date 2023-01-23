@@ -133,7 +133,7 @@ data_levels = sorted(list(set(stat_data['FCST_THRESH'].values)),
 
 # sorts first on length of integer expansion for hours, secondly on char
 data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
-                    key=lambda x:(len(x), x), reverse=True)
+                    key=lambda x:(len(x), x))
 num_levels = len(data_levels)
 num_leads = len(data_leads)
 

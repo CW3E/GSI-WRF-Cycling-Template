@@ -90,16 +90,15 @@ LND_MSK = 'CALatLonPoints'
 ##################################################################################
 # create a figure
 fig = plt.figure(figsize=(11.25,8.63))
+num_flws = len(CTR_FLWS)
 
 # set colors and storage for looping
-line_colors = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a','#66a61e','#e6ab02','#a6761d', 'k']
-#line_colors = ['#1b9e77', '#7570b3', '#d95f02', 'k']
+line_colors = sns.color_palette("husl", num_flws)
 
 # Set the axes
 ax0 = fig.add_axes([.110, .43, .85, .33])
 ax1 = fig.add_axes([.110, .10, .85, .33])
 
-num_flws = len(CTR_FLWS)
 line_list = []
 line_labs = []
 
@@ -153,7 +152,8 @@ for i in range(num_flws):
     # cut down df to specified region and obtain leads of data 
     stat_data = data[TYPE][vals]
     stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
-    data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)))[::-1]
+    data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+                        key=lambda x:(len(x), x))
     num_leads = len(data_leads)
     
     # create array storage for stats and plot
