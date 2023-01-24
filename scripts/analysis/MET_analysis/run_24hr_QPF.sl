@@ -52,29 +52,29 @@
 #set -x
 
 # root directory for git clone
-USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
+USR_HME="/cw3e/mead/projects/cwp129/cgrudzien/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_b1.00"
+CTR_FLW="NRT_ecmwf"
 
 # define the case-wise sub-directory
-CSE="VD"
+CSE="DD"
 
 # root directory for verification data
-DATA_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
+DATA_ROOT="/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV"
 
 # root directory for MET software
 SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # define date range and forecast cycle interval inclusively
-START_DT="2019021100"
-END_DT="2019021400"
+START_DT="2022122500"
+END_DT="2022122500"
 CYCLE_INT="24"
 
 # WRF ISO date times defining range of data processed for each forecast
 # initialization as above
-ANL_START="2019-02-14_00:00:00"
-ANL_END="2019-02-15_00:00:00"
+ANL_START="2022-12-25_00_00_00"
+ANL_END="2022-12-26_00_00_00"
 
 #################################################################################
 # Process data
@@ -86,7 +86,7 @@ out_root="${USR_HME}/data/analysis/${cse}/MET_analysis"
 scripts_home="${USR_HME}/scripts/analysis/MET_analysis"
 
 # software and data deps.
-stageiv_root="${DATA_ROOT}/DATA/stageIV"
+stageiv_root="${DATA_ROOT}"
 met_src="${SOFT_ROOT}/MET_CODE/met-10.0.1.sif"
 mask_root="${SOFT_ROOT}/MET_CODE/polygons"
 
@@ -142,10 +142,10 @@ while [[ ! ${timestr} > ${end_dt} ]]; do
   statement="singularity exec instance://met1 pcp_combine \
   -sum ${inityear}${initmon}${initday}_${inithr}0000 24\
   ${validyear}${validmon}${validday}_${validhr}0000 24 \
-  /work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+  /work_root/wrfacc_d0${DMN}_${ANL_START}_to_${ANL_END}.nc \
   -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"24hr_qpf\" \
   -pcpdir /work_root \
-  -pcprx \"wrf_post_${ANL_START}_to_${ANL_END}.nc\" "
+  -pcprx \"wrfpost_d0${DMN}_${ANL_START}_to_${ANL_END}.nc\" "
 
   echo ${statement}
   eval ${statement}
@@ -161,7 +161,7 @@ while [[ ! ${timestr} > ${end_dt} ]]; do
   eval ${statement}
   
   statement="singularity exec instance://met1 gen_vx_mask -v 10 \
-  /work_root/wrf_combined_post_${ANL_START}_to_${ANL_END}.nc \
+  /work_root/wrfacc_d0${DMN}_${ANL_START}_to_${ANL_END}.nc \
   -type poly \
   /mask_root/region/CALatLonPoints.txt \
   /work_root/CA_mask_regridded_with_StageIV.nc"

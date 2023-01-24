@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --partition=compute
+#SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 01:00:00
 #SBATCH --job-name="wrfout_cf"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -46,22 +46,32 @@
 module load ncl_ncarg
 
 # root directory for git clone
-USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
+USR_HME="/cw3e/mead/projects/cwp129/cgrudzien/GSI-WRF-Cycling-Template"
 
 # define control flow to analyze 
-CTR_FLW="deterministic_forecast_b0.70"
+CTR_FLW="NRT_ecmwf"
 
 # define the case-wise sub-directory
-CSE="VD"
+CSE="DD"
 
-# define date range and forecast cycle interval
-START_DT="2019021100"
-END_DT="2019021400"
+# define file prefix for outputs to be analyzed
+PRFX="wrfout"
+
+# define file prefix for outputs to be analyzed
+PSTFX=""
+
+# define date range and cycle interval for forecast start dates
+START_DT="2023010100"
+END_DT="2023011800"
 CYCLE_INT="24"
 
-# WRF ISO date times defining range of data processed
-ANL_START="2019-02-14_00:00:00"
-ANL_END="2019-02-15_00:00:00"
+# define min / max forecast hours and cycle interval for verification after start
+ANL_MIN="24"
+ANL_MAX="120"
+ANL_INT="24"
+
+# define the accumulation interval for verification valid times
+ACC_INT="24"
 
 # verification domain for the forecast data
 DMN="2"
@@ -89,46 +99,61 @@ end_dt="${END_DT:0:8} ${END_DT:8:2}"
 end_dt=`date -d "${end_dt}"`
 end_dt=`date +%Y:%m:%d_%H -d "${end_dt}"`
 
-# loop through the date range
+# loop through the cycle date range
 cycle_num=0
-fcst_hour=0
+cycle_hour=0
 
-# directory string
-datestr=`date +%Y%m%d%H -d "${start_dt} ${fcst_hour} hours"`
+# directory string for forecast analysis initialization time
+dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 
-# loop condition
-timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
+# loop condition for analysis initialization times
+loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
 
-while [[ ! ${timestr} > ${end_dt} ]]; do
+while [[ ! ${loopstr} > ${end_dt} ]]; do
   # set input paths
-  input_path="${in_root}/${datestr}/wrfprd/ens_00"
+  input_path="${in_root}/${dirstr}/wrfout"
   
-  # set input file names
-  file_1="wrfout_d0${DMN}_${ANL_START}"
-  file_2="wrfout_d0${DMN}_${ANL_END}"
-  
-  # set output path
-  output_path="${out_root}/${datestr}"
-  mkdir -p ${output_path}
-  
-  # set output file name
-  output_file="wrf_post_${ANL_START}_to_${ANL_END}.nc"
-  
-  cmd="ncl 'file_in=\"${input_path}/${file_2}\"' 'file_prev=\"${input_path}/${file_1}\"'" 
-  cmd="${cmd} 'file_out=\"${output_path}/${output_file}\"' wrfout_to_cf.ncl "
-  
-  echo ${cmd}
-  eval ${cmd}
+  # loop specified lead hours for valid time for each initialization time
+  lead_num=0
+  lead_hour=${ANL_MIN}
+
+  while [[ ${lead_hour} -le ${ANL_MAX} ]]; do
+    # define valid times for accumulation    
+    (( anl_end_hr = lead_hour + cycle_hour ))
+    (( anl_start_hr = anl_end_hr - ACC_INT ))
+    anl_end=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_end_hr} hours"`
+    anl_start=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_start_hr} hours"`
+
+    # set input file names
+    file_1="${PRFX}_d0${DMN}_${anl_start}${PSTFX}"
+    file_2="${PRFX}_d0${DMN}_${anl_end}${PSTFX}"
+    
+    # set output path
+    output_path="${out_root}/${dirstr}"
+    mkdir -p ${output_path}
+    
+    # set output file name
+    output_file="wrfpost_d0${DMN}_${anl_start}_to_${anl_end}.nc"
+    
+    cmd="ncl 'file_in=\"${input_path}/${file_2}\"' 'file_prev=\"${input_path}/${file_1}\"'" 
+    cmd="${cmd} 'file_out=\"${output_path}/${output_file}\"' wrfout_to_cf.ncl "
+    
+    echo ${cmd}
+    eval ${cmd}
+
+    (( lead_num += 1 )) 
+    (( lead_hour = ANL_MIN + lead_num * ANL_INT )) 
+  done
 
   # update the cycle number
   (( cycle_num += 1))
-  (( fcst_hour = cycle_num * CYCLE_INT )) 
+  (( cycle_hour = cycle_num * CYCLE_INT )) 
 
   # update the date string for directory names
-  datestr=`date +%Y%m%d%H -d "${start_dt} ${fcst_hour} hours"`
+  dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 
   # update time string for lexicographical comparison
-  timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
+  loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
 done
 
 echo "Script completed at `date`, verify outputs at out_root ${out_root}"
