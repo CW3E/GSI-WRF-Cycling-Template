@@ -54,12 +54,6 @@ CTR_FLW="NRT_ecmwf"
 # define the case-wise sub-directory
 CSE="DD"
 
-# define file prefix for outputs to be analyzed
-PRFX="wrfout"
-
-# define file prefix for outputs to be analyzed
-PSTFX=""
-
 # define date range and cycle interval for forecast start dates
 START_DT="2023010100"
 END_DT="2023011800"
@@ -125,15 +119,15 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     anl_start=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_start_hr} hours"`
 
     # set input file names
-    file_1="${PRFX}_d0${DMN}_${anl_start}${PSTFX}"
-    file_2="${PRFX}_d0${DMN}_${anl_end}${PSTFX}"
+    file_1="wrfout_d0${DMN}_${anl_start}"
+    file_2="wrfout_d0${DMN}_${anl_end}"
     
     # set output path
     output_path="${out_root}/${dirstr}"
     mkdir -p ${output_path}
     
     # set output file name
-    output_file="wrfpost_d0${DMN}_${anl_start}_to_${anl_end}.nc"
+    output_file="wrfcf_d0${DMN}_${anl_start}_to_${anl_end}.nc"
     
     cmd="ncl 'file_in=\"${input_path}/${file_2}\"' 'file_prev=\"${input_path}/${file_1}\"'" 
     cmd="${cmd} 'file_out=\"${output_path}/${output_file}\"' wrfout_to_cf.ncl "
