@@ -61,14 +61,14 @@ CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
 ANL_MIN="24"
-ANL_MAX="120"
+ANL_MAX="240"
 ANL_INT="24"
 
 # define the accumulation interval for verification valid times
 ACC_INT="24"
 
 # verification domain for the forecast data
-DMN="2"
+DMN="1"
 
 #################################################################################
 # Process data
