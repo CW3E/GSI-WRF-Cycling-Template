@@ -53,7 +53,7 @@ wind_logic          = UNION;
 eclv_points         = 0.05;
 nc_pairs_var_name   = "";
 nc_pairs_var_suffix = "";
-rank_corr_flag      = TRUE;
+rank_corr_flag      = FALSE;
 
 //
 // Forecast and observation fields to be verified
@@ -125,7 +125,7 @@ climo_cdf = {
 //
 mask = {
    grid = [ "FULL" ];
-   poly = [ "/work_root/CA_mask_regridded_with_StageIV.nc" ];
+   poly = [ "/work_root/mask_regridded_with_StageIV.nc" ];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ ci_alpha  = [ 0.05 ];
 boot = {
    interval = PCTILE;
    rep_prop = 1.0;
-   n_rep    = 1000;
+   n_rep    = 0;
    rng      = "mt19937";
    seed     = "1234";
 }

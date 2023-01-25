@@ -41,19 +41,19 @@ from py_plt_utilities import STR_INDT, get_anls, USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_b1.00'
+CTR_FLW = 'NRT_gfs'
 
 # define the case-wise sub-directory
-CSE = 'VD'
+CSE = 'DD'
+
+# verification domain for the forecast data                                                                           
+DMN='2' 
 
 # starting date and zero hour of forecast cycles
-START_DT = '2019-02-11T00:00:00'
+START_DT = '2023-01-01T00:00:00'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2019-02-14T00:00:00'
-
-# valid date for the verification
-VALID_DT = '2019-02-15T00:00:00'
+END_DT = '2023-01-01T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
@@ -70,9 +70,8 @@ start_dt = dt.fromisoformat(START_DT)
 end_dt = dt.fromisoformat(END_DT)
 
 # define the output name
-out_path = data_root + '/grid_stats_lead_' + START_DT +\
-           '_to_' + END_DT + '_valid_' + VALID_DT +\
-           '.bin'
+out_path = data_root + '/grid_stats_' + START_DT +\
+           '_to_' + END_DT + '.bin'
 
 # generate the date range for the analyses
 analyses = get_anls(start_dt, end_dt, CYCLE_INT)
@@ -83,7 +82,7 @@ data_dict = {}
 print('Processing dates ' + START_DT + ' to ' + END_DT)
 for (anl_date, anl_strng) in analyses:
     # define the gridstat files to open based on the analysis date
-    in_paths = data_root + '/' + anl_strng + '/grid_stat_*.txt'
+    in_paths = data_root + '/' + anl_strng + '/d0' + DMN + '/grid_stat_*.txt'
 
     # loop sorted grid_stat_* files
     in_paths = sorted(glob.glob(in_paths))

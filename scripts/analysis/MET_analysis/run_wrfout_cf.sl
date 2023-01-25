@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 01:00:00
+#SBATCH -t 02:00:00
 #SBATCH --job-name="wrfout_cf"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -40,7 +40,15 @@
 # SET GLOBAL PARAMETERS 
 #################################################################################
 # uncoment to make verbose for debugging
-#set -x
+set -x
+
+# initiate bash and source bashrc to initialize environement
+conda init bash
+source /home/cgrudzien/.bashrc
+
+# work in cdo environment
+conda activate cdo
+echo `conda list`
 
 # set local environment for ncl and dependencies
 module load ncl_ncarg
@@ -49,26 +57,29 @@ module load ncl_ncarg
 USR_HME="/cw3e/mead/projects/cwp129/cgrudzien/GSI-WRF-Cycling-Template"
 
 # define control flow to analyze 
-CTR_FLW="NRT_ecmwf"
+CTR_FLW="NRT_gfs"
 
 # define the case-wise sub-directory
 CSE="DD"
 
 # define date range and cycle interval for forecast start dates
-START_DT="2023010100"
+START_DT="2022122100"
 END_DT="2023011800"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
 ANL_MIN="24"
-ANL_MAX="240"
+ANL_MAX="120"
 ANL_INT="24"
 
 # define the accumulation interval for verification valid times
 ACC_INT="24"
 
 # verification domain for the forecast data
-DMN="1"
+DMN="2"
+
+# set to regrid to lat / long for MET compatibility 
+RGRD=true
 
 #################################################################################
 # Process data
@@ -92,6 +103,14 @@ start_dt=`date -d "${start_dt}"`
 end_dt="${END_DT:0:8} ${END_DT:8:2}"
 end_dt=`date -d "${end_dt}"`
 end_dt=`date +%Y:%m:%d_%H -d "${end_dt}"`
+
+if [ ${RGRD} = true ]; then
+  gres=(0.08 0.027 0.009)
+  lat1=(5 29 35)
+  lat2=(65 51 40.5)
+  lon1=(162 223.5 235)
+  lon2=(272 253.5 240.5)
+fi
 
 # loop through the cycle date range
 cycle_num=0
@@ -123,17 +142,39 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     file_2="wrfout_d0${DMN}_${anl_end}"
     
     # set output path
-    output_path="${out_root}/${dirstr}"
+    output_path="${out_root}/${dirstr}/d0${DMN}"
     mkdir -p ${output_path}
     
     # set output file name
     output_file="wrfcf_d0${DMN}_${anl_start}_to_${anl_end}.nc"
+    out_name="${output_path}/${output_file}"
     
-    cmd="ncl 'file_in=\"${input_path}/${file_2}\"' 'file_prev=\"${input_path}/${file_1}\"'" 
-    cmd="${cmd} 'file_out=\"${output_path}/${output_file}\"' wrfout_to_cf.ncl "
+    cmd="ncl 'file_in=\"${input_path}/${file_2}\"' "
+    cmd+="'file_prev=\"${input_path}/${file_1}\"' " 
+    cmd+="'file_out=\"${out_name}\"' wrfout_to_cf.ncl "
     
     echo ${cmd}
     eval ${cmd}
+
+    if [ ${RGRD} = true ]; then
+      # regrids to lat / lon from native grid with CDO
+      cmd="cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} "
+      cmd+="-remapbil,global_${gres} "
+      cmd+="-selname,precip,precip_bkt,IVT,IVTU,IVTV,IWV "
+      cmd+="${out_name} ${out_name}_tmp"
+      echo ${cmd}
+      eval ${cmd}
+
+      # Adds forecast_reference_time back in from first output
+      cmd="ncks -A -v forecast_reference_time ${out_name} ${out_name}_tmp"
+      echo ${cmd}
+      eval ${cmd}
+
+      # removes temporary data with regridded cf compliant outputs
+      cmd="mv ${out_name}_tmp ${out_name}"
+      echo ${cmd}
+      eval ${cmd}
+    fi
 
     (( lead_num += 1 )) 
     (( lead_hour = ANL_MIN + lead_num * ANL_INT )) 
