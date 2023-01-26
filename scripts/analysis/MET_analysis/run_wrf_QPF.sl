@@ -49,7 +49,7 @@
 # SET GLOBAL PARAMETERS 
 #################################################################################
 # uncoment to make verbose for debugging
-#set -x
+set -x
 
 # root directory for git clone
 USR_HME="/cw3e/mead/projects/cwp129/cgrudzien/GSI-WRF-Cycling-Template"
@@ -70,20 +70,23 @@ DATA_ROOT="/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV"
 SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # define date range and cycle interval for forecast start dates
-START_DT="2022121600"
-END_DT="2023011800"
+START_DT="2022122300"
+END_DT="2022122300"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
 ANL_MIN="24"
-ANL_MAX="240"
+ANL_MAX="72"
 ANL_INT="24"
 
 # define the accumulation interval for verification valid times
 ACC_INT="24"
 
 # verification domain for the forecast data
-DMN="1"
+DMN="3"
+
+# neighborhodd width for neighborhood methods
+NBRHD_WDTH="27"
 
 #################################################################################
 # Process data
@@ -92,7 +95,7 @@ DMN="1"
 cse="${CSE}/${CTR_FLW}"
 in_root="${USR_HME}/data/simulation_io/${cse}"
 out_root="${USR_HME}/data/analysis/${cse}/MET_analysis"
-scripts_home="${USR_HME}/scripts/analysis/MET_analysis"
+scripts_root="${USR_HME}/scripts/analysis/MET_analysis"
 
 # software and data deps.
 stageiv_root="${DATA_ROOT}"
@@ -100,7 +103,7 @@ met_src="${SOFT_ROOT}/MET_CODE/met-10.0.1.sif"
 mask_root="${SOFT_ROOT}/MET_CODE/polygons"
 
 # change to scripts directory
-cmd="cd ${scripts_home}"
+cmd="cd ${scripts_root}"
 echo ${cmd}
 eval ${cmd}
 
@@ -151,7 +154,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     validhr=${anl_end:11:2}
     
     # Set up singularity container
-    statement="singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/stageiv_root:rw,${mask_root}:/mask_root:ro,${scripts_home}:/scripts:ro ${met_src} met1"
+    statement="singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/stageiv_root:rw,${mask_root}:/mask_root:ro,${scripts_root}:/scripts_root:ro ${met_src} met1"
 
     echo ${statement}
     eval ${statement}
@@ -189,11 +192,16 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       eval ${statement}
     fi
     
+    # update the GridStatConfigTemplate with the neighborhood width parameter
+    cat scripts_root/GridStatConfigTemplate \
+      | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
+      > work_root/GridStatConfig 
+
     # RUN GRIDSTAT
     statement="singularity exec instance://met1 grid_stat -v 10 \
     /work_root/regridded_wrf_d0${DMN}_${anl_start}_to_${anl_end}.nc
     /stageiv_root/StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc \
-    /scripts/GridStatConfig
+    /work_root/GridStatConfig
     -outdir /work_root"
     echo ${statement}
     eval ${statement}
