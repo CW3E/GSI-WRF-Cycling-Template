@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 24:00:00
 #SBATCH --job-name="wrf_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -55,7 +55,7 @@
 USR_HME="/cw3e/mead/projects/cwp129/cgrudzien/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="NRT_ecmwf"
+CTR_FLW="NRT_gfs"
 
 # define the case-wise sub-directory
 CSE="DD"

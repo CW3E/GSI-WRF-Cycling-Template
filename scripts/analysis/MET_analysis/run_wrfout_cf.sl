@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 02:00:00
+#SBATCH -t 03:00:00
 #SBATCH --job-name="wrfout_cf"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -63,20 +63,20 @@ CTR_FLW="NRT_gfs"
 CSE="DD"
 
 # define date range and cycle interval for forecast start dates
-START_DT="2022122100"
+START_DT="2022122300"
 END_DT="2023011800"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
 ANL_MIN="24"
-ANL_MAX="120"
+ANL_MAX="72"
 ANL_INT="24"
 
 # define the accumulation interval for verification valid times
 ACC_INT="24"
 
 # verification domain for the forecast data
-DMN="2"
+DMN="3"
 
 # set to regrid to lat / long for MET compatibility 
 RGRD=true

@@ -47,13 +47,13 @@ CTR_FLW = 'NRT_gfs'
 CSE = 'DD'
 
 # verification domain for the forecast data                                                                           
-DMN='2' 
+DMN='1' 
 
 # starting date and zero hour of forecast cycles
-START_DT = '2023-01-01T00:00:00'
+START_DT = '2022-12-16T00:00:00'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2023-01-01T00:00:00'
+END_DT = '2023-01-18T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
@@ -70,7 +70,7 @@ start_dt = dt.fromisoformat(START_DT)
 end_dt = dt.fromisoformat(END_DT)
 
 # define the output name
-out_path = data_root + '/grid_stats_' + START_DT +\
+out_path = data_root + '/grid_stats_d0' + DMN + '_' + START_DT +\
            '_to_' + END_DT + '.bin'
 
 # generate the date range for the analyses
@@ -84,8 +84,9 @@ for (anl_date, anl_strng) in analyses:
     # define the gridstat files to open based on the analysis date
     in_paths = data_root + '/' + anl_strng + '/d0' + DMN + '/grid_stat_*.txt'
 
-    # loop sorted grid_stat_* files
-    in_paths = sorted(glob.glob(in_paths))
+    # loop sorted grid_stat_* files, sorting compares first on the length of lead time
+    # for non left-padded values
+    in_paths = sorted(glob.glob(in_paths), key=lambda x:(len(x.split('_')[-4]), x))
     for in_path in in_paths:
         print(STR_INDT + 'Opening file ' + in_path)
 
