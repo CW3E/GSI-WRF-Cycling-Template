@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 24:00:00
+#SBATCH -t 01:00:00
 #SBATCH --job-name="wrf_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -88,6 +88,12 @@ DMN="3"
 # neighborhodd width for neighborhood methods
 NBRHD_WDTH="27"
 
+# number of bootstrap resamplings, set 0 for off
+BTSTRP="0"
+
+# Rank correlation computation flag, TRUE or FALSE
+RNK_CRR="FALSE"
+
 #################################################################################
 # Process data
 #################################################################################
@@ -127,8 +133,12 @@ dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
 
 while [[ ! ${loopstr} > ${end_dt} ]]; do
-  # set working directory based on looped forecast start date
+  # set and clean working directory based on looped forecast start date
   work_root="${out_root}/${dirstr}/d0${DMN}"
+  rm -f ${work_root}/grid_stat_*.txt
+  rm -f ${work_root}/grid_stat_*.stat
+  rm -f ${work_root}/grid_stat_*.nc
+  rm -f ${work_root}/GridStatConfig
 
   # loop specified lead hours for valid time for each initialization time
   lead_num=0
@@ -182,20 +192,25 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     eval ${statement}
     
     # masks are recreated depending on the existence of files from previous loops
-    if [[ ( ! -r ${work_root}/${MSK}.txt ) || ( ! -r ${work_root}/mask_regridded_with_StageIV.nc ) ]]; then
+    if [[ ! -r ${work_root}/${MSK}_mask_regridded_with_StageIV.nc ]]; then
       statement="singularity exec instance://met1 gen_vx_mask -v 10 \
       /work_root/wrfacc_d0${DMN}_${anl_start}_to_${anl_end}.nc \
       -type poly \
       /mask_root/region/${MSK}.txt \
-      /work_root/mask_regridded_with_StageIV.nc"
+      /work_root/${MSK}_mask_regridded_with_StageIV.nc"
       echo ${statement}
       eval ${statement}
     fi
     
-    # update the GridStatConfigTemplate with the neighborhood width parameter
-    cat scripts_root/GridStatConfigTemplate \
-      | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
-      > work_root/GridStatConfig 
+    # update the GridStatConfigTemplate keeping file in working directory unchanged on inner loop
+    if [[ ! -r ${work_root}/GridStatConfig ]]; then
+      cat ${scripts_root}/GridStatConfigTemplate \
+        | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
+        | sed "s/PLY_MSK/poly = [ \"\/work_root\/${MSK}_mask_regridded_with_StageIV.nc\" ]/" \
+        | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
+        | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
+        > ${work_root}/GridStatConfig 
+    fi
 
     # RUN GRIDSTAT
     statement="singularity exec instance://met1 grid_stat -v 10 \
@@ -222,12 +237,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     (( lead_hour = ANL_MIN + lead_num * ANL_INT )) 
   done
 
-  # clean up working directory
-  cmd="rm ${work_root}/${MSK}.txt"
-  echo ${cmd}
-  eval ${cmd}
-
-  cmd="rm ${work_root}/mask_regridded_with_StageIV.nc"
+  cmd="rm ${work_root}/${MSK}_mask_regridded_with_StageIV.nc"
   echo ${cmd}
   eval ${cmd}
 
