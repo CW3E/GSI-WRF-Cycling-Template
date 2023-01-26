@@ -37,6 +37,7 @@ matplotlib.use('TkAgg')
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
+from matplotlib.colors import LogNorm
 from matplotlib.cm import get_cmap
 from matplotlib.colorbar import Colorbar as cb
 import seaborn as sns
@@ -80,14 +81,11 @@ ANL_END = '2023-01-19T00:00:00'
 ANL_INT = 24
 
 # MET stat file type -- should be leveled data
-#TYPE = 'cts'
-#TYPE = 'nbrcts'
-TYPE = 'nbrcnt'
+TYPE = 'nbrcts'
+#TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
 #STAT = 'FBIAS'
-#STAT = 'RMSE'
-#STAT = 'PR_CORR'
 STAT = 'FSS'
 
 # landmask for verification region -- need to be set in earlier preprocessing
@@ -170,24 +168,29 @@ for i in range(num_leads):
             tmp[i, j] = np.nan
 
 # define the color bar scale depending on the stat
+color_map = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
+                                  reverse=True, dark=0.25)
+
 if (STAT == 'GSS') or\
    (STAT == 'BAGSS') or\
    (STAT == 'HK'):
     min_scale = -0.25
     max_scale = 1.0
+    sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
+                vmax=max_scale, cmap=color_map)
 
 elif (STAT == 'FBIAS'):
-    min_scale = 0.0
-    max_scale = 1.25
+    scale = tmp[~np.isnan(tmp)]
+    alpha = 1
+    max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
+    sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
+                vmax=max_scale, cmap=color_map, norm=LogNorm())
 
 else:
     max_scale = 1.0
     min_scale = 0.0
-
-color_map = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
-                                  reverse=True, dark=0.25)
-sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
-            vmax=max_scale, cmap=color_map)
+    sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
+                vmax=max_scale, cmap=color_map)
 
 ##################################################################################
 # define display parameters
@@ -210,12 +213,12 @@ ax1.tick_params(
 
 
 title2= STAT + ' - Precip Thresh ' + LEV + ' mm - ' + LND_MSK + ' - ' + CTR_FLW
-lab1='Verification Valid Time'
-lab2='Forecast Lead Hrs From Valid Time'
+lab1='Verification Valid Date'
+lab2='Forecast Lead Hrs From Valid Date'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
-plt.figtext(.02, .5, lab2, horizontalalignment='center',
+plt.figtext(.02, .565, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=20, rotation=90)
 
 plt.figtext(.5, .98, title2, horizontalalignment='center',

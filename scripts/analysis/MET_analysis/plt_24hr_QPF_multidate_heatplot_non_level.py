@@ -56,10 +56,10 @@ CTR_FLW = 'NRT_ecmwf'
 CSE = 'DD'
 
 # verification domain for the forecast data
-DMN='2'
+DMN='1'
 
 # starting date and zero hour of forecast cycles
-START_DT = '2022-12-21T00:00:00'
+START_DT = '2022-12-16T00:00:00'
 
 # final date and zero hour of data of forecast cycles
 END_DT = '2023-01-18T00:00:00'
@@ -73,12 +73,10 @@ ANL_END = '2023-01-19T00:00:00'
 ANL_INT = 24
 
 # MET stat file type -- should be leveled data
-#TYPE = 'cts'
-#TYPE = 'nbrcts'
-TYPE = 'nbrcnt'
+TYPE = 'cnt'
 
 # MET stat column names to be made to heat plots / labels
-#STAT = 'RMSE'
+STAT = 'RMSE'
 #STAT = 'PR_CORR'
 
 # landmask for verification region -- need to be set in earlier preprocessing
@@ -158,21 +156,10 @@ for i in range(num_leads):
         except:
             tmp[i, j] = np.nan
 
-# define the color bar scale depending on the stat
-if (STAT == 'GSS') or\
-   (STAT == 'BAGSS') or\
-   (STAT == 'HK'):
-    min_scale = -0.25
-    max_scale = 1.0
-
-elif (STAT == 'FBIAS'):
-    min_scale = 0.0
-    max_scale = 1.25
-
-else:
-    max_scale = 1.0
-    min_scale = 0.0
-
+# find the max / min value over the inner 100 - alpha percentile range of the data
+scale = tmp[~np.isnan(tmp)]
+alpha = 1
+max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
 color_map = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
                                   reverse=True, dark=0.25)
 sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
@@ -199,12 +186,12 @@ ax1.tick_params(
 
 
 title2= STAT + ' - ' + LND_MSK + ' - ' + CTR_FLW
-lab1='Verification Valid Time'
-lab2='Forecast Lead Hrs From Valid Time'
+lab1='Verification Valid Date'
+lab2='Forecast Lead Hrs From Valid Date'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
-plt.figtext(.02, .5, lab2, horizontalalignment='center',
+plt.figtext(.02, .565, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=20, rotation=90)
 
 plt.figtext(.5, .98, title2, horizontalalignment='center',
