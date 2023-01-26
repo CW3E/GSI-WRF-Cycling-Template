@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 01:00:00
+#SBATCH -t 24:00:00
 #SBATCH --job-name="wrf_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -49,7 +49,7 @@
 # SET GLOBAL PARAMETERS 
 #################################################################################
 # uncoment to make verbose for debugging
-set -x
+#set -x
 
 # root directory for git clone
 USR_HME="/cw3e/mead/projects/cwp129/cgrudzien/GSI-WRF-Cycling-Template"
@@ -71,7 +71,7 @@ SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # define date range and cycle interval for forecast start dates
 START_DT="2022122300"
-END_DT="2022122300"
+END_DT="2023011800"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
