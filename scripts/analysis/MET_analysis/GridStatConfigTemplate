@@ -62,7 +62,7 @@ fcst = {
 
    field = [
       {
-        name       = "24hr_qpf";
+        VRF_FLD;
         level      = [ "(*,*)" ];
         cat_thresh = [ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ];
       }

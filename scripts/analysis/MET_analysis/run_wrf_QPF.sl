@@ -130,6 +130,7 @@ loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
 while [[ ! ${loopstr} > ${end_dt} ]]; do
   # set and clean working directory based on looped forecast start date
   work_root="${out_root}/${dirstr}/d0${DMN}"
+  mkdir -p ${work_root}
   rm -f ${work_root}/grid_stat_*.txt
   rm -f ${work_root}/grid_stat_*.stat
   rm -f ${work_root}/grid_stat_*.nc
@@ -200,6 +201,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     # update the GridStatConfigTemplate keeping file in working directory unchanged on inner loop
     if [[ ! -r ${work_root}/GridStatConfig ]]; then
       cat ${scripts_root}/GridStatConfigTemplate \
+        | sed "s/VRF_FLD/name       = \"${ACC_INT}hr_qpf\"/" \
         | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
         | sed "s/PLY_MSK/poly = [ \"\/work_root\/${MSK}_mask_regridded_with_StageIV.nc\" ]/" \
         | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \

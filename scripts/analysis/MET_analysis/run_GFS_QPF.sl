@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 06:00:00
 #SBATCH --job-name="gfs_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -44,7 +44,7 @@
 # SET GLOBAL PARAMETERS 
 #################################################################################
 # uncoment to make verbose for debugging
-set -x
+#set -x
 
 # root directory for git clone
 USR_HME="/cw3e/mead/projects/cwp129/cgrudzien/GSI-WRF-Cycling-Template"
@@ -66,7 +66,7 @@ SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # define date range and cycle interval for forecast start dates
 START_DT="2022121900"
-END_DT="2022121900"
+END_DT="2023011800"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
@@ -130,6 +130,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
 
   # set and clean working directory based on looped forecast start date
   work_root="${out_root}/${dirstr}"
+  mkdir -p ${work_root}
   rm -f ${work_root}/grid_stat_*.txt
   rm -f ${work_root}/grid_stat_*.stat
   rm -f ${work_root}/grid_stat_*.nc
@@ -146,12 +147,6 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     anl_end=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_end_hr} hours"`
     anl_start=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_start_hr} hours"`
 
-    # Set accumulation initialization string
-    inityear=${dirstr:0:4}
-    initmon=${dirstr:4:2}
-    initday=${dirstr:6:2}
-    inithr=${dirstr:8:2}
-
     # Set up valid time for verification
     validyear=${anl_end:0:4}
     validmon=${anl_end:5:2}
@@ -160,7 +155,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     
     # link the preprocessed data to the working directory
     pdd_hr=`printf %03d $(( 10#${lead_hour} ))`
-    cmd="ln -sf ${in_path}/GFS_${ACC_INT}QPF_${datestr}_F${pdd_hr}.nc ${work_root}"
+    cmd="cp ${in_path}/GFS_${ACC_INT}QPF_${dirstr}_F${pdd_hr}.nc ${work_root}"
     echo ${cmd}
     eval ${cmd}
 
@@ -170,23 +165,11 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     echo ${statement}
     eval ${statement}
 
-    # Combine precip to accumulation period 
-    statement="singularity exec instance://met1 pcp_combine \
-    -sum ${inityear}${initmon}${initday}_${inithr}0000 ${ACC_INT} \
-    ${validyear}${validmon}${validday}_${validhr}0000 ${ACC_INT} \
-    /work_root/gfsacc_${anl_start}_to_${anl_end}.nc \
-    -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"${ACC_INT}hr_qpf\" \
-    -pcpdir /work_root \
-    -pcprx \"GFS_${ACC_INT}QPF_${datestr}_F${pdd_hr}.nc\" "
-
-    echo ${statement}
-    eval ${statement}
-    
     # Regrid to Stage-IV
     statement="singularity exec instance://met1 regrid_data_plane \
-    /work_root/gfsacc_${anl_start}_to_${anl_end}.nc \
+    /work_root/GFS_${ACC_INT}QPF_${dirstr}_F${pdd_hr}.nc \
     /stageiv_root/StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc \
-    /work_root/regridded_gfs_${anl_start}_to_${anl_end}.nc -field 'name=\"${ACC_INT}hr_qpf\"; \
+    /work_root/regridded_gfs_${anl_start}_to_${anl_end}.nc -field 'name=\"QPF_${ACC_INT}hr\"; \
     level=\"(*,*)\";' -method BILIN -width 2 -v 1"
 
     echo ${statement}
@@ -195,7 +178,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     # masks are recreated depending on the existence of files from previous loops
     if [[ ! -r ${work_root}/${MSK}_mask_regridded_with_StageIV.nc ]]; then
       statement="singularity exec instance://met1 gen_vx_mask -v 10 \
-      /work_root/gfsacc_${anl_start}_to_${anl_end}.nc \
+      /work_root/GFS_${ACC_INT}QPF_${dirstr}_F${pdd_hr}.nc \
       -type poly \
       /mask_root/region/${MSK}.txt \
       /work_root/${MSK}_mask_regridded_with_StageIV.nc"
@@ -206,6 +189,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     # update the GridStatConfigTemplate keeping file in working directory unchanged on inner loop
     if [[ ! -r ${work_root}/GridStatConfig ]]; then
       cat ${scripts_root}/GridStatConfigTemplate \
+        | sed "s/VRF_FLD/name       = \"QPF_${ACC_INT}hr\"/" \
         | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
         | sed "s/PLY_MSK/poly = [ \"\/work_root\/${MSK}_mask_regridded_with_StageIV.nc\" ]/" \
         | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
@@ -226,10 +210,6 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     singularity instance stop met1
 
     # clean up working directory
-    cmd="rm ${work_root}/gfsacc_${anl_start}_to_${anl_end}.nc"
-    echo ${cmd}
-    eval ${cmd}
-
     cmd="rm ${work_root}/regridded_gfs_${anl_start}_to_${anl_end}.nc"
     echo ${cmd}
     eval ${cmd}
