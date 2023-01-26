@@ -2,8 +2,8 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 24:00:00
-#SBATCH --job-name="wrf_QPF"
+#SBATCH -t 00:30:00
+#SBATCH --job-name="gfs_QPF"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
 #SBATCH --mail-user cgrudzien@ucsd.edu
@@ -44,13 +44,13 @@
 # SET GLOBAL PARAMETERS 
 #################################################################################
 # uncoment to make verbose for debugging
-#set -x
+set -x
 
 # root directory for git clone
 USR_HME="/cw3e/mead/projects/cwp129/cgrudzien/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="NRT_ecmwf"
+CTR_FLW="GFS_0.25"
 
 # define the case-wise sub-directory
 CSE="DD"
@@ -65,20 +65,17 @@ DATA_ROOT="/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV"
 SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # define date range and cycle interval for forecast start dates
-START_DT="2022121600"
-END_DT="2023011800"
+START_DT="2022121900"
+END_DT="2022121900"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
 ANL_MIN="24"
-ANL_MAX="240"
+ANL_MAX="168"
 ANL_INT="24"
 
 # define the accumulation interval for verification valid times
 ACC_INT="24"
-
-# verification domain for the forecast data
-DMN="1"
 
 # neighborhodd width for neighborhood methods
 NBRHD_WDTH="3"
@@ -128,8 +125,11 @@ dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
 
 while [[ ! ${loopstr} > ${end_dt} ]]; do
+  # define input directory for preprocessed data
+  in_path="${in_root}/${dirstr}"
+
   # set and clean working directory based on looped forecast start date
-  work_root="${out_root}/${dirstr}/d0${DMN}"
+  work_root="${out_root}/${dirstr}"
   rm -f ${work_root}/grid_stat_*.txt
   rm -f ${work_root}/grid_stat_*.stat
   rm -f ${work_root}/grid_stat_*.nc
@@ -158,6 +158,12 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     validday=${anl_end:8:2}
     validhr=${anl_end:11:2}
     
+    # link the preprocessed data to the working directory
+    pdd_hr=`printf %03d $(( 10#${lead_hour} ))`
+    cmd="ln -sf ${in_path}/GFS_${ACC_INT}QPF_${datestr}_F${pdd_hr}.nc ${work_root}"
+    echo ${cmd}
+    eval ${cmd}
+
     # Set up singularity container
     statement="singularity instance start -B ${work_root}:/work_root:rw,${stageiv_root}:/stageiv_root:rw,${mask_root}:/mask_root:ro,${scripts_root}:/scripts_root:ro ${met_src} met1"
 
@@ -168,19 +174,19 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     statement="singularity exec instance://met1 pcp_combine \
     -sum ${inityear}${initmon}${initday}_${inithr}0000 ${ACC_INT} \
     ${validyear}${validmon}${validday}_${validhr}0000 ${ACC_INT} \
-    /work_root/wrfacc_d0${DMN}_${anl_start}_to_${anl_end}.nc \
+    /work_root/gfsacc_${anl_start}_to_${anl_end}.nc \
     -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"${ACC_INT}hr_qpf\" \
     -pcpdir /work_root \
-    -pcprx \"wrfcf_d0${DMN}_${anl_start}_to_${anl_end}.nc\" "
+    -pcprx \"GFS_${ACC_INT}QPF_${datestr}_F${pdd_hr}.nc\" "
 
     echo ${statement}
     eval ${statement}
     
     # Regrid to Stage-IV
     statement="singularity exec instance://met1 regrid_data_plane \
-    /work_root/wrfacc_d0${DMN}_${anl_start}_to_${anl_end}.nc \
+    /work_root/gfsacc_${anl_start}_to_${anl_end}.nc \
     /stageiv_root/StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc \
-    /work_root/regridded_wrf_d0${DMN}_${anl_start}_to_${anl_end}.nc -field 'name=\"${ACC_INT}hr_qpf\"; \
+    /work_root/regridded_gfs_${anl_start}_to_${anl_end}.nc -field 'name=\"${ACC_INT}hr_qpf\"; \
     level=\"(*,*)\";' -method BILIN -width 2 -v 1"
 
     echo ${statement}
@@ -189,7 +195,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     # masks are recreated depending on the existence of files from previous loops
     if [[ ! -r ${work_root}/${MSK}_mask_regridded_with_StageIV.nc ]]; then
       statement="singularity exec instance://met1 gen_vx_mask -v 10 \
-      /work_root/wrfacc_d0${DMN}_${anl_start}_to_${anl_end}.nc \
+      /work_root/gfsacc_${anl_start}_to_${anl_end}.nc \
       -type poly \
       /mask_root/region/${MSK}.txt \
       /work_root/${MSK}_mask_regridded_with_StageIV.nc"
@@ -209,7 +215,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
 
     # RUN GRIDSTAT
     statement="singularity exec instance://met1 grid_stat -v 10 \
-    /work_root/regridded_wrf_d0${DMN}_${anl_start}_to_${anl_end}.nc
+    /work_root/regridded_gfs_${anl_start}_to_${anl_end}.nc
     /stageiv_root/StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc \
     /work_root/GridStatConfig
     -outdir /work_root"
@@ -220,11 +226,11 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     singularity instance stop met1
 
     # clean up working directory
-    cmd="rm ${work_root}/wrfacc_d0${DMN}_${anl_start}_to_${anl_end}.nc"
+    cmd="rm ${work_root}/gfsacc_${anl_start}_to_${anl_end}.nc"
     echo ${cmd}
     eval ${cmd}
 
-    cmd="rm ${work_root}/regridded_wrf_d0${DMN}_${anl_start}_to_${anl_end}.nc"
+    cmd="rm ${work_root}/regridded_gfs_${anl_start}_to_${anl_end}.nc"
     echo ${cmd}
     eval ${cmd}
 
