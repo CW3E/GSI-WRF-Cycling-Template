@@ -50,7 +50,7 @@ import ipdb
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'NRT_ecmwf'
+CTR_FLW = 'GFS_0.25'
 
 # define case-wise sub-directory
 CSE = 'DD'
@@ -59,7 +59,7 @@ CSE = 'DD'
 DMN='1'
 
 # starting date and zero hour of forecast cycles
-START_DT = '2022-12-16T00:00:00'
+START_DT = '2022-12-19T00:00:00'
 
 # final date and zero hour of data of forecast cycles
 END_DT = '2023-01-18T00:00:00'
@@ -77,6 +77,7 @@ TYPE = 'cnt'
 
 # MET stat column names to be made to heat plots / labels
 STAT = 'RMSE'
+#STAT = 'ME'
 #STAT = 'PR_CORR'
 
 # landmask for verification region -- need to be set in earlier preprocessing
@@ -157,11 +158,24 @@ for i in range(num_leads):
             tmp[i, j] = np.nan
 
 # find the max / min value over the inner 100 - alpha percentile range of the data
-scale = tmp[~np.isnan(tmp)]
-alpha = 1
-max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
-color_map = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
-                                  reverse=True, dark=0.25)
+if STAT == 'ME':
+    abs_scale = 30
+    min_scale = -abs_scale
+    max_scale = abs_scale
+    color_map = sns.diverging_palette(250, 30, l=65, center='dark', as_cmap=True)
+
+elif STAT == 'PR_CORR':
+    min_scale = -1.0
+    max_scale = 1.0
+    color_map = sns.diverging_palette(145, 300, s=60, as_cmap=True, center='dark')
+else:
+    #scale = tmp[~np.isnan(tmp)]
+    #alpha = 1
+    #max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
+    max_scale = 40.0
+    min_scale = 0.0
+    color_map = sns.color_palette('viridis', as_cmap=True)
+
 sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
             vmax=max_scale, cmap=color_map)
 
@@ -172,6 +186,7 @@ sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
 for i in range(num_leads):
     data_leads[i] = data_leads[i][:-4]
 
+ax0.set_yticklabels(ax0.get_yticklabels(), rotation=270, va='top')
 ax1.set_xticklabels(data_dates, rotation=45, ha='right')
 ax1.set_yticklabels(data_leads)
 

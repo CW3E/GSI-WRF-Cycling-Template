@@ -57,7 +57,7 @@ CTR_FLW = 'NRT_ecmwf'
 CSE = 'DD'
 
 # verification domain for the forecast data                                                                           
-DMN='2'
+DMN='1'
 
 # threshold level to plot
 #LEV = '>0.0'
@@ -67,7 +67,7 @@ LEV = '>=25.4'
 #LEV = '>=101.6'
 
 # starting date and zero hour of forecast cycles
-START_DT = '2022-12-21T00:00:00'
+START_DT = '2022-12-16T00:00:00'
 
 # final date and zero hour of data of forecast cycles
 END_DT = '2023-01-18T00:00:00'

@@ -41,7 +41,7 @@ from py_plt_utilities import STR_INDT, get_anls, USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'NRT_ecmwf'
+CTR_FLW = 'GFS_0.25'
 
 # define the case-wise sub-directory
 CSE = 'DD'
@@ -50,7 +50,7 @@ CSE = 'DD'
 DMN='1' 
 
 # starting date and zero hour of forecast cycles
-START_DT = '2022-12-16T00:00:00'
+START_DT = '2022-12-19T00:00:00'
 
 # final date and zero hour of data of forecast cycles
 END_DT = '2023-01-18T00:00:00'
@@ -82,7 +82,7 @@ data_dict = {}
 print('Processing dates ' + START_DT + ' to ' + END_DT)
 for (anl_date, anl_strng) in analyses:
     # define the gridstat files to open based on the analysis date
-    in_paths = data_root + '/' + anl_strng + '/d0' + DMN + '/grid_stat_*.txt'
+    in_paths = data_root + '/' + anl_strng + '/grid_stat_*.txt'
 
     # loop sorted grid_stat_* files, sorting compares first on the length of lead time
     # for non left-padded values
