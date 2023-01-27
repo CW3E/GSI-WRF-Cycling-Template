@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --partition=compute
+#SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 03:00:00
 #SBATCH --job-name="wrfout_cf"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -40,13 +40,21 @@
 # SET GLOBAL PARAMETERS 
 #################################################################################
 # uncoment to make verbose for debugging
-#set -x
+set -x
+
+# initiate bash and source bashrc to initialize environement
+conda init bash
+source /home/cgrudzien/.bashrc
+
+# work in cdo environment
+conda activate cdo
+echo `conda list`
 
 # set local environment for ncl and dependencies
 module load ncl_ncarg
 
 # root directory for git clone
-USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
+USR_HME="/cw3e/mead/projects/cwp106/cgrudzien/GSI-WRF-Cycling-Template"
 
 # define control flow to analyze 
 CTR_FLW="deterministic_forecast_lag06_b0.50"
@@ -54,17 +62,24 @@ CTR_FLW="deterministic_forecast_lag06_b0.50"
 # define the case-wise sub-directory
 CSE="VD"
 
-# define date range and forecast cycle interval
-START_DT="2019021100"
-END_DT="2019021400"
+# define date range and cycle interval for forecast start dates
+START_DT="2022122300"
+END_DT="2023011800"
 CYCLE_INT="24"
 
-# WRF ISO date times defining range of data processed
-ANL_START="2019-02-14_00:00:00"
-ANL_END="2019-02-15_00:00:00"
+# define min / max forecast hours and cycle interval for verification after start
+ANL_MIN="24"
+ANL_MAX="72"
+ANL_INT="24"
+
+# define the accumulation interval for verification valid times
+ACC_INT="24"
 
 # verification domain for the forecast data
-DMN="2"
+DMN="3"
+
+# set to regrid to lat / long for MET compatibility 
+RGRD=true
 
 #################################################################################
 # Process data
@@ -89,46 +104,91 @@ end_dt="${END_DT:0:8} ${END_DT:8:2}"
 end_dt=`date -d "${end_dt}"`
 end_dt=`date +%Y:%m:%d_%H -d "${end_dt}"`
 
-# loop through the date range
+if [ ${RGRD} = true ]; then
+  gres=(0.08 0.027 0.009)
+  lat1=(5 29 35)
+  lat2=(65 51 40.5)
+  lon1=(162 223.5 235)
+  lon2=(272 253.5 240.5)
+fi
+
+# loop through the cycle date range
 cycle_num=0
-fcst_hour=0
+cycle_hour=0
 
-# directory string
-datestr=`date +%Y%m%d%H -d "${start_dt} ${fcst_hour} hours"`
+# directory string for forecast analysis initialization time
+dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 
-# loop condition
-timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
+# loop condition for analysis initialization times
+loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
 
-while [[ ! ${timestr} > ${end_dt} ]]; do
+while [[ ! ${loopstr} > ${end_dt} ]]; do
   # set input paths
-  input_path="${in_root}/${datestr}/wrfprd/ens_00"
+  input_path="${in_root}/${dirstr}/wrfout"
   
-  # set input file names
-  file_1="wrfout_d0${DMN}_${ANL_START}"
-  file_2="wrfout_d0${DMN}_${ANL_END}"
-  
-  # set output path
-  output_path="${out_root}/${datestr}"
-  mkdir -p ${output_path}
-  
-  # set output file name
-  output_file="wrf_post_${ANL_START}_to_${ANL_END}.nc"
-  
-  cmd="ncl 'file_in=\"${input_path}/${file_2}\"' 'file_prev=\"${input_path}/${file_1}\"'" 
-  cmd="${cmd} 'file_out=\"${output_path}/${output_file}\"' wrfout_to_cf.ncl "
-  
-  echo ${cmd}
-  eval ${cmd}
+  # loop specified lead hours for valid time for each initialization time
+  lead_num=0
+  lead_hour=${ANL_MIN}
+
+  while [[ ${lead_hour} -le ${ANL_MAX} ]]; do
+    # define valid times for accumulation    
+    (( anl_end_hr = lead_hour + cycle_hour ))
+    (( anl_start_hr = anl_end_hr - ACC_INT ))
+    anl_end=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_end_hr} hours"`
+    anl_start=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_start_hr} hours"`
+
+    # set input file names
+    file_1="wrfout_d0${DMN}_${anl_start}"
+    file_2="wrfout_d0${DMN}_${anl_end}"
+    
+    # set output path
+    output_path="${out_root}/${dirstr}/d0${DMN}"
+    mkdir -p ${output_path}
+    
+    # set output file name
+    output_file="wrfcf_d0${DMN}_${anl_start}_to_${anl_end}.nc"
+    out_name="${output_path}/${output_file}"
+    
+    cmd="ncl 'file_in=\"${input_path}/${file_2}\"' "
+    cmd+="'file_prev=\"${input_path}/${file_1}\"' " 
+    cmd+="'file_out=\"${out_name}\"' wrfout_to_cf.ncl "
+    
+    echo ${cmd}
+    eval ${cmd}
+
+    if [ ${RGRD} = true ]; then
+      # regrids to lat / lon from native grid with CDO
+      cmd="cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} "
+      cmd+="-remapbil,global_${gres} "
+      cmd+="-selname,precip,precip_bkt,IVT,IVTU,IVTV,IWV "
+      cmd+="${out_name} ${out_name}_tmp"
+      echo ${cmd}
+      eval ${cmd}
+
+      # Adds forecast_reference_time back in from first output
+      cmd="ncks -A -v forecast_reference_time ${out_name} ${out_name}_tmp"
+      echo ${cmd}
+      eval ${cmd}
+
+      # removes temporary data with regridded cf compliant outputs
+      cmd="mv ${out_name}_tmp ${out_name}"
+      echo ${cmd}
+      eval ${cmd}
+    fi
+
+    (( lead_num += 1 )) 
+    (( lead_hour = ANL_MIN + lead_num * ANL_INT )) 
+  done
 
   # update the cycle number
   (( cycle_num += 1))
-  (( fcst_hour = cycle_num * CYCLE_INT )) 
+  (( cycle_hour = cycle_num * CYCLE_INT )) 
 
   # update the date string for directory names
-  datestr=`date +%Y%m%d%H -d "${start_dt} ${fcst_hour} hours"`
+  dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 
   # update time string for lexicographical comparison
-  timestr=`date +%Y:%m:%d_%H -d "${start_dt} ${fcst_hour} hours"`
+  loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
 done
 
 echo "Script completed at `date`, verify outputs at out_root ${out_root}"

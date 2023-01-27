@@ -180,8 +180,8 @@ begin
   fileAtt@title          = file_out
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; time / date variables
-  outDateTime                = True      ;include a yyyymmddhh field
-  outUTCDate                 = True      ;include yr,mo,dy,hr,mn fields
+  outDateTime                = False     ;include a yyyymmddhh field
+  outUTCDate                 = False     ;include yr,mo,dy,hr,mn fields
   outFcstRef                 = True      ;include forecast reference time
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; two-dimensional near-surface / surface met variables

@@ -53,7 +53,7 @@ wind_logic          = UNION;
 eclv_points         = 0.05;
 nc_pairs_var_name   = "";
 nc_pairs_var_suffix = "";
-rank_corr_flag      = FALSE;
+RNK_CRR;
 
 //
 // Forecast and observation fields to be verified
@@ -62,7 +62,7 @@ fcst = {
 
    field = [
       {
-        name       = "24hr_qpf";
+        VRF_FLD;
         level      = [ "(*,*)" ];
         cat_thresh = [ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ];
       }
@@ -125,7 +125,7 @@ climo_cdf = {
 //
 mask = {
    grid = [ "FULL" ];
-   poly = [ "/work_root/CA_mask_regridded_with_StageIV.nc" ];
+   PLY_MSK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ ci_alpha  = [ 0.05 ];
 boot = {
    interval = PCTILE;
    rep_prop = 1.0;
-   n_rep    = 1000;
+   BTSTRP;
    rng      = "mt19937";
    seed     = "1234";
 }
@@ -173,7 +173,7 @@ nbrhd = {
    field      = BOTH;
    vld_thresh = 1.0;
    shape      = SQUARE;
-   width      = [ 7 ];
+   NBRHD_WDTH;
    cov_thresh = [ >=0.5 ];
 }
 
