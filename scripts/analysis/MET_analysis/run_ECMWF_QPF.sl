@@ -153,7 +153,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     validday=${anl_end:8:2}
     validhr=${anl_end:11:2}
     
-    # link the preprocessed data to the working directory
+    # cp the preprocessed data to the working directory
     pdd_hr=`printf %03d $(( 10#${lead_hour} ))`
     cmd="cp ${in_path}/ECMWF_${ACC_INT}QPF_${dirstr}_F${pdd_hr}.nc ${work_root}"
     echo ${cmd}
