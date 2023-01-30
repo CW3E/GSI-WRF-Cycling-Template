@@ -40,7 +40,7 @@
 # SET GLOBAL PARAMETERS 
 #################################################################################
 # uncoment to make verbose for debugging
-set -x
+#set -x
 
 # initiate bash and source bashrc to initialize environement
 conda init bash
@@ -54,17 +54,17 @@ echo `conda list`
 module load ncl_ncarg
 
 # root directory for git clone
-USR_HME="/cw3e/mead/projects/cwp106/cgrudzien/GSI-WRF-Cycling-Template"
+USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # define control flow to analyze 
-CTR_FLW="deterministic_forecast_lag06_b0.50"
+CTR_FLW="deterministic_forecast_lag00_b0.50"
 
 # define the case-wise sub-directory
 CSE="VD"
 
 # define date range and cycle interval for forecast start dates
 START_DT="2019021100"
-END_DT="2019021100"
+END_DT="2019021400"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
@@ -138,8 +138,8 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     # define valid times for accumulation    
     (( anl_end_hr = lead_hour + cycle_hour ))
     (( anl_start_hr = anl_end_hr - ACC_INT ))
-    anl_end=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_end_hr} hours"`
-    anl_start=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_start_hr} hours"`
+    anl_end=`date +%Y-%m-%d_%H:%M:%S -d "${start_dt} ${anl_end_hr} hours"`
+    anl_start=`date +%Y-%m-%d_%H:%M:%S -d "${start_dt} ${anl_start_hr} hours"`
 
     # set input file names
     file_1="${input_path}/wrfout_${GRD}_${anl_start}"

@@ -44,13 +44,13 @@
 # SET GLOBAL PARAMETERS 
 #################################################################################
 # uncoment to make verbose for debugging
-#set -x
+set -x
 
 # root directory for git clone
-USR_HME="/cw3e/mead/projects/cwp106/cgrudzien/GSI-WRF-Cycling-Template"
+USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_lag06_b0.50"
+CTR_FLW="deterministic_forecast_lag00_b0.50"
 
 # define the case-wise sub-directory
 CSE="VD"
@@ -149,31 +149,33 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
   lead_hour=${ANL_MIN}
 
   while [[ ${lead_hour} -le ${ANL_MAX} ]]; do
-    # file name for gridstat input based on forecast initialization and lead
-    pdd_hr=`printf %03d $(( 10#${lead_hour} ))`
-    met_in_f="${CTR_FLW}_${ACC_INT}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc"
+    # define valid times for accumulation    
+    (( anl_end_hr = lead_hour + cycle_hour ))
+    (( anl_start_hr = anl_end_hr - ACC_INT ))
+    anl_end=`date +%Y-%m-%d_%H:%M:%S -d "${start_dt} ${anl_end_hr} hours"`
+    anl_start=`date +%Y-%m-%d_%H:%M:%S -d "${start_dt} ${anl_start_hr} hours"`
 
-    # Set up valid time for verification
     validyear=${anl_end:0:4}
     validmon=${anl_end:5:2}
     validday=${anl_end:8:2}
     validhr=${anl_end:11:2}
     
+    # forecast file name based on forecast initialization and lead
+    pdd_hr=`printf %03d $(( 10#${lead_hour} ))`
+    for_in_f="${CTR_FLW}_${ACC_INT}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc"
+
+    # obs file defined in terms of valid time
+    obs_in_f="StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc"
+
     # Set up singularity container with directory privileges
     cmd="singularity instance start -B ${work_root}:/work_root:rw,"
-    cmd+="${DATA_ROOT}:/data_root:ro,${mask_root}:/mask_root:ro,"
+    cmd+="${stageiv_root}:/stageiv_root:ro,${mask_root}:/mask_root:ro,"
     cmd+="${scripts_root}:/scripts_root:ro ${met_src} met1"
 
     echo ${cmd}
     eval ${cmd}
 
     if [[ ${CMP_ACC} = "TRUE" ]]; then
-      # define valid times for accumulation    
-      (( anl_end_hr = lead_hour + cycle_hour ))
-      (( anl_start_hr = anl_end_hr - ACC_INT ))
-      anl_end=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_end_hr} hours"`
-      anl_start=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_start_hr} hours"`
-
       # check for input file based on output from run_wrfout_cf.sl
       if [[ -r "${work_root}/wrfcf_${GRD}_${anl_start}_to_${anl_end}.nc" ]]; then
         # Set accumulation initialization string
@@ -186,7 +188,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
         cmd="singularity exec instance://met1 pcp_combine \
         -sum ${inityear}${initmon}${initday}_${inithr}0000 ${ACC_INT} \
         ${validyear}${validmon}${validday}_${validhr}0000 ${ACC_INT} \
-        /work_root/${met_in_f} \
+        /work_root/${for_in_f} \
         -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"${VRF_FLD}_${ACC_INT}hr\" \
         -pcpdir /work_root \
         -pcprx \"wrfcf_${GRD}_${anl_start}_to_${anl_end}.nc\" "
@@ -202,7 +204,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       fi
     else
       # copy the preprocessed data to the working directory from the data root
-      in_path="${DATA_ROOT}/${CTR_FLW}/Precip/${dirstr}/${met_in_f}"
+      in_path="${DATA_ROOT}/${CTR_FLW}/Precip/${dirstr}/${for_in_f}"
       if [[ -r "${in_path}" ]]; then
         cmd="cp ${in_path} ${work_root}"
         echo ${cmd}
@@ -212,12 +214,12 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       fi
     fi
     
-    if [[ -r "${work_root}/${met_in_f}" ]]
+    if [[ -r "${work_root}/${for_in_f}" ]]; then
       # Regrid to Stage-IV
       cmd="singularity exec instance://met1 regrid_data_plane \
-      /work_root/${met_in_f} \
-      /data_root/StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc \
-      /work_root/regridded_${met_in_f} -field 'name=\"${VRF_FLD}_${ACC_INT}hr\"; \
+      /work_root/${for_in_f} \
+      /stageiv_root/${obs_f_in} \
+      /work_root/regridded_${for_in_f} -field 'name=\"${VRF_FLD}_${ACC_INT}hr\"; \
       level=\"(*,*)\";' -method BILIN -width 2 -v 1"
 
       echo ${cmd}
@@ -232,7 +234,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
 
       else
         cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
-        /work_root/regridded_${met_in_f} \
+        /work_root/regridded_${for_in_f} \
         -type poly \
         /mask_root/region/${MSK}.txt \
         ${out_root}/${MSK}_mask_regridded_with_StageIV.nc"
@@ -259,38 +261,34 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       # Run gridstat
       cmd="singularity exec instance://met1 grid_stat -v 10 \
       /work_root/regridded_wrf_${GRD}_${anl_start}_to_${anl_end}.nc
-      /data_root/StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc \
+      /stageiv_root/${obs_f_in} \
       /work_root/GridStatConfig
       -outdir /work_root"
       echo ${cmd}
       eval ${cmd}
       
-      # End MET Process and singularity stop
-      singularity instance stop met1
-
       # clean up working directory
-      cmd="rm ${work_root}/${met_in_f}"
+      cmd="rm ${work_root}/${for_in_f}"
       echo ${cmd}
       eval ${cmd}
 
-      cmd="rm ${work_root}/regridded_${met_in_f}"
+      cmd="rm ${work_root}/regridded_${for_in_f}"
       echo ${cmd}
       eval ${cmd}
 
     else
-      cmd="regrid_data_plane input file ${out_root}/${met_in_f} is not readable " 
+      cmd="regrid_data_plane input file ${out_root}/${for_in_f} is not readable " 
       cmd+=" or does not exist, skipping grid_stat for forecast initialization "
       cmd+="${loopstr}, forecast hour ${lead_hour}." 
       echo ${cmd}
     fi
 
+    # End MET Process and singularity stop
+    singularity instance stop met1
+
     (( lead_num += 1 )) 
     (( lead_hour = ANL_MIN + lead_num * ANL_INT )) 
   done
-
-  cmd="rm ${work_root}/${MSK}_mask_regridded_with_StageIV.nc"
-  echo ${cmd}
-  eval ${cmd}
 
   # update the cycle number
   (( cycle_num += 1))
