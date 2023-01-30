@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 03:00:00
+#SBATCH -t 00:30:00
 #SBATCH --job-name="wrfcf"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -64,7 +64,7 @@ CSE="VD"
 
 # define date range and cycle interval for forecast start dates
 START_DT="2019021100"
-END_DT="2019021400"
+END_DT="2019021100"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start

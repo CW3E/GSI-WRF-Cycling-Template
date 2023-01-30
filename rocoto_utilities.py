@@ -59,7 +59,15 @@ CTR_FLWS = [
             '3denvar_lag06_b0.70',
             '3denvar_lag06_b0.80',
             '3denvar_lag06_b0.90',
+            'deterministic_forecast_lag06_b0.00',
+            'deterministic_forecast_lag06_b0.10',
+            'deterministic_forecast_lag06_b0.20',
             'deterministic_forecast_lag06_b0.30',
+            'deterministic_forecast_lag06_b0.40',
+            'deterministic_forecast_lag06_b0.60',
+            'deterministic_forecast_lag06_b0.70',
+            'deterministic_forecast_lag06_b0.80',
+            'deterministic_forecast_lag06_b0.90',
            ]
 
 ##################################################################################

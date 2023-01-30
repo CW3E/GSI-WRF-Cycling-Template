@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 24:00:00
+#SBATCH -t 00:30:00
 #SBATCH --job-name="MET_gridstat"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -59,14 +59,14 @@ CSE="VD"
 MSK="CALatLonPoints"
 
 # root directory for verification data
-DATA_ROOT="/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data"
+DATA_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien/DATA"
 
 # root directory for MET software
 SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # define date range and cycle interval for forecast start dates
 START_DT="2019021100"
-END_DT="2019021400"
+END_DT="2019021100"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
@@ -208,7 +208,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
         echo ${cmd}
         eval ${cmd}
       else
-        echo "Source file ${in_path} not found"
+        echo "Source file ${in_path} not found."
       fi
     fi
     
@@ -217,7 +217,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       cmd="singularity exec instance://met1 regrid_data_plane \
       /work_root/${met_in_f} \
       /data_root/StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc \
-      /work_root/regridded_${met_in_f} -field 'name=\"${ACC_INT}hr_qpf\"; \
+      /work_root/regridded_${met_in_f} -field 'name=\"${VRF_FLD}_${ACC_INT}hr\"; \
       level=\"(*,*)\";' -method BILIN -width 2 -v 1"
 
       echo ${cmd}
@@ -236,6 +236,10 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
         -type poly \
         /mask_root/region/${MSK}.txt \
         ${out_root}/${MSK}_mask_regridded_with_StageIV.nc"
+        echo ${cmd}
+        eval ${cmd}
+
+        cmd="ln -sf ${out_root}/${MSK}_mask_regridded_with_StageIV.nc ${work_root}/" 
         echo ${cmd}
         eval ${cmd}
       fi
@@ -265,13 +269,14 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       singularity instance stop met1
 
       # clean up working directory
-      cmd="rm ${work_root}/wrfacc_${GRD}_${anl_start}_to_${anl_end}.nc"
+      cmd="rm ${work_root}/${met_in_f}"
       echo ${cmd}
       eval ${cmd}
 
-      cmd="rm ${work_root}/regridded_wrf_${GRD}_${anl_start}_to_${anl_end}.nc"
+      cmd="rm ${work_root}/regridded_${met_in_f}"
       echo ${cmd}
       eval ${cmd}
+
     else
       cmd="regrid_data_plane input file ${out_root}/${met_in_f} is not readable " 
       cmd+=" or does not exist, skipping grid_stat for forecast initialization "
