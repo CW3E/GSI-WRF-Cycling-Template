@@ -56,8 +56,8 @@ CTR_FLW = 'NRT_ecmwf'
 # define case-wise sub-directory
 CSE = 'DD'
 
-# verification domain for the forecast data                                                                           
-DMN='1'
+# verification domain for the forecast data
+GRD='d01'
 
 # threshold level to plot
 #LEV = '>0.0'
@@ -107,7 +107,7 @@ cse = CSE + '/' + CTR_FLW
 data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
 
 # define the output name
-in_path = data_root + '/grid_stats_d0' + DMN + '_' + START_DT +\
+in_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
           '_to_' + END_DT + '.bin'
 
 out_path = data_root + '/' + START_DT + '_' + END_DT + '_lev_' + LEV +\

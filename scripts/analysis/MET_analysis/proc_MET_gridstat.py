@@ -41,19 +41,19 @@ from py_plt_utilities import STR_INDT, get_anls, USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'GFS_0.25'
+CTR_FLW = 'deterministic_forecast_lag00_b1.00'
 
 # define the case-wise sub-directory
-CSE = 'DD'
+CSE = 'VD'
 
 # verification domain for the forecast data                                                                           
-DMN='1' 
+GRD='d02' 
 
 # starting date and zero hour of forecast cycles
-START_DT = '2022-12-19T00:00:00'
+START_DT = '2019-02-11T00:00:00'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2023-01-18T00:00:00'
+END_DT = '2019-02-14T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
@@ -70,7 +70,7 @@ start_dt = dt.fromisoformat(START_DT)
 end_dt = dt.fromisoformat(END_DT)
 
 # define the output name
-out_path = data_root + '/grid_stats_d0' + DMN + '_' + START_DT +\
+out_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
            '_to_' + END_DT + '.bin'
 
 # generate the date range for the analyses
@@ -82,7 +82,7 @@ data_dict = {}
 print('Processing dates ' + START_DT + ' to ' + END_DT)
 for (anl_date, anl_strng) in analyses:
     # define the gridstat files to open based on the analysis date
-    in_paths = data_root + '/' + anl_strng + '/grid_stat_*.txt'
+    in_paths = data_root + '/' + anl_strng + '/' + GRD + '/grid_stat_*.txt'
 
     # loop sorted grid_stat_* files, sorting compares first on the length of lead time
     # for non left-padded values

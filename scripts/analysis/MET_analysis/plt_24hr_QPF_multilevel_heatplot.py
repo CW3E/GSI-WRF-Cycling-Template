@@ -49,10 +49,13 @@ from py_plt_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_b0.30'
+CTR_FLW = 'deterministic_forecast_b0.00'
 
 # define case-wise sub-directory
 CSE = 'VD'
+
+# verification domain for the forecast data
+GRD='d01'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'
@@ -65,6 +68,9 @@ VALID_DT = '2019-02-15T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
+
+# valid date for verification
+ANL_DTE = '2019-02-15T00:00:00'
 
 # MET stat file type -- should be leveled data
 #TYPE = 'cts'
@@ -101,7 +107,7 @@ stat1 = STATS[0]
 stat2 = STATS[1]
 
 # define the output name
-in_path = data_root + '/grid_stats_lead_' + START_DT +\
+in_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
           '_to_' + END_DT + '_valid_' + VALID_DT +\
           '.bin'
 
@@ -112,17 +118,21 @@ f = open(in_path, 'rb')
 data = pickle.load(f)
 f.close()
 
-# load the values to be plotted along with landmask, lead and threshold
+# load the values for valid time with landmask, lead and threshold
+valid_dt = dt.fromisoformat(valid_dt)
 vals = [
         'VX_MASK',
         'FCST_LEAD',
         'FCST_THRESH',
+        'FCST_VALID_END',
        ]
 vals += STATS
 
-# cut down df to specified region and obtain levels of data 
+# cut down df to specified region and valid time, obtain levels of data 
 stat_data = data[TYPE][vals]
 stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
+                           valid_dt.strftime('%Y%m%d_%H%M%S'))]
 
 # NOTE: sorting below is designed to handle the issue of string sorting with
 # symbols and non-left-padded decimals
