@@ -57,7 +57,7 @@ module load ncl_ncarg
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # define control flow to analyze 
-CTR_FLW="deterministic_forecast_lag00_b0.50"
+CTR_FLW="deterministic_forecast_lag06_b0.50"
 
 # define the case-wise sub-directory
 CSE="VD"

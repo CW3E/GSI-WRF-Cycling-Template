@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 02:00:00
 #SBATCH --job-name="MET_gridstat"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -44,13 +44,13 @@
 # SET GLOBAL PARAMETERS 
 #################################################################################
 # uncoment to make verbose for debugging
-set -x
+#set -x
 
 # root directory for git clone
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_lag00_b0.50"
+CTR_FLW="deterministic_forecast_lag00_b0.00"
 
 # define the case-wise sub-directory
 CSE="VD"
@@ -66,7 +66,7 @@ SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
 
 # define date range and cycle interval for forecast start dates
 START_DT="2019021100"
-END_DT="2019021100"
+END_DT="2019021400"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
@@ -162,10 +162,10 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     
     # forecast file name based on forecast initialization and lead
     pdd_hr=`printf %03d $(( 10#${lead_hour} ))`
-    for_in_f="${CTR_FLW}_${ACC_INT}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc"
+    for_f_in="${CTR_FLW}_${ACC_INT}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc"
 
     # obs file defined in terms of valid time
-    obs_in_f="StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc"
+    obs_f_in="StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc"
 
     # Set up singularity container with directory privileges
     cmd="singularity instance start -B ${work_root}:/work_root:rw,"
@@ -188,7 +188,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
         cmd="singularity exec instance://met1 pcp_combine \
         -sum ${inityear}${initmon}${initday}_${inithr}0000 ${ACC_INT} \
         ${validyear}${validmon}${validday}_${validhr}0000 ${ACC_INT} \
-        /work_root/${for_in_f} \
+        /work_root/${for_f_in} \
         -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"${VRF_FLD}_${ACC_INT}hr\" \
         -pcpdir /work_root \
         -pcprx \"wrfcf_${GRD}_${anl_start}_to_${anl_end}.nc\" "
@@ -204,7 +204,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       fi
     else
       # copy the preprocessed data to the working directory from the data root
-      in_path="${DATA_ROOT}/${CTR_FLW}/Precip/${dirstr}/${for_in_f}"
+      in_path="${DATA_ROOT}/${CTR_FLW}/Precip/${dirstr}/${for_f_in}"
       if [[ -r "${in_path}" ]]; then
         cmd="cp ${in_path} ${work_root}"
         echo ${cmd}
@@ -214,70 +214,61 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       fi
     fi
     
-    if [[ -r "${work_root}/${for_in_f}" ]]; then
-      # Regrid to Stage-IV
-      cmd="singularity exec instance://met1 regrid_data_plane \
-      /work_root/${for_in_f} \
-      /stageiv_root/${obs_f_in} \
-      /work_root/regridded_${for_in_f} -field 'name=\"${VRF_FLD}_${ACC_INT}hr\"; \
-      level=\"(*,*)\";' -method BILIN -width 2 -v 1"
+    if [[ -r "${work_root}/${for_f_in}" ]]; then
+      if [[ -r "${stageiv_root}/${obs_f_in}" ]]; then
+        # Regrid to Stage-IV
+        cmd="singularity exec instance://met1 regrid_data_plane \
+        /work_root/${for_f_in} \
+        /stageiv_root/${obs_f_in} \
+        /work_root/regridded_${for_f_in} -field 'name=\"${VRF_FLD}_${ACC_INT}hr\"; \
+        level=\"(*,*)\";' -method BILIN -width 2 -v 1"
 
-      echo ${cmd}
-      eval ${cmd}
-      
-      # masks are recreated depending on the existence of files from previous loops
-      # NOTE: need to determine under what conditions would this file need to update
-      if [[ -r "${out_root}/${MSK}_mask_regridded_with_StageIV.nc" ]]; then
-        cmd="ln -sf ${out_root}/${MSK}_mask_regridded_with_StageIV.nc ${work_root}/" 
         echo ${cmd}
         eval ${cmd}
+        
+        # masks are recreated depending on the existence of files from previous loops
+        # NOTE: need to determine under what conditions would this file need to update
+        if [[ ! -r "${work_root}/${MSK}_mask_regridded_with_StageIV.nc" ]]; then
+          cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
+          /work_root/regridded_${for_f_in} \
+          -type poly \
+          /mask_root/region/${MSK}.txt \
+          /work_root/${MSK}_mask_regridded_with_StageIV.nc"
+          echo ${cmd}
+          eval ${cmd}
 
+        fi
+
+        # update GridStatConfigTemplate archiving file in working directory unchanged on inner loop
+        if [[ ! -r ${work_root}/GridStatConfig ]]; then
+          cat ${scripts_root}/GridStatConfigTemplate \
+            | sed "s/VRF_FLD/name       = \"${VRF_FLD}_${ACC_INT}hr\"/" \
+            | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
+            | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
+            | sed "s/PLY_MSK/poly = [ \"\/work_root\/${MSK}_mask_regridded_with_StageIV.nc\" ]/" \
+            | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
+            | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
+            > ${work_root}/GridStatConfig 
+        fi
+
+        # Run gridstat
+        cmd="singularity exec instance://met1 grid_stat -v 10 \
+        /work_root/regridded_${for_f_in}
+        /stageiv_root/${obs_f_in} \
+        /work_root/GridStatConfig
+        -outdir /work_root"
+        echo ${cmd}
+        eval ${cmd}
+        
       else
-        cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
-        /work_root/regridded_${for_in_f} \
-        -type poly \
-        /mask_root/region/${MSK}.txt \
-        ${out_root}/${MSK}_mask_regridded_with_StageIV.nc"
+        cmd="Observation verification file ${stageiv_root}/${obs_f_in} is not "
+        cmd+=" readable or does not exist, skipping grid_stat for forecast "
+        cmd+="initialization ${loopstr}, forecast hour ${lead_hour}." 
         echo ${cmd}
-        eval ${cmd}
-
-        cmd="ln -sf ${out_root}/${MSK}_mask_regridded_with_StageIV.nc ${work_root}/" 
-        echo ${cmd}
-        eval ${cmd}
       fi
-
-      # update GridStatConfigTemplate archiving file in working directory unchanged on inner loop
-      if [[ ! -r ${work_root}/GridStatConfig ]]; then
-        cat ${scripts_root}/GridStatConfigTemplate \
-          | sed "s/VRF_FLD/name       = \"${VRF_FLD}_${ACC_INT}hr\"/" \
-          | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
-          | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
-          | sed "s/PLY_MSK/poly = [ \"\/work_root\/${MSK}_mask_regridded_with_StageIV.nc\" ]/" \
-          | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
-          | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
-          > ${work_root}/GridStatConfig 
-      fi
-
-      # Run gridstat
-      cmd="singularity exec instance://met1 grid_stat -v 10 \
-      /work_root/regridded_wrf_${GRD}_${anl_start}_to_${anl_end}.nc
-      /stageiv_root/${obs_f_in} \
-      /work_root/GridStatConfig
-      -outdir /work_root"
-      echo ${cmd}
-      eval ${cmd}
-      
-      # clean up working directory
-      cmd="rm ${work_root}/${for_in_f}"
-      echo ${cmd}
-      eval ${cmd}
-
-      cmd="rm ${work_root}/regridded_${for_in_f}"
-      echo ${cmd}
-      eval ${cmd}
 
     else
-      cmd="regrid_data_plane input file ${out_root}/${for_in_f} is not readable " 
+      cmd="regrid_data_plane input file ${out_root}/${for_f_in} is not readable " 
       cmd+=" or does not exist, skipping grid_stat for forecast initialization "
       cmd+="${loopstr}, forecast hour ${lead_hour}." 
       echo ${cmd}
@@ -286,9 +277,23 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     # End MET Process and singularity stop
     singularity instance stop met1
 
+    # clean up working directory
+    cmd="rm ${work_root}/${for_f_in}"
+    echo ${cmd}
+    eval ${cmd}
+
+    cmd="rm ${work_root}/regridded_${for_f_in}"
+    echo ${cmd}
+    eval ${cmd}
+
     (( lead_num += 1 )) 
     (( lead_hour = ANL_MIN + lead_num * ANL_INT )) 
   done
+
+  # clean up old land mask
+  cmd="rm ${work_root}/${MSK}_mask_regridded_with_StageIV.nc"
+  echo ${cmd}
+  eval ${cmd}
 
   # update the cycle number
   (( cycle_num += 1))
