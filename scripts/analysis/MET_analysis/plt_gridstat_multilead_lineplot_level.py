@@ -52,24 +52,31 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            'deterministic_forecast_b0.30',
-            'deterministic_forecast_b0.50',
-            'deterministic_forecast_b0.60',
-            'deterministic_forecast_b0.70',
-            'deterministic_forecast_b0.80',
-            'deterministic_forecast_b0.90',
-            'deterministic_forecast_b1.00',
+            'deterministic_forecast_lag00_b0.00',
+            'deterministic_forecast_lag00_b0.10',
+            'deterministic_forecast_lag00_b0.20',
+            'deterministic_forecast_lag00_b0.30',
+            'deterministic_forecast_lag00_b0.40',
+            'deterministic_forecast_lag00_b0.50',
+            'deterministic_forecast_lag00_b0.60',
+            'deterministic_forecast_lag00_b0.70',
+            'deterministic_forecast_lag00_b0.80',
+            'deterministic_forecast_lag00_b0.90',
+            'deterministic_forecast_lag00_b1.00',
            ]
 
 # define case-wise sub-directory
 CSE = 'VD'
 
+# verification domain for the forecast data
+GRD='d02'
+
 # threshold level to plot
 #LEV = '>0.0'
 #LEV = '>=10.0'
 #LEV = '>=25.4'
-#LEV = '>=50.8'
-LEV = '>=101.6'
+LEV = '>=50.8'
+#LEV = '>=101.6'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'
@@ -78,7 +85,7 @@ START_DT = '2019-02-11T00:00:00'
 END_DT = '2019-02-14T00:00:00'
 
 # valid date for the verification
-VALID_DT = '2019-02-15T00:00:00'
+VALID_DT = '2019-02-14T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
@@ -117,6 +124,9 @@ ax1 = fig.add_axes([.110, .10, .85, .33])
 line_list = []
 line_labs = []
 
+# create date time object from string
+valid_dt = dt.fromisoformat(VALID_DT)
+
 for i in range(num_flws):
     # loop on control flows
     ctr_flw = CTR_FLWS[i]
@@ -129,10 +139,9 @@ for i in range(num_flws):
     stat0 = STATS[0]
     stat1 = STATS[1]
     
-    # define the output name
-    in_path = data_root + '/grid_stats_lead_' + START_DT +\
-              '_to_' + END_DT + '_valid_' + VALID_DT +\
-              '.bin'
+    # define the input name
+    in_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
+              '_to_' + END_DT + '.bin'
     
     f = open(in_path, 'rb')
     data = pickle.load(f)
@@ -143,6 +152,7 @@ for i in range(num_flws):
             'VX_MASK',
             'FCST_LEAD',
             'FCST_THRESH',
+            'FCST_VALID_END',
            ]
     vals += STATS
 
@@ -165,10 +175,12 @@ for i in range(num_flws):
         else:
             cnf_lvs.append(False)
 
-    # cut down df to specified region and obtain leads of data 
+    # cut down df to specified valid date / region and obtain leads of data 
     stat_data = data[TYPE][vals]
-    stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == LEV)]
     stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+    stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == LEV)]
+    stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
+                               valid_dt.strftime('%Y%m%d_%H%M%S'))]
     data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
                         key=lambda x:(len(x), x))
     num_leads = len(data_leads)

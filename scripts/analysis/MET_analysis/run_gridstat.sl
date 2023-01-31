@@ -50,7 +50,7 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_lag00_b0.90"
+CTR_FLW="deterministic_forecast_lag00_b0.00"
 
 # define the case-wise sub-directory
 CSE="VD"
@@ -84,10 +84,10 @@ CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 ACC_INT="24"
 
 # verification domain for the forecast data
-GRD="d02"
+GRD="d01"
 
 # neighborhodd width for neighborhood methods
-NBRHD_WDTH="9"
+NBRHD_WDTH="3"
 
 # number of bootstrap resamplings, set 0 for off
 BTSTRP="1000"

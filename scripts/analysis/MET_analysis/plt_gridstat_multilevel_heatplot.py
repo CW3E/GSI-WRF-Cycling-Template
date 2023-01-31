@@ -49,13 +49,13 @@ from py_plt_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_b0.00'
+CTR_FLW = 'deterministic_forecast_lag00_b0.10'
 
 # define case-wise sub-directory
 CSE = 'VD'
 
 # verification domain for the forecast data
-GRD='d01'
+GRD='d02'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'
@@ -68,9 +68,6 @@ VALID_DT = '2019-02-15T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
-
-# valid date for verification
-ANL_DTE = '2019-02-15T00:00:00'
 
 # MET stat file type -- should be leveled data
 #TYPE = 'cts'
@@ -106,10 +103,12 @@ data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
 stat1 = STATS[0]
 stat2 = STATS[1]
 
+# create date time object from string
+valid_dt = dt.fromisoformat(VALID_DT)
+
 # define the output name
 in_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
-          '_to_' + END_DT + '_valid_' + VALID_DT +\
-          '.bin'
+          '_to_' + END_DT + '.bin'
 
 out_path = data_root + '/' + VALID_DT + '_' + LND_MSK + '_' + stat1 + '_' +\
            stat2 + '_heatplot.png'
@@ -119,7 +118,6 @@ data = pickle.load(f)
 f.close()
 
 # load the values for valid time with landmask, lead and threshold
-valid_dt = dt.fromisoformat(valid_dt)
 vals = [
         'VX_MASK',
         'FCST_LEAD',
@@ -191,6 +189,7 @@ sns.heatmap(tmp[:,:,1], linewidth=0.5, ax=ax2, cbar_ax=ax0, vmin=min_scale,
 for i in range(num_leads):
     data_leads[i] = data_leads[i][:2]
 
+ax0.set_yticklabels(ax0.get_yticklabels(), rotation=270, va='top')
 ax1.set_xticklabels(data_leads)
 ax1.set_yticklabels(data_levels)
 ax2.set_xticklabels(data_leads)
@@ -219,11 +218,11 @@ lab1='Forecast lead hrs'
 lab2='Precip Thresh mm'
 lab3=STATS[0]
 lab4=STATS[1]
-plt.figtext(.5, .02, lab1, horizontalalignment='center',
+plt.figtext(.5, .01, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
 plt.figtext(.02, .5, lab2, horizontalalignment='center',
-            verticalalignment='center', fontsize=22, rotation='90')
+            verticalalignment='center', fontsize=22, rotation=90)
 
 plt.figtext(.5, .98, title1, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
@@ -231,10 +230,10 @@ plt.figtext(.5, .98, title1, horizontalalignment='center',
 plt.figtext(.5, .93, title2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.08, .03, lab3, horizontalalignment='left',
+plt.figtext(.06, .01, lab3, horizontalalignment='left',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.88, .03, lab4, horizontalalignment='right',
+plt.figtext(.90, .01, lab4, horizontalalignment='right',
             verticalalignment='center', fontsize=22)
 
 # save figure and display

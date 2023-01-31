@@ -199,6 +199,7 @@ else:
 for i in range(num_leads):
     data_leads[i] = data_leads[i][:-4]
 
+ax0.set_yticklabels(ax0.get_yticklabels(), rotation=270, va='top')
 ax1.set_xticklabels(data_dates, rotation=45, ha='right')
 ax1.set_yticklabels(data_leads)
 
