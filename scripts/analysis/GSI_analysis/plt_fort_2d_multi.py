@@ -54,6 +54,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 from matplotlib.ticker import PercentFormatter
+import seaborn as sns
 from gsi_py_utilities import USR_HME
 
 ##################################################################################
@@ -61,13 +62,17 @@ from gsi_py_utilities import USR_HME
 ##################################################################################
 # define control flow to analyze 
 CTR_FLWS = [
-            '3denvar_b0.30',
-            '3denvar_b0.50',
-            '3denvar_b0.60',
-            '3denvar_b0.70',
-            '3denvar_b0.80',
-            '3denvar_b0.90',
-            '3denvar_b1.00',
+            '3denvar_lag00_b0.00',
+            #'3denvar_lag00_b0.10',
+            #'3denvar_lag00_b0.20',
+            '3denvar_lag00_b0.30',
+            #'3denvar_lag00_b0.40',
+            '3denvar_lag00_b0.50',
+            #'3denvar_lag00_b0.60',
+            '3denvar_lag00_b0.70',
+            #'3denvar_lag00_b0.80',
+            #'3denvar_lag00_b0.90',
+            '3denvar_lag00_b1.00',
            ]
 
 # define the case-wise sub-directory
@@ -98,10 +103,8 @@ ax1 = fig.add_axes([.110, .25, .85, .33])
 ax0 = fig.add_axes([.110, .58, .85, .33])
 
 # set colors and storage for looping
-line_colors = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a','#66a61e','#e6ab02','#a6761d', 'k']
-#line_colors = ['#1b9e77', '#7570b3', '#d95f02', 'k']
-
 num_flws = len(CTR_FLWS)
+line_colors = sns.color_palette("husl", num_flws)
 line_list = []
 line_labs = []
 
@@ -166,8 +169,10 @@ for k in range(num_flws):
         rms = bkg_asm['rms']
         rej = b_per_rej
 
-    l, = ax0.plot(range(index), rms, linewidth=2, markersize=26, color=line_colors[k])
-    ax1.plot(range(index), rej, linewidth=2, markersize=26, color=line_colors[k])
+    l, = ax0.plot(range(index), rms, linewidth=2,
+                  marker=(3 + k, 0, 0), markersize=18, color=line_colors[k])
+    ax1.plot(range(index), rej, linewidth=2,
+             marker=(3 + k, 0, 0), markersize=18, color=line_colors[k])
     
     line_list.append(l)
     line_labs.append(param)
@@ -212,7 +217,8 @@ ax1.tick_params(
 ax1.yaxis.set_major_formatter(PercentFormatter(decimals=0))
 
 # add legend and sub-titles
-fig.legend(line_list, line_labs, fontsize=22, ncol=num_flws, loc='upper center')
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws,6),
+           loc='upper center')
 
 lab1 = STG + ' RMSE'
 lab2 = STG + ' % obs rej'

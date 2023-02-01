@@ -183,7 +183,7 @@ for i in range(num_flws):
             ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5,
                     color=line_colors[i])
             l, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2,
-                    marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
+                    marker=(3 + i, 0, 0), markersize=18, color=line_colors[i])
 
         else:
             tmp = np.zeros([num_leads])
@@ -193,10 +193,10 @@ for i in range(num_flws):
                 tmp[j] = val[STATS[k]]
             
             l, = ax.plot(range(num_leads), tmp[:], linewidth=2,
-                    marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
+                    marker=(3 + i, 0, 0), markersize=18, color=line_colors[i])
 
             ax.plot(range(num_leads), tmp[:], linewidth=2,
-                    marker=(3 + i, 0, 0) , markersize=18, color=line_colors[i])
+                    marker=(3 + i, 0, 0), markersize=18, color=line_colors[i])
         
     # add the line type to the legend
     line_list.append(l)

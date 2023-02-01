@@ -49,7 +49,7 @@ from py_plt_utilities import USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_lag00_b0.10'
+CTR_FLW = 'deterministic_forecast_lag00_b1.00'
 
 # define case-wise sub-directory
 CSE = 'VD'
@@ -64,7 +64,7 @@ START_DT = '2019-02-11T00:00:00'
 END_DT = '2019-02-14T00:00:00'
 
 # valid date for the verification
-VALID_DT = '2019-02-15T00:00:00'
+VALID_DT = '2019-02-14T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24

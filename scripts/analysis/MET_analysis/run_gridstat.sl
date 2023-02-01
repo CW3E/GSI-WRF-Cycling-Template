@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --mem=120G
 #SBATCH -t 02:00:00
-#SBATCH --job-name="MET_gridstat"
+#SBATCH --job-name="gridstat"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
 #SBATCH --mail-user cgrudzien@ucsd.edu
@@ -50,7 +50,7 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_lag00_b0.00"
+CTR_FLW="deterministic_forecast_lag00_b1.00"
 
 # define the case-wise sub-directory
 CSE="VD"

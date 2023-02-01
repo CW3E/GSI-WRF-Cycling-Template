@@ -74,8 +74,8 @@ GRD='d02'
 # threshold level to plot
 #LEV = '>0.0'
 #LEV = '>=10.0'
-#LEV = '>=25.4'
-LEV = '>=50.8'
+LEV = '>=25.4'
+#LEV = '>=50.8'
 #LEV = '>=101.6'
 
 # starting date and zero hour of forecast cycles
@@ -85,23 +85,23 @@ START_DT = '2019-02-11T00:00:00'
 END_DT = '2019-02-14T00:00:00'
 
 # valid date for the verification
-VALID_DT = '2019-02-14T00:00:00'
+VALID_DT = '2019-02-15T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
 
 # MET stat file type -- should be leveled data
 #TYPE = 'cts'
-#TYPE = 'nbrcts'
-TYPE = 'nbrcnt'
+TYPE = 'nbrcts'
+#TYPE = 'nbrcnt'
 
 # MET stat column names to be made to leveled line data
-#STATS = ['HK', 'GSS']
+STATS = ['HK', 'GSS']
 #STATS = ['PODY', 'POFD']
 #STATS = ['CSI', 'FAR']
 #STATS = ['CSI', 'FBIAS']
 #STATS = ['FAR', 'POFD']
-STATS = ['FSS', 'AFSS']
+#STATS = ['FSS', 'AFSS']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'
