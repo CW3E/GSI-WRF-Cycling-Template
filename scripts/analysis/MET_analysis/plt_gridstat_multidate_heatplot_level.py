@@ -45,19 +45,18 @@ import numpy as np
 import pickle
 import os
 from py_plt_utilities import USR_HME, get_anls
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'NRT_ecmwf'
+CTR_FLW = 'deterministic_forecast_lag00_b1.00'
 
 # define case-wise sub-directory
-CSE = 'DD'
+CSE = 'VD'
 
 # verification domain for the forecast data
-GRD='d01'
+GRD='d02'
 
 # threshold level to plot
 #LEV = '>0.0'
@@ -67,17 +66,17 @@ LEV = '>=25.4'
 #LEV = '>=101.6'
 
 # starting date and zero hour of forecast cycles
-START_DT = '2022-12-16T00:00:00'
+START_DT = '2019-02-11T00:00:00'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2023-01-18T00:00:00'
+END_DT = '2019-02-14T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
 
 # start date, end date and cycle interval for validation
-ANL_START = '2022-12-26T00:00:00'
-ANL_END = '2023-01-19T00:00:00'
+ANL_START = '2019-02-14T00:00:00'
+ANL_END = '2019-02-15T00:00:00'
 ANL_INT = 24
 
 # MET stat file type -- should be leveled data
@@ -103,6 +102,7 @@ ax0 = fig.add_axes([.92, .18, .03, .77])
 ax1 = fig.add_axes([.07, .18, .84, .77])
 
 # define derived data paths 
+param = CTR_FLW.split('_')[-1]
 cse = CSE + '/' + CTR_FLW
 data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
 
@@ -153,7 +153,7 @@ tmp = np.zeros([num_leads, num_dates])
 for i in range(num_leads):
     for j in range(num_dates):
         if i == 0:
-            if ( j % 2 ) == 0:
+            if ( j % 2 ) == 0 or num_dates < 10:
               # on the first loop pack the tick labels
               data_dates.append(anl_dates[j].strftime('%Y%m%d'))
             else:
@@ -212,8 +212,7 @@ ax1.tick_params(
         labelsize=16
         )
 
-
-title2= STAT + ' - Precip Thresh ' + LEV + ' mm - ' + LND_MSK + ' - ' + CTR_FLW
+title2= STAT + ' - Precip Thresh ' + LEV + ' mm - ' + LND_MSK + ' - ' + param
 lab1='Verification Valid Date'
 lab2='Forecast Lead Hrs From Valid Date'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
