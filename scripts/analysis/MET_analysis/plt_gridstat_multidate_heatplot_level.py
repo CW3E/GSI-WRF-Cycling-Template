@@ -56,7 +56,7 @@ CTR_FLW = 'deterministic_forecast_lag00_b1.00'
 CSE = 'VD'
 
 # verification domain for the forecast data
-GRD='d02'
+GRD='d01'
 
 # threshold level to plot
 #LEV = '>0.0'

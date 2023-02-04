@@ -67,7 +67,7 @@ CTR_FLWS = [
 CSE = 'VD'
 
 # verification domain for the forecast data
-GRD='d02'
+GRD='d01'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'
@@ -76,7 +76,7 @@ START_DT = '2019-02-11T00:00:00'
 END_DT = '2019-02-14T00:00:00'
 
 # valid date for the verification
-VALID_DT = '2019-02-14T00:00:00'
+VALID_DT = '2019-02-15T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
@@ -85,8 +85,8 @@ CYCLE_INT = 24
 TYPE = 'cnt'
 
 # MET stat column names to be made to heat plots / labels
-#STATS = ['RMSE', 'PR_CORR']
-STATS = ['MAD', 'SP_CORR']
+STATS = ['RMSE', 'PR_CORR']
+#STATS = ['MAD', 'SP_CORR']
 
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'

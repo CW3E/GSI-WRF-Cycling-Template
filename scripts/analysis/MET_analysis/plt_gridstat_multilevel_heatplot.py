@@ -64,7 +64,7 @@ START_DT = '2019-02-11T00:00:00'
 END_DT = '2019-02-14T00:00:00'
 
 # valid date for the verification
-VALID_DT = '2019-02-14T00:00:00'
+VALID_DT = '2019-02-15T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
@@ -218,7 +218,7 @@ lab1='Forecast lead hrs'
 lab2='Precip Thresh mm'
 lab3=STATS[0]
 lab4=STATS[1]
-plt.figtext(.5, .01, lab1, horizontalalignment='center',
+plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
 plt.figtext(.02, .5, lab2, horizontalalignment='center',
@@ -230,10 +230,10 @@ plt.figtext(.5, .98, title1, horizontalalignment='center',
 plt.figtext(.5, .93, title2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.06, .01, lab3, horizontalalignment='left',
+plt.figtext(.06, .02, lab3, horizontalalignment='left',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.90, .01, lab4, horizontalalignment='right',
+plt.figtext(.90, .02, lab4, horizontalalignment='right',
             verticalalignment='center', fontsize=22)
 
 # save figure and display

@@ -47,7 +47,7 @@ CTR_FLW = 'deterministic_forecast_lag00_b1.00'
 CSE = 'VD'
 
 # verification domain for the forecast data                                                                           
-GRD='d02' 
+GRD='d01' 
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'

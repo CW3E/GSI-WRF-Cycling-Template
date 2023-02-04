@@ -36,7 +36,7 @@
 # set the  git clone directory, case study and control flow
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 CSE="VD"
-CTR_FLW="deterministic_forecast_b0.70"
+CTR_FLW="deterministic_forecast_lag00_b0.00"
 
 # define date range and increments for start time of simulations
 START_TIME=2019021100
@@ -62,7 +62,7 @@ source /home/cgrudzien/.bashrc
 # empty dependency conflicts (esp NetCDF), work in wrf_py environment
 module purge
 echo `module list`
-conda activate wrf_py
+conda activate /home/cgrudzien/miniconda3/envs/wrf_py
 echo `conda list`
 
 # define derived paths

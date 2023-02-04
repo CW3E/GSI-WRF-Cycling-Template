@@ -49,16 +49,16 @@ from py_plt_utilities import USR_HME
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_b1.00'
+CTR_FLW = 'deterministic_forecast_lag00_b0.00'
 
 # define case-wise sub-directory
 CSE="VD"
 
 # start date time of WRF forecast
-START_DT = '2019-02-12_00:00:00'
+START_DT = '2019-02-14_00:00:00'
 
 # valid date time for analysis
-ANL_DT = '2019-02-15_00:00:00'
+ANL_DT = '2019-02-14_00:00:00'
 
 # max domain to plot
 MAX_DOM = 2

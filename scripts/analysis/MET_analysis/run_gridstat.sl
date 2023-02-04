@@ -50,7 +50,10 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_lag00_b1.00"
+CTR_FLW="deterministic_forecast_lag00_b0.00"
+
+# verification domain for the forecast data
+GRD="d02"
 
 # define the case-wise sub-directory
 CSE="VD"
@@ -59,7 +62,7 @@ CSE="VD"
 MSK="CALatLonPoints"
 
 # root directory for verification data
-DATA_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien/DATA"
+DATA_ROOT="/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA"
 
 # root directory for MET software
 SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
@@ -83,11 +86,8 @@ CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 # define the accumulation interval for verification valid times
 ACC_INT="24"
 
-# verification domain for the forecast data
-GRD="d01"
-
 # neighborhodd width for neighborhood methods
-NBRHD_WDTH="3"
+NBRHD_WDTH="33"
 
 # number of bootstrap resamplings, set 0 for off
 BTSTRP="1000"
@@ -278,11 +278,11 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     singularity instance stop met1
 
     # clean up working directory
-    cmd="rm ${work_root}/${for_f_in}"
+    cmd="rm -f ${work_root}/${for_f_in}"
     echo ${cmd}
     eval ${cmd}
 
-    cmd="rm ${work_root}/regridded_${for_f_in}"
+    cmd="rm -f ${work_root}/regridded_${for_f_in}"
     echo ${cmd}
     eval ${cmd}
 
@@ -291,7 +291,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
   done
 
   # clean up old land mask
-  cmd="rm ${work_root}/${MSK}_mask_regridded_with_StageIV.nc"
+  cmd="rm -f ${work_root}/${MSK}_mask_regridded_with_StageIV.nc"
   echo ${cmd}
   eval ${cmd}
 
