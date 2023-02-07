@@ -41,13 +41,13 @@ from py_plt_utilities import STR_INDT, get_anls, USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_lag00_b1.00'
+CTR_FLW = 'deterministic_forecast_lag06_b0.20'
 
 # define the case-wise sub-directory
 CSE = 'VD'
 
 # verification domain for the forecast data                                                                           
-GRD='d01' 
+GRD='d02' 
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'

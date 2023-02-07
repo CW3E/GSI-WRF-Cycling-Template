@@ -50,24 +50,29 @@ CSES = [
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
+            ## NOTE -- these are already covered   ##
+            ## with defaul settings for old config ##
+            ## '3denvar_lag00_b0.00_v03_h0300',    ##
+            ## '3denvar_lag06_b0.00_v03_h0300',    ##
+            ## END NOTE                            ##
+            '3denvar_lag00_b0.00_v03_h0150',
+            '3denvar_lag00_b0.00_v03_h0450',
+            '3denvar_lag00_b0.00_v03_h0600',
+            '3denvar_lag00_b0.00_v03_h0900',
+            '3denvar_lag00_b0.00_v06_h0150',
+            '3denvar_lag00_b0.00_v06_h0300',
+            '3denvar_lag00_b0.00_v06_h0450',
+            '3denvar_lag00_b0.00_v06_h0600',
+            '3denvar_lag00_b0.00_v06_h0900',
             #'3denvar_lag06_b0.00',
             #'3denvar_lag06_b0.10',
-            '3denvar_lag06_b0.20',
+            #'3denvar_lag06_b0.20',
             #'3denvar_lag06_b0.30',
             #'3denvar_lag06_b0.40',
             #'3denvar_lag06_b0.60',
             #'3denvar_lag06_b0.70',
             #'3denvar_lag06_b0.80',
             #'3denvar_lag06_b0.90',
-            'deterministic_forecast_lag06_b0.00',
-            'deterministic_forecast_lag06_b0.10',
-            'deterministic_forecast_lag06_b0.20',
-            'deterministic_forecast_lag06_b0.30',
-            'deterministic_forecast_lag06_b0.40',
-            'deterministic_forecast_lag06_b0.60',
-            'deterministic_forecast_lag06_b0.70',
-            'deterministic_forecast_lag06_b0.80',
-            'deterministic_forecast_lag06_b0.90',
            ]
 
 ##################################################################################

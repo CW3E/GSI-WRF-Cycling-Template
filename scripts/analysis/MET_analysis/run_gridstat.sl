@@ -50,7 +50,7 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_lag00_b0.00"
+CTR_FLW="deterministic_forecast_lag06_b0.20"
 
 # verification domain for the forecast data
 GRD="d02"

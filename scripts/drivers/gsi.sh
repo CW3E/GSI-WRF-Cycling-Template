@@ -90,6 +90,8 @@ fi
 #                     variational bias correction files, loop zero starts
 #                     with GDAS defaults
 # BETA        = FLT : Scaling float in [0,1], 0 - full ensemble, 1 - full static
+# S_ENS_H     = INT : Homogeneous isotropic horizontal ensemble localization scale (km) 
+# S_ENS_V     = INT : Vertical localization scale (grid units)
 # IF_4DENVAR  = Yes : Run GSI as 4D EnVar
 #
 ##################################################################################
@@ -140,6 +142,28 @@ elif [[ ${IF_HYBRID} = ${NO} ]]; then
 else
   echo "ERROR: \${IF_HYBRID} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
+fi
+
+if [ ! "${S_ENS_V}" ]; then
+  msg="ERROR: \${S_ENS_V} must be specified to the length of vertical "
+  msg+="localization scale in grid units."
+  echo ${msg}
+  exit 1
+  if [ ${S_ENS_V} -lt 0 ]; then
+    echo "ERROR: ${S_ENS_V} must be greater than 0."
+    exit 1
+  fi
+fi
+
+if [ ! "${S_ENS_H}" ]; then
+  msg="ERROR: \${S_ENS_H} must be specified to the length of horizontal "
+  msg+="localization scale in km."
+  echo ${msg}
+  exit 1
+  if [ ${S_ENS_H} -lt 0 ]; then
+    echo "ERROR: ${S_ENS_H} must be greater than 0."
+    exit 1
+  fi
 fi
 
 if [[ ${IF_OBSERVER} = ${YES} ]]; then
@@ -810,6 +834,8 @@ while [ ${dmn} -le ${max_dom} ]; do
     echo "IF_HYBRID         = ${IF_HYBRID}"
     echo "N_ENS             = ${N_ENS}"
     echo "BETA              = ${BETA}"
+    echo "S_ENS_V           = ${S_ENS_V}"
+    echo "S_ENS_H           = ${S_ENS_H}"
     echo "IF_OBSERVER       = ${IF_OBSERVER}"
     echo "IF_4DENVAR        = ${IF_4DENVAR}"
     echo "WRF_CTR_DOM       = ${WRF_CTR_DOM}"

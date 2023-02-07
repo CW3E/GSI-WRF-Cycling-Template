@@ -50,24 +50,39 @@ from py_plt_utilities import USR_HME
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            'deterministic_forecast_lag00_b0.00',
-            'deterministic_forecast_lag00_b0.10',
-            'deterministic_forecast_lag00_b0.20',
-            'deterministic_forecast_lag00_b0.30',
-            'deterministic_forecast_lag00_b0.40',
-            'deterministic_forecast_lag00_b0.50',
-            'deterministic_forecast_lag00_b0.60',
-            'deterministic_forecast_lag00_b0.70',
-            'deterministic_forecast_lag00_b0.80',
-            'deterministic_forecast_lag00_b0.90',
+            #'deterministic_forecast_lag00_b0.00',
+            #'deterministic_forecast_lag00_b0.10',
+            #'deterministic_forecast_lag00_b0.20',
+            #'deterministic_forecast_lag00_b0.30',
+            #'deterministic_forecast_lag00_b0.40',
+            #'deterministic_forecast_lag00_b0.50',
+            #'deterministic_forecast_lag00_b0.60',
+            #'deterministic_forecast_lag00_b0.70',
+            #'deterministic_forecast_lag00_b0.80',
+            #'deterministic_forecast_lag00_b0.90',
+            'deterministic_forecast_lag06_b0.00',
+            'deterministic_forecast_lag06_b0.10',
+            'deterministic_forecast_lag06_b0.20',
+            'deterministic_forecast_lag06_b0.30',
+            'deterministic_forecast_lag06_b0.40',
+            'deterministic_forecast_lag06_b0.50',
+            'deterministic_forecast_lag06_b0.60',
+            'deterministic_forecast_lag06_b0.70',
+            'deterministic_forecast_lag06_b0.80',
+            'deterministic_forecast_lag06_b0.90',
             'deterministic_forecast_lag00_b1.00',
+            'GFS',
+            'ECMWF',
            ]
 
 # define case-wise sub-directory
 CSE = 'VD'
 
 # verification domain for the forecast data
-GRD='d01'
+GRD='d02'
+
+# verification domain for the calibration data
+REF='0.25'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'
@@ -125,8 +140,13 @@ for i in range(num_flws):
     stat1 = STATS[1]
     
     # define the input name
-    in_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
-              '_to_' + END_DT + '.bin'
+    if ctr_flw == 'ECMWF' or ctr_flw == 'GFS':
+        in_path = data_root + '/grid_stats_' + REF + '_' + START_DT +\
+                  '_to_' + END_DT + '.bin'
+
+    else:
+        in_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
+                  '_to_' + END_DT + '.bin'
     
     f = open(in_path, 'rb')
     data = pickle.load(f)
@@ -248,7 +268,7 @@ plt.figtext(.05, .265, lab1, horizontalalignment='right', rotation=90,
 plt.figtext(.5, .02, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws, 6),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws, 5),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display

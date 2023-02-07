@@ -50,12 +50,15 @@ from py_plt_utilities import USR_HME
 ##################################################################################
 # define control flow to analyze 
 CTR_FLW = 'deterministic_forecast_lag00_b1.00'
+#CTR_FLW = 'ECMWF'
+#CTR_FLW = 'GFS'
 
 # define case-wise sub-directory
 CSE = 'VD'
 
 # verification domain for the forecast data
 GRD='d02'
+#GRD='0.25'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-11T00:00:00'
