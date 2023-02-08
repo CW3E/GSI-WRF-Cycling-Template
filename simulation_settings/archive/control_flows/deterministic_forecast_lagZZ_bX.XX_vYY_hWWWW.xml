@@ -4,9 +4,12 @@
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
   <!-- NAME OF CONTROL FLOW -->
-  <!ENTITY BETA                "0.30">
+  <!ENTITY LAG                 "ZZ"> <!-- Define the lag of the ensemble simulation start time here in HH -->
+  <!ENTITY BETA                "X.XX"> <!-- Define tuneable beta value for ensemble hybridization here -->
+  <!ENTITY S_ENS_V             "YY"> <!-- Define tuneable beta value for ensemble vertical localization scale here -->
+  <!ENTITY S_ENS_H             "WWWW"> <!-- Define tuneable value for ensemble horizontal localization scale here -->
   <!ENTITY CSE_NAME            "VD">
-  <!ENTITY CNFG_NAME           "deterministic_forecast_b&BETA;">
+  <!ENTITY CNFG_NAME           "deterministic_forecast_lag&LAG;_b&BETA;_v&S_ENS_V;_h&S_ENS_H;"> <!-- Config name should match .xml file name -->
   <!ENTITY EXP_NAME            "&CSE_NAME;/&CNFG_NAME;">
   <!-- NAME OF CONTROL FLOW -->
 
