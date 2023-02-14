@@ -380,7 +380,7 @@
     <native>--export=ALL</native>
     <native>--nodes=&GSI_NODES;</native>
     <native>--mem-per-cpu=&GSI_MEM;</native>
-    <native>--qos=large-shared-normal</native>
+    <native>--qos=large-shared-unlim</native>
     <envar>
       <name>CONSTANT</name>
       <value>&GSI_CONSTANT;</value>
