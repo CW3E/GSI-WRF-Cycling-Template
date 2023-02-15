@@ -64,7 +64,7 @@ echo "setting up compile directory"   >> $log_file  2>&1
 # 	> FCBASEOPTS_NO_G =       -ip -fp-model precise -w -ftz -align all -fno-alias $(FORMAT_FREE) $(BYTESWAPIO) -xHost -fp-model fast=2 -no-heap-arrays -no-prec-div -no-prec-sqrt -fno-common -xCORE-AVX2
 # 
 
-cmd="cp configure.wrf-4.4.2_comet_2022-02-14 ./configure.wrf  >> $log_file  2>&1"
+cmd="cp configure.wrf-4.4.2_comet_2023-02-14 ./configure.wrf  >> $log_file  2>&1"
 echo ${cmd}
 eval ${cmd}
 echo "END setting up compile directory"   >> $log_file  2>&1

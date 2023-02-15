@@ -19,10 +19,9 @@ module load netcdf/4.7.4intelmpi
 export NETCDF="/share/apps/compute/netcdf/intel2019/intelmpi"
 export HDF5="/share/apps/compute/hdf5/intel2019/intelmpi"
 
-# WRFDA specific, from Michael Murphy
+# WRFDA specific
 export BUFR=1
 export CRTM=1
-export NETCDF_classic=1 # have to turn classic on or it complains
 
 # Set log report, named with compiler / netcdf version 
 export log_version="intelmpi_2019.5.281_netcdf_4.7.4"
@@ -68,7 +67,7 @@ echo "setting up compile directory"   >> $log_file  2>&1
 # 	> FCBASEOPTS_NO_G =       -ip -fp-model precise -w -ftz -align all -fno-alias $(FORMAT_FREE) $(BYTESWAPIO) -xHost -fp-model fast=2 -no-heap-arrays -no-prec-div -no-prec-sqrt -fno-common -xCORE-AVX2
 # 	
  
-cmd="cp configure.wrf-4.4.2_comet_2023-02-14 ./configure.wrf  >> $log_file  2>&1"
+cmd="cp configure.wrfda-4.4.2_comet_2023-02-14 ./configure.wrf  >> $log_file  2>&1"
 echo ${cmd}
 eval ${cmd}
 echo "END setting up compile directory"   >> $log_file  2>&1
