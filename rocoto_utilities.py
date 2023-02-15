@@ -50,7 +50,6 @@ CSES = [
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
             '3denvar_lag00_b0.00_v03_h0300',
-            '3denvar_lag06_b0.00_v03_h0300',
            ]
 
 ##################################################################################

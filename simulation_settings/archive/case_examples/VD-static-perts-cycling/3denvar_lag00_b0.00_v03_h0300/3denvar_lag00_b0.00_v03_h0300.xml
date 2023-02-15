@@ -15,7 +15,7 @@
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
   <!ENTITY CLONE_ROOT          "/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template">
-  <!ENTITY SOFT_ROOT           "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
+  <!ENTITY SOFT_ROOT           "/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT">
   <!ENTITY DATA_ROOT           "/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/&CSE_NAME;">
   <!-- END COMPUTER-DEPENDENT -->
 
