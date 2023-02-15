@@ -14,8 +14,8 @@
   <!-- NAME OF CONTROL FLOW -->
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
-  <!ENTITY CLONE_ROOT          "/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template">
-  <!ENTITY SOFT_ROOT           "/cw3e/mead/projects/cwp130/scratch/cgrudzien">
+  <!ENTITY CLONE_ROOT          "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template">
+  <!ENTITY SOFT_ROOT           "/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT">
   <!ENTITY DATA_ROOT           "/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/&CSE_NAME;">
   <!-- END COMPUTER-DEPENDENT -->
 
@@ -34,10 +34,9 @@
   <!-- END WORKFLOW SETTINGS -->
 
   <!-- SOFTWARE SETTINGS -->
-  <!ENTITY WPS_SERIAL_ROOT     "&SOFT_ROOT;/WRF_CODE/WRF_4.4/WPS_serial">
-  <!ENTITY WPS_PARALLEL_ROOT   "&SOFT_ROOT;/WRF_CODE/WRF_4.4/WPS_parallel">
-  <!ENTITY WRF_ROOT            "&SOFT_ROOT;/WRF_CODE/WRF_4.4/WRF">
-  <!ENTITY WRFDA_ROOT          "&SOFT_ROOT;/WRF_CODE/WRF_4.4/WRFDA">
+  <!ENTITY WPS_ROOT            "&SOFT_ROOT;/WRF_CODE/WRF_4.4.2/WPS">
+  <!ENTITY WRF_ROOT            "&SOFT_ROOT;/WRF_CODE/WRF_4.4.2/WRF">
+  <!ENTITY WRFDA_ROOT          "&SOFT_ROOT;/WRF_CODE/WRF_4.4.2/WRFDA">
   <!ENTITY GSI_EXE             "&SOFT_ROOT;/GSI_CODE/comGSIv3.7_EnKFv1.3/build/bin/gsi.x">
   <!ENTITY CRTM_ROOT           "&SOFT_ROOT;/CRTM_CODE/CRTM_v2.3.0/Big_Endian">
   <!-- END SOFTWARE SETTINGS -->
@@ -153,7 +152,7 @@
     </envar>
     <envar>
       <name>WPS_ROOT</name>
-      <value>&WPS_SERIAL_ROOT;</value>
+      <value>&WPS_ROOT;</value>
     </envar>
     <envar>
       <name>EXP_CONFIG</name>
@@ -215,7 +214,7 @@
     </envar>
     <envar>
       <name>WPS_ROOT</name>
-      <value>&WPS_PARALLEL_ROOT;</value>
+      <value>&WPS_ROOT;</value>
     </envar>
     <envar>
       <name>EXP_CONFIG</name>

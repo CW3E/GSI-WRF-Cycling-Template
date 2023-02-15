@@ -37,62 +37,25 @@ import time
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # directory path for root of git clone of GSI-WRF-Cycling-Template
-USR_HME = '/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template'
+USR_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template'
 
 # directory for rocoto install
-RCT_HME = '/cw3e/mead/projects/cwp130/scratch/cgrudzien'
+RCT_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/rocoto'
 
 # Case study sub directories
 CSES = [
-        #'CC',
         'VD',
        ]
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
-            ## NOTE -- these are already covered   ##
-            ## with defaul settings for old config ##
-            ## '3denvar_lag00_b0.00_v03_h0300',    ##
-            ## '3denvar_lag06_b0.00_v03_h0300',    ##
-            ## END NOTE                            ##
-            '3denvar_lag00_b0.00_v03_h0150',
-            '3denvar_lag00_b0.00_v03_h0450',
-            '3denvar_lag00_b0.00_v03_h0600',
-            '3denvar_lag00_b0.00_v03_h0900',
-            '3denvar_lag06_b0.00_v03_h0150',
-            '3denvar_lag06_b0.00_v03_h0450',
-            '3denvar_lag06_b0.00_v03_h0600',
-            '3denvar_lag06_b0.00_v03_h0900',
-            'deterministic_forecast_lag00_b0.00_v03_h0150',
-            'deterministic_forecast_lag00_b0.00_v03_h0450',
-            'deterministic_forecast_lag00_b0.00_v03_h0600',
-            'deterministic_forecast_lag00_b0.00_v03_h0900',
-            'deterministic_forecast_lag06_b0.00_v03_h0150',
-            'deterministic_forecast_lag06_b0.00_v03_h0450',
-            'deterministic_forecast_lag06_b0.00_v03_h0600',
-            'deterministic_forecast_lag06_b0.00_v03_h0900',
-            #'3denvar_lag00_b0.00_v06_h0150',
-            #'3denvar_lag00_b0.00_v06_h0300',
-            #'3denvar_lag00_b0.00_v06_h0450',
-            #'3denvar_lag00_b0.00_v06_h0600',
-            #'3denvar_lag00_b0.00_v06_h0900',
-            #'3denvar_lag06_b0.00',
-            #'3denvar_lag06_b0.10',
-            #'3denvar_lag06_b0.20',
-            #'3denvar_lag06_b0.30',
-            #'3denvar_lag06_b0.40',
-            #'3denvar_lag06_b0.60',
-            #'3denvar_lag06_b0.70',
-            #'3denvar_lag06_b0.80',
-            #'3denvar_lag06_b0.90',
+            '3denvar_lag00_b0.00_v03_h0300',
+            '3denvar_lag06_b0.00_v03_h0300',
            ]
 
 ##################################################################################
 # Derived paths
 ##################################################################################
-# path to rocoto binary root directory
-pathroc = RCT_HME + '/rocoto'
-
 # path to .xml control flows 
 settings_dir =  USR_HME + '/simulation_settings'
 
@@ -126,7 +89,7 @@ dbs_dir = USR_HME + '/workflow_status'
 def run_rocotorun():
     for cse in CSES:
         for ctr_flw in CTR_FLWS:
-            cmd = pathroc + '/bin/rocotorun -w ' +\
+            cmd = RCT_HME + '/bin/rocotorun -w ' +\
                   settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
                   ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store -v 10'  
 
@@ -138,7 +101,7 @@ def run_rocotorun():
 def run_rocotostat():
     for cse in CSES:
         for ctr_flw in CTR_FLWS:
-            cmd = pathroc + '/bin/rocotostat -w ' +\
+            cmd = RCT_HME + '/bin/rocotostat -w ' +\
                   settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
                   ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store -c all'+\
                   ' > ' + dbs_dir + '/' + cse + '-' + ctr_flw + '_workflow_status.txt'
@@ -150,7 +113,7 @@ def run_rocotoboot(cses, flows, cycles, tasks):
         for ctr_flw in flows:
             for cycle in cycles:
                 for task in tasks:
-                    cmd = pathroc + '/bin/rocotoboot -w ' +\
+                    cmd = RCT_HME + '/bin/rocotoboot -w ' +\
                           settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
                           ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store' +\
                           ' -c ' + cycle + ' -t ' + task
@@ -165,7 +128,7 @@ def run_rocotorewind(cses, flows, cycles, tasks):
         for ctr_flw in flows:
             for cycle in cycles:
                 for task in tasks:
-                    cmd = pathroc + '/bin/rocotorewind -w ' +\
+                    cmd = RCT_HME + '/bin/rocotorewind -w ' +\
                           settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
                           ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store' +\
                           ' -c ' + cycle + ' -t ' + task

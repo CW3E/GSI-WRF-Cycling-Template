@@ -560,6 +560,10 @@ while [ ${dmn} -le ${max_dom} ]; do
     srcfixfile+=( "${fix_root}/global_pcpinfo.txt" )
     srcfixfile+=( "${fix_root}/global_lightinfo.txt" )
 
+    # needed for assimilation of ATMS radiances
+    srcfixfile+=( "${fix_root}/atms_beamwidth.txt" )
+
+    # linked names for GSI to read in
     gsifixfile+=( "berror_stats" )
     gsifixfile+=( "errtable" )
     gsifixfile+=( "anavinfo" )
@@ -569,6 +573,7 @@ while [ ${dmn} -le ${max_dom} ]; do
     gsifixfile+=( "ozinfo" )
     gsifixfile+=( "pcpinfo" )
     gsifixfile+=( "lightinfo" )
+    gsifixfile+=( "atms_beamwidth.txt" )
 
     # loop over fix files
     len=${#srcfixfile[@]}

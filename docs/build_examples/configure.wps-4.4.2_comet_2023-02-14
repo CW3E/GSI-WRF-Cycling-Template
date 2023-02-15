@@ -53,19 +53,21 @@ COMPRESSION_LIBS	=  # intentionally left blank, fill in COMPRESSION_LIBS below
 
 COMPRESSION_INC		=  # intentionally left blank, fill in COMPRESSION_INC below
 
+INTERNAL_GRIB2_PATH     = /cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/WRF_CODE/WRF_4.4.2/WPS/grib2
+
 #
-#   Settings for Linux x86_64, Intel compiler    (serial) 
+#   Settings for Linux x86_64, Intel compiler    (dmpar) 
 #
 #
-COMPRESSION_LIBS    = -L/glade/u/home/wrfhelp/UNGRIB_LIBRARIES/lib -ljasper -lpng -lz
-COMPRESSION_INC     = -I/glade/u/home/wrfhelp/UNGRIB_LIBRARIES/include
+COMPRESSION_LIBS    = -L$(INTERNAL_GRIB2_PATH)/lib -ljasper -lpng -lz
+COMPRESSION_INC     = -I$(INTERNAL_GRIB2_PATH)/include
 FDEFS               = -DUSE_JPEG2000 -DUSE_PNG
 SFC                 = ifort
 SCC                 = icc
 DM_FC               = mpif90
 DM_CC               = mpicc
-FC                  = $(SFC)
-CC                  = $(SCC)
+FC                  = $(DM_FC)
+CC                  = $(DM_CC)
 LD                  = $(FC)
 FFLAGS              = -FR -convert big_endian
 F77FLAGS            = -FI -convert big_endian
@@ -74,7 +76,7 @@ FNGFLAGS            = $(FFLAGS)
 LDFLAGS             = 
 CFLAGS              = -w
 CPP                 = /lib/cpp -P -traditional
-CPPFLAGS            = -D_UNDERSCORE -DBYTESWAP -DLINUX -DIO_NETCDF -DIO_BINARY -DIO_GRIB1 -DBIT32 
+CPPFLAGS            = -D_UNDERSCORE -DBYTESWAP -DLINUX -DIO_NETCDF -DIO_BINARY -DIO_GRIB1 -DBIT32 -D_MPI
 ARFLAGS             =
 CC_TOOLS            = 
 
@@ -99,10 +101,10 @@ AR		=	ar ru
 
 .f.o:
 	$(RM) $@ $*.mod
-	$(FC) $(F77FLAGS) -c $< $(WRF_INCLUDE)
+	$(FC) $(F77FLAGS) $(FCCOMPAT) -c $< $(WRF_INCLUDE)
 
 .F.o:
 	$(RM) $@ $*.mod
 	$(CPP) $(CPPFLAGS) $(FDEFS) $(WRF_INCLUDE) $< > $*.f90
-	$(FC) $(FFLAGS) -c $*.f90 $(WRF_INCLUDE)
+	$(FC) $(FFLAGS) $(FCCOMPAT) -c $*.f90 $(WRF_INCLUDE)
 #	$(RM) $*.f90

@@ -1,7 +1,7 @@
 # configure.wrf
 #
 # Original configure options used:
-# ./configure  wrfda
+# ./configure 
 # Compiler choice: 66
 # Nesting option: 1
 #
@@ -22,10 +22,10 @@ LIBINCLUDE      =       .
 #### Get core settings from environment (set in compile script)
 #### Note to add a core, this has to be added to.
 
-COREDEFS = -DEM_CORE=1 \
-           -DNMM_CORE=0 -DNMM_MAX_DIM=2600 \
-	   -DDA_CORE=1 \
-	   -DWRFPLUS=0
+COREDEFS = -DEM_CORE=$(WRF_EM_CORE) \
+           -DNMM_CORE=$(WRF_NMM_CORE) -DNMM_MAX_DIM=2600 \
+	   -DDA_CORE=$(WRF_DA_CORE) \
+	   -DWRFPLUS=$(WRF_PLUS_CORE)
 
 #### Single location for defining total number of domains.  You need
 #### at least 1 + 2*(number of total nests).  For example, 1 coarse
@@ -135,13 +135,13 @@ SFC             =       ifort
 SCC             =       icc
 CCOMP           =       icc
 DM_FC           =       mpif90 -f90=$(SFC)
-DM_CC           =       mpicc 
+DM_CC           =       mpicc -cc=$(SCC)
 FC              =       time $(DM_FC)
 CC              =       $(DM_CC) -DFSEEKO64_OK 
 LD              =       $(FC)
-RWORDSIZE       =       8
-PROMOTION       =       -r8        -real-size `expr 8 \* $(RWORDSIZE)` -i4
-ARCH_LOCAL      =       -DNONSTANDARD_SYSTEM_FUNC -DWRF_USE_CLM
+RWORDSIZE       =       $(NATIVE_RWORDSIZE)
+PROMOTION       =       -real-size `expr 8 \* $(RWORDSIZE)` -i4
+ARCH_LOCAL      =       -DNONSTANDARD_SYSTEM_FUNC -DWRF_USE_CLM $(NETCDF4_IO_OPTS)
 OPTAVX          =       -xCORE-AVX2
 CFLAGS_LOCAL    =       -w -O3 -ip $(OPTAVX) #-xHost -fp-model fast=2 -no-prec-div -no-prec-sqrt -ftz -no-multibyte-chars -xCORE-AVX2 # -DRSL0_ONLY
 LDFLAGS_LOCAL   =       -ip $(OPTAVX) #-xHost -fp-model fast=2 -no-prec-div -no-prec-sqrt -ftz -align all -fno-alias -fno-common -xCORE-AVX2
@@ -159,7 +159,7 @@ RECORDLENGTH    =       -assume byterecl
 FCBASEOPTS_NO_G =       -ip -fp-model precise -w -ftz -align all -fno-alias $(FORMAT_FREE) $(BYTESWAPIO) $(OPTAVX) #-xHost -fp-model fast=2 -no-heap-arrays -no-prec-div -no-prec-sqrt -fno-common -xCORE-AVX2
 FCBASEOPTS      =       $(FCBASEOPTS_NO_G) $(FCDEBUG)
 MODULE_SRCH_FLAG =     
-TRADFLAG        =      -traditional-cpp
+TRADFLAG        =      -traditional-cpp $(NETCDF4_IO_OPTS)
 CPP             =      /lib/cpp -P -nostdinc
 AR              =      ar
 ARFLAGS         =      ru
@@ -186,7 +186,7 @@ ARCHFLAGS       =    $(COREDEFS) -DIWORDSIZE=$(IWORDSIZE) -DDWORDSIZE=$(DWORDSIZ
                        \
                        \
                        \
-                      -DCRTM \
+                       \
                       -DHDF5 \
                        \
                        \
@@ -201,7 +201,7 @@ ARCHFLAGS       =    $(COREDEFS) -DIWORDSIZE=$(IWORDSIZE) -DDWORDSIZE=$(DWORDSIZ
                       -DLIMIT_ARGS \
                       -DBUILD_RRTMG_FAST=0 \
                       -DBUILD_RRTMK=0 \
-                      -DBUILD_SBM_FAST=0 \
+                      -DBUILD_SBM_FAST=1 \
                       -DSHOW_ALL_VARS_USED=0 \
                       -DCONFIG_BUF_LEN=$(CONFIG_BUF_LEN) \
                       -DMAX_DOMAINS_F=$(MAX_DOMAINS) \
@@ -209,7 +209,7 @@ ARCHFLAGS       =    $(COREDEFS) -DIWORDSIZE=$(IWORDSIZE) -DDWORDSIZE=$(DWORDSIZ
 		      -DNMM_NEST=$(WRF_NMM_NEST)
 CFLAGS          =    $(CFLAGS_LOCAL) -DDM_PARALLEL  \
                       -DLANDREAD_STUB=1 \
-                      -DMAX_HISTORY=$(MAX_HISTORY) -DNMM_CORE=0
+                      -DMAX_HISTORY=$(MAX_HISTORY) -DNMM_CORE=$(WRF_NMM_CORE)
 FCFLAGS         =    $(FCOPTIM) $(FCBASEOPTS)
 ESMF_LIB_FLAGS  =    
 # ESMF 5 -- these are defined in esmf.mk, included above
@@ -228,9 +228,9 @@ INCLUDE_MODULES =    $(MODULE_SRCH_FLAG) \
                       -I$(NETCDFPATH)/include \
                        
 REGISTRY        =    Registry
-CC_TOOLS_CFLAGS = -DNMM_CORE=0
+CC_TOOLS_CFLAGS = -DNMM_CORE=$(WRF_NMM_CORE)
 
-LIB             =    $(LIB_BUNDLED) $(LIB_EXTERNAL) $(LIB_LOCAL) $(LIB_WRF_HYDRO) 
+LIB             =    $(LIB_BUNDLED) $(LIB_EXTERNAL) $(LIB_LOCAL) $(LIB_WRF_HYDRO)  $(NETCDF4_DEP_LIB)
 LDFLAGS         =    $(OMP) $(FCFLAGS) $(LDFLAGS_LOCAL) 
 ENVCOMPDEFS     =    
 WRF_CHEM	=	0 
