@@ -89,37 +89,37 @@
 # uncomment to run verbose for debugging / testing
 set -x
 
-if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: constants file ${CONSTANT} does not exist or is not executable."
+if [ ! -x "${CNST}" ]; then
+  echo "ERROR: constants file ${CNST} does not exist or is not executable."
   exit 1
 fi
 
 # Read constants into the current shell
-. ${CONSTANT}
+. ${CNST}
 
 ##################################################################################
 # Make checks for real settings
 ##################################################################################
 # Options below are defined in workflow variables
 #
-# ENS_N         = Ensemble ID index, 00 for control, i > 00 for perturbation
-# BKG_DATA      = String case variable for supported inputs: GFS, GEFS currently
-# FCST_LENGTH   = Total length of WRF forecast simulation in HH
-# DATA_INTERVAL = Interval of input data in HH
-# START_TIME    = Simulation start time in YYMMDDHH
-# MAX_DOM       = Max number of domains to use in namelist settings
-# IF_SST_UPDATE = "Yes" or "No" switch to compute dynamic SST forcing, (must
-#                 include auxinput4 path and timing in namelist) case insensitive
+# MEMID        = Ensemble ID index, 00 for control, i > 00 for perturbation
+# BKG_DATA     = String case variable for supported inputs: GFS, GEFS currently
+# FCST_LEN     = Total length of WRF forecast simulation in HH
+# DATA_INT     = Interval of input data in HH
+# STRT_TIME    = Simulation start time in YYMMDDHH
+# MAX_DOM      = Max number of domains to use in namelist settings
+# IF_SST_UPDTE = "Yes" or "No" switch to compute dynamic SST forcing, (must
+#                include auxinput4 path and timing in namelist) case insensitive
 #
 ##################################################################################
 
-if [ ! "${ENS_N}"  ]; then
-  echo "ERROR: \${ENS_N} is not defined."
+if [ ! "${MEMID}"  ]; then
+  echo "ERROR: \${MEMID} is not defined."
   exit 1
 fi
 
 # ensure padding to two digits is included
-ens_n=`printf %02d $(( 10#${ENS_N} ))`
+memid=`printf %02d $(( 10#${MEMID} ))`
 
 if [ ! "${BKG_DATA}"  ]; then
   echo "ERROR: \${BKG_DATA} is not defined."
@@ -133,43 +133,44 @@ if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
   exit 1
 fi
 
-if [ ! "${FCST_LENGTH}" ]; then
-  echo "ERROR: \${FCST_LENGTH} is not defined."
+if [ ! "${FCST_LEN}" ]; then
+  echo "ERROR: \${FCST_LEN} is not defined."
   exit 1
 fi
 
-if [ ! "${DATA_INTERVAL}" ]; then
-  echo "ERROR: \${DATA_INTERVAL} is not defined."
+if [ ! "${DATA_INT}" ]; then
+  echo "ERROR: \${DATA_INT} is not defined."
   exit 1
 fi
 
-if [ ! "${START_TIME}" ]; then
-  echo "ERROR: \${START_TIME} is not defined."
+if [ ! "${STRT_TIME}" ]; then
+  echo "ERROR: \${STRT_TIME} is not defined."
   exit 1
 fi
 
-# Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format
-if [ ${#START_TIME} -ne 10 ]; then
-  echo "ERROR: start time, '${START_TIME}', is not in 'YYYYMMDDHH' format."
+# Convert STRT_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
+if [ ${#STRT_TIME} -ne 10 ]; then
+  echo "ERROR: \${STRT_TIME}, '${STRT_TIME}', is not in 'YYYYMMDDHH' format." 
   exit 1
 else
-  start_time="${START_TIME:0:8} ${START_TIME:8:2}"
+  strt_time="${STRT_TIME:0:8} ${STRT_TIME:8:2}"
 fi
-start_time=`date -d "${start_time}"`
-end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
+strt_time=`date -d "${strt_time}"`
+end_time=`date -d "${strt_time} ${FCST_LEN} hours"`
 
 if [ ! ${MAX_DOM} ]; then
   echo "ERROR: \${MAX_DOM} is not defined."
   exit 1
 fi
 
-if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   echo "SST Update turned on."
   sst_update=1
-elif [[ ${IF_SST_UPDATE} = ${NO} ]]; then
+elif [[ ${IF_SST_UPDTE} = ${NO} ]]; then
+  echo "SST Update turned off."
   sst_update=0
 else
-  echo "ERROR: \${IF_SST_UPDATE} must equal 'Yes' or 'No' (case insensitive)."
+  echo "ERROR: \${IF_SST_UPDTE} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
 
@@ -178,13 +179,13 @@ fi
 ##################################################################################
 # Below variables are defined in workflow variables
 #
-# WRF_ROOT   = Root directory of a "clean" WRF build WRF/run directory
-# EXP_CONFIG = Root directory containing sub-directories for namelists
-#              vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HOME = Start time named directory for cycling data containing
-#              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# MPIRUN     = MPI Command to execute real 
-# WPS_PROC   = The total number of processes to run real.exe with MPI
+# WRF_ROOT  = Root directory of a "clean" WRF build WRF/run directory
+# EXP_CNFG  = Root directory containing sub-directories for namelists
+#             vtables, geogrid data, GSI fix files, etc.
+# CYCLE_HME = Start time named directory for cycling data containing
+#             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
+# MPIRUN    = MPI Command to execute real 
+# WPS_PROC  = The total number of processes to run real.exe with MPI
 #
 ##################################################################################
 
@@ -198,13 +199,13 @@ if [ ! -d "${WRF_ROOT}" ]; then
   exit 1
 fi
 
-if [ ! -d ${EXP_CONFIG} ]; then
-  echo "ERROR: \${EXP_CONFIG} directory ${EXP_CONFIG} does not exist."
+if [ ! -d ${EXP_CNFG} ]; then
+  echo "ERROR: \${EXP_CNFG} directory ${EXP_CNFG} does not exist."
   exit 1
 fi
 
-if [ -z ${CYCLE_HOME} ]; then
-  echo "ERROR: \${CYCLE_HOME} directory name is not defined."
+if [ -z ${CYCLE_HME} ]; then
+  echo "ERROR: \${CYCLE_HME} directory name is not defined."
   exit 1
 fi
 
@@ -230,15 +231,15 @@ fi
 ##################################################################################
 # The following paths are relative to workflow supplied root paths
 #
-# work_root      = Working directory where real runs and outputs background files
-# wrf_dat_files  = All file contents of clean WRF/run directory
-#                  namelists, boundary and input data will be linked
-#                  from other sources
-# real_exe       = Path and name of working executable
+# work_root     = Working directory where real runs and outputs background files
+# wrf_dat_files = All file contents of clean WRF/run directory
+#                 namelists, boundary and input data will be linked
+#                 from other sources
+# real_exe      = Path and name of working executable
 #
 ##################################################################################
 
-work_root=${CYCLE_HOME}/realprd/ens_${ens_n}
+work_root=${CYCLE_HME}/realprd/ens_${memid}
 mkdir -p ${work_root}
 cd ${work_root}
 
@@ -264,16 +265,16 @@ rm -f wrfbdy_d01
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   fcst=0
-  while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    time_str=`date "+%Y-%m-%d_%H:%M:%S" -d "${start_time} ${fcst} hours"`
+  while [ ${fcst} -le ${FCST_LEN} ]; do
+    time_str=`date "+%Y-%m-%d_%H:%M:%S" -d "${strt_time} ${fcst} hours"`
     realinput_name=met_em.d0${dmn}.${time_str}.nc
-    wps_dir=${CYCLE_HOME}/wpsprd/ens_${ens_n}
+    wps_dir=${CYCLE_HME}/wpsprd/ens_${memid}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then
-      echo "ERROR: Input file '${CYCLE_HOME}/${realinput_name}' is missing."
+      echo "ERROR: Input file '${CYCLE_HME}/${realinput_name}' is missing."
       exit 1
     fi
     ln -sf ${wps_dir}/${realinput_name} ./
-    (( fcst += DATA_INTERVAL ))
+    (( fcst += DATA_INT ))
   done
   (( dmn += 1 ))
 done
@@ -295,16 +296,16 @@ fi
 ##################################################################################
 # Copy the wrf namelist from the static dir
 # NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-namelist=${EXP_CONFIG}/namelists/namelist.${BKG_DATA}
+namelist=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
 cp ${namelist} ./namelist.input
 
 # Get the start and end time components
-s_Y=`date +%Y -d "${start_time}"`
-s_m=`date +%m -d "${start_time}"`
-s_d=`date +%d -d "${start_time}"`
-s_H=`date +%H -d "${start_time}"`
-s_M=`date +%M -d "${start_time}"`
-s_S=`date +%S -d "${start_time}"`
+s_Y=`date +%Y -d "${strt_time}"`
+s_m=`date +%m -d "${strt_time}"`
+s_d=`date +%d -d "${strt_time}"`
+s_H=`date +%H -d "${strt_time}"`
+s_M=`date +%M -d "${strt_time}"`
+s_S=`date +%S -d "${strt_time}"`
 e_Y=`date +%Y -d "${end_time}"`
 e_m=`date +%m -d "${end_time}"`
 e_d=`date +%d -d "${end_time}"`
@@ -313,8 +314,8 @@ e_M=`date +%M -d "${end_time}"`
 e_S=`date +%S -d "${end_time}"`
 
 # Compute number of days and hours for the run
-(( run_days = FCST_LENGTH / 24 ))
-(( run_hours = FCST_LENGTH % 24 ))
+(( run_days = FCST_LEN / 24 ))
+(( run_hours = FCST_LEN % 24 ))
 
 # Update max_dom in namelist
 in_dom="\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}"
@@ -359,7 +360,7 @@ cat namelist.input \
 mv namelist.input.new namelist.input
 
 # Update interval in namelist
-(( data_interval_sec = DATA_INTERVAL * 3600 ))
+(( data_interval_sec = DATA_INT * 3600 ))
 cat namelist.input \
   | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
   > namelist.input.new
@@ -371,9 +372,9 @@ cat namelist.input \
   > namelist.input.new
 mv namelist.input.new namelist.input
 
-if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
-  # update the auxinput4_interval to the DATA_INTERVAL
-  (( auxinput4_minutes = DATA_INTERVAL * 60 ))
+if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
+  # update the auxinput4_interval to the DATA_INT
+  (( auxinput4_minutes = DATA_INT * 60 ))
   aux_in="\(${AUXINPUT}4_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}.*"
   aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
   cat namelist.input \
@@ -387,19 +388,17 @@ fi
 ##################################################################################
 # Print run parameters
 echo
-echo "ENS_N          = ${ENS_N}"
-echo "BKG_DATA       = ${BKG_DATA}"
-echo "WRF_ROOT       = ${WRF_ROOT}"
-echo "EXP_CONFIG     = ${EXP_CONFIG}"
-echo "CYCLE_HOME     = ${CYCLE_HOME}"
+echo "EXP_CNFG     = ${EXP_CNFG}"
+echo "MEMID        = ${MEMID}"
+echo "CYCLE_HME    = ${CYCLE_HME}"
+echo "DATA INT     = ${DATA_INT}"
+echo "FCST LEN     = ${FCST_LEN}"
 echo
-echo "FCST LENGTH    = ${FCST_LENGTH}"
-echo "DATA INTERVAL  = ${DATA_INTERVAL}"
-echo "MAX_DOM        = ${MAX_DOM}"
-echo "IF_SST_UPDATE  = ${IF_SST_UPDATE}"
-echo
-echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
-echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo "BKG_DATA     = ${BKG_DATA}"
+echo "MAX_DOM      = ${MAX_DOM}"
+echo "IF_SST_UPDTE = ${IF_SST_UPDTE}"
+echo "STRT_TIME    = "`date +"%Y/%m/%d %H:%M:%S" -d "${strt_time}"`
+echo "END_TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
 echo "real started at ${now}."
@@ -455,7 +454,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 done
 
 # check to see if the SST update fields are generated
-if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   dmn=1
   while [ ${dmn} -le ${MAX_DOM} ]; do
     sst_file=wrflowinp_d0${dmn}

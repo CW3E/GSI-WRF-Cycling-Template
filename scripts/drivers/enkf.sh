@@ -59,12 +59,12 @@ ens_prfx=wrf_en
 # Read in GSI constants for local environment
 ##################################################################################
 
-if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: \$CONSTANT does not exist or is not executable!"
+if [ ! -x "${CNST}" ]; then
+  echo "ERROR: \$CNST does not exist or is not executable!"
   exit 1
 fi
 
-. ${CONSTANT}
+. ${CNST}
 
 ##################################################################################
 # Make checks for DA method settings

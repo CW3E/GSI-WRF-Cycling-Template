@@ -89,48 +89,48 @@
 # uncomment to run verbose for debugging / testing
 set -x
 
-# io_restart = 2 for regular or 102 for split restart files (currently only
+# io_rstrt = 2 for regular or 102 for split restart files (currently only
 # 2 supported)
-io_restart=2
+io_rstrt=2
 
-if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: ${CONSTANT} does not exist or is not executable."
+if [ ! -x "${CNST}" ]; then
+  echo "ERROR: constants file ${CNST} does not exist or is not executable."
   exit 1
 fi
 
 # Read constants into the current shell
-. ${CONSTANT}
+. ${CNST}
 
 ##################################################################################
 # Make checks for WRF settings
 ##################################################################################
 # Options below are defined in workflow variables 
 #
-# ENS_N          = Ensemble ID index, 00 for control, i > 00 for perturbation
-# BKG_DATA       = String case variable for supported inputs: GFS, GEFS currently
-# FCST_LENGTH    = Total length of WRF forecast simulation in HH
-# FCST_INTERVAL  = Interval of wrfout.d01 in HH
-# DATA_INTERVAL  = Interval of input data in HH
-# CYCLE_INTERVAL = Interval in HH on which DA is cycled in a cycling control flow
-# START_TIME     = Simulation start time in YYMMDDHH
-# CYCLE_TIME     = Simulation cycle date time in YYMMDDHH
-# MAX_DOM        = Max number of domains to use in namelist settings
-# DOWN_DOM       = First domain index to downscale ICs from d01, set parameter
-#                  less than MAX_DOM if downscaling to be used
-# IF_CYCLING     = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis
-#                  or real.exe, case insensitive
-# IF_SST_UPDATE  = Yes / No: whether WRF uses dynamic SST values 
-# IF_FEEBACK     = Yes / No: whether WRF domains use 1- or 2-way nesting
+# MEMID        = Ensemble ID index, 00 for control, i > 00 for perturbation
+# BKG_DATA     = String case variable for supported inputs: GFS, GEFS currently
+# FCST_LENGTH  = Total length of WRF forecast simulation in HH
+# FCST_INT     = Interval of wrfout.d01 in HH
+# DATA_INT     = Interval of input data in HH
+# CYCLE_INT    = Interval in HH on which DA is cycled in a cycling control flow
+# STRT_TIME    = Simulation start time in YYMMDDHH
+# CYCLE_TIME   = Simulation cycle date time in YYMMDDHH
+# MAX_DOM      = Max number of domains to use in namelist settings
+# DOWN_DOM     = First domain index to downscale ICs from d01, set parameter
+#                less than MAX_DOM if downscaling to be used
+# IF_CYCLING   = Yes / No: whether to use ICs / BCs from GSI / WRFDA analysis
+#                or real.exe, case insensitive
+# IF_SST_UPDTE = Yes / No: whether WRF uses dynamic SST values 
+# IF_FEEBACK   = Yes / No: whether WRF domains use 1- or 2-way nesting
 #
 ##################################################################################
 
-if [ ! "${ENS_N}" ]; then
-  echo "ERROR: \${ENS_N} is not defined."
+if [ ! "${MEMID}" ]; then
+  echo "ERROR: \${MEMID} is not defined."
   exit 1
 fi
 
 # Ensure padding to two digits is included
-ens_n=`printf %02d $(( 10#${ENS_N} ))`
+memid=`printf %02d $(( 10#${MEMID} ))`
 
 if [ ! "${BKG_DATA}"  ]; then
   echo "ERROR: \${BKG_DATA} is not defined."
@@ -149,43 +149,44 @@ if [ ! ${FCST_LENGTH} ]; then
   exit 1
 fi
 
-if [ ! ${FCST_INTERVAL} ]; then
-  echo "ERROR: \${FCST_INTERVAL} is not defined."
+if [ ! ${FCST_INT} ]; then
+  echo "ERROR: \${FCST_INT} is not defined."
   exit 1
 fi
 
-if [ ! "${DATA_INTERVAL}" ]; then
-  echo "ERROR: \${DATA_INTERVAL} is not defined."
+if [ ! "${DATA_INT}" ]; then
+  echo "ERROR: \${DATA_INT} is not defined."
   exit 1
 fi
 
-if [ ! "${CYCLE_INTERVAL}" ]; then
-  echo "ERROR: \${CYCLE_INTERVAL} is not defined."
+if [ ! "${CYCLE_INT}" ]; then
+  echo "ERROR: \${CYCLE_INT} is not defined."
   exit 1
 fi
 
-if [ ! "${START_TIME}" ]; then
-  echo "ERROR: \${START_TIME} is not defined."
+if [ ! "${STRT_TIME}" ]; then
+  echo "ERROR: \${STRT_TIME} is not defined."
   exit 1
 fi
 
-# Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format
-if [ ${#START_TIME} -ne 10 ]; then
-  echo "ERROR: start time, '${START_TIME}', is not in 'YYYYMMDDHH' format."
+# Convert STRT_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
+if [ ${#STRT_TIME} -ne 10 ]; then
+  echo "ERROR: \${STRT_TIME}, '${STRT_TIME}', is not in 'YYYYMMDDHH' format." 
   exit 1
 else
-  start_time="${START_TIME:0:8} ${START_TIME:8:2}"
+  strt_time="${STRT_TIME:0:8} ${STRT_TIME:8:2}"
 fi
-start_time=`date -d "${start_time}"`
-end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
+strt_time=`date -d "${strt_time}"`
+end_time=`date -d "${strt_time} ${FCST_LENGTH} hours"`
 
-# Convert CYCLE_TIME from 'YYYYMMDDHH' format to start_time Unix date format
+# Convert CYCLE_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
 if [ ${#CYCLE_TIME} -ne 10 ]; then
   echo "ERROR: cycle time, '${CYCLE_TIME}', is not in 'YYYYMMDDHH' format."
   exit 1
 else
   cycle_time="${CYCLE_TIME:0:8} ${CYCLE_TIME:8:2}"
 fi
+
 if [ ! "${MAX_DOM}" ]; then
   echo "ERROR: \${MAX_DOM} is not defined."
   exit 1
@@ -201,13 +202,14 @@ if [[ ${IF_CYCLING} != ${YES} && ${IF_CYCLING} != ${NO} ]]; then
   exit 1
 fi
 
-if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   echo "SST Update turned on."
   sst_update=1
-elif [[ ${IF_SST_UPDATE} = ${NO} ]]; then
+elif [[ ${IF_SST_UPDTE} = ${NO} ]]; then
+  echo "SST Update turned off."
   sst_update=0
 else
-  echo "ERROR: \${IF_SST_UPDATE} must equal 'Yes' or 'No' (case insensitive)."
+  echo "ERROR: \${IF_SST_UPDTE} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
 
@@ -296,7 +298,7 @@ fi
 #
 ##################################################################################
 
-work_root=${CYCLE_HOME}/wrfprd/ens_${ens_n}
+work_root=${CYCLE_HOME}/wrfprd/ens_${memid}
 mkdir -p ${work_root}
 cd ${work_root}
 
@@ -320,12 +322,12 @@ rm -f wrfout_*
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   wrfinput=wrfinput_d0${dmn}
-  datestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time}"`
+  datestr=`date +%Y-%m-%d_%H:%M:%S -d "${strt_time}"`
   # if cycling AND analyzing this domain, get initial conditions from last analysis
   if [[ ${IF_CYCLING} = ${YES} && ${dmn} -lt ${DOWN_DOM} ]]; then
     if [[ ${dmn} = 1 ]]; then
       # obtain the boundary files from the lateral boundary update by WRFDA 
-      wrfanlroot="${CYCLE_HOME}/wrfdaprd/lateral_bdy_update/ens_${ens_n}"
+      wrfanlroot="${CYCLE_HOME}/wrfdaprd/lateral_bdy_update/ens_${memid}"
       wrfbdy="${wrfanlroot}/wrfbdy_d01"
       cmd="ln -sf ${wrfbdy} ./wrfbdy_d01"
       echo ${cmd}; eval ${cmd}
@@ -336,7 +338,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 
     else
       # Nested domains have boundary conditions defined by parent
-      if [ ${ens_n} -eq 00 ]; then
+      if [ ${memid} -eq 00 ]; then
 	# control solution is indexed 00, analyzed with GSI
         wrfanl_root="${CYCLE_HOME}/gsiprd/d0${dmn}"
       else
@@ -346,7 +348,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
     fi
 
     # link the wrf inputs
-    wrfanl="${wrfanlroot}/wrfanl_ens_${ens_n}_${datestr}"
+    wrfanl="${wrfanlroot}/wrfanl_ens_${memid}_${datestr}"
     cmd="ln -sf ${wrfanl} ./${wrfinput}"
     echo ${cmd}; eval ${cmd}
     if [ ! -r "./${wrfinput}" ]; then
@@ -356,7 +358,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
 
   else
     # else get initial and boundary conditions from real
-    realroot=${CYCLE_HOME}/realprd/ens_${ens_n}
+    realroot=${CYCLE_HOME}/realprd/ens_${memid}
     if [[ ${dmn} = 1 ]]; then
       # Link the wrfbdy_d01 file from real
       wrfbdy="${realroot}/wrfbdy_d01"
@@ -380,9 +382,9 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
   fi
 
   # NOTE: THIS LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
-  if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
+  if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
     wrflowinp=wrflowinp_d0${dmn}
-    realname=${CYCLE_HOME}/realprd/ens_${ens_n}/${wrflowinp}
+    realname=${CYCLE_HOME}/realprd/ens_${memid}/${wrflowinp}
     cmd="ln -sf ${realname} ./"
     echo ${cmd}; eval ${cmd}
     if [ ! -r ${wrflowinp} ]; then
@@ -414,12 +416,12 @@ namelist=${EXP_CONFIG}/namelists/namelist.${BKG_DATA}
 cp ${namelist} ./namelist.input
 
 # Get the start and end time components
-s_Y=`date +%Y -d "${start_time}"`
-s_m=`date +%m -d "${start_time}"`
-s_d=`date +%d -d "${start_time}"`
-s_H=`date +%H -d "${start_time}"`
-s_M=`date +%M -d "${start_time}"`
-s_S=`date +%S -d "${start_time}"`
+s_Y=`date +%Y -d "${strt_time}"`
+s_m=`date +%m -d "${strt_time}"`
+s_d=`date +%d -d "${strt_time}"`
+s_H=`date +%H -d "${strt_time}"`
+s_M=`date +%M -d "${strt_time}"`
+s_S=`date +%S -d "${strt_time}"`
 e_Y=`date +%Y -d "${end_time}"`
 e_m=`date +%m -d "${end_time}"`
 e_d=`date +%d -d "${end_time}"`
@@ -458,7 +460,7 @@ mv namelist.input.new namelist.input
 
 # Update the restart I/O form in wrf namelist
 cat namelist.input \
-  | sed "s/\(${IO}_${FORM}_${RESTART}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${io_restart}/" \
+  | sed "s/\(${IO}_${FORM}_${RESTART}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${io_rstrt}/" \
   > namelist.input.new
 mv namelist.input.new namelist.input
 
@@ -498,7 +500,7 @@ cat namelist.input \
 mv namelist.input.new namelist.input
 
 # Update data interval in namelist
-(( data_interval_sec = DATA_INTERVAL * 3600 ))
+(( data_interval_sec = DATA_INT * 3600 ))
 cat namelist.input \
   | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
   > namelist.input.new
@@ -510,9 +512,9 @@ cat namelist.input \
   > namelist.input.new
 mv namelist.input.new namelist.input
 
-if [[ ${IF_SST_UPDATE} = ${YES} ]]; then
-  # update the auxinput4_interval to the DATA_INTERVAL
-  (( auxinput4_minutes = DATA_INTERVAL * 60 ))
+if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
+  # update the auxinput4_interval to the DATA_INT
+  (( auxinput4_minutes = DATA_INT * 60 ))
   aux_in="\(${AUXINPUT}4_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}.*"
   aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
   cat namelist.input \
@@ -526,23 +528,22 @@ fi
 ##################################################################################
 # Print run parameters
 echo
-echo "ENS_N         = ${ENS_N}"
-echo "BKG_DATA      = ${BKG_DATA}"
-echo "WRF_ROOT      = ${WRF_ROOT}"
-echo "EXP_CONFIG    = ${EXP_CONFIG}"
-echo "CYCLE_HOME    = ${CYCLE_HOME}"
-echo "DATA_ROOT     = ${DATA_ROOT}"
+echo "EXP_CONFIG   = ${EXP_CONFIG}"
+echo "MEMID        = ${MEMID}"
+echo "BKG_DATA     = ${BKG_DATA}"
+echo "CYCLE_HOME   = ${CYCLE_HOME}"
+echo "DATA_ROOT    = ${DATA_ROOT}"
 echo
-echo "FCST LENGTH   = ${FCST_LENGTH}"
-echo "FCST INTERVAL = ${FCST_INTERVAL}"
-echo "MAX_DOM       = ${MAX_DOM}"
-echo "IF_CYCLING    = ${IF_CYCLING}"
-echo "IF_SST_UPDATE = ${IF_SST_UPDATE}"
-echo "IF_FEEDBACK   = ${IF_FEEDBACK}"
+echo "FCST LENGTH  = ${FCST_LENGTH}"
+echo "FCST INT     = ${FCST_INT}"
+echo "MAX_DOM      = ${MAX_DOM}"
+echo "IF_CYCLING   = ${IF_CYCLING}"
+echo "IF_SST_UPDTE = ${IF_SST_UPDTE}"
+echo "IF_FEEDBACK  = ${IF_FEEDBACK}"
 echo
-echo "START TIME    = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
-echo "END TIME      = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
-echo "CYCLE TIME    = "`date +"%Y/%m/%d %H:%M:%S" -d "${cycle_time}"`
+echo "STRT TIME    = "`date +"%Y/%m/%d %H:%M:%S" -d "${strt_time}"`
+echo "END TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo "CYCLE TIME   = "`date +"%Y/%m/%d %H:%M:%S" -d "${cycle_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
 echo "wrf started at ${now}."
@@ -577,18 +578,18 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
 fi
 
 # ensure that the cycle_io/date/bkg directory exists for starting next cycle
-cycle_intv=`date +%H -d "${CYCLE_INTERVAL}"`
+cycle_intv=`date +%H -d "${CYCLE_INT}"`
 datestr=`date +%Y%m%d%H -d "${cycle_time} ${cycle_intv} hours"`
-new_bkg=${datestr}/bkg/ens_${ens_n}
+new_bkg=${datestr}/bkg/ens_${memid}
 mkdir -p ${CYCLE_HOME}/../${new_bkg}
 
-# Check for all wrfout files on FCST_INTERVAL and link files to
+# Check for all wrfout files on FCST_INT and link files to
 # the appropriate bkg directory
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    datestr=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
+    datestr=`date +%Y-%m-%d_%H:%M:%S -d "${strt_time} ${fcst} hours"`
     if [ ! -s "wrfout_d0${dmn}_${datestr}" ]; then
       msg="WRF failed to complete, wrfout_d0${dmn}_${datestr} "
       msg+="is missing or empty."
@@ -598,7 +599,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       ln -sfr wrfout_d0${dmn}_${datestr} ${CYCLE_HOME}/../${new_bkg}/
     fi
 
-    (( fcst += FCST_INTERVAL ))
+    (( fcst += FCST_INT ))
   done
 
   if [ ! -s "wrfrst_d0${dmn}_${datestr}" ]; then

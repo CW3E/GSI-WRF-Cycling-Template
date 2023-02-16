@@ -65,12 +65,12 @@ if_oneob=No
 grid_ratio=1
 
 # Read constants into the current shell
-if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: \${CONSTANT} does not exist or is not executable."
+if [ ! -x "${CNST}" ]; then
+  echo "ERROR: \${CNST} does not exist or is not executable."
   exit 1
 fi
 
-. ${CONSTANT}
+. ${CNST}
 
 ##################################################################################
 # Make checks for DA method settings
@@ -116,7 +116,7 @@ if [[ ${IF_HYBRID} = ${YES} ]]; then
   if [ ! "${N_ENS}" ]; then
     msg="ERROR: \${N_ENS} must be specified to the number "
     msg+="of ensemble perturbations."
-    echo
+    echo ${msg}
     exit 1
   fi
   if [ ${N_ENS} -lt 2 ]; then
@@ -133,7 +133,7 @@ if [[ ${IF_HYBRID} = ${YES} ]]; then
       exit 1
     fi
   fi
-  echo "GSI performs hybrid ensemble variational DA with ensemble size ${N_ENS}"
+  echo "GSI performs hybrid ensemble variational DA with ensemble size ${N_ENS}."
   echo "Background covariance weight ${BETA}."
   ifhyb=".true."
 elif [[ ${IF_HYBRID} = ${NO} ]]; then
@@ -216,23 +216,23 @@ fi
 ##################################################################################
 # Below variables are defined in cycling.xml workflow variables
 #
-# ANL_TIME   = Analysis time YYYYMMDDHH
-# GSI_EXE    = Path of GSI executable
-# CRTM_ROOT  = Path of CRTM including byte order
-# EXP_CONFIG = Root directory containing sub-directories for namelists
-#              vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HOME = Start time named directory for cycling data containing
-#              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# DATA_ROOT  = Directory for all forcing data files, including grib files,
-#              obs files, etc.
-# ENS_ROOT   = Background ensemble located at ${ENS_ROOT}/ens_${ens_n}/wrfout* 
-# MPIRUN     = MPI Command to execute GSI
-# GSI_PROC   = Number of workers for MPI command to exectute on
+# ANL_TIME  = Analysis time YYYYMMDDHH
+# GSI_EXE   = Path of GSI executable
+# CRTM_ROOT = Path of CRTM including byte order
+# EXP_CNFG  = Root directory containing sub-directories for namelists
+#             vtables, geogrid data, GSI fix files, etc.
+# CYCLE_HME = Start time named directory for cycling data containing
+#             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
+# DATA_ROOT = Directory for all forcing data files, including grib files,
+#             obs files, etc.
+# ENS_ROOT  = Background ensemble located at ${ENS_ROOT}/ens_${ens_n}/wrfout* 
+# MPIRUN    = MPI Command to execute GSI
+# GSI_PROC  = Number of workers for MPI command to exectute on
 #
 # Below variables are derived from control flow variables for convenience
 #
-# anl_iso    = Defined by the ANL_TIME variable, to be used as path
-#              name variable in iso format for wrfout
+# anl_iso   = Defined by the ANL_TIME variable, to be used as path
+#             name variable in iso format for wrfout
 #
 ##################################################################################
 
@@ -241,9 +241,9 @@ if [ ! "${ANL_TIME}" ]; then
   exit 1
 fi
 
-# Convert ANL_TIME from 'YYYYMMDDHH' format to start_time Unix date format
+# Convert ANL_TIME from 'YYYYMMDDHH' format to anl_iso Unix date format
 if [ ${#ANL_TIME} -ne 10 ]; then
-  echo "ERROR: start time, '${ANL_TIME}', is not in 'YYYYMMDDHH' format."
+  echo "ERROR: \${ANL_TIME}, '${ANL_TIME}', is not in 'YYYYMMDDHH' format."
   exit 1
 else
   # Define directory path name variable anl_iso from ANL_TIME
@@ -272,23 +272,23 @@ if [ ! -d "${CRTM_ROOT}" ]; then
   exit 1
 fi
 
-if [ ! ${EXP_CONFIG} ]; then
-  echo "ERROR: \${EXP_CONFIG} is not defined."
+if [ ! ${EXP_CNFG} ]; then
+  echo "ERROR: \${EXP_CNFG} is not defined."
   exit 1
 fi
 
-if [ ! -d ${EXP_CONFIG} ]; then
-  echo "ERROR: \${EXP_CONFIG} directory ${EXP_CONFIG} does not exist."
+if [ ! -d ${EXP_CNFG} ]; then
+  echo "ERROR: \${EXP_CNFG} directory ${EXP_CNFG} does not exist."
   exit 1
 fi
 
-if [ ! "${CYCLE_HOME}" ]; then
-  echo "ERROR: \${CYCLE_HOME} is not defined."
+if [ ! "${CYCLE_HME}" ]; then
+  echo "ERROR: \${CYCLE_HME} is not defined."
   exit 1
 fi
 
-if [ ! -d "${CYCLE_HOME}" ]; then
-  echo "ERROR: \${CYCLE_HOME} directory ${CYCLE_HOME} does not exist."
+if [ ! -d "${CYCLE_HME}" ]; then
+  echo "ERROR: \${CYCLE_HME} directory ${CYCLE_HME} does not exist."
   exit 1
 fi
 
@@ -325,7 +325,7 @@ fi
 if [ -z "${GSI_PROC}" ]; then
   msg="ERROR: The variable \${GSI_PROC} must be set to the "
   msg+="number of processors to run GSI."
-  echo 
+  echo ${msg}
   exit 1
 fi
 
@@ -348,21 +348,21 @@ if [[ ${IF_OBSERVER} = ${NO} ]]; then
   nummiter=2
   if_read_obs_save=".false."
   if_read_obs_skip=".false."
-  work_root=${CYCLE_HOME}/gsiprd
+  work_root=${CYCLE_HME}/gsiprd
   max_dom=${WRF_CTR_DOM}
 else
   echo "GSI is observer for EnKF ensemble."
   nummiter=0
   if_read_obs_save=".true."
   if_read_obs_skip=".false."
-  work_root=${CYCLE_HOME}/enkfprd
+  work_root=${CYCLE_HME}/enkfprd
   max_dom=${WRF_ENS_DOM}
 fi
 
 obs_root=${DATA_ROOT}/obs_data
-fix_root=${EXP_CONFIG}/fix
+fix_root=${EXP_CNFG}/fix
 satlist=${fix_root}/satlist.txt
-gsi_namelist=${EXP_CONFIG}/namelists/comgsi_namelist.sh
+gsi_namelist=${EXP_CNFG}/namelists/comgsi_namelist.sh
 prepbufr_tar=${obs_root}/prepbufr.${anl_date}.nr.tar.gz
 prepbufr_dir=${obs_root}/${anl_date}.nr
 prepbufr=${prepbufr_dir}/prepbufr.gdas.${anl_date}.t${hh}z.nr
@@ -455,7 +455,7 @@ while [ ${dmn} -le ${max_dom} ]; do
 
     # Link to satellite data -- note satlist is assumed two column with prefix
     # for GDAS and GSI conventions in first and second column respectively
-    # leave empty for no satellite assimilation
+    # leave file empty for no satellite assimilation
     srcobsfile=()
     gsiobsfile=()
 
@@ -615,7 +615,7 @@ while [ ${dmn} -le ${max_dom} ]; do
 	echo ${cmd}; eval ${cmd}
       else
         echo "ERROR: CRTM coefficient file ${coeff_file} not readable."
-	exit 1
+        exit 1
       fi
       (( ii += 1 ))
     done
@@ -693,7 +693,7 @@ while [ ${dmn} -le ${max_dom} ]; do
           fi
         else
           echo "Tar ${tar_file} of GDAS bias corrections not readable."
-            exit 1
+          exit 1
         fi
 	(( ii +=1 ))
       done
@@ -723,7 +723,7 @@ while [ ${dmn} -le ${max_dom} ]; do
 	  echo ${cmd}; eval ${cmd}
         else
           echo "Bias file ${bias_file} variational bias corrections not readable."
-            exit 1
+          exit 1
         fi
 	(( ii +=1 ))
       done
@@ -738,7 +738,7 @@ while [ ${dmn} -le ${max_dom} ]; do
     #
     ##################################################################################
 
-    bkg_dir="${CYCLE_HOME}/wrfdaprd/lower_bdy_update/ens_00"
+    bkg_dir="${CYCLE_HME}/wrfdaprd/lower_bdy_update/ens_00"
     bkg_file="${bkg_dir}/wrfout_d0${dmn}_${anl_iso}"
 
     if [ ! -r "${bkg_file}" ]; then
@@ -771,22 +771,22 @@ while [ ${dmn} -le ${max_dom} ]; do
       if [ ${dmn} -le ${WRF_ENS_DOM} ]; then
         # take ensemble generated by WRF members
         echo " Copy ensemble perturbations to working directory."
-        ens_n=1
+        ens_loop=1
 
-        while [ ${ens_n} -le ${N_ENS} ]; do
+        while [ ${ens_loop} -le ${N_ENS} ]; do
           # two zero padding for GEFS
-          iimem=`printf %02d $(( 10#${ens_n} ))`
+          memid=`printf %02d $(( 10#${ens_loop} ))`
 	  # NOTE: THIS NEEDS TO BE REVISED LATER FOR BETTER GENERALITY
-          ens_file=${ENS_ROOT}/bkg/ens_${iimem}/wrfout_d0${dmn}_${anl_iso}
+          ens_file=${ENS_ROOT}/bkg/ens_${memid}/wrfout_d0${dmn}_${anl_iso}
 
           if [ -r ${ens_file} ]; then
-            cmd="ln -sf ${ens_file} ./wrf_ens_${iimem}"
+            cmd="ln -sf ${ens_file} ./wrf_ens_${memid}"
 	    echo ${cmd}; eval ${cmd}
           else
             echo "ERROR: ensemble file ${ens_file} does not exist."
             exit 1
           fi
-          (( ens_n += 1 ))
+          (( ens_loop += 1 ))
         done
 
         ls ./wrf_ens_* > filelist02
@@ -849,8 +849,8 @@ while [ ${dmn} -le ${max_dom} ]; do
     echo "ANL_TIME          = ${ANL_TIME}"
     echo "GSI_EXE           = ${GSI_EXE}"
     echo "CRTM_ROOT         = ${CRTM_ROOT}"
-    echo "EXP_CONFIG        = ${EXP_CONFIG}"
-    echo "CYCLE_HOME        = ${CYCLE_HOME}"
+    echo "EXP_CNFG          = ${EXP_CNFG}"
+    echo "CYCLE_HME         = ${CYCLE_HME}"
     echo "DATA_ROOT         = ${DATA_ROOT}"
     echo "BKG               = ${bkg_file}"
     echo "ENS_ROOT          = ${ENS_ROOT}"
@@ -954,47 +954,47 @@ while [ ${dmn} -le ${max_dom} ]; do
 
       # Loop through each member
       loop="01"
-      ens_n=1
+      ens_loop=1
 
-      while [[ ${ens_n} -le ${N_ENS} ]]; do
+      while [[ ${ens_loop} -le ${N_ENS} ]]; do
         rm pe0*
-        echo "\${ens_n} is ${ens_n}."
-        iimem=`printf %02d $(( 10#${ens_n} ))`
+        echo "\${ens_loop} is ${ens_loop}."
+        memid=`printf %02d $(( 10#${ens_loop} ))`
 
         # get new background for each member
         if [[ -f wrf_inout ]]; then
           rm wrf_inout
         fi
 
-        ens_file="./wrf_ens_${iimem}"
+        ens_file="./wrf_ens_${memid}"
         echo "Copying ${ens_file} for GSI observer."
         cmd="cp ${ens_file} wrf_inout"
 	echo ${cmd}; eval ${cmd}
 
         # run GSI
-        echo "Run GSI observer for member ${iimem}."
-        cmd="${MPIRUN} ${GSI_EXE} > stdout_ens_${iimem}.anl.${anl_iso} 2>&1"
+        echo "Run GSI observer for member ${memid}."
+        cmd="${MPIRUN} ${GSI_EXE} > stdout_ens_${memid}.anl.${anl_iso} 2>&1"
 	echo ${cmd}; eval ${cmd}
 
         # run time error check and save run time file status
         error=$?
 
         if [ ${error} -ne 0 ]; then
-          echo "ERROR: ${GSI_EXE} exited with status ${error} for member ${iimem}."
+          echo "ERROR: ${GSI_EXE} exited with status ${error} for member ${memid}."
           exit ${error}
         fi
 
-        ls -l * > list_run_directory_mem${iimem}
+        ls -l * > list_run_directory_mem${memid}
 
         # generate diag files
         for type in ${listall}; do
           count=`ls pe*${type}_${loop}* | wc -l`
           if [[ ${count} -gt 0 ]]; then
-            cat pe*${type}_${loop}* > diag_${type}_${string}.mem${iimem}
+            cat pe*${type}_${loop}* > diag_${type}_${string}.mem${memid}
           fi
         done
         # next member
-        (( ens_n += 1 ))
+        (( ens_loop += 1 ))
       done
     fi
 

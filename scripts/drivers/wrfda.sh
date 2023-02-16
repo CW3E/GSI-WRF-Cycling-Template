@@ -1,4 +1,4 @@
-CTRbin/bash
+#!/bin/bash
 ##################################################################################
 # Description
 ##################################################################################
@@ -39,31 +39,31 @@ CTRbin/bash
 # uncomment to run verbose for debugging / testing
 set -x
 
-if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: constants file ${CONSTANT} does not exist or is not executable."
+if [ ! -x "${CNST}" ]; then
+  echo "ERROR: constants file ${CNST} does not exist or is not executable."
   exit 1
 fi
 
 # Read constants into the current shell
-. ${CONSTANT}
+. ${CNST}
 
 ##################################################################################
 # Make checks for WRFDA settings
 ##################################################################################
 # Options below are defined in control flow xml
 #
-# N_ENS         = Max ensemble index (use 00 for control alone)
-# ANL_TIME      = Analysis time YYYYMMDDHH
-# IF_ENS_UPDATE = Skip lower / lateral BC updates if "No"
-# BOUNDARY      = 'LOWER' if updating lower boundary conditions 
-#                 'LATERAL' if updating lateral boundary conditions
-# WRF_CTR_DOM   = Max domain index of control forecast
-# WRF_ENS_DOM   = Max domain index of ensemble perturbations
+# N_ENS        = Max ensemble index (use 00 for control alone)
+# ANL_TIME     = Analysis time YYYYMMDDHH
+# IF_ENS_UPDTE = Skip lower / lateral BC updates if "No"
+# BOUNDARY     = 'LOWER' if updating lower boundary conditions 
+#                'LATERAL' if updating lateral boundary conditions
+# WRF_CTR_DOM  = Max domain index of control forecast
+# WRF_ENS_DOM  = Max domain index of ensemble perturbations
 #
 # Below variabs are derived by control flow variables for convenience
 #
-# anl_iso       = Defined by the ANL_TIME variable, to be used as path
-#                 name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
+# anl_iso      = Defined by the ANL_TIME variable, to be used as path
+#                name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
 #
 ##################################################################################
 
@@ -79,17 +79,16 @@ fi
 
 # Convert ANL_TIME from 'YYYYMMDDHH' format to anl_iso iso format
 if [ ${#ANL_TIME} -ne 10 ]; then
-  echo "ERROR: \${ANL_TIME}, '${ANL_TIME}', is not in 'YYYYMMDDHH' format." 
+  echo "ERROR: \${ANL_TIME}, '${ANL_TIME}', is not in 'YYYYMMDDHH' format."
   exit 1
 else
-  start_time="${START_TIME:0:8} ${START_TIME:8:2}"
   anl_date=${ANL_TIME:0:8}
   hh=${ANL_TIME:8:2}
   anl_iso=`date +%Y-%m-%d_%H:%M:%S -d "${anl_date} ${hh} hours"`
 fi
 
-if [[ ${IF_ENS_UPDATE} != ${YES} && ${IF_ENS_UPDATE} != ${NO} ]]; then
-  echo "ERROR: \${IF_ENS_UPDATE} must equal 'Yes' or 'No' (case insensitive)."
+if [[ ${IF_ENS_UPDTE} != ${YES} && ${IF_ENS_UPDTE} != ${NO} ]]; then
+  echo "ERROR: \${IF_ENS_UPDTE} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
 
@@ -114,9 +113,9 @@ fi
 # Below variables are defined in control flow variables
 #
 # WRFDA_ROOT = Root directory of a WRFDA build 
-# EXP_CONFIG = Root directory containing sub-directories for namelists
+# EXP_CNFG   = Root directory containing sub-directories for namelists
 #              vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HOME = Start time named directory for cycling data containing
+# CYCLE_HME  = Start time named directory for cycling data containing
 #              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # ENS_ROOT   = Forecast ensemble located at ${ENS_ROOT}/ens_${ens_n}/wrfout* 
 #
@@ -132,13 +131,13 @@ if [ ! -d "${WRFDA_ROOT}" ]; then
   exit 1
 fi
 
-if [ ! -d ${EXP_CONFIG} ]; then
-  echo "ERROR: \${EXP_CONFIG} directory ${EXP_CONFIG} does not exist."
+if [ ! -d ${EXP_CNFG} ]; then
+  echo "ERROR: \${EXP_CNFG} directory ${EXP_CNFG} does not exist."
   exit 1
 fi
 
-if [ -z ${CYCLE_HOME} ]; then
-  echo "ERROR: \${CYCLE_HOME} directory name is not defined."
+if [ -z ${CYCLE_HME} ]; then
+  echo "ERROR: \${CYCLE_HME} directory name is not defined."
   exit 1
 fi
 
@@ -167,24 +166,24 @@ fi
 #
 ##################################################################################
 
-if [[ ${IF_ENS_UPDATE} = ${NO} ]]; then
+if [[ ${IF_ENS_UPDTE} = ${NO} ]]; then
   # skip the boundary updates for the ensemble, perform on control alone
-  n_ens=0
+  ens_max=0
 else
-  # perform over the entire ensemble
-  n_ens=`printf $(( 10#${N_ENS} ))`
+  # perform over the entire ensemble (ensure base 10 for padded indices)
+  ens_max=`printf $(( 10#${N_ENS} ))`
 fi
 
-ens_n=0
+ens_loop=0
 
-while [ ${ens_n} -le ${n_ens} ]; do
+while [ ${ens_loop} -le ${ens_max} ]; do
   # define two zero padded string for GEFS 
-  iimem=`printf %02d $(( 10#${ens_n} ))`
+  memid=`printf %02d $(( 10#${ens_loop} ))`
 
-  work_root=${CYCLE_HOME}/wrfdaprd
-  real_dir=${CYCLE_HOME}/realprd/ens_${iimem}
-  gsi_dir=${CYCLE_HOME}/gsiprd
-  enkf_dir=${CYCLE_HOME}/enkfprd
+  work_root=${CYCLE_HME}/wrfdaprd
+  real_dir=${CYCLE_HME}/realprd/ens_${memid}
+  gsi_dir=${CYCLE_HME}/gsiprd
+  enkf_dir=${CYCLE_HME}/enkfprd
   update_bc_exe=${WRFDA_ROOT}/var/da/da_update_bc.exe
   
   if [ ! -d ${real_dir} ]; then
@@ -202,7 +201,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
   
   if [[ ${BOUNDARY} = ${LOWER} ]]; then 
     # create working directory and cd into it
-    work_root=${work_root}/lower_bdy_update/ens_${iimem}
+    work_root=${work_root}/lower_bdy_update/ens_${memid}
     mkdir -p ${work_root}
     cmd="cd ${work_root}"
     echo ${cmd}
@@ -212,20 +211,22 @@ while [ ${ens_n} -le ${n_ens} ]; do
     rm -f wrfout_*
     rm -f wrfinput_d0*
   
+    if [ ${ens_loop} -eq 0 ]; then 
+      # control background sourced from last cycle background
+      bkg_dir=${CYCLE_HME}/bkg/ens_${memid}
+      max_dom=${WRF_CTR_DOM}
+    else
+      # perturbation background sourced from ensemble root
+      bkg_dir=${ENS_ROOT}/bkg/ens_${memid}
+      max_dom=${WRF_ENS_DOM}
+    fi
+
     # verify forecast data root
     if [ ! -d ${bkg_dir} ]; then
       echo "ERROR: \${bkg_dir} directory ${bkg_dir} does not exist."
       exit 1
     fi
     
-    if [ ${ens_n} -eq 0 ]; then 
-      bkg_dir=${CYCLE_HOME}/bkg/ens_${iimem}
-      max_dom=${WRF_CTR_DOM}
-    else
-      bkg_dir=${ENS_ROOT}/bkg/ens_${iimem}
-      max_dom=${WRF_ENS_DOM}
-    fi
-
     # Check to make sure the input files are available and copy them
     echo "Copying background and input files."
     while [ ${dmn} -le ${max_dom} ]; do
@@ -240,8 +241,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
         exit 1
       else
         cmd="cp ${bkg_dir}/${wrfout} ./"
-	echo ${cmd}
-	eval ${cmd}
+	echo ${cmd}; eval ${cmd}
       fi
   
       if [ ! -r "${real_dir}/${wrfnput}" ]; then
@@ -249,17 +249,15 @@ while [ ${ens_n} -le ${n_ens} ]; do
         exit 1
       else
         cmd="cp ${real_dir}/${wrfinput} ./"
-	echo ${cmd}
-	eval ${cmd}
+	echo ${cmd}; eval ${cmd}
       fi
   
       ##################################################################################
       #  Build da_update_bc namelist
       ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-      cmd="cp ${EXP_CONFIG}/namelists/parame.in ./"
-      echo ${cmd}
-      eval ${cmd}
+      cmd="cp ${EXP_CNFG}/namelists/parame.in ./"
+      echo ${cmd}; eval ${cmd}
   
       # Update the namelist for the domain id 
       cat parame.in \
@@ -279,12 +277,12 @@ while [ ${ens_n} -le ${n_ens} ]; do
   
       # Update the namelist for lower boundary update 
       cat parame.in \
-	 | sed "s/\(${UPDATE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
+	 | sed "s/\(${UPDTE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
          > parame.in.new
       mv parame.in.new parame.in
   
       cat parame.in \
-	 | sed "s/\(${UPDATE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
+	 | sed "s/\(${UPDTE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
          > parame.in.new
       mv parame.in.new parame.in
   
@@ -293,15 +291,13 @@ while [ ${ens_n} -le ${n_ens} ]; do
       ##################################################################################
       # Print run parameters
       echo
-      echo "ENS_N      = ${iimem}"
-      echo "WRFDA_ROOT = ${WRFDA_ROOT}"
-      echo "EXP_CONFIG = ${EXP_CONFIG}"
-      echo "CYCLE_HOME = ${CYCLE_HOME}"
-      echo "ENS_ROOT   = ${ENS_ROOT}"
-      echo
+      echo "ENS_N      = ${memid}"
       echo "BOUNDARY   = ${BOUNDARY}"
       echo "DOMAIN     = ${dmn}"
-      echo "ENS_N      = ${ens_n}"
+      echo "WRFDA_ROOT = ${WRFDA_ROOT}"
+      echo "EXP_CNFG = ${EXP_CNFG}"
+      echo "CYCLE_HME = ${CYCLE_HME}"
+      echo "ENS_ROOT   = ${ENS_ROOT}"
       echo
       now=`date +%Y%m%d%H%M%S`
       echo "da_update_bc.exe started at ${now}."
@@ -316,43 +312,41 @@ while [ ${ens_n} -le ${n_ens} ]; do
         echo "ERROR: ${update_bc_exe} exited with status ${error}."
         exit ${error}
       fi
-  
       # move forward through domains
       (( dmn += 1 ))
     done
   
   else
     # create working directory and cd into it
-    work_root=${work_root}/lateral_bdy_update/ens_${iimem}
+    work_root=${work_root}/lateral_bdy_update/ens_${memid}
     mkdir -p ${work_root}
     cmd="cd ${work_root}"
-    echo ${cmd}
-    eval ${cmd}
+    echo ${cmd}; eval ${cmd}
     
     # Remove IC/BC in the directory if old data present
     rm -f wrfout_*
     rm -f wrfinput_d0*
     rm -f wrfbdy_d01
 
-    if [ ${ens_n} -eq 0 ]; then
+    if [ ${ens_loop} -eq 0 ]; then
       if [ ! -d ${gsi_dir} ]; then
         echo "ERROR: \${gsi_dir} directory ${gsi_dir} does not exist."
         exit 1
       else
-        wrfanl=${gsi_dir}/d01/wrfanl_ens_${iimem}_${anl_iso}
+        wrfanl=${gsi_dir}/d01/wrfanl_ens_${memid}_${anl_iso}
       fi
     else
       if [ ! -d ${enkf_dir} ]; then
-        echo "ERROR: \${enkf_dir directory} ${enkf_dir} does not exist."
+        echo "ERROR: \${enkf_dir} directory ${enkf_dir} does not exist."
         exit 1
       else
         # NOTE: ENKF SCRIPT NEED TO UPDATE OUTPUT NAMING CONVENTIONS
-        wrfanl=${enkf_dir}/d01/wrfanl_ens_${iimem}_${anl_iso}
+        wrfanl=${enkf_dir}/d01/wrfanl_ens_${memid}_${anl_iso}
       fi
     fi
 
     wrfbdy=${real_dir}/wrfbdy_d01
-    wrfvar_outname=wrfanl_ens_${iimem}_${anl_iso}
+    wrfvar_outname=wrfanl_ens_${memid}_${anl_iso}
     wrfbdy_name=wrfbdy_d01
   
     if [ ! -r "${wrfanl}" ]; then
@@ -360,8 +354,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
       exit 1
     else
       cmd="cp ${wrfanl} ${wrfvar_outname}"
-      echo ${cmd}
-      eval ${cmd}
+      echo ${cmd}; eval ${cmd}
     fi
   
     if [ ! -r "${wrfbdy}" ]; then
@@ -369,17 +362,15 @@ while [ ${ens_n} -le ${n_ens} ]; do
       exit 1
     else
       cmd="cp ${wrfbdy} ${wrfbdy_name}"
-      echo ${cmd}
-      eval ${cmd}
+      echo ${cmd}; eval ${cmd}
     fi
   
     ##################################################################################
     #  Build da_update_bc namelist
     ##################################################################################
     # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-    cmd="cp ${EXP_CONFIG}/namelists/parame.in ./"
-    echo ${cmd}
-    eval ${cmd}
+    cmd="cp ${EXP_CNFG}/namelists/parame.in ./"
+    echo ${cmd}; eval ${cmd}
   
     # Update the namelist for the domain id 
     cat parame.in \
@@ -414,9 +405,8 @@ while [ ${ens_n} -le ${n_ens} ]; do
     # Print run parameters
     echo
     echo "WRFDA_ROOT = ${WRFDA_ROOT}"
-    echo "EXP_CONFIG = ${EXP_CONFIG}"
-    echo "EXP_CONFIG = ${EXP_CONFIG}"
-    echo "CYCLE_HOME = ${CYCLE_HOME}"
+    echo "EXP_CNFG = ${EXP_CNFG}"
+    echo "CYCLE_HME = ${CYCLE_HME}"
     echo "ENS_ROOT   = ${ENS_ROOT}"
     echo
     echo "BOUNDARY   = ${BOUNDARY}"
@@ -439,7 +429,7 @@ while [ ${ens_n} -le ${n_ens} ]; do
     
   fi
 
-  (( ens_n += 1 ))
+  (( ens_loop += 1 ))
 done
 
 echo "wrfda.sh completed successfully at `date`."
