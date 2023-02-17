@@ -89,13 +89,14 @@
 # uncomment to run verbose for debugging / testing
 set -x
 
-if [ ! -x "${CNST}" ]; then
+if [ ! -x ${CNST} ]; then
   echo "ERROR: constants file ${CNST} does not exist or is not executable."
   exit 1
 fi
 
 # Read constants into the current shell
-. ${CNST}
+cmd=". ${CNST}"
+echo ${cmd}; eval ${cmd}
 
 ##################################################################################
 # Make checks for real settings
@@ -104,16 +105,18 @@ fi
 #
 # MEMID        = Ensemble ID index, 00 for control, i > 00 for perturbation
 # BKG_DATA     = String case variable for supported inputs: GFS, GEFS currently
-# FCST_LEN     = Total length of WRF forecast simulation in HH
-# DATA_INT     = Interval of input data in HH
+# BKG_INT      = Interval of input data in HH
 # STRT_TIME    = Simulation start time in YYMMDDHH
+# IF_DYN_LEN   = "Yes" or "No" switch to compute forecast length dynamically 
+# FCST_HRS     = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
+# EXP_VRF      = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
 # MAX_DOM      = Max number of domains to use in namelist settings
 # IF_SST_UPDTE = "Yes" or "No" switch to compute dynamic SST forcing, (must
 #                include auxinput4 path and timing in namelist) case insensitive
 #
 ##################################################################################
 
-if [ ! "${MEMID}"  ]; then
+if [ ! ${MEMID}  ]; then
   echo "ERROR: \${MEMID} is not defined."
   exit 1
 fi
@@ -121,42 +124,55 @@ fi
 # ensure padding to two digits is included
 memid=`printf %02d $(( 10#${MEMID} ))`
 
-if [ ! "${BKG_DATA}"  ]; then
+if [ ! ${BKG_DATA}  ]; then
   echo "ERROR: \${BKG_DATA} is not defined."
   exit 1
 fi
 
-if [[ "${BKG_DATA}" != "GFS" &&  "${BKG_DATA}" != "GEFS" ]]; then
+if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
   msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
   msg+=" as currently supported inputs."
   echo ${msg}
   exit 1
 fi
 
-if [ ! "${FCST_LEN}" ]; then
-  echo "ERROR: \${FCST_LEN} is not defined."
+if [ ! ${FCST_HRS} ]; then
+  echo "ERROR: \${FCST_HRS} is not defined."
   exit 1
 fi
 
-if [ ! "${DATA_INT}" ]; then
-  echo "ERROR: \${DATA_INT} is not defined."
+if [ ! ${BKG_INT} ]; then
+  echo "ERROR: \${BKG_INT} is not defined."
   exit 1
 fi
 
-if [ ! "${STRT_TIME}" ]; then
-  echo "ERROR: \${STRT_TIME} is not defined."
-  exit 1
-fi
-
-# Convert STRT_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
-if [ ${#STRT_TIME} -ne 10 ]; then
-  echo "ERROR: \${STRT_TIME}, '${STRT_TIME}', is not in 'YYYYMMDDHH' format." 
-  exit 1
+if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
+  echo "Generating fixed length forecast forcing data."
+  if [ ! ${FCST_HRS} ]; then
+    echo "ERROR: \${FCST_HRS} is not defined."
+    exit 1
+  else
+    # parse forecast hours as base 10 padded
+    fcst_len=`printf %03d $(( 10#${FCST_HRS} ))`
+  fi
+elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
+  echo "Generating forecast forcing data until experiment validation time."
+  if [ ${#EXP_VRF} -ne 10 ]; then
+    echo "ERROR: \${EXP_VRF}, `${EXP_VRF}` is not in 'YYYMMDDHH' format."
+    exit 1
+  else
+    # compute forecast length relative to start time and verification time
+    exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
+    exp_vrf=`date +%s -d "${exp_vrf}"`
+    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_time}"`) / 3600 ))
+    fcst_len=`printf %03d $(( 10#${fcst_len} ))`
+  fi
 else
-  strt_time="${STRT_TIME:0:8} ${STRT_TIME:8:2}"
+  echo "\${IF_DYN_LEN} must be set to 'Yes' or 'No' (case insensitive)."
+  exit 1
 fi
-strt_time=`date -d "${strt_time}"`
-end_time=`date -d "${strt_time} ${FCST_LEN} hours"`
+
+end_time=`date -d "${strt_time} ${fcst_len} hours"`
 
 if [ ! ${MAX_DOM} ]; then
   echo "ERROR: \${MAX_DOM} is not defined."
@@ -184,8 +200,8 @@ fi
 #             vtables, geogrid data, GSI fix files, etc.
 # CYCLE_HME = Start time named directory for cycling data containing
 #             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# MPIRUN    = MPI Command to execute real 
-# WPS_PROC  = The total number of processes to run real.exe with MPI
+# MPIRUN    = MPI multiprocessing evaluation call, machine specific
+# N_PROC  = The total number of processes to run real.exe with MPI
 #
 ##################################################################################
 
@@ -214,13 +230,13 @@ if [ ! "${MPIRUN}" ]; then
   exit 1
 fi
 
-if [ ! "${WPS_PROC}" ]; then
-  echo "ERROR: \${WPS_PROC} is not defined."
+if [ ! "${N_PROC}" ]; then
+  echo "ERROR: \${N_PROC} is not defined."
   exit 1
 fi
 
-if [ -z "${WPS_PROC}" ]; then
-  msg="ERROR: The variable \${WPS_PROC} must be set to the number"
+if [ -z "${N_PROC}" ]; then
+  msg="ERROR: The variable \${N_PROC} must be set to the number"
   msg+=" of processors to run real."
   echo ${msg}
   exit 1
@@ -265,8 +281,8 @@ rm -f wrfbdy_d01
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   fcst=0
-  while [ ${fcst} -le ${FCST_LEN} ]; do
-    time_str=`date "+%Y-%m-%d_%H:%M:%S" -d "${strt_time} ${fcst} hours"`
+  while [ ${fcst} -le ${FCST_HRS} ]; do
+    time_str=`date "+%Y-%m-%d_%H_%M_%S" -d "${strt_time} ${fcst} hours"`
     realinput_name=met_em.d0${dmn}.${time_str}.nc
     wps_dir=${CYCLE_HME}/wpsprd/ens_${memid}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then
@@ -274,7 +290,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       exit 1
     fi
     ln -sf ${wps_dir}/${realinput_name} ./
-    (( fcst += DATA_INT ))
+    (( fcst += BKG_INT ))
   done
   (( dmn += 1 ))
 done
@@ -314,8 +330,8 @@ e_M=`date +%M -d "${end_time}"`
 e_S=`date +%S -d "${end_time}"`
 
 # Compute number of days and hours for the run
-(( run_days = FCST_LEN / 24 ))
-(( run_hours = FCST_LEN % 24 ))
+(( run_days = FCST_HRS / 24 ))
+(( run_hours = FCST_HRS % 24 ))
 
 # Update max_dom in namelist
 in_dom="\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}"
@@ -360,7 +376,7 @@ cat namelist.input \
 mv namelist.input.new namelist.input
 
 # Update interval in namelist
-(( data_interval_sec = DATA_INT * 3600 ))
+(( data_interval_sec = BKG_INT * 3600 ))
 cat namelist.input \
   | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
   > namelist.input.new
@@ -373,8 +389,8 @@ cat namelist.input \
 mv namelist.input.new namelist.input
 
 if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
-  # update the auxinput4_interval to the DATA_INT
-  (( auxinput4_minutes = DATA_INT * 60 ))
+  # update the auxinput4_interval to the BKG_INT
+  (( auxinput4_minutes = BKG_INT * 60 ))
   aux_in="\(${AUXINPUT}4_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}.*"
   aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
   cat namelist.input \
@@ -391,19 +407,19 @@ echo
 echo "EXP_CNFG     = ${EXP_CNFG}"
 echo "MEMID        = ${MEMID}"
 echo "CYCLE_HME    = ${CYCLE_HME}"
-echo "DATA INT     = ${DATA_INT}"
-echo "FCST LEN     = ${FCST_LEN}"
+echo "BKG_INT      = ${BKG_INT}"
+echo "FCST_HRS     = ${FCST_HRS}"
 echo
 echo "BKG_DATA     = ${BKG_DATA}"
 echo "MAX_DOM      = ${MAX_DOM}"
 echo "IF_SST_UPDTE = ${IF_SST_UPDTE}"
-echo "STRT_TIME    = "`date +"%Y/%m/%d %H:%M:%S" -d "${strt_time}"`
-echo "END_TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
+echo "STRT_TIME    = "`date +"%Y/%m/%d %H_%M_%S" -d "${strt_time}"`
+echo "END_TIME     = "`date +"%Y/%m/%d %H_%M_%S" -d "${end_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
 echo "real started at ${now}."
 
-${MPIRUN} -n ${WPS_PROC} ${real_exe}
+${MPIRUN} -n ${N_PROC} ${real_exe}
 
 ##################################################################################
 # Run time error check
@@ -424,7 +440,7 @@ fi
 
 # Look for successful completion messages in rsl files
 nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE REAL/' | wc -l`
-(( ntotal = WPS_PROC * 2 ))
+(( ntotal = N_PROC * 2 ))
 echo "Found ${nsuccess} of ${ntotal} completion messages."
 if [ ${nsuccess} -ne ${ntotal} ]; then
   msg="ERROR: ${real_exe} did not complete sucessfully, missing "

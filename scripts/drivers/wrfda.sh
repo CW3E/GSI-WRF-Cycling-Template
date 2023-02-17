@@ -63,7 +63,7 @@ fi
 # Below variabs are derived by control flow variables for convenience
 #
 # anl_iso      = Defined by the ANL_TIME variable, to be used as path
-#                name variable in YYYY-MM-DD_HH:MM:SS format for wrfout
+#                name variable in YYYY-MM-DD_HH_MM_SS format for wrfout
 #
 ##################################################################################
 
@@ -84,7 +84,7 @@ if [ ${#ANL_TIME} -ne 10 ]; then
 else
   anl_date=${ANL_TIME:0:8}
   hh=${ANL_TIME:8:2}
-  anl_iso=`date +%Y-%m-%d_%H:%M:%S -d "${anl_date} ${hh} hours"`
+  anl_iso=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
 fi
 
 if [[ ${IF_ENS_UPDTE} != ${YES} && ${IF_ENS_UPDTE} != ${NO} ]]; then
@@ -242,9 +242,11 @@ while [ ${ens_loop} -le ${ens_max} ]; do
       else
         cmd="cp ${bkg_dir}/${wrfout} ./"
 	echo ${cmd}; eval ${cmd}
+	#NOTE FOR DEBUGGING
+        exit 1
       fi
   
-      if [ ! -r "${real_dir}/${wrfnput}" ]; then
+      if [ ! -r "${real_dir}/${wrfinput}" ]; then
         echo "ERROR: Input file '${real_dir}/${wrfinput}' is missing."
         exit 1
       else

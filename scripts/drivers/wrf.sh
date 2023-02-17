@@ -109,7 +109,7 @@ fi
 # MEMID        = Ensemble ID index, 00 for control, i > 00 for perturbation
 # BKG_DATA     = String case variable for supported inputs: GFS, GEFS currently
 # FCST_LENGTH  = Total length of WRF forecast simulation in HH
-# FCST_INT     = Interval of wrfout.d01 in HH
+# WFOUT_INT     = Interval of wrfout.d01 in HH
 # DATA_INT     = Interval of input data in HH
 # CYCLE_INT    = Interval in HH on which DA is cycled in a cycling control flow
 # STRT_TIME    = Simulation start time in YYMMDDHH
@@ -149,8 +149,8 @@ if [ ! ${FCST_LENGTH} ]; then
   exit 1
 fi
 
-if [ ! ${FCST_INT} ]; then
-  echo "ERROR: \${FCST_INT} is not defined."
+if [ ! ${WFOUT_INT} ]; then
+  echo "ERROR: \${WFOUT_INT} is not defined."
   exit 1
 fi
 
@@ -322,7 +322,7 @@ rm -f wrfout_*
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   wrfinput=wrfinput_d0${dmn}
-  datestr=`date +%Y-%m-%d_%H:%M:%S -d "${strt_time}"`
+  datestr=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
   # if cycling AND analyzing this domain, get initial conditions from last analysis
   if [[ ${IF_CYCLING} = ${YES} && ${dmn} -lt ${DOWN_DOM} ]]; then
     if [[ ${dmn} = 1 ]]; then
@@ -535,15 +535,15 @@ echo "CYCLE_HOME   = ${CYCLE_HOME}"
 echo "DATA_ROOT    = ${DATA_ROOT}"
 echo
 echo "FCST LENGTH  = ${FCST_LENGTH}"
-echo "FCST INT     = ${FCST_INT}"
+echo "FCST INT     = ${WFOUT_INT}"
 echo "MAX_DOM      = ${MAX_DOM}"
 echo "IF_CYCLING   = ${IF_CYCLING}"
 echo "IF_SST_UPDTE = ${IF_SST_UPDTE}"
 echo "IF_FEEDBACK  = ${IF_FEEDBACK}"
 echo
-echo "STRT TIME    = "`date +"%Y/%m/%d %H:%M:%S" -d "${strt_time}"`
-echo "END TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
-echo "CYCLE TIME   = "`date +"%Y/%m/%d %H:%M:%S" -d "${cycle_time}"`
+echo "STRT TIME    = "`date +"%Y/%m/%d %H_%M_%S" -d "${strt_time}"`
+echo "END TIME     = "`date +"%Y/%m/%d %H_%M_%S" -d "${end_time}"`
+echo "CYCLE TIME   = "`date +"%Y/%m/%d %H_%M_%S" -d "${cycle_time}"`
 echo
 now=`date +%Y%m%d%H%M%S`
 echo "wrf started at ${now}."
@@ -583,13 +583,13 @@ datestr=`date +%Y%m%d%H -d "${cycle_time} ${cycle_intv} hours"`
 new_bkg=${datestr}/bkg/ens_${memid}
 mkdir -p ${CYCLE_HOME}/../${new_bkg}
 
-# Check for all wrfout files on FCST_INT and link files to
+# Check for all wrfout files on WFOUT_INT and link files to
 # the appropriate bkg directory
 dmn=1
 while [ ${dmn} -le ${MAX_DOM} ]; do
   fcst=0
   while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    datestr=`date +%Y-%m-%d_%H:%M:%S -d "${strt_time} ${fcst} hours"`
+    datestr=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time} ${fcst} hours"`
     if [ ! -s "wrfout_d0${dmn}_${datestr}" ]; then
       msg="WRF failed to complete, wrfout_d0${dmn}_${datestr} "
       msg+="is missing or empty."
@@ -599,7 +599,7 @@ while [ ${dmn} -le ${MAX_DOM} ]; do
       ln -sfr wrfout_d0${dmn}_${datestr} ${CYCLE_HOME}/../${new_bkg}/
     fi
 
-    (( fcst += FCST_INT ))
+    (( fcst += WFOUT_INT ))
   done
 
   if [ ! -s "wrfrst_d0${dmn}_${datestr}" ]; then

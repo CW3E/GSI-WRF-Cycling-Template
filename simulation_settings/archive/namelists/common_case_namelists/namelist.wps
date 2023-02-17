@@ -1,8 +1,8 @@
 &share
  wrf_core = 'ARW',
  max_dom = 2,
- start_date = '2019-02-08_00:00:00', '2019-02-08_00:00:00',
- end_date   = '2019-02-16_23:00:00', '2019-02-16_23:00:00',
+ start_date = '2019-02-08_00_00_00', '2019-02-08_00_00_00',
+ end_date   = '2019-02-16_23_00_00', '2019-02-16_23_00_00',
  interval_seconds = 3600,
  io_form_geogrid = 2,
  debug_level = 0,
@@ -38,4 +38,5 @@
  ! ERA5 setting !
  !fg_name = 'FILE', 'PRES'
  io_form_metgrid = 2,
+ nocolons                            = .true.,
 /

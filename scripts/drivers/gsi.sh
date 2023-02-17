@@ -249,7 +249,7 @@ else
   # Define directory path name variable anl_iso from ANL_TIME
   hh=${ANL_TIME:8:2}
   anl_date=${ANL_TIME:0:8}
-  anl_iso=`date +%Y-%m-%d_%H:%M:%S -d "${anl_date} ${hh} hours"`
+  anl_iso=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
 fi
 
 if [ ! "${GSI_EXE}" ]; then
@@ -757,8 +757,8 @@ while [ ${dmn} -le ${max_dom} ]; do
     # cyca=`echo ${ANL_TIME} | cut -c9-10`
     # gdate=`date -u -d "${PDYa} ${cyca} -6 hour" +%Y%m%d%H` #guess date is 6hr ago
     # gHH=`echo ${gdate} |cut -c9-10`
-    # datem1=`date -u -d "${PDYa} ${cyca} -1 hour" +%Y-%m-%d_%H:%M:%S` #1hr ago
-    # datep1=`date -u -d "${PDYa} ${cyca} 1 hour"  +%Y-%m-%d_%H:%M:%S`  #1hr later
+    # datem1=`date -u -d "${PDYa} ${cyca} -1 hour" +%Y-%m-%d_%H_%M_%S` #1hr ago
+    # datep1=`date -u -d "${PDYa} ${cyca} 1 hour"  +%Y-%m-%d_%H_%M_%S`  #1hr later
     #  bkg_file_p1=${bkg_root}/wrfout_d0${dmn}_${datep1}
     #  bkg_file_m1=${bkg_root}/wrfout_d0${dmn}_${datem1}
     #fi

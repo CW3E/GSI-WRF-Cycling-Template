@@ -89,7 +89,7 @@ def run_rocotorun():
     for cse in CSES:
         for ctr_flw in CTR_FLWS:
             cmd = RCT_HME + '/bin/rocotorun -w ' +\
-                  settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                  settings_dir + '/' + cse + '/' + ctr_flw + '/ctr_flw.xml' +\
                   ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store -v 10'  
 
             os.system(cmd)
@@ -101,7 +101,7 @@ def run_rocotostat():
     for cse in CSES:
         for ctr_flw in CTR_FLWS:
             cmd = RCT_HME + '/bin/rocotostat -w ' +\
-                  settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                  settings_dir + '/' + cse + '/' + ctr_flw + '/ctr_flw.xml' +\
                   ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store -c all'+\
                   ' > ' + dbs_dir + '/' + cse + '-' + ctr_flw + '_workflow_status.txt'
 
@@ -113,7 +113,7 @@ def run_rocotoboot(cses, flows, cycles, tasks):
             for cycle in cycles:
                 for task in tasks:
                     cmd = RCT_HME + '/bin/rocotoboot -w ' +\
-                          settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                          settings_dir + '/' + cse + '/' + ctr_flw + '/ctr_flw.xml' +\
                           ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store' +\
                           ' -c ' + cycle + ' -t ' + task
 
@@ -128,7 +128,7 @@ def run_rocotorewind(cses, flows, cycles, tasks):
             for cycle in cycles:
                 for task in tasks:
                     cmd = RCT_HME + '/bin/rocotorewind -w ' +\
-                          settings_dir + '/' + cse + '/' + ctr_flw + '/' + ctr_flw + '.xml' +\
+                          settings_dir + '/' + cse + '/' + ctr_flw + '/ctr_flw.xml' +\
                           ' -d ' + dbs_dir + '/' + cse + '-' + ctr_flw + '.store' +\
                           ' -c ' + cycle + ' -t ' + task
 

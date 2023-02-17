@@ -47,6 +47,7 @@
  io_form_auxinput4                   = 2,
  debug_level                         = 0,
  diag_print			     = 1,
+ nocolons                            = .true.,
 /
 
 !! will output solar zenith angle + cloud base + cloud top height with this turned on !
