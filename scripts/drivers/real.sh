@@ -87,16 +87,16 @@
 # Preamble
 ##################################################################################
 # uncomment to run verbose for debugging / testing
-set -x
+#set -x
 
 if [ ! -x ${CNST} ]; then
   echo "ERROR: constants file ${CNST} does not exist or is not executable."
   exit 1
+else
+  # Read constants into the current shell
+  cmd=". ${CNST}"
+  echo ${cmd}; eval ${cmd}
 fi
-
-# Read constants into the current shell
-cmd=". ${CNST}"
-echo ${cmd}; eval ${cmd}
 
 ##################################################################################
 # Make checks for real settings
@@ -119,14 +119,9 @@ echo ${cmd}; eval ${cmd}
 if [ ! ${MEMID}  ]; then
   echo "ERROR: \${MEMID} is not defined."
   exit 1
-fi
-
-# ensure padding to two digits is included
-memid=`printf %02d $(( 10#${MEMID} ))`
-
-if [ ! ${BKG_DATA}  ]; then
-  echo "ERROR: \${BKG_DATA} is not defined."
-  exit 1
+else
+  # ensure padding to two digits is included
+  memid=`printf %02d $(( 10#${MEMID} ))`
 fi
 
 if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
@@ -136,14 +131,21 @@ if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
   exit 1
 fi
 
-if [ ! ${FCST_HRS} ]; then
-  echo "ERROR: \${FCST_HRS} is not defined."
-  exit 1
-fi
-
 if [ ! ${BKG_INT} ]; then
   echo "ERROR: \${BKG_INT} is not defined."
   exit 1
+elif [ ! ${BKG_INT} -gt 0 ]; then
+  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
+  exit 1
+fi
+
+if [ ${#STRT_TIME} -ne 10 ]; then
+  echo "ERROR: \${STRT_TIME}, '${STRT_TIME}', is not in 'YYYYMMDDHH' format." 
+  exit 1
+else
+  # Convert STRT_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
+  strt_time="${STRT_TIME:0:8} ${STRT_TIME:8:2}"
+  strt_time=`date -d "${strt_time}"`
 fi
 
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
@@ -172,10 +174,14 @@ else
   exit 1
 fi
 
+# define the end time based on forecast length control flow above
 end_time=`date -d "${strt_time} ${fcst_len} hours"`
 
 if [ ! ${MAX_DOM} ]; then
   echo "ERROR: \${MAX_DOM} is not defined."
+  exit 1
+elif [ ! ${MAX_DOM} -gt 0 ]; then
+  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 0." 
   exit 1
 fi
 
@@ -201,43 +207,45 @@ fi
 # CYCLE_HME = Start time named directory for cycling data containing
 #             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # MPIRUN    = MPI multiprocessing evaluation call, machine specific
-# N_PROC  = The total number of processes to run real.exe with MPI
+# N_PROC    = The total number of processes to run real.exe with MPI
 #
 ##################################################################################
 
-if [ ! "${WRF_ROOT}" ]; then
+if [ ! ${WRF_ROOT} ]; then
   echo "ERROR: \${WRF_ROOT} is not defined."
   exit 1
-fi
-
-if [ ! -d "${WRF_ROOT}" ]; then
+elif [ ! -d ${WRF_ROOT} ]; then
   echo "ERROR: \${WRF_ROOT} directory ${WRF_ROOT} does not exist."
   exit 1
 fi
 
-if [ ! -d ${EXP_CNFG} ]; then
+if [ ! ${EXP_CNFG} ]; then
+  echo "ERROR: \${EXP_CNFG} is not defined."
+  exit 1
+elif [ ! -d ${EXP_CNFG} ]; then
   echo "ERROR: \${EXP_CNFG} directory ${EXP_CNFG} does not exist."
   exit 1
 fi
 
-if [ -z ${CYCLE_HME} ]; then
-  echo "ERROR: \${CYCLE_HME} directory name is not defined."
+if [ ${#CYCLE_HME} -ne 10 ]; then
+  echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
+  exit 1
+elif [ ! -d ${CYCLE_HME} ]; then
+  echo "ERROR: \${CYCLE_HME} directory '${CYCLE_HME}' does not exist."
   exit 1
 fi
 
-if [ ! "${MPIRUN}" ]; then
+if [ ! ${MPIRUN} ]; then
   echo "ERROR: \${MPIRUN} is not defined."
   exit 1
 fi
 
-if [ ! "${N_PROC}" ]; then
+if [ ! ${N_PROC} ]; then
   echo "ERROR: \${N_PROC} is not defined."
   exit 1
-fi
-
-if [ -z "${N_PROC}" ]; then
+elif [ ! ${N_PROC} -gt 0 ]; then
   msg="ERROR: The variable \${N_PROC} must be set to the number"
-  msg+=" of processors to run real."
+  msg+=" of processors to run real.exe."
   echo ${msg}
   exit 1
 fi
@@ -257,7 +265,8 @@ fi
 
 work_root=${CYCLE_HME}/realprd/ens_${memid}
 mkdir -p ${work_root}
-cd ${work_root}
+cmd="cd ${work_root}"
+echo ${cmd}; eval ${cmd}
 
 wrf_dat_files=(${WRF_ROOT}/run/*)
 real_exe=${WRF_ROOT}/main/real.exe
@@ -269,40 +278,44 @@ fi
 
 # Make links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
-  ln -sf ${file} ./
+  cmd="ln -sf ${file} ."
+  echo ${cmd}; eval ${cmd}
 done
 
 # Remove IC/BC in the directory if old data present
-rm -f wrfinput_d0*
-rm -f wrfbdy_d01
+cmd="rm -f wrfinput_d0*"
+echo ${cmd}; eval ${cmd}
+
+cmd="rm -f wrfbdy_d01"
+echo ${cmd}; eval ${cmd}
 
 # Check to make sure the real input files (e.g. met_em.d01.*)
 # are available and make links to them
-dmn=1
-while [ ${dmn} -le ${MAX_DOM} ]; do
-  fcst=0
-  while [ ${fcst} -le ${FCST_HRS} ]; do
+for dmn in {01..${MAX_DOM}}; do
+  for fcst in {000..${fcst_len}..${BKG_INT}}; do
     time_str=`date "+%Y-%m-%d_%H_%M_%S" -d "${strt_time} ${fcst} hours"`
-    realinput_name=met_em.d0${dmn}.${time_str}.nc
+    realinput_name=met_em.d${dmn}.${time_str}.nc
     wps_dir=${CYCLE_HME}/wpsprd/ens_${memid}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then
       echo "ERROR: Input file '${CYCLE_HME}/${realinput_name}' is missing."
       exit 1
+    else
+      cmd="ln -sf ${wps_dir}/${realinput_name} ."
+      echo ${cmd}; eval ${cmd}
     fi
-    ln -sf ${wps_dir}/${realinput_name} ./
-    (( fcst += BKG_INT ))
   done
-  (( dmn += 1 ))
 done
 
 # Move existing rsl files to a subdir if there are any
 echo "Checking for pre-existing rsl files."
 if [ -f "rsl.out.0000" ]; then
-  rsldir=rsl.`ls -l --time-style=+%Y%m%d%H%M%S rsl.out.0000 | cut -d" " -f 7`
+  rsldir=rsl.`ls -l --time-style=+%Y-%m-%d_%H_%M_%S rsl.out.0000 | cut -d" " -f 6`
   mkdir ${rsldir}
   echo "Moving pre-existing rsl files to ${rsldir}."
-  mv rsl.out.* ${rsldir}
-  mv rsl.error.* ${rsldir}
+  cmd="mv rsl.out.* ${rsldir}"
+  echo ${cmd}; eval ${cmd}
+  cmd="mv rsl.error.* ${rsldir}"
+  echo ${cmd}; eval ${cmd}
 else
   echo "No pre-existing rsl files were found."
 fi
@@ -310,10 +323,17 @@ fi
 ##################################################################################
 #  Build real namelist
 ##################################################################################
-# Copy the wrf namelist from the static dir
-# NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-namelist=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
-cp ${namelist} ./namelist.input
+# Copy the wrf namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
+namelist_template=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
+if [ ! -r ${namelist_template} ]; then 
+  msg="WRF namelist template '${namelist_template}' is not readable or "
+  msg+="does not exist."
+  echo ${msg}
+  exit 1
+else
+  cmd="cp ${namelist_template} ./namelist.input"
+  echo ${cmd}; eval ${cmd}
+fi
 
 # Get the start and end time components
 s_Y=`date +%Y -d "${strt_time}"`
@@ -334,7 +354,7 @@ e_S=`date +%S -d "${end_time}"`
 (( run_hours = FCST_HRS % 24 ))
 
 # Update max_dom in namelist
-in_dom="\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}"
+in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
 out_dom="\1 = ${MAX_DOM}"
 cat namelist.input \
   | sed "s/${in_dom}/${out_dom}/" \
@@ -343,55 +363,55 @@ mv namelist.input.new namelist.input
 
 # Update the run_days in wrf namelist.input
 cat namelist.input \
-  | sed "s/\(${RUN}_${DAY}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_days}/" \
+  | sed "s/\(RUN_DAYS\)${EQUAL}RUN_DAYS/\1 = ${run_days}/" \
   > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update the run_hours in wrf namelist
 cat namelist.input \
-  | sed "s/\(${RUN}_${HOUR}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${run_hours}/" \
+  | sed "s/\(RUN_HOURS\)${EQUAL}RUN_HOURS/\1 = ${run_hours}/" \
   > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update the start time in wrf namelist (propagates settings to three domains)
 cat namelist.input \
-  | sed "s/\(${START}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${s_Y}, ${s_Y}, ${s_Y}/" \
-  | sed "s/\(${START}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_m}, ${s_m}, ${s_m}/" \
-  | sed "s/\(${START}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_d}, ${s_d}, ${s_d}/" \
-  | sed "s/\(${START}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_H}, ${s_H}, ${s_H}/" \
-  | sed "s/\(${START}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_M}, ${s_M}, ${s_M}/" \
-  | sed "s/\(${START}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${s_S}, ${s_S}, ${s_S}/" \
+  | sed "s/\(START_YEAR\)${EQUAL}START_YEAR/\1 = ${s_Y}, ${s_Y}, ${s_Y}/" \
+  | sed "s/\(START_MONTH\)${EQUAL}START_MONTH/\1 = ${s_m}, ${s_m}, ${s_m}/" \
+  | sed "s/\(START_DAY\)${EQUAL}START_DAY/\1 = ${s_d}, ${s_d}, ${s_d}/" \
+  | sed "s/\(START_HOUR\)${EQUAL}START_HOUR/\1 = ${s_H}, ${s_H}, ${s_H}/" \
+  | sed "s/\(START_MINUTE\)${EQUAL}START_MINUTE/\1 = ${s_M}, ${s_M}, ${s_M}/" \
+  | sed "s/\(START_SECOND\)${EQUAL}START_SECOND/\1 = ${s_S}, ${s_S}, ${s_S}/" \
   > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update end time in namelist (propagates settings to three domains)
 cat namelist.input \
-  | sed "s/\(${END}_${YEAR}\)${EQUAL}[[:digit:]]\{4\}.*/\1 = ${e_Y}, ${e_Y}, ${e_Y}/" \
-  | sed "s/\(${END}_${MONTH}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${e_m}, ${e_m}, ${e_m}/" \
-  | sed "s/\(${END}_${DAY}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${e_d}, ${e_d}, ${e_d}/" \
-  | sed "s/\(${END}_${HOUR}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${e_H}, ${e_H}, ${e_H}/" \
-  | sed "s/\(${END}_${MINUTE}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${e_M}, ${e_M}, ${e_M}/" \
-  | sed "s/\(${END}_${SECOND}\)${EQUAL}[[:digit:]]\{2\}.*/\1 = ${e_S}, ${e_S}, ${e_S}/" \
+  | sed "s/\(END_YEAR\)${EQUAL}END_YEAR/\1 = ${e_Y}, ${e_Y}, ${e_Y}/" \
+  | sed "s/\(END_MONTH\)${EQUAL}END_MONTH/\1 = ${e_m}, ${e_m}, ${e_m}/" \
+  | sed "s/\(END_DAY\)${EQUAL}END_DAY/\1 = ${e_d}, ${e_d}, ${e_d}/" \
+  | sed "s/\(END_HOUR\)${EQUAL}END_HOUR/\1 = ${e_H}, ${e_H}, ${e_H}/" \
+  | sed "s/\(END_MINUTE\)${EQUAL}END_MINUTE/\1 = ${e_M}, ${e_M}, ${e_M}/" \
+  | sed "s/\(END_SECOND\)${EQUAL}END_SECOND/\1 = ${e_S}, ${e_S}, ${e_S}/" \
   > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update interval in namelist
 (( data_interval_sec = BKG_INT * 3600 ))
 cat namelist.input \
-  | sed "s/\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${data_interval_sec}/" \
+  | sed "s/\(INTERVAL_SECONDS\)${EQUAL}INTERVAL_SECONDS/\1 = ${data_interval_sec}/" \
   > namelist.input.new
 mv namelist.input.new namelist.input
 
 # Update sst_update settings
 cat namelist.input \
-  | sed "s/\(${SST}_${UPDATE}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${sst_update}/"\
+  | sed "s/\(SST_UPDATE\)${EQUAL}SST_UPDATE/\1 = ${sst_update}/"\
   > namelist.input.new
 mv namelist.input.new namelist.input
 
 if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   # update the auxinput4_interval to the BKG_INT
   (( auxinput4_minutes = BKG_INT * 60 ))
-  aux_in="\(${AUXINPUT}4_${INTERVAL}\)${EQUAL}[[:digit:]]\{1,\}.*"
+  aux_in="\(AUXINPUT4_INTERVAL\)${EQUAL}AUXINPUT4_INTERVAL"
   aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
   cat namelist.input \
     | sed "s/${aux_in}/${aux_out}/" \
@@ -407,19 +427,18 @@ echo
 echo "EXP_CNFG     = ${EXP_CNFG}"
 echo "MEMID        = ${MEMID}"
 echo "CYCLE_HME    = ${CYCLE_HME}"
-echo "BKG_INT      = ${BKG_INT}"
-echo "FCST_HRS     = ${FCST_HRS}"
 echo
 echo "BKG_DATA     = ${BKG_DATA}"
+echo "BKG_INT      = ${BKG_INT}"
 echo "MAX_DOM      = ${MAX_DOM}"
 echo "IF_SST_UPDTE = ${IF_SST_UPDTE}"
-echo "STRT_TIME    = "`date +"%Y/%m/%d %H_%M_%S" -d "${strt_time}"`
-echo "END_TIME     = "`date +"%Y/%m/%d %H_%M_%S" -d "${end_time}"`
+echo "STRT_TIME    = "`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
+echo "END_TIME     = "`date +%Y-%m-%d_%H_%M_%S -d "${end_time}"`
 echo
-now=`date +%Y%m%d%H%M%S`
+now=`date +%Y-%m-%d_%H_%M_%S`
 echo "real started at ${now}."
-
-${MPIRUN} -n ${N_PROC} ${real_exe}
+cmd="${MPIRUN} -n ${N_PROC} ${real_exe}"
+echo ${cmd}; eval ${cmd}
 
 ##################################################################################
 # Run time error check
@@ -429,9 +448,14 @@ error=$?
 # Save a copy of the RSL files
 rsldir=rsl.real.${now}
 mkdir ${rsldir}
-mv rsl.out.* ${rsldir}
-mv rsl.error.* ${rsldir}
-cp namelist.* ${rsldir}
+cmd="mv rsl.out.* ${rsldir}"
+echo ${cmd}; eval ${cmd}
+
+cmd="mv rsl.error.* ${rsldir}"
+echo ${cmd}; eval ${cmd}
+
+cmd="mv namelist.* ${rsldir}"
+echo ${cmd}; eval ${cmd}
 
 if [ ${error} -ne 0 ]; then
   echo "ERROR: ${real_exe} exited with status ${error}."
@@ -457,39 +481,37 @@ if [ ! -s ${bc_file} ]; then
 fi
 
 # check to see if the IC output is generated
-dmn=1
-while [ ${dmn} -le ${MAX_DOM} ]; do
-  ic_file=wrfinput_d0${dmn}
+for dmn in {01..${MAX_DOM}}; do
+  ic_file=wrfinput_d${dmn}
   if [ ! -s ${ic_file} ]; then
     msg="${real_exe} failed to generate initial conditions ${ic_file} "
-    msg+="for domain d0${dmn}."
+    msg+="for domain d${dmn}."
     echo ${msg}
     exit 1
   fi
-  (( dmn += 1 ))
 done
 
 # check to see if the SST update fields are generated
 if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
-  dmn=1
-  while [ ${dmn} -le ${MAX_DOM} ]; do
-    sst_file=wrflowinp_d0${dmn}
+  for dmn in {01..${MAX_DOM}}; do
+    sst_file=wrflowinp_d${dmn}
     if [ ! -s ${sst_file} ]; then
       msg="${real_exe} failed to generate SST update file ${sst_file} "
-      msg+="for domain d0${dmn}."
+      msg+="for domain d${dmn}."
       echo ${msg}
       exit 1
     fi
-    (( dmn += 1 ))
   done
 fi
 
 # Remove the real input files (e.g. met_em.d01.*)
-rm -f ./met_em.*
+cmd="rm -f ./met_em.*"
+echo ${cmd}; eval ${cmd}
 
 # Remove links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
-    rm -f `basename ${file}`
+    cmd="rm -f `basename ${file}`"
+    echo ${cmd}; eval ${cmd}
 done
 
 echo "real.sh completed successfully at `date`."

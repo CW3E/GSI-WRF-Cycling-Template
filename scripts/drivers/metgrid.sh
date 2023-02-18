@@ -92,11 +92,11 @@
 if [ ! -x ${CNST} ]; then
   echo "ERROR: constants file ${CNST} does not exist or is not executable."
   exit 1
+else
+  # Read constants into the current shell
+  cmd=". ${CNST}"
+  echo ${cmd}; eval ${cmd}
 fi
-
-# Read constants into the current shell
-cmd=". ${CNST}"
-echo ${cmd}; eval ${cmd}
 
 ##################################################################################
 # Make checks for metgrid settings
@@ -116,13 +116,16 @@ echo ${cmd}; eval ${cmd}
 if [ ! ${MEMID} ]; then
   echo "ERROR: \${MEMID} is not defined."
   exit 1
+else
+  # ensure padding to two digits is included
+  memid=`printf %02d $(( 10#${MEMID} ))`
 fi
-
-# ensure padding to two digits is included
-memid=`printf %02d $(( 10#${MEMID} ))`
 
 if [ ! ${BKG_INT} ]; then
   echo "ERROR: \${BKG_INT} is not defined."
+  exit 1
+elif [ ! ${BKG_INT} -gt 0 ]; then
+  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
   exit 1
 fi
 
@@ -161,12 +164,13 @@ else
   exit 1
 fi
 
+# define the end time based on forecast length control flow above
 end_time=`date -d "${strt_time} ${fcst_len} hours"`
 
 if [ ! ${MAX_DOM} ]; then
   echo "ERROR: \${MAX_DOM} is not defined."
   exit 1
-elif [ ! ${MAX_DOM} -gt 0 ];
+elif [ ! ${MAX_DOM} -gt 0 ]; then
   echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 0." 
   exit 1
 fi
@@ -189,20 +193,24 @@ fi
 if [ ! ${WPS_ROOT} ]; then
   echo "ERROR: \${WPS_ROOT} is not defined."
   exit 1
-fi
-
-if [ ! -d ${WPS_ROOT} ]; then
+elif [ ! -d ${WPS_ROOT} ]; then
   echo "ERROR: \${WPS_ROOT} directory '${WPS_ROOT}' does not exist."
   exit 1
 fi
 
-if [ ! -d ${EXP_CNFG} ]; then
+if [ ! ${EXP_CNFG} ]; then
+  echo "ERROR: \${EXP_CNFG} is not defined."
+  exit 1
+elif [ ! -d ${EXP_CNFG} ]; then
   echo "ERROR: \${EXP_CNFG} directory '${EXP_CNFG}' does not exist."
   exit 1
 fi
 
 if [ ${#CYCLE_HME} -ne 10 ]; then
   echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
+  exit 1
+elif [ ! -d ${CYCLE_HME} ]; then
+  echo "ERROR: \${CYCLE_HME} directory '${CYCLE_HME}' does not exist."
   exit 1
 fi
 
@@ -214,11 +222,9 @@ fi
 if [ ! ${N_PROC} ]; then
   echo "ERROR: \${N_PROC} is not defined."
   exit 1
-fi
-
-if [ -z ${N_PROC} ]; then
+elif [ ! ${N_PROC} -gt 0 ]; then
   msg="ERROR: The variable \${N_PROC} must be set to the number"
-  msg+=" of processors to run WPS."
+  msg+=" of processors to run metgrid.exe."
   echo ${msg}
   exit 1
 fi
@@ -269,21 +275,29 @@ for dmn in {01..${MAX_DOM}}; do
   if [ ! -r "${geoinput_name}" ]; then
     echo "ERROR: Input file '${geoinput_name}' is missing."
     exit 1
+  else
+    cmd="ln -sf ${geoinput_name} ."
+    echo ${cmd}; eval ${cmd}
   fi
-  cmd="ln -sf ${geoinput_name} ."
-  echo ${cmd}; eval ${cmd}
 done
 
 ##################################################################################
 #  Build WPS namelist
 ##################################################################################
-# Copy the wrf namelist from the static dir
-# NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-cmd="cp ${EXP_CNFG}/namelists/namelist.wps ."
-echo ${cmd}; eval ${cmd}
+# Copy the wps namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
+namelist_template=${EXP_CNFG}/namelists/namelist.wps
+if [ ! -r ${namelist_template} ]; then 
+  msg="WPS namelist template '${namelist_template}' is not readable or "
+  msg+="does not exist."
+  echo ${msg}
+  exit 1
+else
+  cmd="cp ${namelist_template} ."
+  echo ${cmd}; eval ${cmd}
+fi
 
 # Update max_dom in namelist
-in_dom="\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}"
+in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
 out_dom="\1 = ${MAX_DOM}"
 cat namelist.wps \
   | sed "s/${in_dom}/${out_dom}/" \
@@ -291,12 +305,12 @@ cat namelist.wps \
 mv namelist.wps.new namelist.wps
 
 # define start / end time patterns for namelist.wps
-strt_dt=`date +%Y-%m-%d_%H:%M:%S -d "${strt_time}"`
-end_dt=`date +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
+strt_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
+end_dt=`date +%Y-%m-%d_%H_%M_%S -d "${end_time}"`
 
-in_sd="\(${STRT}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*"
+in_sd="\(START_DATE\)${EQUAL}STAR_DATE"
 out_sd="\1 = '${strt_dt}','${strt_dt}','${strt_dt}'"
-in_ed="\(${END}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*"
+in_ed="\(END_DATE\)${EQUAL}END_DATE"
 out_ed="\1 = '${end_dt}','${end_dt}','${end_dt}'"
 
 # Update the start and end date in namelist (propagates settings to three domains)
@@ -308,7 +322,7 @@ mv namelist.wps.new namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = BKG_INT * 3600 ))
-in_int="\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}"
+in_int="\(INTERVAL_SECONDS\)${EQUAL}INTERVAL_SECONDS"
 out_int="\1 = ${data_interval_sec}"
 cat namelist.wps \
   | sed "s/${in_int}/${out_int}/" \
@@ -333,7 +347,7 @@ echo "MAX_DOM   = ${MAX_DOM}"
 echo "STRT_TIME = ${strt_dt}"
 echo "END_TIME  = ${end_dt}"
 echo
-now=`date +%Y%m%d%H%M%S`
+now=`date +%Y-%m-%d_%H_%M_%S`
 echo "metgrid started at ${now}."
 cmd="${MPIRUN} -n ${N_PROC} ${metgrid_exe}"
 echo ${cmd}; eval ${cmd}
@@ -361,7 +375,7 @@ fi
 for dmn in {01..${MAX_DOM}}; do
   for fcst in {000..${fcst_len}..${BKG_INT}}; do
     time_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time} ${fcst} hours"`
-    if [ ! -e "met_em.d${dmn}.${time_str}.nc" ]; then
+    if [ ! -s "met_em.d${dmn}.${time_str}.nc" ]; then
       echo "ERROR: ${metgrid_exe} failed to complete for d${dmn}."
       exit 1
     fi

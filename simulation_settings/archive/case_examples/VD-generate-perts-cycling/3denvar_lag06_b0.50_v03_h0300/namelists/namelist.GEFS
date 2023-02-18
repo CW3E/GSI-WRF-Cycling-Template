@@ -1,30 +1,30 @@
 &time_control
- run_days                            = 0,
- run_hours                           = 02,
- run_minutes                         = 0,
- run_seconds                         = 0,
- start_year                          = 2019, 2019,
- start_month                         = 02, 02,
- start_day                           = 09, 09,
- start_hour                          = 00, 00,
- start_minute                        = 00, 00,
- start_second                        = 00, 00,
- end_year                            = 2019, 2019,
- end_month                           = 02, 02,
- end_day                             = 09, 09,
- end_hour                            = 02, 02,
- end_minute                          = 00, 00,
- end_second                          = 00, 00,
- interval_seconds                    = 3600,
+ RUN_DAYS                            = RUN_DAYS,
+ RUN_HOURS                           = RUN_HOURS,
+ RUN_MINUTES                         = RUN_MINUTES,
+ RUN_SECONDS                         = RUN_SECONDS,
+ START_YEAR                          = START_YEAR,
+ START_MONTH                         = START_MONTH,
+ START_DAY                           = START_DAY,
+ START_HOUR                          = START_HOUR,
+ START_MINUTE                        = START_MINUTE,
+ START_SECOND                        = START_SECOND,
+ END_YEAR                            = END_YEAR,
+ END_MONTH                           = END_MONTH,
+ END_DAY                             = END_DAY,
+ END_HOUR                            = END_HOUR,
+ END_MINUTE                          = END_MINUTE,
+ END_SECOND                          = END_SECOND,
+ INTERVAL_SECONDS                    = INTERVAL_SECONDS,
  input_from_file                     = .true., .true.,
  ! Interpolates the ICs for the nest from the parent domain when =2 below, 0 for ICs from file !
- fine_input_stream                   = 2
- history_interval                    = 60, 60,
+ fine_input_stream                   = 2,
+ HISTORY_INTERVAL                    = HISTORY_INTERVAL,
  history_outname                     = "./wrfout_d<domain>_<date>",
  io_form_history                     = 2,
- frames_per_outfile                  = 1, 1,
- restart                             = .false.,
- restart_interval                    = 2880,
+ frames_per_outfile                  = 1, 1, 1,
+ RESTART                             = RESTART,
+ RESTART_INTERVAL                    = RESTART_INTERVAL,
  rst_inname                          = "./wrfrst_d<domain>_<date>",
  rst_outname                         = "./wrfrst_d<domain>_<date>",
  io_form_restart                     = 2,
@@ -36,22 +36,23 @@
  io_form_boundary                    = 2,
  auxinput1_inname                    = "./met_em.d<domain>.<date>"
  io_form_auxinput1                   = 2,
- auxhist2_interval                   = 60, 60,
+ AUXHIST2_INTERVAL                   = AUXHIST2_INTERVAL,
  auxhist2_outname                    = "./auxhist2_<domain>_<date>",
- frames_per_auxhist2                 = 1, 1,
+ frames_per_auxhist2                 = 1, 1, 1,
  io_form_auxinput2		     = 2,
  io_form_auxhist2                    = 2,
  auxinput4_inname                    = "./wrflowinp_d<domain>",
  auxinput4_outname                   = "./wrflowinp_d<domain>",
- auxinput4_interval                  = 60, 60,
+ AUXINPUT4_INTERVAL                  = AUXINPUT4_INTERVAL,
  io_form_auxinput4                   = 2,
  debug_level                         = 0,
  diag_print			     = 1,
+ nocolons                            = .true.,
 /
 
 !! will output solar zenith angle + cloud base + cloud top height with this turned on !
 !&diags
-! solar_diagnostics = 1
+! solar_diagnostics = 1,
 !/
 
 &domains
@@ -114,7 +115,7 @@
                                        0.12411, 0.11364, 0.10217, 0.08958, 0.07576,
                                        0.06061, 0.04545, 0.03030, 0.01515, 0.00000,
  parent_time_step_ratio              = 1, 3,
- feedback                            = 1,
+ FEEDBACK                            = FEEDBACK
  smooth_option                       = 2
 /
 
@@ -574,6 +575,6 @@
 /
 
 &namelist_quilt
- nio_tasks_per_group =  24,
- nio_groups = 1,
+ NIO_TASKS_PER_GROUP = NIO_TASKS_PER_GROUP,
+ NIO_GROUPS = NIO_GROUPS,
 /

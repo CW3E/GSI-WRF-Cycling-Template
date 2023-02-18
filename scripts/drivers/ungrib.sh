@@ -92,11 +92,11 @@
 if [ ! -x ${CNST} ]; then
   echo "ERROR: constants file ${CNST} does not exist or is not executable."
   exit 1
+else
+  # Read constants into the current shell
+  cmd=". ${CNST}"
+  echo ${cmd}; eval ${cmd}
 fi
-
-# Read constants into the current shell
-cmd=". ${CNST}"
-echo ${cmd}; eval ${cmd}
 
 ##################################################################################
 # Make checks for ungrib settings
@@ -119,14 +119,9 @@ echo ${cmd}; eval ${cmd}
 if [ ! ${MEMID} ]; then
   echo "ERROR: ensemble index \${MEMID} is not defined."
   exit 1
-fi
-
-# ensure padding to two digits is included in memid variable
-memid=`printf %02d $(( 10#${MEMID} ))`
-
-if [ ! ${BKG_DATA}  ]; then
-  echo "ERROR: \${BKG_DATA} is not defined."
-  exit 1
+else
+  # ensure padding to two digits is included in memid variable
+  memid=`printf %02d $(( 10#${MEMID} ))`
 fi
 
 if [[ ${BKG_DATA} != GFS && ${BKG_DATA} != GEFS ]]; then
@@ -139,16 +134,18 @@ fi
 if [ ! ${BKG_INT} ]; then
   echo "ERROR: \${BKG_INT} is not defined."
   exit 1
-fi
-
-if [ ! ${STRT_TIME} ]; then
-  echo "ERROR: \${STRT_TIME} is not defined."
+elif [ ! ${BKG_INT} -gt 0 ]; then
+  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
   exit 1
 fi
 
-if [ ! ${BKG_STRT_TIME} ]; then
-  echo "ERROR: \${BKG_STRT_TIME} is not defined."
+if [ ${#BKG_STRT_TIME} -ne 10 ]; then
+  echo "ERROR: \${BKG_STRT_TIME}, '${BKG_STRT_TIME}', is not in 'YYYYMMDDHH' format." 
   exit 1
+else
+  # define BKG_STRT_TIME date string wihtout HH
+  bkg_strt_date=${BKG_STRT_TIME:0:8}
+  bkg_strt_hh=${BKG_STRT_TIME:8:2}
 fi
 
 if [ ${#STRT_TIME} -ne 10 ]; then
@@ -159,10 +156,6 @@ else
   strt_time="${STRT_TIME:0:8} ${STRT_TIME:8:2}"
   strt_time=`date -d "${strt_time}"`
 fi
-
-# define BKG_STRT_TIME date string wihtout HH
-bkg_strt_date=${BKG_STRT_TIME:0:8}
-bkg_strt_hh=${BKG_STRT_TIME:8:2}
 
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
   echo "Generating fixed length forecast forcing data."
@@ -190,6 +183,7 @@ else
   exit 1
 fi
 
+# define the end time based on forecast length control flow above
 end_time=`date -d "${strt_time} ${fcst_len} hours"`
 
 if [[ ${IF_ECMWF_ML} != ${YES} && ${IF_ECMWF_ML} != ${NO} ]]; then
@@ -215,14 +209,15 @@ fi
 if [ ! ${WPS_ROOT} ]; then
   echo "ERROR: \${WPS_ROOT} is not defined."
   exit 1
-fi
-
-if [ ! -d ${WPS_ROOT} ]; then
+elif [ ! -d ${WPS_ROOT} ]; then
   echo "ERROR: WPS_ROOT directory '${WPS_ROOT}' does not exist."
   exit 1
 fi
 
-if [ ! -d ${EXP_CNFG} ]; then
+if [ ! ${EXP_CNFG} ]; then
+  echo "ERROR: \${EXP_CNFG} is not defined."
+  exit 1
+elif [ ! -d ${EXP_CNFG} ]; then
   echo "ERROR: \${EXP_CNFG} directory '${EXP_CNFG}' does not exist."
   exit 1
 fi
@@ -230,9 +225,15 @@ fi
 if [ ${#CYCLE_HME} -ne 10 ]; then
   echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
   exit 1
+elif [ ! -d ${CYCLE_HME} ]; then
+  echo "ERROR: \${CYCLE_HME} directory '${CYCLE_HME}' does not exist."
+  exit 1
 fi
 
-if [ ! -d ${DATA_ROOT} ]; then
+if [ ! ${DATA_ROOT} ]; then
+  echo "ERROR: \${DATA_ROOT} is not defined."
+  exit 1
+elif [ ! -d ${DATA_ROOT} ]; then
   echo "ERROR: \${DATA_ROOT} directory '${DATA_ROOT}' does not exist."
   exit 1
 fi
@@ -253,7 +254,8 @@ fi
 
 work_root=${CYCLE_HME}/wpsprd/ens_${memid}
 mkdir -p ${work_root}
-cd ${work_root}
+cmd="cd ${work_root}"
+echo ${cmd}; eval ${cmd}
 
 wps_dat_files=(${WPS_ROOT}/*)
 ungrib_exe=${WPS_ROOT}/ungrib.exe
@@ -321,23 +323,23 @@ echo ${cmd}; eval ${cmd}
 ##################################################################################
 # Copy the wps namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
 namelist_template=${EXP_CNFG}/namelists/namelist.wps
-if [ -r ${namelist_template} ]; then 
-  cmd="cp ${namelist_template}  ."
-  echo ${cmd}; eval ${cmd}
-else
+if [ ! -r ${namelist_template} ]; then 
   msg="WPS namelist template '${namelist_template}' is not readable or "
   msg+="does not exist."
   echo ${msg}
   exit 1
+else
+  cmd="cp ${namelist_template} ."
+  echo ${cmd}; eval ${cmd}
 fi
 
 # define start / end time patterns for namelist.wps
 strt_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
 end_dt=`date +%Y-%m-%d_%H_%M_%S -d "${end_time}"`
 
-in_sd="\(${START}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*"
+in_sd="\(START_DATE\)${EQUAL}START_DATE"
 out_sd="\1 = '${strt_dt}','${strt_dt}','${strt_dt}'"
-in_ed="\(${END}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*"
+in_ed="\(END_DATE\)${EQUAL}END_DATE"
 out_ed="\1 = '${end_dt}','${end_dt}','${end_dt}'"
 
 # Update the start and end date in namelist (propagates settings to three domains)
@@ -349,7 +351,7 @@ mv namelist.wps.new namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = BKG_INT * 3600 ))
-in_int="\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}"
+in_int="\(INTERVAL_SECONDS\)${EQUAL}INTERVAL_SECONDS"
 out_int="\1 = ${data_interval_sec}"
 cat namelist.wps \
   | sed "s/${in_int}/${out_int}/" \
@@ -371,7 +373,7 @@ echo "STRT_TIME     = ${strt_dt}"
 echo "END_TIME      = ${end_dt}"
 echo "BKG_STRT_TIME = ${BKG_STRT_TIME}"
 echo
-now=`date +%Y%m%d%H%M%S`
+now=`date +%Y-%m-%d_%H_%M_%S`
 echo "ungrib started at ${now}."
 cmd="./ungrib.exe"
 echo ${cmd}; eval ${cmd}
@@ -381,20 +383,20 @@ echo ${cmd}; eval ${cmd}
 ##################################################################################
 error=$?
 
-if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${ungrib_exe} exited with status ${error}."
-  exit ${error}
-fi
-
 # save ungrib logs
 log_dir=ungrib_log.${now}
 mkdir ${log_dir}
 cmd="mv ungrib.log ${log_dir}"
 echo ${cmd}; eval ${cmd}
 
-# save a copy of namelist
-cmd="cp namelist.wps ${log_dir}"
+cmd="mv namelist.wps ${log_dir}"
 echo ${cmd}; eval ${cmd}
+
+# check run error code
+if [ ${error} -ne 0 ]; then
+  echo "ERROR: ${ungrib_exe} exited with status ${error}."
+  exit ${error}
+fi
 
 # verify all file outputs
 for fcst in {000..${fcst_len}..${BKG_INT}}; do
@@ -431,10 +433,6 @@ done
 
 # remove links to grib files
 cmd="rm -f GRIBFILE.*"
-echo ${cmd}; eval ${cmd}
-
-# Remove namelist
-cmd="rm -f namelist.wps"
 echo ${cmd}; eval ${cmd}
 
 echo "ungrib.sh completed successfully at `date`."
