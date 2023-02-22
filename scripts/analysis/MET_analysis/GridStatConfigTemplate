@@ -264,7 +264,7 @@ nc_pairs_flag = {
 
 grid_weight_flag = NONE;
 tmp_dir          = "/tmp";
-output_prefix    = "";
+PRFX;
 version          = "V10.0.1";
 
 ////////////////////////////////////////////////////////////////////////////////

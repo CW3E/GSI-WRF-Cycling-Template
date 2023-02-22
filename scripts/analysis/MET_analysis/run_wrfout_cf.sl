@@ -54,7 +54,7 @@ echo `conda list`
 module load ncl_ncarg
 
 # root directory for git clone
-USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
+USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template"
 
 # define control flow to analyze 
 CTR_FLW="deterministic_forecast_lag06_b0.20"

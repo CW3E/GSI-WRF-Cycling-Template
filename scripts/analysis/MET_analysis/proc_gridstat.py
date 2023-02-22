@@ -41,22 +41,30 @@ from py_plt_utilities import STR_INDT, get_anls, USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_lag06_b0.20'
+CTR_FLW = 'ECMWF'
 
 # define the case-wise sub-directory
 CSE = 'VD'
 
 # verification domain for the forecast data                                                                           
-GRD='d02' 
+GRD = '0.25' 
+
+# define the interpolation method and related parameters
+INT_SHPE = 'SQUARE'
+INT_MTHD = 'DW_MEAN'
+INT_WDTH = '2'
 
 # starting date and zero hour of forecast cycles
-START_DT = '2019-02-11T00:00:00'
+START_DT = '2019-02-08T00:00:00'
 
 # final date and zero hour of data of forecast cycles
 END_DT = '2019-02-14T00:00:00'
 
 # number of hours between zero hours for forecast data
 CYCLE_INT = 24
+
+# optionally define an output prefix based on settings
+PRFX = INT_SHPE + '_' + INT_MTHD + '_' + INT_WDTH
 
 ##################################################################################
 # Process data
@@ -70,7 +78,7 @@ start_dt = dt.fromisoformat(START_DT)
 end_dt = dt.fromisoformat(END_DT)
 
 # define the output name
-out_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
+out_path = data_root + '/grid_stats_' + PRFX + '_' + GRD + '_' + START_DT +\
            '_to_' + END_DT + '.bin'
 
 # generate the date range for the analyses
@@ -82,7 +90,7 @@ data_dict = {}
 print('Processing dates ' + START_DT + ' to ' + END_DT)
 for (anl_date, anl_strng) in analyses:
     # define the gridstat files to open based on the analysis date
-    in_paths = data_root + '/' + anl_strng + '/' + GRD + '/grid_stat_*.txt'
+    in_paths = data_root + '/' + anl_strng + '/' + GRD + '/grid_stat_' + PRFX + '*.txt'
 
     # loop sorted grid_stat_* files, sorting compares first on the length of lead time
     # for non left-padded values

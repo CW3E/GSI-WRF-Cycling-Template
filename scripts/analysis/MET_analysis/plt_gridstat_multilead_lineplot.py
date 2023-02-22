@@ -50,30 +50,16 @@ from py_plt_utilities import USR_HME
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            #'deterministic_forecast_lag00_b0.00',
-            #'deterministic_forecast_lag00_b0.10',
-            #'deterministic_forecast_lag00_b0.20',
-            #'deterministic_forecast_lag00_b0.30',
-            #'deterministic_forecast_lag00_b0.40',
-            #'deterministic_forecast_lag00_b0.50',
-            #'deterministic_forecast_lag00_b0.60',
-            #'deterministic_forecast_lag00_b0.70',
-            #'deterministic_forecast_lag00_b0.80',
-            #'deterministic_forecast_lag00_b0.90',
-            'deterministic_forecast_lag06_b0.00',
-            'deterministic_forecast_lag06_b0.10',
-            'deterministic_forecast_lag06_b0.20',
-            'deterministic_forecast_lag06_b0.30',
-            'deterministic_forecast_lag06_b0.40',
-            'deterministic_forecast_lag06_b0.50',
-            'deterministic_forecast_lag06_b0.60',
-            'deterministic_forecast_lag06_b0.70',
-            'deterministic_forecast_lag06_b0.80',
-            'deterministic_forecast_lag06_b0.90',
-            'deterministic_forecast_lag00_b1.00',
             'GFS',
-            'ECMWF',
+            #'ECMWF',
            ]
+
+# define optional list of stats files prefixes
+PRFXS = [
+        'SQUARE_BILIN_2',
+        'SQUARE_DW_MEAN_2',
+        'SQUARE_NEAREST_1',
+        ]
 
 # define case-wise sub-directory
 CSE = 'VD'
@@ -85,7 +71,7 @@ GRD='d02'
 REF='0.25'
 
 # starting date and zero hour of forecast cycles
-START_DT = '2019-02-11T00:00:00'
+START_DT = '2019-02-08T00:00:00'
 
 # final date and zero hour of data of forecast cycles
 END_DT = '2019-02-14T00:00:00'
@@ -104,7 +90,8 @@ STATS = ['RMSE', 'PR_CORR']
 #STATS = ['MAD', 'SP_CORR']
 
 # landmask for verification region -- need to be set in earlier preprocessing
-LND_MSK = 'CALatLonPoints'
+LND_MSK = 'CA_Climate_Zone_16_Sierra'
+#LND_MSK = 'CALatLonPoints'
 #LND_MSK = 'FULL'
 
 ##################################################################################
@@ -113,9 +100,10 @@ LND_MSK = 'CALatLonPoints'
 # create a figure
 fig = plt.figure(figsize=(11.25,8.63))
 num_flws = len(CTR_FLWS)
+num_pfxs = len(PRFXS)
 
 # set colors and storage for looping
-line_colors = sns.color_palette("husl", num_flws)
+line_colors = sns.color_palette("husl", num_flws * num_pfxs)
 
 # Set the axes
 ax0 = fig.add_axes([.110, .43, .85, .33])
@@ -131,102 +119,107 @@ for i in range(num_flws):
     # loop on control flows
     ctr_flw = CTR_FLWS[i]
     param = ctr_flw.split('_')[-1]
-    line_labs.append(param)
 
-    # define derived data paths 
-    cse = CSE + '/' + ctr_flw
-    data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
-    stat0 = STATS[0]
-    stat1 = STATS[1]
-    
-    # define the input name
-    if ctr_flw == 'ECMWF' or ctr_flw == 'GFS':
-        in_path = data_root + '/grid_stats_' + REF + '_' + START_DT +\
-                  '_to_' + END_DT + '.bin'
+    for m in range(num_pfxs):
+        # loop on prefixes
+        pfx = PRFXS[m]
+        line_lab = param + '_' + pfx
+        line_labs.append(line_lab)
 
-    else:
-        in_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
-                  '_to_' + END_DT + '.bin'
-    
-    f = open(in_path, 'rb')
-    data = pickle.load(f)
-    f.close()
-    
-    # load the values to be plotted along with landmask and lead
-    vals = [
-            'VX_MASK',
-            'FCST_LEAD',
-            'FCST_VALID_END',
-           ]
-    vals += STATS
-    
-    # infer existence of confidence intervals with precedence for bootstrap
-    cnf_lvs = []
-    for k in range(2):
-        stat = STATS[k]
-        if stat + '_BCL' in data[TYPE] and\
-            not (data[TYPE][stat + '_BCL'].isnull().values.any()):
-                vals.append(stat + '_BCL')
-                vals.append(stat + '_BCU')
-                cnf_lvs.append('_BC')
-
-        elif stat + '_NCL' in data[TYPE] and\
-            not (data[TYPE][stat + '_NCL'].isnull().values.any()):
-                vals.append(stat + '_NCL')
-                vals.append(stat + '_NCU')
-                cnf_lvs.append('_NC')
+        # define derived data paths 
+        cse = CSE + '/' + ctr_flw
+        data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
+        stat0 = STATS[0]
+        stat1 = STATS[1]
+        
+        # define the input name
+        if ctr_flw == 'ECMWF' or ctr_flw == 'GFS':
+            in_path = data_root + '/grid_stats_' + pfx + '_' + REF + '_' + START_DT +\
+                      '_to_' + END_DT + '.bin'
 
         else:
-            cnf_lvs.append(False)
-
-    # cut down df to specified valid date / region and obtain leads of data 
-    stat_data = data[TYPE][vals]
-    stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
-    stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
-                               valid_dt.strftime('%Y%m%d_%H%M%S'))]
-    data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
-                        key=lambda x:(len(x), x))
-    num_leads = len(data_leads)
-    
-    # create array storage for stats and plot
-    for k in range(2):
-        exec('ax = ax%s'%k)
-        if cnf_lvs[k]:
-            tmp = np.zeros([num_leads, 3])
-    
-            for j in range(num_leads):
-                val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
-                tmp[j, 0] = val[STATS[k]]
-                tmp[j, 1] = val[STATS[k] + cnf_lvs[k] + 'L']
-                tmp[j, 2] = val[STATS[k] + cnf_lvs[k] + 'U']
-            
-            ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5,
-                    color=line_colors[i])
-            l, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2,
-                    marker=(3 + i, 0, 0), markersize=18, color=line_colors[i])
-
-        else:
-            tmp = np.zeros([num_leads])
+            in_path = data_root + '/grid_stats_' + pfx + '_' + GRD + '_' + START_DT +\
+                      '_to_' + END_DT + '.bin'
         
-            for j in range(num_leads):
-                val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
-                tmp[j] = val[STATS[k]]
-            
-            l, = ax.plot(range(num_leads), tmp[:], linewidth=2,
-                    marker=(3 + i, 0, 0), markersize=18, color=line_colors[i])
-
-            ax.plot(range(num_leads), tmp[:], linewidth=2,
-                    marker=(3 + i, 0, 0), markersize=18, color=line_colors[i])
+        f = open(in_path, 'rb')
+        data = pickle.load(f)
+        f.close()
         
-    # add the line type to the legend
-    line_list.append(l)
+        # load the values to be plotted along with landmask and lead
+        vals = [
+                'VX_MASK',
+                'FCST_LEAD',
+                'FCST_VALID_END',
+               ]
+        vals += STATS
+        
+        # infer existence of confidence intervals with precedence for bootstrap
+        cnf_lvs = []
+        for k in range(2):
+            stat = STATS[k]
+            if stat + '_BCL' in data[TYPE] and\
+                not (data[TYPE][stat + '_BCL'].isnull().values.any()):
+                    vals.append(stat + '_BCL')
+                    vals.append(stat + '_BCU')
+                    cnf_lvs.append('_BC')
+
+            elif stat + '_NCL' in data[TYPE] and\
+                not (data[TYPE][stat + '_NCL'].isnull().values.any()):
+                    vals.append(stat + '_NCL')
+                    vals.append(stat + '_NCU')
+                    cnf_lvs.append('_NC')
+
+            else:
+                cnf_lvs.append(False)
+
+        # cut down df to specified valid date / region and obtain leads of data 
+        stat_data = data[TYPE][vals]
+        stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+        stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
+                                   valid_dt.strftime('%Y%m%d_%H%M%S'))]
+        data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+                            key=lambda x:(len(x), x))
+        num_leads = len(data_leads)
+        
+        # create array storage for stats and plot
+        for k in range(2):
+            exec('ax = ax%s'%k)
+            if cnf_lvs[k]:
+                tmp = np.zeros([num_leads, 3])
+        
+                for j in range(num_leads):
+                    val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
+                    tmp[j, 0] = val[STATS[k]]
+                    tmp[j, 1] = val[STATS[k] + cnf_lvs[k] + 'L']
+                    tmp[j, 2] = val[STATS[k] + cnf_lvs[k] + 'U']
+                
+                ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5,
+                        color=line_colors[i * num_pfxs + m])
+                l, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2,
+                        marker=(3 + i * num_pfxs + m, 0, 0), markersize=18, color=line_colors[i * num_pfxs + m])
+
+            else:
+                tmp = np.zeros([num_leads])
+            
+                for j in range(num_leads):
+                    val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
+                    tmp[j] = val[STATS[k]]
+                
+                l, = ax.plot(range(num_leads), tmp[:], linewidth=2,
+                        marker=(3 + i * num_pfxs + m, 0, 0), markersize=18, color=line_colors[i * num_pfxs + m])
+
+                ax.plot(range(num_leads), tmp[:], linewidth=2,
+                        marker=(3 + i * num_pfxs + m, 0, 0), markersize=18, color=line_colors[i * num_pfxs + m])
+            
+        # add the line type to the legend
+        line_list.append(l)
 
 ##################################################################################
 # define display parameters
 
 # generate tic labels based on hour values
 for i in range(num_leads):
-    data_leads[i] = data_leads[i][:2]
+    data_leads[i] = data_leads[i][:-4]
 
 ax1.set_xticks(range(num_leads))
 ax1.set_xticklabels(data_leads)

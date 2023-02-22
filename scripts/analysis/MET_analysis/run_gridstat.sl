@@ -47,34 +47,34 @@
 #set -x
 
 # root directory for git clone
-USR_HME="/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"
+USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="deterministic_forecast_lag06_b0.20"
+CTR_FLW="ECMWF"
 
 # verification domain for the forecast data
-GRD="d02"
+GRD="0.25"
 
 # define the case-wise sub-directory
 CSE="VD"
 
 # landmask for verification region
-MSK="CALatLonPoints"
+MSK="CA_Climate_Zone_16_Sierra"
 
 # root directory for verification data
 DATA_ROOT="/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA"
 
 # root directory for MET software
-SOFT_ROOT="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
+SOFT_ROOT="/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT"
 
 # define date range and cycle interval for forecast start dates
-START_DT="2019021100"
-END_DT="2019021400"
+START_DT="2019021000"
+END_DT="2019021000"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
-ANL_MIN="24"
-ANL_MAX="96"
+ANL_MIN="120"
+ANL_MAX="168"
 ANL_INT="24"
 
 # define the verification field
@@ -86,17 +86,25 @@ CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 # define the accumulation interval for verification valid times
 ACC_INT="24"
 
+# define the interpolation method and related parameters
+INT_SHPE="SQUARE"
+INT_MTHD="BILIN"
+INT_WDTH="2"
+
 # neighborhodd width for neighborhood methods
-NBRHD_WDTH="33"
+NBRHD_WDTH="3"
 
 # number of bootstrap resamplings, set 0 for off
-BTSTRP="1000"
+BTSTRP="0"
 
 # rank correlation computation flag, TRUE or FALSE
-RNK_CRR="TRUE"
+RNK_CRR="FALSE"
 
 # compute accumulation from cf file, TRUE or FALSE
-CMP_ACC="TRUE"
+CMP_ACC="FALSE"
+
+# optionally define an output prefix based on settings
+PRFX="${INT_SHPE}_${INT_MTHD}_${INT_WDTH}"
 
 #################################################################################
 # Process data
@@ -139,10 +147,10 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
   # set and clean working directory based on looped forecast start date
   work_root="${out_root}/${dirstr}/${GRD}"
   mkdir -p ${work_root}
-  rm -f ${work_root}/grid_stat_*.txt
-  rm -f ${work_root}/grid_stat_*.stat
-  rm -f ${work_root}/grid_stat_*.nc
-  rm -f ${work_root}/GridStatConfig
+  rm -f ${work_root}/grid_stat_${PRFX}_*.txt
+  rm -f ${work_root}/grid_stat_${PRFX}_*.stat
+  rm -f ${work_root}/grid_stat_${PRFX}_*.nc
+  rm -f ${work_root}/GridStatConfig_${PRFX}
 
   # loop specified lead hours for valid time for each initialization time
   lead_num=0
@@ -220,8 +228,8 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
         cmd="singularity exec instance://met1 regrid_data_plane \
         /work_root/${for_f_in} \
         /stageiv_root/${obs_f_in} \
-        /work_root/regridded_${for_f_in} -field 'name=\"${VRF_FLD}_${ACC_INT}hr\"; \
-        level=\"(*,*)\";' -method BILIN -width 2 -v 1"
+        /work_root/regridded_${PRFX}_${for_f_in} -field 'name=\"${VRF_FLD}_${ACC_INT}hr\"; \
+        level=\"(*,*)\";' -shape ${INT_SHPE} -method ${INT_MTHD} -width ${INT_WDTH} -v 1"
 
         echo ${cmd}
         eval ${cmd}
@@ -230,9 +238,9 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
         # NOTE: need to determine under what conditions would this file need to update
         if [[ ! -r "${work_root}/${MSK}_mask_regridded_with_StageIV.nc" ]]; then
           cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
-          /work_root/regridded_${for_f_in} \
+          /work_root/regridded_${PRFX}_${for_f_in} \
           -type poly \
-          /mask_root/region/${MSK}.txt \
+          /mask_root/CA_Climate_Zone/${MSK}.poly \
           /work_root/${MSK}_mask_regridded_with_StageIV.nc"
           echo ${cmd}
           eval ${cmd}
@@ -248,14 +256,20 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
             | sed "s/PLY_MSK/poly = [ \"\/work_root\/${MSK}_mask_regridded_with_StageIV.nc\" ]/" \
             | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
             | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
-            > ${work_root}/GridStatConfig 
+            | sed "s/PRFX/output_prefix    = \"${PRFX}\"/" \
+            > ${work_root}/GridStatConfig_${PRFX} 
         fi
+            # Keeping these lines below as a reference until it is better understood the relationship between
+            # interpolation sub-steps
+            ##| sed "s/INT_SHPE/shape      = ${INT_SHPE}/" \
+            ##| sed "s/INT_MTHD/method = ${INT_MTHD}/" \
+            ##| sed "s/INT_WDTH/width = ${INT_WDTH}/" \
 
         # Run gridstat
         cmd="singularity exec instance://met1 grid_stat -v 10 \
-        /work_root/regridded_${for_f_in}
+        /work_root/regridded_${PRFX}_${for_f_in}
         /stageiv_root/${obs_f_in} \
-        /work_root/GridStatConfig
+        /work_root/GridStatConfig_${PRFX}
         -outdir /work_root"
         echo ${cmd}
         eval ${cmd}
@@ -282,7 +296,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     echo ${cmd}
     eval ${cmd}
 
-    cmd="rm -f ${work_root}/regridded_${for_f_in}"
+    cmd="rm -f ${work_root}/regridded_${PRFX}_${for_f_in}"
     echo ${cmd}
     eval ${cmd}
 
