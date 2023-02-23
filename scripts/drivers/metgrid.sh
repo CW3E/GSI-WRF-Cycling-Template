@@ -20,7 +20,7 @@
 ##################################################################################
 # License Statement:
 ##################################################################################
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -104,11 +104,11 @@ fi
 # Options below are defined in workflow variables
 #
 # MEMID      = Ensemble ID index, 00 for control, i > 0 for perturbation
-# BKG_INT    = Interval of input data in HH
 # STRT_TIME  = Simulation start time in YYMMDDHH
 # IF_DYN_LEN = "Yes" or "No" switch to compute forecast length dynamically 
 # FCST_HRS   = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
 # EXP_VRF    = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
+# BKG_INT    = Interval of input data in HH
 # MAX_DOM    = Max number of domains to use in namelist settings
 #
 ##################################################################################
@@ -119,14 +119,6 @@ if [ ! ${MEMID} ]; then
 else
   # ensure padding to two digits is included
   memid=`printf %02d $(( 10#${MEMID} ))`
-fi
-
-if [ ! ${BKG_INT} ]; then
-  echo "ERROR: \${BKG_INT} is not defined."
-  exit 1
-elif [ ! ${BKG_INT} -gt 0 ]; then
-  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
-  exit 1
 fi
 
 if [ ${#STRT_TIME} -ne 10 ]; then
@@ -167,6 +159,14 @@ fi
 # define the end time based on forecast length control flow above
 end_time=`date -d "${strt_time} ${fcst_len} hours"`
 
+if [ ! ${BKG_INT} ]; then
+  echo "ERROR: \${BKG_INT} is not defined."
+  exit 1
+elif [ ! ${BKG_INT} -gt 0 ]; then
+  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
+  exit 1
+fi
+
 if [ ! ${MAX_DOM} ]; then
   echo "ERROR: \${MAX_DOM} is not defined."
   exit 1
@@ -186,7 +186,7 @@ fi
 # CYCLE_HME = Cycle YYYYMMDDHH named directory for cycling data containing
 #             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # MPIRUN    = MPI multiprocessing evaluation call, machine specific
-# N_PROC  = The total number of processes to run metgrid.exe with MPI
+# N_PROC    = The total number of processes to run metgrid.exe with MPI
 #
 ##################################################################################
 
@@ -285,14 +285,14 @@ done
 #  Build WPS namelist
 ##################################################################################
 # Copy the wps namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-namelist_template=${EXP_CNFG}/namelists/namelist.wps
-if [ ! -r ${namelist_template} ]; then 
-  msg="WPS namelist template '${namelist_template}' is not readable or "
+namelist_temp=${EXP_CNFG}/namelists/namelist.wps
+if [ ! -r ${namelist_temp} ]; then 
+  msg="WPS namelist template '${namelist_temp}' is not readable or "
   msg+="does not exist."
   echo ${msg}
   exit 1
 else
-  cmd="cp ${namelist_template} ."
+  cmd="cp ${namelist_temp} ."
   echo ${cmd}; eval ${cmd}
 fi
 
@@ -301,14 +301,14 @@ in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
 out_dom="\1 = ${MAX_DOM}"
 cat namelist.wps \
   | sed "s/${in_dom}/${out_dom}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
+  > namelist.wps.tmp
+mv namelist.wps.tmp namelist.wps
 
 # define start / end time patterns for namelist.wps
 strt_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
 end_dt=`date +%Y-%m-%d_%H_%M_%S -d "${end_time}"`
 
-in_sd="\(START_DATE\)${EQUAL}STAR_DATE"
+in_sd="\(START_DATE\)${EQUAL}START_DATE"
 out_sd="\1 = '${strt_dt}','${strt_dt}','${strt_dt}'"
 in_ed="\(END_DATE\)${EQUAL}END_DATE"
 out_ed="\1 = '${end_dt}','${end_dt}','${end_dt}'"
@@ -317,8 +317,8 @@ out_ed="\1 = '${end_dt}','${end_dt}','${end_dt}'"
 cat namelist.wps \
   | sed "s/${in_sd}/${out_sd}/" \
   | sed "s/${in_ed}/${out_ed}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
+  > namelist.wps.tmp
+mv namelist.wps.tmp namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = BKG_INT * 3600 ))
@@ -326,8 +326,8 @@ in_int="\(INTERVAL_SECONDS\)${EQUAL}INTERVAL_SECONDS"
 out_int="\1 = ${data_interval_sec}"
 cat namelist.wps \
   | sed "s/${in_int}/${out_int}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
+  > namelist.wps.tmp
+mv namelist.wps.tmp namelist.wps
 
 # Remove pre-existing metgrid files
 cmd="rm -f met_em.d0*.*.nc"
@@ -341,11 +341,10 @@ echo
 echo "EXP_CNFG  = ${EXP_CNFG}"
 echo "MEMID     = ${MEMID}"
 echo "CYCLE_HME = ${CYCLE_HME}"
-echo
-echo "BKG_INT   = ${BKG_INT}"
-echo "MAX_DOM   = ${MAX_DOM}"
 echo "STRT_TIME = ${strt_dt}"
 echo "END_TIME  = ${end_dt}"
+echo "BKG_INT   = ${BKG_INT}"
+echo "MAX_DOM   = ${MAX_DOM}"
 echo
 now=`date +%Y-%m-%d_%H_%M_%S`
 echo "metgrid started at ${now}."

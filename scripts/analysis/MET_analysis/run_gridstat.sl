@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 02:00:00
+#SBATCH -t 00:30:00
 #SBATCH --job-name="gridstat"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -50,7 +50,7 @@
 USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template"
 
 # control flow to be processed
-CTR_FLW="ECMWF"
+CTR_FLW="GFS"
 
 # verification domain for the forecast data
 GRD="0.25"
@@ -68,12 +68,12 @@ DATA_ROOT="/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA"
 SOFT_ROOT="/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT"
 
 # define date range and cycle interval for forecast start dates
-START_DT="2019021000"
-END_DT="2019021000"
+START_DT="2019020800"
+END_DT="2019021400"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
-ANL_MIN="120"
+ANL_MIN="24"
 ANL_MAX="168"
 ANL_INT="24"
 
@@ -87,7 +87,7 @@ CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 ACC_INT="24"
 
 # define the interpolation method and related parameters
-INT_SHPE="SQUARE"
+INT_SHPE="CIRCLE"
 INT_MTHD="BILIN"
 INT_WDTH="2"
 

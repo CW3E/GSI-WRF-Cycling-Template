@@ -1,0 +1,638 @@
+<?xml version="1.0"?>
+<!DOCTYPE workflow
+[
+  <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
+
+  <!-- NAME OF CONTROL FLOW INCLUDING TUNABLE SETTINGS -->
+  <!ENTITY LAG           "00"> <!-- Define the lag of the ensemble simulation start time here in HH -->
+  <!ENTITY BETA          "0.00"> <!-- Define tuneable beta value for ensemble hybridization here -->
+  <!ENTITY S_ENS_V       "03"> <!-- Define tuneable beta value for ensemble vertical localization scale here -->
+  <!ENTITY S_ENS_H       "0300"> <!-- Define tuneable value for ensemble horizontal localization scale here -->
+  <!ENTITY CSE_NAME      "VD"> <!-- Define the case study name for experiment group -->
+  <!ENTITY CNFG_NAME     "3denvar_lag&LAG;_b&BETA;_v&S_ENS_V;_h&S_ENS_H;_restart"> <!-- Config name should match .xml file name -->
+  <!ENTITY EXP_NAME      "&CSE_NAME;/&CNFG_NAME;"> <!-- Experiment logs and data will be collected in this structure -->
+  <!-- NAME OF CONTROL FLOW INCLUDING TUNABLE SETTINGS -->
+
+  <!-- COMPUTER-DEPENDENT ITEMS -->
+  <!ENTITY CLNE_ROOT     "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template"> <!-- Location of git clone -->
+  <!ENTITY SOFT_ROOT     "/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT"> <!-- Root directory of software stack executables -->
+  <!ENTITY DATA_ROOT     "/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/&CSE_NAME;"> <!-- Root directory of case study forcing data -->
+  <!-- END COMPUTER-DEPENDENT -->
+
+  <!-- USER-DEPENDENT ITEMS -->
+  <!ENTITY EMAIL         "cgrudzien@ucsd.edu"> <!-- Email account -->
+  <!ENTITY USERID        "cgrudzien"> <!-- Username -->
+  <!-- END USER-DEPENDENT -->
+
+  <!-- WORKFLOW SETTINGS -->
+  <!ENTITY EXP_HME       "&CLNE_ROOT;/data/simulation_io/&EXP_NAME;"> <!-- Root directory of experiment I/O --> 
+  <!ENTITY EXP_LOG       "&CLNE_ROOT;/logs/&EXP_NAME;"> <!-- Root directory of workflow task logs -->
+  <!ENTITY EXP_CNFG      "&CLNE_ROOT;/simulation_settings/&EXP_NAME;"> <!-- Root directory of experiment configuration files -->
+  <!ENTITY SCRIPTS       "&CLNE_ROOT;/scripts"> <!-- Root directory of workflow scripts -->
+  <!ENTITY DRIVERS       "&SCRIPTS;/drivers"> <!-- Root directory of task driver scripts -->
+  <!ENTITY ENVRNMTS      "&SCRIPTS;/environments"> <!-- Root directory of software stack environment scripts -->
+  <!-- END WORKFLOW SETTINGS -->
+
+  <!-- SOFTWARE SETTINGS -->
+  <!ENTITY WPS_ROOT      "&SOFT_ROOT;/WRF_CODE/WRF_4.4.2/WPS"> <!-- Root directory of WPS clean build -->
+  <!ENTITY WRF_ROOT      "&SOFT_ROOT;/WRF_CODE/WRF_4.4.2/WRF"> <!-- Root directory of WRF clean build -->
+  <!ENTITY WRFDA_ROOT    "&SOFT_ROOT;/WRF_CODE/WRF_4.4.2/WRFDA"> <!-- Root directory of WRFDA clean build -->
+  <!ENTITY GSI_EXE       "&SOFT_ROOT;/GSI_CODE/comGSIv3.7_EnKFv1.3/build/bin/gsi.x"> <!-- Full path to GSI executable -->
+  <!ENTITY CRTM_ROOT     "&SOFT_ROOT;/CRTM_CODE/CRTM_v2.3.0/Big_Endian"> <!-- Root directory of CRTM files for GSI analysis -->
+  <!-- END SOFTWARE SETTINGS -->
+
+  <!-- CYCLING SETTINGS -->
+  <!ENTITY CYCLE_STRT    "201902090000"> <!-- First initial time for a DA cycle including analsysis and forecast -->
+  <!ENTITY CYCLE_END     "201902100000"> <!-- Last initial time for a DA cycle including analysis and forecast -->
+  <!ENTITY CYCLE_VRF     "201902110000"> <!-- Verification time for forecast simulations -->
+  <!ENTITY CYCLE_INT     "06:00:00"> <!-- Interval between cycle start / end times -->
+  <!ENTITY MEM_LIST      "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
+  <!ENTITY N_ENS         "20"> <!-- Must equal the max index of the MEM_LIST above or 00 if not hybrid DA -->
+  <!-- END CYCLING SETTINGS -->
+
+  <!-- UNGRIB SETTINGS -->
+  <!ENTITY CTR_BKG_DATA  "GFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
+  <!ENTITY ENS_BKG_DATA  "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
+  <!ENTITY WPS_CNST      "&ENVRNMTS;/WPS_constants.sh"> <!-- Full path to WPS software environment script -->
+  <!-- END UNGRIB SETTINGS -->
+
+  <!-- WRF SETTINGS -->
+  <!ENTITY WRF_CNST      "&ENVRNMTS;/WRF_constants.sh"> <!-- Full path to WRF software environment script -->
+  <!ENTITY WRF_CTR_DOM   "1"> <!-- Max domain for control simulation -->
+  <!ENTITY WRF_ENS_DOM   "1"> <!-- Max domain for ensemble simulation -->
+  <!ENTITY WRF_DOWN_DOM  "2"> <!-- Domain index to have ICs downscaled from d01 for forecast validation -->
+  <!ENTITY FCST_LEN      "06"> <!-- Length of cycling forecasts in HH, usually equal to CYCLE_INT -->
+  <!ENTITY FCST_INT      "03"> <!-- Output interval for wrfout file in HH -->
+  <!ENTITY CTR_DATA_INT  "03"> <!-- Data file frequency for control simulation forcing in HH -->
+  <!ENTITY ENS_DATA_INT  "06"> <!-- Data file frequency for ensemble simulation forcing in HH -->
+  <!ENTITY WRF_ENS_ROOT  "&DATA_ROOT;/ensembles/lag&LAG;"> <!-- Static ensemble perturbations stored here, depending in lag length --> 
+  <!ENTITY IF_SST_UPDTE  "No"> <!-- This setting defines SST updates in simulation and is applied to both WRF and real.exe runs -->
+  <!ENTITY IF_FEEDBACK   "No"> <!-- This setting defines Yes / No for nested domain 2-way coupling -->
+  <!ENTITY NIO_TPG       "0"> <!-- Quilting tasks per group, set NIO_TPG=0 for default TURN OFF QUILTING --> 
+  <!ENTITY NIO_GROUPS    "4"> <!-- Quilting number of groups -->
+  <!-- END WRF SETTINGS -->
+
+  <!-- GSI SETTINGS -->
+  <!ENTITY GSI_CNST     "&ENVRNMTS;/GSI_constants.sh"> <!-- Full path of GSI software environment file -->
+  <!ENTITY MAX_BC_LOOP  "2"> <!-- Number of loops to run GSI generating variational bias correction files, starting at 0 -->
+  <!-- END GSI SETTINGS -->
+ 
+  <!-- JOB SETTINGS -->
+  <!ENTITY SCHED        "slurm"> <!-- Machine scheduler, note native scheduler commands in tasks below -->
+  <!ENTITY PROJECT      "--account=cwp106"> <!-- Project billing account -->
+  <!ENTITY PART_COMPU   "--partition=compute"> <!-- Slurm partition for standard computing -->
+  <!ENTITY PART_DEBUG   "--partition=shared">  <!-- Slurm partition for small jobs / rapid debugging -->
+  <!ENTITY PART_LRGMEM  "--partition=large-shared"> <!-- Slurm partition for large memory jobs such as GSI -->
+  <!ENTITY MPIRUN       "mpirun"> <!-- MPI exec command to call multiprocess jobs with -->
+  <!ENTITY WPS_PROC     "24"> <!-- WPS parallel / REAL number of procs (all serial jobs are hard-coded as 1) -->
+  <!ENTITY WPS_MEM      "5G"> <!-- WPS MEM per CPU argument for SLURM -->
+  <!ENTITY WPS_NODESIZE "24"> <!-- WPS node size -->
+  <!ENTITY WPS_NODES    "1"> <!-- Number of nodes for WPS / REAL jobs -->
+  <!ENTITY WPS_WC       "00:30:00"> <!-- Wallclock limit for WPS jobs -->
+  <!ENTITY WRF_PROC     "384"> <!-- WRF number of procs -->
+  <!ENTITY WRF_MEM      "5G"> <!-- WRF MEM per CPU argument for SLURM -->
+  <!ENTITY WRF_NODESIZE "24"> <!-- WRF node size -->
+  <!ENTITY WRF_NODES    "16"> <!-- Number of nodes for WRF jobs -->
+  <!ENTITY WRF_WC       "01:30:00"> <!-- Wallclock limit for WRF jobs -->
+  <!ENTITY GSI_PROC     "64"> <!-- GSI number of procs -->
+  <!ENTITY GSI_MEM      "21G"> <!-- GSI MEM per CPU argument for SLURM -->
+  <!ENTITY GSI_NODESIZE "64"> <!-- GSI node size -->
+  <!ENTITY GSI_NODES    "1"> <!-- Number of nodes for GSI jobs -->
+  <!ENTITY GSI_WC       "06:30:00"> <!-- Wallclock limit for GSI jobs ->
+  <!-- END JOB SETTINGS -->
+]>
+
+<workflow realtime="F" scheduler="&SCHED;">
+  <cycledef group="q_daily">&CYCLE_STRT; &CYCLE_END; &CYCLE_INT;</cycledef>
+  <log verbosity="10"><cyclestr>&EXP_LOG;/workflow/workflow_@Y@m@d@H.log</cyclestr></log>
+  
+  <task name="ungrib_ens_00" maxtries="12" cycledefs="q_daily">
+    <command>&DRIVERS;/ungrib.sh</command>
+    <cores>1</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_WC;</walltime>
+    <jobname><cyclestr>ungrib_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&EXP_LOG;/ungrib/ungrib_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <native>&PART_DEBUG;</native>
+    <native>&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
+    <envar>
+      <name>CNST</name>
+      <value>&WPS_CNST;</value>
+    </envar>
+    <envar>
+       <name>MEMID</name>
+       <value>00</value>
+    </envar>
+    <envar>
+      <name>BKG_DATA</name>
+      <value>&CTR_BKG_DATA;</value>
+    </envar>
+    <envar>
+      <name>FCST_LEN</name>
+      <value>&FCST_LEN;</value>
+    </envar>
+    <envar>
+      <name>DATA_INT</name>
+      <value>&CTR_DATA_INT;</value>
+    </envar>
+    <envar>
+      <name>STRT_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>BKG_STRT_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>IF_ECMWF_ML</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>WPS_ROOT</name>
+      <value>&WPS_ROOT;</value>
+    </envar>
+    <envar>
+      <name>EXP_CNFG</name>
+      <value>&EXP_CNFG;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_HME</name>
+      <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
+    </envar>
+    <dependency>
+      <or>
+        <not>
+          <cycleexistdep cycle_offset="-&CYCLE_INT;"/> 
+        </not> 	
+        <taskdep task="wrf_ens_00" cycle_offset="-&CYCLE_INT;" state="SUCCEEDED"/>
+      </or>
+    </dependency>
+  </task>
+
+  <task name="metgrid_ens_00" maxtries="12" cycledefs="q_daily">
+    <command>&DRIVERS;/metgrid.sh</command>
+    <cores>&WPS_PROC;</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_WC;</walltime>
+    <jobname><cyclestr>metgrid_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&EXP_LOG;/metgrid/metgrid_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <native>&PART_DEBUG;</native>
+    <native>&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
+    <envar>
+      <name>CNST</name>
+      <value>&WPS_CNST;</value>
+    </envar>
+    <envar>
+       <name>MEMID</name>
+       <value>00</value>
+    </envar>
+    <envar>
+      <name>FCST_LEN</name>
+      <value>&FCST_LEN;</value>
+    </envar>
+    <envar>
+      <name>DATA_INT</name>
+      <value>&CTR_DATA_INT;</value>
+    </envar>
+    <envar>
+      <name>STRT_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&WRF_CTR_DOM;</value>
+    </envar>
+    <envar>
+      <name>WPS_ROOT</name>
+      <value>&WPS_ROOT;</value>
+    </envar>
+    <envar>
+      <name>EXP_CNFG</name>
+      <value>&EXP_CNFG;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_HME</name>
+      <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <envar>
+      <name>WPS_PROC</name>
+      <value>&WPS_PROC;</value>
+    </envar>
+    <dependency> 
+      <taskdep task="ungrib_ens_00" state="SUCCEEDED"/>
+    </dependency>
+  </task>
+
+  <task name="real_ens_00" maxtries="12" cycledefs="q_daily">
+    <command>&DRIVERS;/real.sh</command>
+    <cores>&WPS_PROC;</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_WC;</walltime>
+    <jobname><cyclestr>real_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&EXP_LOG;/real/real_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <native>&PART_DEBUG;</native>
+    <native>&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
+    <envar>
+      <name>CNST</name>
+      <value>&WRF_CNST;</value>
+    </envar>
+    <envar>
+       <name>MEMID</name>
+       <value>00</value>
+    </envar>
+    <envar>
+      <name>BKG_DATA</name>
+      <value>&CTR_BKG_DATA;</value>
+    </envar>
+    <envar>
+      <name>FCST_LEN</name>
+      <value>&FCST_LEN;</value>
+    </envar>
+    <envar>
+      <name>DATA_INT</name>
+      <value>&CTR_DATA_INT;</value>
+    </envar>
+    <envar>
+      <name>STRT_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&WRF_CTR_DOM;</value>
+    </envar>
+    <envar>
+      <name>IF_SST_UPDTE</name>
+      <value>&IF_SST_UPDTE;</value>
+    </envar>
+    <envar>
+      <name>WRF_ROOT</name>
+      <value>&WRF_ROOT;</value>
+    </envar>
+    <envar>
+      <name>EXP_CNFG</name>
+      <value>&EXP_CNFG;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_HME</name>
+      <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <envar>
+      <name>WPS_PROC</name>
+      <value>&WPS_PROC;</value>
+    </envar>
+    <dependency> 
+      <taskdep task="metgrid_ens_00" state="SUCCEEDED"/>
+    </dependency>
+  </task>
+
+  <task name="wrfda_lowbc" maxtries="12" cycledefs="q_daily">
+    <command>&DRIVERS;/wrfda.sh</command>
+    <cores>1</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_WC;</walltime>
+    <jobname><cyclestr>wrfda_lowbc_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&EXP_LOG;/wrfda/wrfda_lowbc_@Y@m@d@H.log</cyclestr></join>
+    <native>&PART_DEBUG;</native>
+    <native>&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
+    <envar>
+      <name>CNST</name>
+      <value>&WRF_CNST;</value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>ANL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>IF_ENS_UPDTE</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>BOUNDARY</name>
+      <value>LOWER</value>
+    </envar>
+    <envar>
+      <name>WRF_CTR_DOM</name>
+      <value>&WRF_CTR_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRF_ENS_DOM</name>
+      <value>&WRF_ENS_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRFDA_ROOT</name>
+      <value>&WRFDA_ROOT;</value>
+    </envar>
+    <envar>
+      <name>EXP_CNFG</name>
+      <value>&EXP_CNFG;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_HME</name>
+      <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>ENS_ROOT</name>
+      <value><cyclestr>&WRF_ENS_ROOT;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <dependency> 
+      <taskdep task="real_ens_00" state="SUCCEEDED"/>
+    </dependency>
+  </task>
+
+  <task name="gsi_analysis" maxtries="12" cycledefs="q_daily">
+    <command>&DRIVERS;/gsi.sh</command>
+    <nodesize>&GSI_NODESIZE;</nodesize>
+    <cores>&GSI_PROC;</cores>
+    <walltime>&GSI_WC;</walltime>
+    <jobname><cyclestr>gsi_analysis_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&EXP_LOG;/gsi/gsi_analysis_@Y@m@d@H.log</cyclestr></join>
+    <native>&PART_LRGMEM;</native>
+    <native>&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&GSI_NODES;</native>
+    <native>--mem-per-cpu=&GSI_MEM;</native>
+    <native>--qos=large-shared-unlim</native>
+    <envar>
+      <name>CNST</name>
+      <value>&GSI_CNST;</value>
+    </envar>
+    <envar>
+      <name>WRF_CTR_DOM</name>
+      <value>&WRF_CTR_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRF_ENS_DOM</name>
+      <value>&WRF_ENS_DOM;</value>
+    </envar>
+    <envar>
+      <name>IF_HYBRID</name>
+      <value>Yes</value>
+    </envar>
+    <envar>
+      <name>IF_OBSERVER</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>MAX_BC_LOOP</name>
+      <value>&MAX_BC_LOOP;</value>
+    </envar>
+    <envar>
+      <name>BETA</name>
+      <value>&BETA;</value>
+    </envar>
+    <envar>
+      <name>S_ENS_H</name>
+      <value>&S_ENS_H;</value>
+    </envar>
+    <envar>
+      <name>S_ENS_V</name>
+      <value>&S_ENS_V;</value>
+    </envar>
+    <envar>
+      <name>IF_4DENVAR</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>ANL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>GSI_EXE</name>
+      <value>&GSI_EXE;</value>
+    </envar>
+    <envar>
+      <name>CRTM_ROOT</name>
+      <value>&CRTM_ROOT;</value>
+    </envar>
+    <envar>
+      <name>EXP_CNFG</name>
+      <value>&EXP_CNFG;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_HME</name>
+      <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
+    </envar>
+    <envar>
+      <name>ENS_ROOT</name>
+      <value><cyclestr>&WRF_ENS_ROOT;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <envar>
+      <name>GSI_PROC</name>
+      <value>&GSI_PROC;</value>
+    </envar>
+    <dependency> 
+      <taskdep task="wrfda_lowbc" state="SUCCEEDED"/> 
+    </dependency>
+  </task>
+
+  <task name="wrfda_latbc" maxtries="12" cycledefs="q_daily">
+    <command>&DRIVERS;/wrfda.sh</command>
+    <cores>1</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_WC;</walltime>
+    <jobname><cyclestr>wrfda_latbc_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&EXP_LOG;/wrfda/wrfda_latbc_@Y@m@d@H.log</cyclestr></join>
+    <native>&PART_DEBUG;</native>
+    <native>&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
+    <envar>
+      <name>CNST</name>
+      <value>&WRF_CNST;</value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
+    </envar>
+    <envar>
+      <name>ANL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <!-- Skip the lateral boundary condition update for the discarded ensemble -->
+    <envar>
+      <name>IF_ENS_UPDTE</name>
+      <value>No</value>
+    </envar>
+    <envar>
+      <name>BOUNDARY</name>
+      <value>LATERAL</value>
+    </envar>
+    <envar>
+      <name>WRF_CTR_DOM</name>
+      <value>&WRF_CTR_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRF_ENS_DOM</name>
+      <value>&WRF_ENS_DOM;</value>
+    </envar>
+    <envar>
+      <name>WRFDA_ROOT</name>
+      <value>&WRFDA_ROOT;</value>
+    </envar>
+    <envar>
+      <name>EXP_CNFG</name>
+      <value>&EXP_CNFG;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_HME</name>
+      <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
+    </envar>
+    <envar>
+      <name>ENS_ROOT</name>
+      <value><cyclestr>&WRF_ENS_ROOT;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <dependency> 
+      <taskdep task="gsi_analysis" state="SUCCEEDED"/>
+    </dependency>
+  </task>
+
+  <task name="wrf_ens_00" maxtries="12" cycledefs="q_daily">
+    <command>&DRIVERS;/wrf.sh</command>
+    <cores>&WRF_PROC;</cores>
+    <nodesize>&WRF_NODESIZE;</nodesize>
+    <walltime>&WRF_WC;</walltime>
+    <jobname><cyclestr>wrf_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&EXP_LOG;/wrf/wrf_ens_00_@Y@m@d@H.log</cyclestr></join>
+    <native>&PART_COMPU;</native>
+    <native>&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WRF_NODES;</native>
+    <native>--mem-per-cpu=&WRF_MEM;</native>
+    <envar>
+      <name>CNST</name>
+      <value>&WRF_CNST;</value>
+    </envar>
+    <envar>
+       <name>MEMID</name>
+       <value>00</value>
+    </envar>
+    <envar>
+      <name>BKG_DATA</name>
+      <value>&CTR_BKG_DATA;</value>
+    </envar>
+    <envar>
+      <name>FCST_LEN</name>
+      <value>&FCST_LEN;</value>
+    </envar>
+    <envar>
+      <name>FCST_INT</name>
+      <value>&FCST_INT;</value>
+    </envar>
+    <envar>
+      <name>DATA_INT</name>
+      <value>&CTR_DATA_INT;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_INT</name>
+      <value>&CYCLE_INT;</value>
+    </envar>
+    <envar>
+      <name>STRT_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>CYCLE_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>MAX_DOM</name>
+      <value>&WRF_CTR_DOM;</value>
+    </envar>
+    <envar>
+      <name>DOWN_DOM</name>
+      <value>&WRF_DOWN_DOM;</value>
+    </envar>
+    <envar>
+      <name>IF_CYCLING</name>
+      <value>Yes</value>
+    </envar>
+    <envar>
+      <name>IF_SST_UPDTE</name>
+      <value>&IF_SST_UPDTE;</value>
+    </envar>
+    <envar>
+      <name>IF_FEEDBACK</name>
+      <value>&IF_FEEDBACK;</value>
+    </envar>
+    <envar>
+      <name>WRF_ROOT</name>
+      <value>&WRF_ROOT;</value>
+    </envar>
+    <envar>
+      <name>EXP_CNFG</name>
+      <value>&EXP_CNFG;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_HME</name>
+      <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATA_ROOT</name>
+      <value>&DATA_ROOT;</value>
+    </envar>
+    <envar>
+      <name>MPIRUN</name>
+      <value>&MPIRUN;</value>
+    </envar>
+    <envar>
+      <name>WRF_PROC</name>
+      <value>&WRF_PROC;</value>
+    </envar>
+    <envar>
+      <name>NIO_GROUPS</name>
+      <value>&NIO_GROUPS;</value>
+    </envar>
+    <envar>
+      <name>NIO_TPG</name>
+      <value>&NIO_TPG;</value>
+    </envar>
+    <dependency> 
+     <taskdep task="wrfda_latbc" state="SUCCEEDED"/>
+    </dependency>
+  </task>
+</workflow>

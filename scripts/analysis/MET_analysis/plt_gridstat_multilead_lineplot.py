@@ -59,6 +59,7 @@ PRFXS = [
         'SQUARE_BILIN_2',
         'SQUARE_DW_MEAN_2',
         'SQUARE_NEAREST_1',
+        'SQUARE_MAXGAUSS_1',
         ]
 
 # define case-wise sub-directory
@@ -261,7 +262,7 @@ plt.figtext(.05, .265, lab1, horizontalalignment='right', rotation=90,
 plt.figtext(.5, .02, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws, 5),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 2),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display

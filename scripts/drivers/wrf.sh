@@ -20,7 +20,7 @@
 ##################################################################################
 # License Statement:
 ##################################################################################
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -458,14 +458,14 @@ fi
 #  Build WRF namelist
 ##################################################################################
 # Copy the wrf namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-namelist_template=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
-if [ ! -r ${namelist_template} ]; then 
-  msg="WRF namelist template '${namelist_template}' is not readable or "
+namelist_temp=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
+if [ ! -r ${namelist_temp} ]; then 
+  msg="WRF namelist template '${namelist_temp}' is not readable or "
   msg+="does not exist."
   echo ${msg}
   exit 1
 else
-  cmd="cp ${namelist_template} ./namelist.input"
+  cmd="cp ${namelist_temp} ./namelist.input"
   echo ${cmd}; eval ${cmd}
 fi
 
@@ -493,33 +493,33 @@ in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
 out_dom="\1 = ${MAX_DOM}"
 cat namelist.input \
   | sed "s/${in_dom}/${out_dom}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update the run_days in wrf namelist.input
 cat namelist.input \
   | sed "s/\(RUN_DAYS\)${EQUAL}RUN_DAYS/\1 = ${run_days}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update the run_hours in wrf namelist
 cat namelist.input \
   | sed "s/\(RUN_HOURS\)${EQUAL}RUN_HOURS/\1 = ${run_hours}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update the history interval in wrf namelist (minutes, propagates settings to three domains)
 (( hist_int = ${WRFOUT_INT} * 60 ))
 cat namelist.input \
   | sed "s/\(HISTORY_INTERVAL\)${EQUAL}HISTORY_INTERVAL/\1 = ${hist_int}, /" \
-   > namelist.input.new
-mv namelist.input.new namelist.input
+   > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update the restart interval in wrf namelist to the end of the fcst_len
 cat namelist.input \
   | sed "s/\(RESTART_INTERVAL\)${EQUAL}RESTART_INTERVAL/\1 = ${run_mins}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update the start time in wrf namelist (propagates settings to three domains)
 cat namelist.input \
@@ -529,8 +529,8 @@ cat namelist.input \
   | sed "s/\(START_HOUR\)${EQUAL}START_HOUR/\1 = ${s_H}, ${s_H}, ${s_H}/" \
   | sed "s/\(START_MINUTE\)${EQUAL}START_MINUTE/\1 = ${s_M}, ${s_M}, ${s_M}/" \
   | sed "s/\(START_SECOND\)${EQUAL}START_SECOND/\1 = ${s_S}, ${s_S}, ${s_S}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update end time in namelist (propagates settings to three domains)
 cat namelist.input \
@@ -540,21 +540,21 @@ cat namelist.input \
   | sed "s/\(END_HOUR\)${EQUAL}END_HOUR/\1 = ${e_H}, ${e_H}, ${e_H}/" \
   | sed "s/\(END_MINUTE\)${EQUAL}END_MINUTE/\1 = ${e_M}, ${e_M}, ${e_M}/" \
   | sed "s/\(END_SECOND\)${EQUAL}END_SECOND/\1 = ${e_S}, ${e_S}, ${e_S}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update interval in namelist
 (( data_interval_sec = BKG_INT * 3600 ))
 cat namelist.input \
   | sed "s/\(INTERVAL_SECONDS\)${EQUAL}INTERVAL_SECONDS/\1 = ${data_interval_sec}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update sst_update settings
 cat namelist.input \
   | sed "s/\(SST_UPDATE\)${EQUAL}SST_UPDATE/\1 = ${sst_update}/"\
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   # update the auxinput4_interval to the BKG_INT
@@ -563,22 +563,22 @@ if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
   cat namelist.input \
     | sed "s/${aux_in}/${aux_out}/" \
-    > namelist.input.new
-  mv namelist.input.new namelist.input
+    > namelist.input.tmp
+  mv namelist.input.tmp namelist.input
 fi
 
 # Update feedback option for nested domains
 cat namelist.input \
   | sed "s/\(FEEDBACK\)${EQUAL}FEEDBACK/\1 = ${feedback}/"\
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update the quilting settings to the parameters set in the workflow
 cat namelist.input \
   | sed "s/\(NIO_TASKS_PER_GROUP\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_TPG}/" \
   | sed "s/\(NIO_GROUPS\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_GROUPS}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 ##################################################################################
 # Run WRF

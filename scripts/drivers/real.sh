@@ -20,7 +20,7 @@
 ##################################################################################
 # License Statement:
 ##################################################################################
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -104,12 +104,12 @@ fi
 # Options below are defined in workflow variables
 #
 # MEMID        = Ensemble ID index, 00 for control, i > 00 for perturbation
-# BKG_DATA     = String case variable for supported inputs: GFS, GEFS currently
-# BKG_INT      = Interval of input data in HH
 # STRT_TIME    = Simulation start time in YYMMDDHH
 # IF_DYN_LEN   = "Yes" or "No" switch to compute forecast length dynamically 
 # FCST_HRS     = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
 # EXP_VRF      = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
+# BKG_INT      = Interval of input data in HH
+# BKG_DATA     = String case variable for supported inputs: GFS, GEFS currently
 # MAX_DOM      = Max number of domains to use in namelist settings
 # IF_SST_UPDTE = "Yes" or "No" switch to compute dynamic SST forcing, (must
 #                include auxinput4 path and timing in namelist) case insensitive
@@ -122,21 +122,6 @@ if [ ! ${MEMID}  ]; then
 else
   # ensure padding to two digits is included
   memid=`printf %02d $(( 10#${MEMID} ))`
-fi
-
-if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
-  msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
-  msg+=" as currently supported inputs."
-  echo ${msg}
-  exit 1
-fi
-
-if [ ! ${BKG_INT} ]; then
-  echo "ERROR: \${BKG_INT} is not defined."
-  exit 1
-elif [ ! ${BKG_INT} -gt 0 ]; then
-  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
-  exit 1
 fi
 
 if [ ${#STRT_TIME} -ne 10 ]; then
@@ -176,6 +161,21 @@ fi
 
 # define the end time based on forecast length control flow above
 end_time=`date -d "${strt_time} ${fcst_len} hours"`
+
+if [ ! ${BKG_INT} ]; then
+  echo "ERROR: \${BKG_INT} is not defined."
+  exit 1
+elif [ ! ${BKG_INT} -gt 0 ]; then
+  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
+  exit 1
+fi
+
+if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
+  msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
+  msg+=" as currently supported inputs."
+  echo ${msg}
+  exit 1
+fi
 
 if [ ! ${MAX_DOM} ]; then
   echo "ERROR: \${MAX_DOM} is not defined."
@@ -324,14 +324,14 @@ fi
 #  Build real namelist
 ##################################################################################
 # Copy the wrf namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-namelist_template=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
-if [ ! -r ${namelist_template} ]; then 
-  msg="WRF namelist template '${namelist_template}' is not readable or "
+namelist_temp=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
+if [ ! -r ${namelist_temp} ]; then 
+  msg="WRF namelist template '${namelist_temp}' is not readable or "
   msg+="does not exist."
   echo ${msg}
   exit 1
 else
-  cmd="cp ${namelist_template} ./namelist.input"
+  cmd="cp ${namelist_temp} ./namelist.input"
   echo ${cmd}; eval ${cmd}
 fi
 
@@ -358,20 +358,20 @@ in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
 out_dom="\1 = ${MAX_DOM}"
 cat namelist.input \
   | sed "s/${in_dom}/${out_dom}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update the run_days in wrf namelist.input
 cat namelist.input \
   | sed "s/\(RUN_DAYS\)${EQUAL}RUN_DAYS/\1 = ${run_days}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update the run_hours in wrf namelist
 cat namelist.input \
   | sed "s/\(RUN_HOURS\)${EQUAL}RUN_HOURS/\1 = ${run_hours}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update the start time in wrf namelist (propagates settings to three domains)
 cat namelist.input \
@@ -381,8 +381,8 @@ cat namelist.input \
   | sed "s/\(START_HOUR\)${EQUAL}START_HOUR/\1 = ${s_H}, ${s_H}, ${s_H}/" \
   | sed "s/\(START_MINUTE\)${EQUAL}START_MINUTE/\1 = ${s_M}, ${s_M}, ${s_M}/" \
   | sed "s/\(START_SECOND\)${EQUAL}START_SECOND/\1 = ${s_S}, ${s_S}, ${s_S}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update end time in namelist (propagates settings to three domains)
 cat namelist.input \
@@ -392,21 +392,21 @@ cat namelist.input \
   | sed "s/\(END_HOUR\)${EQUAL}END_HOUR/\1 = ${e_H}, ${e_H}, ${e_H}/" \
   | sed "s/\(END_MINUTE\)${EQUAL}END_MINUTE/\1 = ${e_M}, ${e_M}, ${e_M}/" \
   | sed "s/\(END_SECOND\)${EQUAL}END_SECOND/\1 = ${e_S}, ${e_S}, ${e_S}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update interval in namelist
 (( data_interval_sec = BKG_INT * 3600 ))
 cat namelist.input \
   | sed "s/\(INTERVAL_SECONDS\)${EQUAL}INTERVAL_SECONDS/\1 = ${data_interval_sec}/" \
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update sst_update settings
 cat namelist.input \
   | sed "s/\(SST_UPDATE\)${EQUAL}SST_UPDATE/\1 = ${sst_update}/"\
-  > namelist.input.new
-mv namelist.input.new namelist.input
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   # update the auxinput4_interval to the BKG_INT
@@ -415,8 +415,8 @@ if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
   cat namelist.input \
     | sed "s/${aux_in}/${aux_out}/" \
-    > namelist.input.new
-  mv namelist.input.new namelist.input
+    > namelist.input.tmp
+  mv namelist.input.tmp namelist.input
 fi
 
 ##################################################################################
@@ -427,13 +427,12 @@ echo
 echo "EXP_CNFG     = ${EXP_CNFG}"
 echo "MEMID        = ${MEMID}"
 echo "CYCLE_HME    = ${CYCLE_HME}"
-echo
-echo "BKG_DATA     = ${BKG_DATA}"
-echo "BKG_INT      = ${BKG_INT}"
-echo "MAX_DOM      = ${MAX_DOM}"
-echo "IF_SST_UPDTE = ${IF_SST_UPDTE}"
 echo "STRT_TIME    = "`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
 echo "END_TIME     = "`date +%Y-%m-%d_%H_%M_%S -d "${end_time}"`
+echo "BKG_INT      = ${BKG_INT}"
+echo "BKG_DATA     = ${BKG_DATA}"
+echo "MAX_DOM      = ${MAX_DOM}"
+echo "IF_SST_UPDTE = ${IF_SST_UPDTE}"
 echo
 now=`date +%Y-%m-%d_%H_%M_%S`
 echo "real started at ${now}."

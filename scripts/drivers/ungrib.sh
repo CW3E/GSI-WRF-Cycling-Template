@@ -20,7 +20,7 @@
 ##################################################################################
 # License Statement:
 ##################################################################################
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -104,13 +104,13 @@ fi
 # Options below are defined in workflow variables
 #
 # MEMID         = Ensemble ID index, 00 for control, i > 0 for perturbation
-# BKG_DATA      = String case variable for supported inputs: GFS, GEFS currently
-# BKG_INT       = Interval of background input data in HH
 # STRT_TIME     = Simulation start time in YYMMDDHH
 # BKG_STRT_TIME = Background data simulation start time in YYMMDDHH
 # IF_DYN_LEN    = "Yes" or "No" switch to compute forecast length dynamically 
 # FCST_HRS      = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
 # EXP_VRF       = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
+# BKG_INT       = Interval of background input data in HH
+# BKG_DATA      = String case variable for supported inputs: GFS, GEFS currently
 # IF_ECMWF_ML   = "Yes" or "No" switch to compute ECMWF coefficients for
 #                 initializing with model level data, case insensitive
 #
@@ -122,30 +122,6 @@ if [ ! ${MEMID} ]; then
 else
   # ensure padding to two digits is included in memid variable
   memid=`printf %02d $(( 10#${MEMID} ))`
-fi
-
-if [[ ${BKG_DATA} != GFS && ${BKG_DATA} != GEFS ]]; then
-  msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
-  msg+=" as currently supported inputs."
-  echo ${msg}
-  exit 1
-fi
-
-if [ ! ${BKG_INT} ]; then
-  echo "ERROR: \${BKG_INT} is not defined."
-  exit 1
-elif [ ! ${BKG_INT} -gt 0 ]; then
-  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
-  exit 1
-fi
-
-if [ ${#BKG_STRT_TIME} -ne 10 ]; then
-  echo "ERROR: \${BKG_STRT_TIME}, '${BKG_STRT_TIME}', is not in 'YYYYMMDDHH' format." 
-  exit 1
-else
-  # define BKG_STRT_TIME date string wihtout HH
-  bkg_strt_date=${BKG_STRT_TIME:0:8}
-  bkg_strt_hh=${BKG_STRT_TIME:8:2}
 fi
 
 if [ ${#STRT_TIME} -ne 10 ]; then
@@ -186,6 +162,48 @@ fi
 # define the end time based on forecast length control flow above
 end_time=`date -d "${strt_time} ${fcst_len} hours"`
 
+if [ ${#BKG_STRT_TIME} -ne 10 ]; then
+  echo "ERROR: \${BKG_STRT_TIME}, '${BKG_STRT_TIME}', is not in 'YYYYMMDDHH' format." 
+  exit 1
+else
+  # define BKG_STRT_TIME date string wihtout HH
+  bkg_strt_date=${BKG_STRT_TIME:0:8}
+  bkg_strt_hh=${BKG_STRT_TIME:8:2}
+fi
+
+if [ ! ${BKG_INT} ]; then
+  echo "ERROR: \${BKG_INT} is not defined."
+  exit 1
+elif [ ! ${BKG_INT} -gt 0 ]; then
+  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
+  exit 1
+fi
+
+if [ ${BKG_DATA} = GFS ]; then
+  # GFS has single control trajectory
+  fnames="gfs.0p25.${BKG_STRT_TIME}.f*"
+
+  # compute the number of input files to ungrib (incld. first/last times)
+  n_files=$(( ${fcst_len} / ${BKG_DATA_INT} + 1 ))
+
+elif [ ${BKG_DATA} = GEFS ]; then
+  if [ ${memid} = 00 ]; then
+    # 00 perturbation is the control forecast
+    fnames="gec${memid}.t${bkg_strt_hh}z.pgrb*"
+  else
+    # all other are control forecast perturbations
+    fnames="gep${memid}.t${bkg_strt_hh}z.pgrb*"
+  fi
+  # GEFS comes in a/b files for each valid time
+  n_files=$(( 2 * ${fcst_len} / ${BKG_DATA_INT} + 1 ))
+
+else
+  msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
+  msg+=" as currently supported inputs."
+  echo ${msg}
+  exit 1
+fi
+
 if [[ ${IF_ECMWF_ML} != ${YES} && ${IF_ECMWF_ML} != ${NO} ]]; then
   echo "ERROR: \${IF_ECMWF_ML} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
@@ -223,10 +241,8 @@ elif [ ! -d ${EXP_CNFG} ]; then
 fi
 
 if [ ${#CYCLE_HME} -ne 10 ]; then
+  # NOTE: some ungrib jobs start cycling and this directory does not always exist
   echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
-  exit 1
-elif [ ! -d ${CYCLE_HME} ]; then
-  echo "ERROR: \${CYCLE_HME} directory '${CYCLE_HME}' does not exist."
   exit 1
 fi
 
@@ -291,45 +307,28 @@ grib_dataroot=${DATA_ROOT}/gribbed/${BKG_DATA}
 if [! -d ${grib_dataroot} ]; then
   echo "ERROR: the directory ${grib_dataroot} does not exist."
   exit 1
-fi
-
-if [ `ls -l ${grib_dataroot} | wc -l` -lt 2 ]; then
-  msg="ERROR: grib data directory '${grib_dataroot}' is emtpy."
+elif [ `ls -l ${grib_dataroot} | wc -l` -le ${n_files} ]; then
+  msg="ERROR: grib data directory '${grib_dataroot}' is missing bkg input files."
   echo ${msg}
   exit 1
+else
+  # link the grib data to the working directory
+  cmd="./link_grib.csh ${grib_dataroot}/${bkg_strt_date}/${fnames}"
+  echo ${cmd}; eval ${cmd}
 fi
-
-# link the grib data to the working directory
-cmd="./link_grib.csh ${grib_dataroot}/${bkg_strt_date}"
-if [ ${BKG_DATA} = GFS ]; then
-  # GFS has single control trajectory
-  fnames="gfs.0p25.${BKG_STRT_TIME}.f*"
-elif [ ${BKG_DATA} = GEFS ]; then
-  if [ ${memid} = 00 ]; then
-    # 00 perturbation is the control forecast
-    fnames="gec${memid}.t${bkg_strt_hh}z.pgrb*"
-  else
-    # all other are control forecast perturbations
-    fnames="gep${memid}.t${bkg_strt_hh}z.pgrb*"
-  fi
-fi
-
-# link gribbed forecast data
-cmd="${cmd}/${fnames}"
-echo ${cmd}; eval ${cmd}
 
 ##################################################################################
 #  Build WPS namelist
 ##################################################################################
 # Copy the wps namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-namelist_template=${EXP_CNFG}/namelists/namelist.wps
-if [ ! -r ${namelist_template} ]; then 
-  msg="WPS namelist template '${namelist_template}' is not readable or "
+namelist_temp=${EXP_CNFG}/namelists/namelist.wps
+if [ ! -r ${namelist_temp} ]; then 
+  msg="WPS namelist template '${namelist_temp}' is not readable or "
   msg+="does not exist."
   echo ${msg}
   exit 1
 else
-  cmd="cp ${namelist_template} ."
+  cmd="cp ${namelist_temp} ."
   echo ${cmd}; eval ${cmd}
 fi
 
@@ -346,8 +345,8 @@ out_ed="\1 = '${end_dt}','${end_dt}','${end_dt}'"
 cat namelist.wps \
   | sed "s/${in_sd}/${out_sd}/" \
   | sed "s/${in_ed}/${out_ed}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
+  > namelist.wps.tmp
+mv namelist.wps.tmp namelist.wps
 
 # Update interval in namelist
 (( data_interval_sec = BKG_INT * 3600 ))
@@ -355,8 +354,8 @@ in_int="\(INTERVAL_SECONDS\)${EQUAL}INTERVAL_SECONDS"
 out_int="\1 = ${data_interval_sec}"
 cat namelist.wps \
   | sed "s/${in_int}/${out_int}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
+  > namelist.wps.tmp
+mv namelist.wps.tmp namelist.wps
 
 ##################################################################################
 # Run ungrib 
@@ -366,12 +365,11 @@ echo
 echo "EXP_CNFG      = ${EXP_CNFG}"
 echo "MEMID         = ${MEMID}"
 echo "CYCLE_HME     = ${CYCLE_HME}"
-echo
-echo "BKG_DATA      = ${BKG_DATA}"
-echo "BKG_INT       = ${BKG_INT}"
 echo "STRT_TIME     = ${strt_dt}"
 echo "END_TIME      = ${end_dt}"
+echo "BKG_DATA      = ${BKG_DATA}"
 echo "BKG_STRT_TIME = ${BKG_STRT_TIME}"
+echo "BKG_INT       = ${BKG_INT}"
 echo
 now=`date +%Y-%m-%d_%H_%M_%S`
 echo "ungrib started at ${now}."

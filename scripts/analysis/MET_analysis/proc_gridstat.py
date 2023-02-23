@@ -51,8 +51,8 @@ GRD = '0.25'
 
 # define the interpolation method and related parameters
 INT_SHPE = 'SQUARE'
-INT_MTHD = 'DW_MEAN'
-INT_WDTH = '2'
+INT_MTHD = 'MAXGAUSS'
+INT_WDTH = '1'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-08T00:00:00'
