@@ -397,7 +397,7 @@ if [ ${error} -ne 0 ]; then
 fi
 
 # verify all file outputs
-for fcst in {000..${fcst_len}..${BKG_INT}}; do
+for fcst in `seq -f "%03g" 0 ${BKG_INT}} ${fcst_len}`; do
   filename="FILE:`date +%Y-%m-%d_%H -d "${strt_time} ${fcst} hours"`"
   if [ ! -s ${filename} ]; then
     echo "ERROR: ${filename} is missing."
@@ -414,7 +414,7 @@ if [ ${IF_ECMWF_ML} = ${YES} ]; then
   echo ${cmd}; eval ${cmd}
 
   # Check to see if we've got all the files we're expecting
-  for fcst in {000..${fcst_len}..${BKG_INT}}; do
+  for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
     filename=PRES:`date +%Y-%m-%d_%H -d "${strt_time} ${fcst} hours"`
     if [ ! -s ${filename} ]; then
       echo "ERROR: ${filename} is missing."

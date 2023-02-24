@@ -185,24 +185,20 @@ if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
   exit 1
 fi
 
-if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \${MAX_DOM} is not defined."
+if [ ${#MAX_DOM} -ne 2 ]; then
+  echo "ERROR: \${MAX_DOM}, ${MAX_DOM} is not in DD format."
   exit 1
-elif [ ! ${MAX_DOM} -gt 0 ]; then
-  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 0." 
+elif [ ! ${MAX_DOM} -gt 00 ]; then
+  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00."
   exit 1
 fi
 
-if [ ! ${DOWN_DOM} ]; then
-  echo "ERROR: \${DOWN_DOM} is not defined."
+if [ ${#DOWN_DOM} -ne 2 ]; then
+  echo "ERROR: \${DOWN_DOM}, ${DOWN_DOM}, is not in DD format."
   exit 1
-fi
-if [ ! ${DOWN_DOM} ]; then
-  echo "ERROR: \${MAX_DOM} is not defined."
-  exit 1
-elif [ ! ${DOWN_DOM} -gt 1 ]; then
+elif [ ! ${DOWN_DOM} -gt 01 ]; then
   msg="ERROR: \${DOWN_DOM} must be an integer for the first WRF domain index "
-  msg+=" to be downscaled from parent ( > 1 )." 
+  msg+=" to be downscaled from parent ( > 01 )." 
   exit 1
 fi
 
@@ -350,7 +346,7 @@ fi
 
 # Make links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
-  cmd="ln -sf ${file} ./"
+  cmd="ln -sf ${file} ."
   echo ${cmd}; eval ${cmd}
 done
 
@@ -363,7 +359,7 @@ if [[ ${WRF_IC} = ${REALEXE} || ${WRF_IC} = ${CYCLING} ]]
 fi
 
 # Link WRF initial conditions
-for dmn in {01..${MAX_DOM}}; do
+for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   wrfinput=wrfinput_d${dmn}
   datestr=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
   # if cycling AND analyzing this domain, get initial conditions from last analysis
@@ -372,7 +368,7 @@ for dmn in {01..${MAX_DOM}}; do
       # obtain the boundary files from the lateral boundary update by WRFDA 
       wrfanlroot=${CYCLE_HME}/wrfdaprd/lateral_bdy_update/ens_${memid}
       wrfbdy=${wrfanlroot}/wrfbdy_d01
-      cmd="ln -sf ${wrfbdy} ./wrfbdy_d01"
+      cmd="ln -sf ${wrfbdy} wrfbdy_d01"
       echo ${cmd}; eval ${cmd}
       if [ ! -r "./wrfbdy_d01" ]; then
         echo "ERROR: wrfinput ${wrfbdy} does not exist or is not readable."
@@ -392,7 +388,7 @@ for dmn in {01..${MAX_DOM}}; do
 
     # link the wrf inputs
     wrfanl=${wrfanlroot}/wrfanl_ens_${memid}_${datestr}
-    cmd="ln -sf ${wrfanl} ./${wrfinput}"
+    cmd="ln -sf ${wrfanl} ${wrfinput}"
     echo ${cmd}; eval ${cmd}
 
     if [ ! -r ${wrfinput} ]; then
@@ -414,7 +410,7 @@ for dmn in {01..${MAX_DOM}}; do
     if [ ${dmn} = 01 ]; then
       # Link the wrfbdy_d01 file from real
       wrfbdy=${realroot}/wrfbdy_d01
-      cmd="ln -sf ${wrfbdy} ./wrfbdy_d01"
+      cmd="ln -sf ${wrfbdy} wrfbdy_d01"
       echo ${cmd}; eval ${cmd};
 
       if [ ! -r wrfbdy_d01 ]; then
@@ -423,10 +419,10 @@ for dmn in {01..${MAX_DOM}}; do
       fi
     fi
     realname=${realroot}/${wrfinput}
-    cmd="ln -sf ${realname} ./"
+    cmd="ln -sf ${realname} ."
     echo ${cmd}; eval ${cmd}
 
-    if [ ! -r ./${wrfinput} ]; then
+    if [ ! -r ${wrfinput} ]; then
       echo "ERROR: wrfinput ${realname} does not exist or is not readable."
       exit 1
     fi
@@ -436,7 +432,7 @@ for dmn in {01..${MAX_DOM}}; do
   if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
     wrflowinp=wrflowinp_d${dmn}
     realname=${CYCLE_HME}/realprd/ens_${memid}/${wrflowinp}
-    cmd="ln -sf ${realname} ./"
+    cmd="ln -sf ${realname} ."
     echo ${cmd}; eval ${cmd}
     if [ ! -r ${wrflowinp} ]; then
       echo "ERROR: wrflwinp ${wrflowinp} does not exist or is not readable."
@@ -658,8 +654,8 @@ echo ${cmd}; eval ${cmd}
 
 # Check for all wrfout files on WRFOUT_INT and link files to
 # the appropriate bkg directory
-for dmn in {01..${MAX_DOM}}; do
-  for fcst in {000..${fcst_len}..${WRFOUT_INT}}; do
+for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+  for fcst in `seq -f "%03g" 0 ${WRFOUT_INT} ${fcst_len}`; do
     datestr=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time} ${fcst} hours"`
     if [ ! -s wrfout_d${dmn}_${datestr} ]; then
       msg="WRF failed to complete, wrfout_d${dmn}_${datestr} "

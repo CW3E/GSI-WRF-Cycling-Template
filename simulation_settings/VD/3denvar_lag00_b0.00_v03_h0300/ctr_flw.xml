@@ -348,16 +348,8 @@
       <value>&WRF_CNST;</value>
     </envar>
     <envar>
-      <name>N_ENS</name>
-      <value>&N_ENS;</value>
-    </envar>
-    <envar>
       <name>ANL_TIME</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
-    </envar>
-    <envar>
-      <name>IF_ENS_UPDTE</name>
-      <value>No</value>
     </envar>
     <envar>
       <name>BOUNDARY</name>
@@ -368,8 +360,8 @@
       <value>&WRF_CTR_DOM;</value>
     </envar>
     <envar>
-      <name>WRF_ENS_DOM</name>
-      <value>&WRF_ENS_DOM;</value>
+      <name>IF_ENS_UPDTE</name>
+      <value>No</value>
     </envar>
     <envar>
       <name>WRFDA_ROOT</name>
@@ -382,10 +374,6 @@
     <envar>
       <name>CYCLE_HME</name>
       <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
-    </envar>
-    <envar>
-      <name>ENS_ROOT</name>
-      <value><cyclestr>&WRF_ENS_ROOT;/@Y@m@d@H</cyclestr></value>
     </envar>
     <dependency> 
       <taskdep task="real_ens_00" state="SUCCEEDED"/>

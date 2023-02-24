@@ -167,11 +167,11 @@ elif [ ! ${BKG_INT} -gt 0 ]; then
   exit 1
 fi
 
-if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \${MAX_DOM} is not defined."
+if [ ${#MAX_DOM} -ne 2 ]; then
+  echo "ERROR: \${MAX_DOM}, ${MAX_DOM} is not in DD format."
   exit 1
-elif [ ! ${MAX_DOM} -gt 0 ]; then
-  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 0." 
+elif [ ! ${MAX_DOM} -gt 00 ]; then
+  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00." 
   exit 1
 fi
 
@@ -270,7 +270,7 @@ echo ${cmd}; eval ${cmd}
 
 # Check to make sure the geogrid input files (e.g. geo_em.d01.nc)
 # are available and make links to them
-for dmn in {01..${MAX_DOM}}; do
+for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   geoinput_name=${EXP_CNFG}/geogrid/geo_em.d${dmn}.nc
   if [ ! -r "${geoinput_name}" ]; then
     echo "ERROR: Input file '${geoinput_name}' is missing."
@@ -371,8 +371,8 @@ if [ ${error} -ne 0 ]; then
 fi
 
 # Check to see if metgrid outputs are generated
-for dmn in {01..${MAX_DOM}}; do
-  for fcst in {000..${fcst_len}..${BKG_INT}}; do
+for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+  for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
     time_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time} ${fcst} hours"`
     if [ ! -s "met_em.d${dmn}.${time_str}.nc" ]; then
       echo "ERROR: ${metgrid_exe} failed to complete for d${dmn}."

@@ -177,11 +177,11 @@ if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
   exit 1
 fi
 
-if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \${MAX_DOM} is not defined."
+if [ ${#MAX_DOM} -ne 2 ]; then
+  echo "ERROR: \${MAX_DOM}, ${MAX_DOM}, is not in DD format."
   exit 1
-elif [ ! ${MAX_DOM} -gt 0 ]; then
-  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 0." 
+elif [ ! ${MAX_DOM} -gt 00 ]; then
+  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00." 
   exit 1
 fi
 
@@ -291,8 +291,8 @@ echo ${cmd}; eval ${cmd}
 
 # Check to make sure the real input files (e.g. met_em.d01.*)
 # are available and make links to them
-for dmn in {01..${MAX_DOM}}; do
-  for fcst in {000..${fcst_len}..${BKG_INT}}; do
+for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+  for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
     time_str=`date "+%Y-%m-%d_%H_%M_%S" -d "${strt_time} ${fcst} hours"`
     realinput_name=met_em.d${dmn}.${time_str}.nc
     wps_dir=${CYCLE_HME}/wpsprd/ens_${memid}
@@ -480,7 +480,7 @@ if [ ! -s ${bc_file} ]; then
 fi
 
 # check to see if the IC output is generated
-for dmn in {01..${MAX_DOM}}; do
+for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   ic_file=wrfinput_d${dmn}
   if [ ! -s ${ic_file} ]; then
     msg="${real_exe} failed to generate initial conditions ${ic_file} "
@@ -492,7 +492,7 @@ done
 
 # check to see if the SST update fields are generated
 if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
-  for dmn in {01..${MAX_DOM}}; do
+  for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     sst_file=wrflowinp_d${dmn}
     if [ ! -s ${sst_file} ]; then
       msg="${real_exe} failed to generate SST update file ${sst_file} "

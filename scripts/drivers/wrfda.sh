@@ -56,9 +56,10 @@ fi
 # ANL_TIME     = Analysis time YYYYMMDDHH
 # BOUNDARY     = 'LOWER' if updating lower boundary conditions 
 #                'LATERAL' if updating lateral boundary conditions
+# WRF_CTR_DOM  = Max domain index of control forecast to update BOUNDARY=LOWER
 # IF_ENS_UPDTE = Skip lower / lateral BC updates if 'No'
 # N_ENS        = Max ensemble index to apply update IF_ENS_UPDATE='Yes'
-# WRF_CTR_DOM  = Max domain index of control forecast
+# ENS_ROOT     = Forecast ensemble located at ${ENS_ROOT}/ens_${ens_n}/wrfout* 
 # WRF_ENS_DOM  = Max domain index of ensemble perturbations
 #
 ##################################################################################
@@ -73,6 +74,23 @@ else
   anl_time=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
 fi
 
+if [[ ${BOUNDARY} = ${LOWER} ]]; then
+  if [ ${#WRF_CTR_DOM} -ne 2 ]; then
+    echo "ERROR: \${WRF_CTR_DOM}, ${WRF_CTR_DOM} is not in DD format."
+    exit 1
+  fi
+  msg="Updating lower boundary conditions for WRF control domains "
+  msg+="d01 through d${WRF_CTR_DOM}."
+  echo ${msg}
+elif [[ ${BOUNDARY} = ${LATERAL} ]]; then
+  echo "Updating WRF control lateral boundary conditions."
+else
+  msg="ERROR: \${BOUNDARY}, ${BOUNDARY}, must equal 'LOWER' or 'LATERAL'"
+  msg+="(case insensitive)."
+  echo ${msg}
+  exit 1
+fi
+
 if [[ ${IF_ENS_UPDTE} = ${NO} ]]; then
   # skip the boundary updates for the ensemble, perform on control alone
   ens_max=0
@@ -81,25 +99,23 @@ elif [[ ${IF_ENS_UPDTE} = ${YES} ]]; then
     echo "ERROR: \${N_ENS} is not defined."
     exit 1
   fi
-  # perform over the entire ensemble (ensure base 10 for padded indices)
-  ens_max=`printf $(( 10#${N_ENS} ))`
+  if [ ! ${ENS_ROOT} ]; then
+    echo "ERROR: \${ENS_ROOT} is not defined."
+    exit 1
+  elif [ ! -d ${ENS_ROOT} ]; then
+    echo "ERROR: \${ENS_ROOT} directory ${ENS_ROOT} does not exist."
+    exit 1
+  elif [[ ${BOUNDARY} = LOWER && ${#WRF_ENS_DOM} -ne 2 ]]; then
+    echo "ERROR: \${WRF_ENS_DOM}, ${WRF_ENS_DOM} is not in DD format."
+    exit 1
+  else
+    # perform over the entire ensemble (ensure base 10 for padded indices)
+    ens_max=`printf $(( 10#${N_ENS} ))`
+    msg="Updating lower boundary conditions for WRF perturbation domains "
+    msg+="d01 through d${WRF_ENS_DMN}."
+  fi
 else
   echo "ERROR: \${IF_ENS_UPDTE} must equal 'Yes' or 'No' (case insensitive)."
-  exit 1
-fi
-
-if [[ ${BOUNDARY} != ${LOWER} && ${BOUNDARY} != ${LATERAL} ]]; then
-  echo "ERROR: \${BOUNDARY} must equal 'LOWER' or 'LATERAL' (case insensitive)."
-  exit 1
-fi
-
-if [ ! ${WRF_CTR_DOM} ]; then
-  echo "ERROR: \${WRF_CTR_DOM} is not defined."
-  exit 1
-fi
-
-if [ ! ${WRF_ENS_DOM} ]; then
-  echo "ERROR: \${WRF_ENS_DOM} is not defined."
   exit 1
 fi
 
@@ -113,37 +129,28 @@ fi
 #              vtables, geogrid data, GSI fix files, etc.
 # CYCLE_HME  = Start time named directory for cycling data containing
 #              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# ENS_ROOT   = Forecast ensemble located at ${ENS_ROOT}/ens_${ens_n}/wrfout* 
 #
 ##################################################################################
 
-if [ ! "${WRFDA_ROOT}" ]; then
+if [ ! ${WRFDA_ROOT} ]; then
   echo "ERROR: \${WRFDA_ROOT} is not defined."
   exit 1
-fi
-
-if [ ! -d "${WRFDA_ROOT}" ]; then
+elif [ ! -d ${WRFDA_ROOT} ]; then
   echo "ERROR: \${WRFDA_ROOT} directory ${WRFDA_ROOT} does not exist."
   exit 1
 fi
 
-if [ ! -d ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} directory ${EXP_CNFG} does not exist."
+if [ ! ${EXP_CNFG} ]; then
+  echo "ERROR: \${EXP_CNFG} is not defined."
+  exit 1
+elif [ ! -d ${EXP_CNFG} ]; then
+  echo "ERROR: \${EXP_CNFG} directory '${EXP_CNFG}' does not exist."
   exit 1
 fi
 
-if [ -z ${CYCLE_HME} ]; then
-  echo "ERROR: \${CYCLE_HME} directory name is not defined."
-  exit 1
-fi
-
-if [ ! "${ENS_ROOT}" ]; then
-  echo "ERROR: \${ENS_ROOT} is not defined."
-  exit 1
-fi
-
-if [ ! -d "${ENS_ROOT}" ]; then
-  echo "ERROR: \${ENS_ROOT} directory ${ENS_ROOT} does not exist."
+if [ ${#CYCLE_HME} -ne 10 ]; then
+  # NOTE: some ungrib jobs start cycling and this directory does not always exist
+  echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
   exit 1
 fi
 
@@ -162,12 +169,7 @@ fi
 #
 ##################################################################################
 
-ens_loop=0
-
-while [ ${ens_loop} -le ${ens_max} ]; do
-  # define two zero padded string for GEFS 
-  memid=`printf %02d $(( 10#${ens_loop} ))`
-
+for memid in `seq -f "%02g" 0 ${ens_max}`; do
   work_root=${CYCLE_HME}/wrfdaprd
   real_dir=${CYCLE_HME}/realprd/ens_${memid}
   gsi_dir=${CYCLE_HME}/gsiprd
@@ -184,9 +186,6 @@ while [ ${ens_loop} -le ${ens_max} ]; do
     exit 1
   fi
   
-  # define domain variable to iterate on in lower boundary, fixed in lateral
-  dmn=1
-  
   if [[ ${BOUNDARY} = ${LOWER} ]]; then 
     # create working directory and cd into it
     work_root=${work_root}/lower_bdy_update/ens_${memid}
@@ -199,7 +198,7 @@ while [ ${ens_loop} -le ${ens_max} ]; do
     rm -f wrfout_*
     rm -f wrfinput_d0*
   
-    if [ ${ens_loop} -eq 0 ]; then 
+    if [ ${memid} = 00 ]; then 
       # control background sourced from last cycle background
       bkg_dir=${CYCLE_HME}/bkg/ens_${memid}
       max_dom=${WRF_CTR_DOM}
@@ -229,8 +228,8 @@ while [ ${ens_loop} -le ${ens_max} ]; do
         exit 1
       else
         cmd="cp ${bkg_dir}/${wrfout} ./"
-	echo ${cmd}; eval ${cmd}
-	#NOTE FOR DEBUGGING
+        echo ${cmd}; eval ${cmd}
+        #NOTE FOR DEBUGGING
         exit 1
       fi
   
@@ -251,29 +250,29 @@ while [ ${ens_loop} -le ${ens_max} ]; do
   
       # Update the namelist for the domain id 
       cat parame.in \
-	 | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfout}'/" \
-         > parame.in.new
+        | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfout}'/" \
+        > parame.in.new
       mv parame.in.new parame.in
   
       cat parame.in \
-	 | sed "s/\(${WRF}_${INPUT}\)${EQUAL}.*/\1 = '\.\/${wrfinput}'/" \
-         > parame.in.new
+        | sed "s/\(${WRF}_${INPUT}\)${EQUAL}.*/\1 = '\.\/${wrfinput}'/" \
+        > parame.in.new
       mv parame.in.new parame.in
   
       cat parame.in \
-	 | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
-         > parame.in.new
+        | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+        > parame.in.new
       mv parame.in.new parame.in
   
       # Update the namelist for lower boundary update 
       cat parame.in \
-	 | sed "s/\(${UPDTE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
-         > parame.in.new
+        | sed "s/\(${UPDTE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
+        > parame.in.new
       mv parame.in.new parame.in
   
       cat parame.in \
-	 | sed "s/\(${UPDTE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
-         > parame.in.new
+        | sed "s/\(${UPDTE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
+        > parame.in.new
       mv parame.in.new parame.in
   
       ##################################################################################
@@ -302,8 +301,6 @@ while [ ${ens_loop} -le ${ens_max} ]; do
         echo "ERROR: ${update_bc_exe} exited with status ${error}."
         exit ${error}
       fi
-      # move forward through domains
-      (( dmn += 1 ))
     done
   
   else
@@ -318,7 +315,7 @@ while [ ${ens_loop} -le ${ens_max} ]; do
     rm -f wrfinput_d0*
     rm -f wrfbdy_d01
 
-    if [ ${ens_loop} -eq 0 ]; then
+    if [ ${memid} = 00 ]; then
       if [ ! -d ${gsi_dir} ]; then
         echo "ERROR: \${gsi_dir} directory ${gsi_dir} does not exist."
         exit 1
@@ -369,11 +366,11 @@ while [ ${ens_loop} -le ${ens_max} ]; do
     mv parame.in.new parame.in
   
     cat parame.in \
-       | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+       | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = 01/" \
        > parame.in.new
     mv parame.in.new parame.in
   
-    # Update the namelist for lower boundary update 
+    # Update the namelist for lateral boundary update 
     cat parame.in \
        | sed "s/\(${WRF}_${BDY}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfbdy_name}'/" \
        > parame.in.new
@@ -416,10 +413,7 @@ while [ ${ens_loop} -le ${ens_max} ]; do
       echo "ERROR: ${update_bc_exe} exited with status ${error}."
       exit ${error}
     fi
-    
   fi
-
-  (( ens_loop += 1 ))
 done
 
 echo "wrfda.sh completed successfully at `date`."
