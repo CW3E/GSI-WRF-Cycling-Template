@@ -185,13 +185,24 @@ if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
   exit 1
 fi
 
-if [ ! "${MAX_DOM}" ]; then
+if [ ! ${MAX_DOM} ]; then
   echo "ERROR: \${MAX_DOM} is not defined."
+  exit 1
+elif [ ! ${MAX_DOM} -gt 0 ]; then
+  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 0." 
   exit 1
 fi
 
-if [ ! "${DOWN_DOM}" ]; then
+if [ ! ${DOWN_DOM} ]; then
   echo "ERROR: \${DOWN_DOM} is not defined."
+  exit 1
+fi
+if [ ! ${DOWN_DOM} ]; then
+  echo "ERROR: \${MAX_DOM} is not defined."
+  exit 1
+elif [ ! ${DOWN_DOM} -gt 1 ]; then
+  msg="ERROR: \${DOWN_DOM} must be an integer for the first WRF domain index "
+  msg+=" to be downscaled from parent ( > 1 )." 
   exit 1
 fi
 
@@ -406,7 +417,7 @@ for dmn in {01..${MAX_DOM}}; do
       cmd="ln -sf ${wrfbdy} ./wrfbdy_d01"
       echo ${cmd}; eval ${cmd};
 
-      if [ ! -r "./wrfbdy_d01" ]; then
+      if [ ! -r wrfbdy_d01 ]; then
         echo "ERROR: ${wrfbdy} does not exist or is not readable."
         exit 1
       fi
@@ -650,7 +661,7 @@ echo ${cmd}; eval ${cmd}
 for dmn in {01..${MAX_DOM}}; do
   for fcst in {000..${fcst_len}..${WRFOUT_INT}}; do
     datestr=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time} ${fcst} hours"`
-    if [ ! -s "wrfout_d${dmn}_${datestr}" ]; then
+    if [ ! -s wrfout_d${dmn}_${datestr} ]; then
       msg="WRF failed to complete, wrfout_d${dmn}_${datestr} "
       msg+="is missing or empty."
       echo ${msg}
@@ -661,7 +672,7 @@ for dmn in {01..${MAX_DOM}}; do
     fi
   done
 
-  if [ ! -s "wrfrst_d${dmn}_${datestr}" ]; then
+  if [ ! -s wrfrst_d${dmn}_${datestr} ]; then
     msg="WRF failed to complete, wrfrst_d${dmn}_${datestr} is "
     msg+="missing or empty."
     echo 
