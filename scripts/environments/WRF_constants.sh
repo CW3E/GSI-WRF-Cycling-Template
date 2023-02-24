@@ -40,7 +40,10 @@ module load netcdf/4.7.4intelmpi
 export NETCDF="/share/apps/compute/netcdf/intel2019/intelmpi"
 export HDF5="/share/apps/compute/hdf5/intel2019/intelmpi"
 
-# create case insensitive string variables for namelists / switches
+# create variables for namelist templates / switches
+CYCLING=[Cc][Yy][Cc][Ll][Ii][Nn][Gg]
 EQUAL=[[:blank:]]*=[[:blank:]]*
+RESTART=[Rr][Ee][Ss][Tt][Aa][Rr][Tt]
+REALEXE=[Rr][Ee][Aa][Ll][Ee][Xx][Ee]
 NO=[Nn][Oo]
 YES=[Yy][Ee][Ss]

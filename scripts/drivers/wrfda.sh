@@ -19,7 +19,7 @@
 ##################################################################################
 # License Statement:
 ##################################################################################
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,57 +37,53 @@
 # Preamble
 ##################################################################################
 # uncomment to run verbose for debugging / testing
-set -x
+#set -x
 
-if [ ! -x "${CNST}" ]; then
+if [ ! -x ${CNST} ]; then
   echo "ERROR: constants file ${CNST} does not exist or is not executable."
   exit 1
+else
+  # Read constants into the current shell
+  cmd=". ${CNST}"
+  echo ${cmd}; eval ${cmd}
 fi
-
-# Read constants into the current shell
-. ${CNST}
 
 ##################################################################################
 # Make checks for WRFDA settings
 ##################################################################################
 # Options below are defined in control flow xml
 #
-# N_ENS        = Max ensemble index (use 00 for control alone)
 # ANL_TIME     = Analysis time YYYYMMDDHH
-# IF_ENS_UPDTE = Skip lower / lateral BC updates if "No"
 # BOUNDARY     = 'LOWER' if updating lower boundary conditions 
 #                'LATERAL' if updating lateral boundary conditions
+# IF_ENS_UPDTE = Skip lower / lateral BC updates if 'No'
+# N_ENS        = Max ensemble index to apply update IF_ENS_UPDATE='Yes'
 # WRF_CTR_DOM  = Max domain index of control forecast
 # WRF_ENS_DOM  = Max domain index of ensemble perturbations
 #
-# Below variabs are derived by control flow variables for convenience
-#
-# anl_iso      = Defined by the ANL_TIME variable, to be used as path
-#                name variable in YYYY-MM-DD_HH_MM_SS format for wrfout
-#
 ##################################################################################
 
-if [ ! "${N_ENS}" ]; then
-  echo "ERROR: \${N_ENS} is not defined."
-  exit 1
-fi
-
-if [ ! "${ANL_TIME}" ]; then
-  echo "ERROR: \${ANL_TIME} is not defined."
-  exit 1
-fi
-
-# Convert ANL_TIME from 'YYYYMMDDHH' format to anl_iso iso format
+# Convert ANL_TIME from 'YYYYMMDDHH' format to anl_time iso format
 if [ ${#ANL_TIME} -ne 10 ]; then
-  echo "ERROR: \${ANL_TIME}, '${ANL_TIME}', is not in 'YYYYMMDDHH' format."
+  echo "ERROR: \${ANL_TIME}, ${ANL_TIME}, is not in 'YYYYMMDDHH' format."
   exit 1
 else
   anl_date=${ANL_TIME:0:8}
   hh=${ANL_TIME:8:2}
-  anl_iso=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
+  anl_time=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
 fi
 
-if [[ ${IF_ENS_UPDTE} != ${YES} && ${IF_ENS_UPDTE} != ${NO} ]]; then
+if [[ ${IF_ENS_UPDTE} = ${NO} ]]; then
+  # skip the boundary updates for the ensemble, perform on control alone
+  ens_max=0
+elif [[ ${IF_ENS_UPDTE} = ${YES} ]]; then
+  if [ ! ${N_ENS} ]; then
+    echo "ERROR: \${N_ENS} is not defined."
+    exit 1
+  fi
+  # perform over the entire ensemble (ensure base 10 for padded indices)
+  ens_max=`printf $(( 10#${N_ENS} ))`
+else
   echo "ERROR: \${IF_ENS_UPDTE} must equal 'Yes' or 'No' (case insensitive)."
   exit 1
 fi
@@ -166,14 +162,6 @@ fi
 #
 ##################################################################################
 
-if [[ ${IF_ENS_UPDTE} = ${NO} ]]; then
-  # skip the boundary updates for the ensemble, perform on control alone
-  ens_max=0
-else
-  # perform over the entire ensemble (ensure base 10 for padded indices)
-  ens_max=`printf $(( 10#${N_ENS} ))`
-fi
-
 ens_loop=0
 
 while [ ${ens_loop} -le ${ens_max} ]; do
@@ -231,7 +219,7 @@ while [ ${ens_loop} -le ${ens_max} ]; do
     echo "Copying background and input files."
     while [ ${dmn} -le ${max_dom} ]; do
       # update the lower BC for the output file to pass to GSI
-      wrfout=wrfout_d0${dmn}_${anl_iso}
+      wrfout=wrfout_d0${dmn}_${anl_time}
 
       # wrfinput is always drawn from real step
       wrfinput=wrfinput_d0${dmn}
@@ -335,7 +323,7 @@ while [ ${ens_loop} -le ${ens_max} ]; do
         echo "ERROR: \${gsi_dir} directory ${gsi_dir} does not exist."
         exit 1
       else
-        wrfanl=${gsi_dir}/d01/wrfanl_ens_${memid}_${anl_iso}
+        wrfanl=${gsi_dir}/d01/wrfanl_ens_${memid}_${anl_time}
       fi
     else
       if [ ! -d ${enkf_dir} ]; then
@@ -343,12 +331,12 @@ while [ ${ens_loop} -le ${ens_max} ]; do
         exit 1
       else
         # NOTE: ENKF SCRIPT NEED TO UPDATE OUTPUT NAMING CONVENTIONS
-        wrfanl=${enkf_dir}/d01/wrfanl_ens_${memid}_${anl_iso}
+        wrfanl=${enkf_dir}/d01/wrfanl_ens_${memid}_${anl_time}
       fi
     fi
 
     wrfbdy=${real_dir}/wrfbdy_d01
-    wrfvar_outname=wrfanl_ens_${memid}_${anl_iso}
+    wrfvar_outname=wrfanl_ens_${memid}_${anl_time}
     wrfbdy_name=wrfbdy_d01
   
     if [ ! -r "${wrfanl}" ]; then

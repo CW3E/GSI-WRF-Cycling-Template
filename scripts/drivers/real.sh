@@ -125,7 +125,7 @@ else
 fi
 
 if [ ${#STRT_TIME} -ne 10 ]; then
-  echo "ERROR: \${STRT_TIME}, '${STRT_TIME}', is not in 'YYYYMMDDHH' format." 
+  echo "ERROR: \${STRT_TIME}, ${STRT_TIME}, is not in 'YYYYMMDDHH' format." 
   exit 1
 else
   # Convert STRT_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
@@ -145,7 +145,7 @@ if [[ ${IF_DYN_LEN} = ${NO} ]]; then
 elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
   echo "Generating forecast forcing data until experiment validation time."
   if [ ${#EXP_VRF} -ne 10 ]; then
-    echo "ERROR: \${EXP_VRF}, `${EXP_VRF}` is not in 'YYYMMDDHH' format."
+    echo "ERROR: \${EXP_VRF}, ${EXP_VRF} is not in 'YYYMMDDHH' format."
     exit 1
   else
     # compute forecast length relative to start time and verification time
@@ -308,7 +308,7 @@ done
 
 # Move existing rsl files to a subdir if there are any
 echo "Checking for pre-existing rsl files."
-if [ -f "rsl.out.0000" ]; then
+if [ -f rsl.out.0000 ]; then
   rsldir=rsl.`ls -l --time-style=+%Y-%m-%d_%H_%M_%S rsl.out.0000 | cut -d" " -f 6`
   mkdir ${rsldir}
   echo "Moving pre-existing rsl files to ${rsldir}."

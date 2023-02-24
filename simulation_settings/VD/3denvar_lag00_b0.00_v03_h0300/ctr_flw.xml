@@ -617,8 +617,8 @@
       <value>&WRF_DOWN_DOM;</value>
     </envar>
     <envar>
-      <name>IF_CYCLING</name>
-      <value>Yes</value>
+      <name>WRF_IC</name>
+      <value>CYCLING</value>
     </envar>
     <envar>
       <name>IF_SST_UPDTE</name>
