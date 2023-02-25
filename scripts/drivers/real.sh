@@ -165,12 +165,12 @@ end_time=`date -d "${strt_time} ${fcst_len} hours"`
 if [ ! ${BKG_INT} ]; then
   echo "ERROR: \${BKG_INT} is not defined."
   exit 1
-elif [ ! ${BKG_INT} -gt 0 ]; then
+elif [ ${BKG_INT} -le 0 ]; then
   echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
   exit 1
 fi
 
-if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
+if [[ ${BKG_DATA} != GFS && ${BKG_DATA} != GEFS ]]; then
   msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
   msg+=" as currently supported inputs."
   echo ${msg}
@@ -180,7 +180,7 @@ fi
 if [ ${#MAX_DOM} -ne 2 ]; then
   echo "ERROR: \${MAX_DOM}, ${MAX_DOM}, is not in DD format."
   exit 1
-elif [ ! ${MAX_DOM} -gt 00 ]; then
+elif [ ${MAX_DOM} -le 00 ]; then
   echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00." 
   exit 1
 fi
@@ -243,7 +243,7 @@ fi
 if [ ! ${N_PROC} ]; then
   echo "ERROR: \${N_PROC} is not defined."
   exit 1
-elif [ ! ${N_PROC} -gt 0 ]; then
+elif [ ${N_PROC} -le 0 ]; then
   msg="ERROR: The variable \${N_PROC} must be set to the number"
   msg+=" of processors to run real.exe."
   echo ${msg}

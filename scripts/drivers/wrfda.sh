@@ -216,7 +216,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     
     # Check to make sure the input files are available and copy them
     echo "Copying background and input files."
-    while [ ${dmn} -le ${max_dom} ]; do
+    for dmn in `seq -f "%20g" 01 ${max_dom}`; do
       # update the lower BC for the output file to pass to GSI
       wrfout=wrfout_d0${dmn}_${anl_time}
 
@@ -227,7 +227,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
         echo "ERROR: Input file '${bkg_dir}/${wrfout}' is missing."
         exit 1
       else
-        cmd="cp ${bkg_dir}/${wrfout} ./"
+        cmd="cp ${bkg_dir}/${wrfout} ."
         echo ${cmd}; eval ${cmd}
         #NOTE FOR DEBUGGING
         exit 1
@@ -237,41 +237,41 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
         echo "ERROR: Input file '${real_dir}/${wrfinput}' is missing."
         exit 1
       else
-        cmd="cp ${real_dir}/${wrfinput} ./"
-	echo ${cmd}; eval ${cmd}
+        cmd="cp ${real_dir}/${wrfinput} ."
+        echo ${cmd}; eval ${cmd}
       fi
   
       ##################################################################################
       #  Build da_update_bc namelist
       ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-      cmd="cp ${EXP_CNFG}/namelists/parame.in ./"
+      cmd="cp ${EXP_CNFG}/namelists/parame.in ."
       echo ${cmd}; eval ${cmd}
   
       # Update the namelist for the domain id 
       cat parame.in \
-        | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfout}'/" \
+        | sed "s/\(DA_FILE\)${EQUAL}DA_FILE/\1 = '\.\/${wrfout}'/" \
         > parame.in.new
       mv parame.in.new parame.in
   
       cat parame.in \
-        | sed "s/\(${WRF}_${INPUT}\)${EQUAL}.*/\1 = '\.\/${wrfinput}'/" \
+        | sed "s/\(WRF_INPUT\)${EQUAL}WRF_INPUT/\1 = '\.\/${wrfinput}'/" \
         > parame.in.new
       mv parame.in.new parame.in
   
       cat parame.in \
-        | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${dmn}/" \
+        | sed "s/\(DOMAIN_ID\)${EQUAL}DOMAIN_ID/\1 = ${dmn}/" \
         > parame.in.new
       mv parame.in.new parame.in
   
       # Update the namelist for lower boundary update 
       cat parame.in \
-        | sed "s/\(${UPDTE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
+        | sed "s/\(UPDTE_LOW_BDY\)${EQUAL}UPDATE_LOW_BDY/\1 = \.true\./" \
         > parame.in.new
       mv parame.in.new parame.in
   
       cat parame.in \
-        | sed "s/\(${UPDTE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
+        | sed "s/\(UPDTE_LATERAL_BDY\)${EQUAL}UPDATE_LATERAL_BDY/\1 = \.false\./" \
         > parame.in.new
       mv parame.in.new parame.in
   
@@ -280,17 +280,17 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       ##################################################################################
       # Print run parameters
       echo
-      echo "ENS_N      = ${memid}"
+      echo "MEM_ID     = ${memid}"
       echo "BOUNDARY   = ${BOUNDARY}"
       echo "DOMAIN     = ${dmn}"
-      echo "WRFDA_ROOT = ${WRFDA_ROOT}"
-      echo "EXP_CNFG = ${EXP_CNFG}"
-      echo "CYCLE_HME = ${CYCLE_HME}"
+      echo "EXP_CNFG   = ${EXP_CNFG}"
+      echo "CYCLE_HME  = ${CYCLE_HME}"
       echo "ENS_ROOT   = ${ENS_ROOT}"
       echo
-      now=`date +%Y%m%d%H%M%S`
+      now=`date +%Y-%m-%d_%H_%M_%S`
       echo "da_update_bc.exe started at ${now}."
-      ${update_bc_exe}
+      cmd="${update_bc_exe}"
+      echo ${cmd}; eval ${cmd}
   
       ##################################################################################
       # Run time error check
@@ -311,9 +311,14 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     echo ${cmd}; eval ${cmd}
     
     # Remove IC/BC in the directory if old data present
-    rm -f wrfout_*
-    rm -f wrfinput_d0*
-    rm -f wrfbdy_d01
+    cmd="rm -f wrfout_*"
+    echo ${cmd}; eval ${cmd}
+
+    cmd="rm -f wrfinput_d0*"
+    echo ${cmd}; eval ${cmd}
+
+    cmd="rm -f wrfbdy_d01"
+    echo ${cmd}; eval ${cmd}
 
     if [ ${memid} = 00 ]; then
       if [ ! -d ${gsi_dir} ]; then
@@ -391,18 +396,18 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     ##################################################################################
     # Print run parameters
     echo
-    echo "WRFDA_ROOT = ${WRFDA_ROOT}"
-    echo "EXP_CNFG = ${EXP_CNFG}"
-    echo "CYCLE_HME = ${CYCLE_HME}"
+    echo "EXP_CNFG   = ${EXP_CNFG}"
+    echo "CYCLE_HME  = ${CYCLE_HME}"
     echo "ENS_ROOT   = ${ENS_ROOT}"
     echo
     echo "BOUNDARY   = ${BOUNDARY}"
     echo "DOMAIN     = ${dmn}"
     echo "ENS_N      = ${ens_n}"
     echo
-    now=`date +%Y%m%d%H%M%S`
+    now=`date +%Y-%m-%d_%H_%M_%S`
     echo "da_update_bc.exe started at ${now}."
-    ${update_bc_exe}
+    cmd="${update_bc_exe}"
+    echo ${cmd}; eval ${cmd}
   
     ##################################################################################
     # Run time error check

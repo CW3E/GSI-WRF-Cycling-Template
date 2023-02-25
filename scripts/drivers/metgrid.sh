@@ -15,7 +15,7 @@
 # One should write machine specific options for the WPS environment
 # in a WPS_constants.sh script to be sourced in the below.  Variable
 # aliases in this script are based on conventions defined in the
-# WPS_constants.sh and the control flow .xml driving this script.
+# WRF_constants.sh and the control flow .xml driving this script.
 #
 ##################################################################################
 # License Statement:
@@ -162,7 +162,7 @@ end_time=`date -d "${strt_time} ${fcst_len} hours"`
 if [ ! ${BKG_INT} ]; then
   echo "ERROR: \${BKG_INT} is not defined."
   exit 1
-elif [ ! ${BKG_INT} -gt 0 ]; then
+elif [ ${BKG_INT} -le 0 ]; then
   echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
   exit 1
 fi
@@ -170,7 +170,7 @@ fi
 if [ ${#MAX_DOM} -ne 2 ]; then
   echo "ERROR: \${MAX_DOM}, ${MAX_DOM} is not in DD format."
   exit 1
-elif [ ! ${MAX_DOM} -gt 00 ]; then
+elif [ ${MAX_DOM} -le 00 ]; then
   echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00." 
   exit 1
 fi
@@ -222,7 +222,7 @@ fi
 if [ ! ${N_PROC} ]; then
   echo "ERROR: \${N_PROC} is not defined."
   exit 1
-elif [ ! ${N_PROC} -gt 0 ]; then
+elif [ ${N_PROC} -le 0 ]; then
   msg="ERROR: The variable \${N_PROC} must be set to the number"
   msg+=" of processors to run metgrid.exe."
   echo ${msg}

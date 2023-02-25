@@ -15,7 +15,7 @@
 # One should write machine specific options for the WPS environment
 # in a WPS_constants.sh script to be sourced in the below.  Variable
 # aliases in this script are based on conventions defined in the
-# WPS_constants.sh and the control flow .xml driving this script.
+# WRF_constants.sh and the control flow .xml driving this script.
 #
 ##################################################################################
 # License Statement:
@@ -174,7 +174,7 @@ fi
 if [ ! ${BKG_INT} ]; then
   echo "ERROR: \${BKG_INT} is not defined."
   exit 1
-elif [ ! ${BKG_INT} -gt 0 ]; then
+elif [ ${BKG_INT} -le 0 ]; then
   echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
   exit 1
 fi
