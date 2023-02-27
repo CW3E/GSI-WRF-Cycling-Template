@@ -83,7 +83,7 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY IF_HYBRID    "Yes"> <!-- Uses ensemble-based covariance Yes / No -->
-  <!ENTITY MAX_BC_LOOP  "2"> <!-- Max loop index to iterate GSI variational bias correction files, loop 0 is uses GDAS global files -->
+  <!ENTITY MAX_BC_LOOP  "02"> <!-- Max loop index to iterate GSI variational bias correction files, loop 0 is uses GDAS global files -->
   <!-- END GSI SETTINGS -->
  
   <!-- JOB SETTINGS -->
@@ -398,28 +398,28 @@
       <value>&GSI_CNST;</value>
     </envar>
     <envar>
-      <name>WRF_CTR_DOM</name>
-      <value>&WRF_CTR_DOM;</value>
-    </envar>
-    <envar>
-      <name>WRF_ENS_DOM</name>
-      <value>&WRF_ENS_DOM;</value>
-    </envar>
-    <envar>
-      <name>IF_HYBRID</name>
-      <value>&IF_HYBRID;</value>
+      <name>ANL_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
       <name>IF_OBSERVER</name>
       <value>No</value>
     </envar>
     <envar>
-      <name>N_ENS</name>
-      <value>&N_ENS;</value>
+      <name>WRF_CTR_DOM</name>
+      <value>&WRF_CTR_DOM;</value>
     </envar>
     <envar>
-      <name>MAX_BC_LOOP</name>
-      <value>&MAX_BC_LOOP;</value>
+      <name>IF_HYBRID</name>
+      <value>&IF_HYBRID;</value>
+    </envar>
+    <envar>
+      <name>WRF_ENS_DOM</name>
+      <value>&WRF_ENS_DOM;</value>
+    </envar>
+    <envar>
+      <name>N_ENS</name>
+      <value>&N_ENS;</value>
     </envar>
     <envar>
       <name>BETA</name>
@@ -434,12 +434,12 @@
       <value>&S_ENS_V;</value>
     </envar>
     <envar>
-      <name>IF_4DENVAR</name>
-      <value>No</value>
+      <name>MAX_BC_LOOP</name>
+      <value>&MAX_BC_LOOP;</value>
     </envar>
     <envar>
-      <name>ANL_TIME</name>
-      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+      <name>IF_4DENVAR</name>
+      <value>No</value>
     </envar>
     <envar>
       <name>GSI_EXE</name>
@@ -495,29 +495,16 @@
       <value>&WRF_CNST;</value>
     </envar>
     <envar>
-      <name>N_ENS</name>
-      <value>&N_ENS;</value>
-    </envar>
-    <envar>
       <name>ANL_TIME</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
-    </envar>
-    <!-- Skip the lateral boundary condition update for the discarded ensemble -->
-    <envar>
-      <name>IF_ENS_UPDTE</name>
-      <value>No</value>
     </envar>
     <envar>
       <name>BOUNDARY</name>
       <value>LATERAL</value>
     </envar>
     <envar>
-      <name>WRF_CTR_DOM</name>
-      <value>&WRF_CTR_DOM;</value>
-    </envar>
-    <envar>
-      <name>WRF_ENS_DOM</name>
-      <value>&WRF_ENS_DOM;</value>
+      <name>IF_ENS_UPDTE</name>
+      <value>No</value>
     </envar>
     <envar>
       <name>WRFDA_ROOT</name>
@@ -530,14 +517,6 @@
     <envar>
       <name>CYCLE_HME</name>
       <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
-    </envar>
-    <envar>
-      <name>DATA_ROOT</name>
-      <value>&DATA_ROOT;</value>
-    </envar>
-    <envar>
-      <name>ENS_ROOT</name>
-      <value><cyclestr>&WRF_ENS_ROOT;/@Y@m@d@H</cyclestr></value>
     </envar>
     <dependency> 
       <taskdep task="gsi_analysis" state="SUCCEEDED"/>

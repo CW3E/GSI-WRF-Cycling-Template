@@ -79,40 +79,45 @@ fi
 ##################################################################################
 # Options below are defined in control flow xml (case insensitive)
 #
-# WRF_CTR_DOM = INT : Analyze up to domain index format DD
-# WRF_ENS_DOM = INT : Utilize ensemble perturbations up to domain index DD
-# IF_HYBRID   = Yes : Run GSI as 3D/4D EnVAR
-# IF_OBSERVER = Yes : Only used as observation operator for EnKF
-# N_ENS       = INT : Max ensemble pertubation index (00 for control alone)
-#                     NOTE: this must be set when `IF_HYBRID=Yes` and
-#                     when `IF_OBSERVER=Yes`
-# MAX_BC_LOOP = INT : Maximum number of times to iteratively generate
-#                     variational bias correction files, loop zero starts
-#                     with GDAS defaults
-# BETA        = FLT : Scaling float in [0,1], 0 - full ensemble, 1 - full static
-# S_ENS_H     = INT : Homogeneous isotropic horizontal ensemble localization scale (km) 
-# S_ENS_V     = INT : Vertical localization scale (grid units)
+# ANL_TIME    = Analysis time YYYYMMDDHH
+# IF_OBSERVER = Yes : Only used as observation operator for ensemble members
+#             = No  : Analyzes control solution
+# WRF_CTR_DOM = Analyze up to domain index format DD of control solution
+# IF_HYBRID   = Yes : Run GSI with ensemble, required for IF_OBSERVER = Yes
+# N_ENS       = Max ensemble pertubation index
+# WRF_ENS_DOM = Utilize ensemble perturbations up to domain index DD
+# BETA        = Scaling float in [0,1], 0 - full ensemble, 1 - full static
+# S_ENS_H     = Homogeneous isotropic horizontal ensemble localization scale (km) 
+# S_ENS_V     = Vertical localization scale (grid units)
+# MAX_BC_LOOP = Maximum number of times to iteratively generate variational bias
+#               correction files, loop zero starts with GDAS defaults
 # IF_4DENVAR  = Yes : Run GSI as 4D EnVar
 #
 ##################################################################################
 
-if [ ! ${WRF_CTR_DOM} ]; then
-  echo "ERROR: \${WRF_CTR_DOM} is not defined."
+# Convert ANL_TIME from 'YYYYMMDDHH' format to anl_iso Unix date format
+if [ ${#ANL_TIME} -ne 10 ]; then
+  echo "ERROR: \${ANL_TIME}, ${ANL_TIME}, is not in 'YYYYMMDDHH' format."
   exit 1
-fi
-
-if [ ! ${WRF_ENS_DOM} ]; then
-  echo "ERROR: \${WRF_ENS_DOM} is not defined."
-  exit 1
+else
+  # Define directory path name variable anl_iso from ANL_TIME
+  hh=${ANL_TIME:8:2}
+  anl_date=${ANL_TIME:0:8}
+  anl_iso=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
 fi
 
 if [[ ${IF_OBSERVER} = ${NO} ]]; then
-  echo "GSI updates control forecast."
-  nummiter=2
-  if_read_obs_save=".false."
-  if_read_obs_skip=".false."
-  work_root=${CYCLE_HME}/gsiprd
-  max_dom=${WRF_CTR_DOM}
+  if [ ${#WRF_CTR_DOM} -ne 2 ]; then
+    echo "ERROR: \${WRF_CTR_DOM}, ${WRF_CTR_DOM} is not in DD format."
+    exit 1
+  else
+    echo "GSI updates control forecast."
+    nummiter=2
+    if_read_obs_save=".false."
+    if_read_obs_skip=".false."
+    work_root=${CYCLE_HME}/gsiprd
+    max_dom=${WRF_CTR_DOM}
+  fi
 elif [[ ${IF_OBSERVER} = ${YES} ]]; then
   if [[ ! ${IF_HYBRID} = ${YES} ]]; then
     echo "ERROR: \${IF_HYBRID} must equal Yes if \${IF_OBSERVER} = Yes."
@@ -129,32 +134,32 @@ else
   exit 1
 fi
 
-
 if [[ ${IF_HYBRID} = ${YES} ]]; then
   # ensembles are required for hybrid EnVAR
-  if [ ! "${N_ENS}" ]; then
+  if [ ${#WRF_ENS_DOM} -n 2 ]; then
+    echo "ERROR: \${WRF_ENS_DOM} is not in DD format."
+    exit 1
+  elif [ ! "${N_ENS}" ]; then
     msg="ERROR: \${N_ENS} must be specified to the number "
     msg+="of ensemble perturbations."
     echo ${msg}
     exit 1
-  fi
-  if [ ${N_ENS} -lt 2 ]; then
+  elif [ ${N_ENS} -lt 2 ]; then
     echo "ERROR: ensemble size \${N_ENS} + 1 must be three or greater."
     exit 1
-  fi
-  if [ ! "${BETA}" ]; then
+  elif [ ! "${BETA}" ]; then
     msg="ERROR: \${BETA} must be specified to the weight "
     msg+="between ensemble and static covariance."
     echo ${msg}
     exit 1
-    if [ ${BETA} -lt 0 || ${BETA} -gt 1 ]; then
-      echo "ERROR: ${BETA} must be between 0 and 1."
-      exit 1
-    fi
+  elif [ ${BETA} -lt 0 || ${BETA} -gt 1 ]; then
+    echo "ERROR: ${BETA} must be between 0 and 1."
+    exit 1
+  else
+    echo "GSI performs hybrid ensemble variational DA with ensemble size ${N_ENS}."
+    echo "Background covariance weight ${BETA}."
+    ifhyb=".true."
   fi
-  echo "GSI performs hybrid ensemble variational DA with ensemble size ${N_ENS}."
-  echo "Background covariance weight ${BETA}."
-  ifhyb=".true."
 elif [[ ${IF_HYBRID} = ${NO} ]]; then
   echo "GSI performs variational DA without ensemble."
   ifhyb=".false."
@@ -185,17 +190,16 @@ if [ ! ${S_ENS_H} ]; then
   fi
 fi
 
-if [ ! ${MAX_BC_LOOP} ]; then
+if [ ${#MAX_BC_LOOP} -ne 2 ]; then
   msg="ERROR: \${MAX_BC_LOOP} must be specified to the number of "
-  msg+="variational bias correction iterations."
+  msg+="variational bias correction iterations in format LL."
   echo ${msg}
   exit 1
-  if [ ${MAX_BC_LOOP} -lt 0 ]; then
-    msg="ERROR: the number of iterations of variational bias "
-    msg+="correction must be non-negative."
-    echo ${msg}
-    exit 1
-  fi
+elif [ ${MAX_BC_LOOP} -lt 0 ]; then
+  msg="ERROR: the number of iterations of variational bias "
+  msg+="correction must be non-negative."
+  echo ${msg}
+  exit 1
 fi
 
 if [[ ${IF_4DENVAR} = ${YES} ]]; then
@@ -228,7 +232,6 @@ fi
 ##################################################################################
 # Below variables are defined in cycling.xml workflow variables
 #
-# ANL_TIME  = Analysis time YYYYMMDDHH
 # GSI_EXE   = Path of GSI executable
 # CRTM_ROOT = Path of CRTM including byte order
 # EXP_CNFG  = Root directory containing sub-directories for namelists
@@ -248,22 +251,11 @@ fi
 #
 ##################################################################################
 
-# Convert ANL_TIME from 'YYYYMMDDHH' format to anl_iso Unix date format
-if [ ${#ANL_TIME} -ne 10 ]; then
-  echo "ERROR: \${ANL_TIME}, ${ANL_TIME}, is not in 'YYYYMMDDHH' format."
-  exit 1
-else
-  # Define directory path name variable anl_iso from ANL_TIME
-  hh=${ANL_TIME:8:2}
-  anl_date=${ANL_TIME:0:8}
-  anl_iso=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
-fi
-
 if [ ! ${GSI_EXE} ]; then
   echo "ERROR: \${GSI_EXE} is not defined."
   exit 1
 elif [ ! -x ${GSI_EXE} ]; then
-  echo "ERROR: ${GSI_EXE} is not executable."
+  echo "ERROR: GSI executable, ${GSI_EXE}, is not executable."
   exit 1
 fi
 
@@ -271,7 +263,7 @@ if [ ! ${CRTM_ROOT} ]; then
   echo "ERROR: \${CRTM_ROOT} is not defined."
   exit 1
 elif [ ! -d ${CRTM_ROOT} ]; then
-  echo "ERROR: CRTM_ROOT directory ${CRTM_ROOT} does not exist."
+  echo "ERROR: CRTM_ROOT directory, ${CRTM_ROOT}, does not exist."
   exit 1
 fi
 
@@ -279,7 +271,7 @@ if [ ! ${EXP_CNFG} ]; then
   echo "ERROR: \${EXP_CNFG} is not defined."
   exit 1
 elif [ ! -d ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} directory ${EXP_CNFG} does not exist."
+  echo "ERROR: \${EXP_CNFG} directory, ${EXP_CNFG}, does not exist."
   exit 1
 fi
 
@@ -287,7 +279,7 @@ if [ ! ${CYCLE_HME} ]; then
   echo "ERROR: \${CYCLE_HME} is not defined."
   exit 1
 elif [ ! -d "${CYCLE_HME}" ]; then
-  echo "ERROR: \${CYCLE_HME} directory ${CYCLE_HME} does not exist."
+  echo "ERROR: \${CYCLE_HME} directory, ${CYCLE_HME}, does not exist."
   exit 1
 fi
 
@@ -295,7 +287,7 @@ if [ ! ${DATA_ROOT} ]; then
   echo "ERROR: \${DATA_ROOT} is not defined."
   exit 1
 elif [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: \${DATA_ROOT} directory ${DATA_ROOT} does not exist."
+  echo "ERROR: \${DATA_ROOT} directory, ${DATA_ROOT}, does not exist."
   exit 1
 fi
 
@@ -303,7 +295,7 @@ if [ ! ${ENS_ROOT} ]; then
   echo "ERROR: \${ENS_ROOT} is not defined."
   exit 1
 elif [ ! -d ${ENS_ROOT} ]; then
-  echo "ERROR: \${ENS_ROOT} directory ${ENS_ROOT} does not exist."
+  echo "ERROR: \${ENS_ROOT} directory, ${ENS_ROOT}, does not exist."
   exit 1
 fi
 
@@ -325,25 +317,21 @@ fi
 ##################################################################################
 # The following paths are relative to the control flow supplied root paths
 #
-# work_root    = Working directory where GSI runs, either to analyze the control
-#                as the observer for EnKF
 # obs_root     = Path of observations files
 # fix_root     = Path of fix files
 # gsi_namelist = Path and name of the gsi namelist constructor script
-# prepbufr     = Path of PreBUFR conventional obs
+# prepbufr_tar = Path of PreBUFR conventional obs tar archive
+# prepbufr_dir = Path of PreBUFR conventional obs tar archive extraction
 # satlist      = Path to text file listing satellite observation prefixes used,
 #                required file, if empty will skip all satellite data.
 #
 ##################################################################################
-
-
 obs_root=${DATA_ROOT}/obs_data
 fix_root=${EXP_CNFG}/fix
 satlist=${fix_root}/satlist.txt
 gsi_namelist=${EXP_CNFG}/namelists/comgsi_namelist.sh
 prepbufr_tar=${obs_root}/prepbufr.${anl_date}.nr.tar.gz
 prepbufr_dir=${obs_root}/${anl_date}.nr
-prepbufr=${prepbufr_dir}/prepbufr.gdas.${anl_date}.t${hh}z.nr
 
 if [ ! -d ${obs_root} ]; then
   echo "ERROR: \${obs_root} directory, ${obs_root}, does not exist."
@@ -356,7 +344,7 @@ if [ ! -d ${fix_root} ]; then
 fi
 
 if [ ! -r ${satlist} ]; then
-  echo "ERROR: satellite namelist ${satlist} is not readable."
+  echo "ERROR: satellite namelist, ${satlist}, is not readable."
   exit 1
 fi
 
@@ -366,7 +354,7 @@ if [ ! -x ${gsi_namelist} ]; then
 fi
 
 if [ ! -r ${prepbufr_tar} ]; then
-  echo "ERROR: file '${prepbufr_tar}' is not readable."
+  echo "ERROR: prepbufr tar file '${prepbufr_tar}' is not readable."
   exit 1
 else
   # untar prepbufr data to predefined directory
@@ -377,15 +365,14 @@ else
 
   # unpack nested directory structure
   prepbufr_nest=(`find ${prepbufr_dir} -type f`)
-  nest_indx=0
-  while [ ${nest_indx} -le ${#prepbufr_nest[@]} ]; do
-    cmd="mv ${prepbufr_nest[${nest_indx}]} ${prepbufr_dir}"
+  for file in ${prepbufr_nest[@]}; do
+    cmd="mv ${file} ${prepbufr_dir}"
     echo ${cmd}; eval ${cmd}
-    (( nest_indx += 1))
   done
   cmd="rmdir ${prepbufr_dir}/*"
   echo ${cmd}; eval ${cmd}
 
+  prepbufr=${prepbufr_dir}/prepbufr.gdas.${anl_date}.t${hh}z.nr
   if [ ! -r ${prepbufr} ]; then
     echo "ERROR: file '${prepbufr}' is not readable."
     exit 1
@@ -403,16 +390,18 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
   echo "Create work root directory ${dmndir}."
 
   if [ -d "${dmndir}" ]; then
-    rm -rf ${dmndir}
+    echo "Existing GSI work root ${dmndir}, removing old data for new run."
+    cmd="rm -rf ${dmndir}"
+    echo ${cmd}; eval ${cmd}
   fi
   mkdir -p ${dmndir}
 
-  for bc_loop in `seq -f "%02g" 0 ${MAX_BC_LOO}`; do
+  for bc_loop in `seq -f "%02g" 0 ${MAX_BC_LOOP}`; do
     # each domain will generated a variational bias correction file iteratively
     # starting with GDAS defaults
     cd ${dmndir}
 
-    if [ ${bc_loop} -ne ${MAX_BC_LOOP} ]; then
+    if [ ! ${bc_loop} = ${MAX_BC_LOOP} ]; then
       # create storage for the outputs indexed on bc_loop except for final loop
       workdir=${dmndir}/bc_loop_${bc_loop}
       mkdir ${workdir}
@@ -456,15 +445,18 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
       tar_file=${obs_root}/${srcobsfile[$ii]}.${anl_date}.tar.gz
       obs_dir=${obs_root}/${anl_date}.${srcobsfile[$ii]}
       mkdir -p ${obs_dir}
-      if [ -r "${tar_file}" ]; then
+      if [ ! -r "${tar_file}" ]; then
+        echo "ERROR: file ${tar_file} not found."
+        exit 1
+      else
         # untar to specified directory
         cmd="tar -xvf ${tar_file} -C ${obs_dir}"
         echo ${cmd}; eval ${cmd}
 
         # unpack nested directory structure, if exists
         obs_nest=(`find ${obs_dir} -type f`)
-        for nest_indx in `seq 0 ${#obs_nest[@]}`; do
-          cmd="mv ${obs_nest[${nest_indx}]} ${obs_dir}"
+        for file in ${obs_nes[@]}; do
+          cmd="mv ${file} ${obs_dir}"
           echo ${cmd}; eval ${cmd}
         done
 
@@ -478,19 +470,16 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
           obs_file=${obs_dir}/gdas.${srcobsfile[$ii]}.t${hh}z.${anl_date}.bufr
         fi
 
-        if [ -r "${obs_file}" ]; then
+        if [ ! -r "${obs_file}" ]; then
+           echo "ERROR: obs file ${srcobsfile[$ii]} not found."
+           exit 1
+        else
            echo "Link source obs file ${obs_file}."
            cmd="cd ${workdir}"
            echo ${cmd}; eval ${cmd}
            cmd="ln -sf ${obs_file} ./${gsiobsfile[$ii]}"
            echo ${cmd}; eval ${cmd}
-        else
-           echo "ERROR: obs file ${srcobsfile[$ii]} not found."
-           exit 1
         fi
-      else
-        echo "ERROR: file ${tar_file} not found."
-        exit 1
       fi
       cd ${workdir}
     done
@@ -500,23 +489,24 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
     #############################################################################
     # Set fix files in the order below:
     #
-    #   berror    = Forecast model background error statistics
-    #   oberror   = Conventional obs error file
-    #   anavinfo  = Information file to set control and analysis variables
-    #   specoef   = CRTM spectral coefficients
-    #   trncoef   = CRTM transmittance coefficients
-    #   emiscoef  = CRTM coefficients for IR sea surface emissivity model
-    #   aerocoef  = CRTM coefficients for aerosol effects
-    #   cldcoef   = CRTM coefficients for cloud effects
-    #   satinfo   = Text file with information about assimilation of brightness temperatures
-    #   satangl   = Angle dependent bias correction file (fixed in time)
-    #   pcpinfo   = Text file with information about assimilation of prepcipitation rates
-    #   ozinfo    = Text file with information about assimilation of ozone data
-    #   errtable  = Text file with obs error for conventional data (regional only)
-    #   convinfo  = Text file with information about assimilation of conventional data
-    #   lightinfo = Text file with information about assimilation of GLM lightning data
-    #   bufrtable = Text file ONLY needed for single obs test (oneobstest=.true.)
-    #   bftab_sst = Bufr table for sst ONLY needed for sst retrieval (retrieval=.true.)
+    #  berror             = Forecast model background error statistics
+    #  oberror            = Conventional obs error file
+    #  anavinfo           = Information file to set control and analysis variables
+    #  specoef            = CRTM spectral coefficients
+    #  trncoef            = CRTM transmittance coefficients
+    #  emiscoef           = CRTM coefficients for IR sea surface emissivity model
+    #  aerocoef           = CRTM coefficients for aerosol effects
+    #  cldcoef            = CRTM coefficients for cloud effects
+    #  satinfo            = Text file with information about assimilation of brightness temperatures
+    #  satangl            = Angle dependent bias correction file (fixed in time)
+    #  pcpinfo            = Text file with information about assimilation of prepcipitation rates
+    #  ozinfo             = Text file with information about assimilation of ozone data
+    #  errtable           = Text file with obs error for conventional data (regional only)
+    #  convinfo           = Text file with information about assimilation of conventional data
+    #  lightinfo          = Text file with information about assimilation of GLM lightning data
+    #  atms_beamwidth.txt = Text file with information about assimilation of ATMS data
+    #  bufrtable          = Text file ONLY needed for single obs test (oneobstest=.true.)
+    #  bftab_sst          = Bufr table for sst ONLY needed for sst retrieval (retrieval=.true.)
     #
     ############################################################################
 
@@ -553,13 +543,13 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
 
     # loop over fix files
     echo "Copy fix files to working directory"
-    for ii in `seq 0 ${#srcfixfix[@]}`
-      if [ -r ${srcfixfile[$ii]} ]; then
-        cmd="cp ${srcfixfile[$ii]} ./${gsifixfile[$ii]}"
-        echo ${cmd}; eval ${cmd}
-      else
+    for (( ii=0; ii < ${#srcfixfix[@]}; ii++ )); do
+      if [ ! -r ${srcfixfile[$ii]} ]; then
         echo "ERROR: GSI fix file ${srcfixfile[ii]} not readable."
         exit 1
+      else
+        cmd="cp ${srcfixfile[$ii]} ./${gsifixfile[$ii]}"
+        echo ${cmd}; eval ${cmd}
       fi
     done
 
@@ -581,12 +571,12 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
     echo "Link CRTM coefficient files"
     for (( ii=0; ii < ${#coeffs[@]}; ii++ )); do
       coeff_file=${CRTM_ROOT}/${coeffs[$ii]}
-      if [ -r ${coeff_file} ]; then
-        cmd="ln -s ${coeff_file}  ."
-        echo ${cmd}; eval ${cmd}
-      else
+      if [ ! -r ${coeff_file} ]; then
         echo "ERROR: CRTM coefficient file ${coeff_file} not readable."
         exit 1
+      else
+        cmd="ln -s ${coeff_file} ."
+        echo ${cmd}; eval ${cmd}
       fi
     done
 
@@ -596,11 +586,11 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
      satinfo_coeffs+=( ${CRTM_ROOT}/${file}.SpcCoeff.bin )
      satinfo_coeffs+=( ${CRTM_ROOT}/${file}.TauCoeff.bin )
      for coeff_file in ${satinfo_coeffs[@]}; do
-       if [ -r ${coeff_file} ]; then
-         cmd="ln -s ${coeff_file} ."
+       if [ ! -r ${coeff_file} ]; then
          echo ${cmd}; eval ${cmd}
-       else
          echo "ERROR: CRTM coefficient file ${coeff_file} not readable."
+       else
+         cmd="ln -s ${coeff_file} ."
        fi
      done
     done
@@ -635,7 +625,10 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
         tar_file=${tar_files[$ii]}
         bias_dir=${bias_dirs[$ii]}
         bias_file=${bias_files[$ii]}
-        if [ -r ${tar_file} ]; then
+        if [ ! -r ${tar_file} ]; then
+          echo "Tar ${tar_file} of GDAS bias corrections not readable."
+          exit 1
+        else
           # untar to specified directory
           mkdir -p ${bias_dir}
           cmd="tar -xvf ${tar_file} -C ${bias_dir}"
@@ -643,35 +636,31 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
         
           # unpack nested directory structure
           bias_nest=(`find ${bias_dir} -type f`)
-          nest_indx=0
-          for nest_indx in `seq 0 ${#bias_nest[@]}`; do
-            cmd="mv ${bias_nest[${nest_indx}]} ${bias_dir}"
+          for file in ${bias_nest[@]}; do
+            cmd="mv ${file} ${bias_dir}"
             echo ${cmd}; eval ${cmd}
           done
 
           cmd="rmdir ${bias_dir}/*"
           echo ${cmd}; eval ${cmd}
         
-          if [ -r ${bias_file} ]; then
+          if [ ! -r ${bias_file} ]; then
+           echo "GDAS bias correction file not readable at ${bias_file}."
+           exit 1
+          else
             msg="Link the GDAS bias correction file ${bias_file} "
             msg+="for loop zero of analysis."
             echo ${msg}
                   
             cmd="ln -sf ${bias_file} ./${bias_in_files[$ii]}"
             echo ${cmd}; eval ${cmd}
-          else
-           echo "GDAS bias correction file not readable at ${bias_file}."
-           exit 1
           fi
-        else
-          echo "Tar ${tar_file} of GDAS bias corrections not readable."
-          exit 1
         fi
       done
     else
       # use the bias correction file generated on the last GSI loop 
       bias_files=()
-      (( lag_loop = ${bc_loop} - 1 ))
+      lag_loop=`printf %02d(( ${bc_loop} - 1 ))`
       bias_files+=(${dmndir}/bc_loop_${lag_loop}/satbias_out)
       bias_files+=(${dmndir}/bc_loop_${lag_loop}/satbias_pc.out)
 
@@ -682,16 +671,16 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
       # loop over bias files
       for (( ii=0; ii < ${#tar_files[@]}; ii++ )); do
 	      bias_file=${bias_files[$ii]}
-        if [ -r "${bias_file}" ]; then
+        if [ ! -r "${bias_file}" ]; then
+          echo "Bias file ${bias_file} variational bias corrections not readable."
+          exit 1
+        else
           msg="Linking variational bias correction file "
 	        msg+="${bias_file} from last analysis."
 	        echo ${msg}
 
           cmd="ln -sf ${bias_file} ./${bias_in_files[$ii]}"
 	        echo ${cmd}; eval ${cmd}
-        else
-          echo "Bias file ${bias_file} variational bias corrections not readable."
-          exit 1
         fi
       done
     fi
@@ -704,19 +693,18 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
     # bkg_file = Path and name of background file
     #
     ##################################################################################
-
     bkg_dir=${CYCLE_HME}/wrfdaprd/lower_bdy_update/ens_00
     bkg_file=${bkg_dir}/wrfout_d${dmn}_${anl_iso}
 
     if [ ! -r ${bkg_file} ]; then
       echo "ERROR: background file ${bkg_file} does not exist."
       exit 1
+    else
+      echo "Copy background file to working directory."
+      # Copy over background field -- THIS IS MODIFIED BY GSI DO NOT LINK TO IT
+      cmd="cp ${bkg_file} wrf_inout"
+      echo ${cmd}; eval ${cmd}
     fi
-
-    echo "Copy background file(s) to working directory."
-    # Copy over background field -- THIS IS MODIFIED BY GSI DO NOT LINK TO IT
-    cmd="cp ${bkg_file} wrf_inout"
-    echo ${cmd}; eval ${cmd}
 
     # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
     #if [[ ${IF_4DENVAR} = ${YES} ]] ; then
@@ -740,12 +728,12 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
         echo " Copy ensemble perturbations to working directory."
         for memid in `seq -f "%02g" 1 ${N_ENS}`; do
           ens_file=${ENS_ROOT}/bkg/ens_${memid}/wrfout_d${dmn}_${anl_iso}
-          if [ -r ${ens_file} ]; then
-            cmd="ln -sf ${ens_file} ./wrf_ens_${memid}"
-            echo ${cmd}; eval ${cmd}
-          else
+          if [ !-r ${ens_file} ]; then
             echo "ERROR: ensemble file ${ens_file} does not exist."
             exit 1
+          else
+            cmd="ln -sf ${ens_file} ./wrf_ens_${memid}"
+            echo ${cmd}; eval ${cmd}
           fi
         done
         
@@ -798,26 +786,17 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
     ##################################################################################
     # Print run parameters
     echo
+    echo "ANL_TIME          = ${ANL_TIME}"
+    echo "BKG               = ${bkg_file}"
+    echo "IF_OBSERVER       = ${IF_OBSERVER}"
     echo "IF_HYBRID         = ${IF_HYBRID}"
-    echo "N_ENS             = ${N_ENS}"
+    echo "ENS_ROOT          = ${ENS_ROOT}"
     echo "BETA              = ${BETA}"
     echo "S_ENS_V           = ${S_ENS_V}"
     echo "S_ENS_H           = ${S_ENS_H}"
-    echo "IF_OBSERVER       = ${IF_OBSERVER}"
     echo "IF_4DENVAR        = ${IF_4DENVAR}"
-    echo "WRF_CTR_DOM       = ${WRF_CTR_DOM}"
-    echo "WRF_ENS_DOM       = ${WRF_ENS_DOM}"
     echo
-    echo "ANL_TIME          = ${ANL_TIME}"
-    echo "GSI_EXE           = ${GSI_EXE}"
-    echo "CRTM_ROOT         = ${CRTM_ROOT}"
-    echo "EXP_CNFG          = ${EXP_CNFG}"
-    echo "CYCLE_HME         = ${CYCLE_HME}"
-    echo "DATA_ROOT         = ${DATA_ROOT}"
-    echo "BKG               = ${bkg_file}"
-    echo "ENS_ROOT          = ${ENS_ROOT}"
-    echo
-    now=`date +%Y%m%d%H%M%S`
+    now=`date +%Y-%m-%d_%H_%M_%S`
     echo "gsi analysis started at ${now} on domain d${dmn}."
     cmd="${MPIRUN} -n ${GSI_PROC} ${GSI_EXE} > stdout.anl.${anl_iso} 2>&1"
     echo ${cmd}; eval ${cmd}
@@ -833,7 +812,7 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
     fi
 
     # Copy the output to cycling naming convention
-    cmd="cp wrf_inout wrfanl_ens_00_${anl_iso}"
+    cmd="mv wrf_inout wrfanl_ens_00_${anl_iso}"
     echo ${cmd}; eval ${cmd}
 
     ##################################################################################
@@ -906,7 +885,7 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
            echo ${cmd}; eval ${cmd}
         fi
       done
-      cmd="mv wrf_inout wrf_inout_ensmean"
+      cmd="cp wrfanl_ens_00_${anl_iso} wrf_inout_ensmean"
       echo ${cmd}; eval ${cmd}
 
       # Build the GSI namelist on-the-fly for each member
@@ -917,7 +896,7 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
 
       # Loop through each member
       loop=01
-      for memid in `seq -f "%02f" 1 ${N_ENS}`; do
+      for memid in `seq -f "%02g" 1 ${N_ENS}`; do
         rm pe0*
         # get new background for each member
         if [[ -f wrf_inout ]]; then

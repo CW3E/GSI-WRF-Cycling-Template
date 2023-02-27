@@ -191,12 +191,14 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     work_root=${work_root}/lower_bdy_update/ens_${memid}
     mkdir -p ${work_root}
     cmd="cd ${work_root}"
-    echo ${cmd}
-    eval ${cmd}
+    echo ${cmd}; eval ${cmd}
     
     # Remove IC/BC in the directory if old data present
-    rm -f wrfout_*
-    rm -f wrfinput_d0*
+    cmd="rm -f wrfout_*"
+    echo ${cmd}; eval ${cmd}
+    
+    cmd="rm -f wrfinput_d0*"
+    echo ${cmd}; eval ${cmd}
   
     if [ ${memid} = 00 ]; then 
       # control background sourced from last cycle background
@@ -229,7 +231,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       else
         cmd="cp ${bkg_dir}/${wrfout} ."
         echo ${cmd}; eval ${cmd}
-        #NOTE FOR DEBUGGING
+        #NOTE THIS EXIT IS FOR DEBUGGING
         exit 1
       fi
   
@@ -322,14 +324,14 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
 
     if [ ${memid} = 00 ]; then
       if [ ! -d ${gsi_dir} ]; then
-        echo "ERROR: \${gsi_dir} directory ${gsi_dir} does not exist."
+        echo "ERROR: \${gsi_dir} directory, ${gsi_dir}, does not exist."
         exit 1
       else
         wrfanl=${gsi_dir}/d01/wrfanl_ens_${memid}_${anl_time}
       fi
     else
       if [ ! -d ${enkf_dir} ]; then
-        echo "ERROR: \${enkf_dir} directory ${enkf_dir} does not exist."
+        echo "ERROR: \${enkf_dir} directory, ${enkf_dir}, does not exist."
         exit 1
       else
         # NOTE: ENKF SCRIPT NEED TO UPDATE OUTPUT NAMING CONVENTIONS

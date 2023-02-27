@@ -4,8 +4,8 @@
  wrf_bdy_file       = './wrfinput_d01'
  DOMAIN_ID          = DOMAIN_ID
  debug              = .true.
- update_lateral_bdy = .false.
- update_low_bdy     = .false.
+ UPDATE_LATERAL_BDY = UPDATE_LATERAL_BDY
+ UPDATE_LOW_BDY     = UPDATE_LOW_BDY
  update_lsm         = .false.
  iswater            = 16
  var4d_lbc          = .false.
