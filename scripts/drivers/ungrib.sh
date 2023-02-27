@@ -217,7 +217,7 @@ fi
 # WPS_ROOT  = Root directory of clean WPS build
 # EXP_CNFG  = Root directory containing sub-directories for namelists
 #             vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HME = Cycle YYYYMMDDHH named directory for cycling data containing
+# CYC_HME   = Cycle YYYYMMDDHH named directory for cycling data containing
 #             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # DATA_ROOT = Directory for all forcing data files, including grib files,
 #             obs files, etc.
@@ -240,9 +240,11 @@ elif [ ! -d ${EXP_CNFG} ]; then
   exit 1
 fi
 
-if [ ${#CYCLE_HME} -ne 10 ]; then
-  # NOTE: some ungrib jobs start cycling and this directory does not always exist
-  echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
+if [ ! ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} is not defined."
+  exit 1
+elif [ ! -d ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} directory '${CYC_HME}' does not exist."
   exit 1
 fi
 
@@ -268,7 +270,7 @@ fi
 #
 ##################################################################################
 
-work_root=${CYCLE_HME}/wpsprd/ens_${memid}
+work_root=${CYC_HME}/wpsprd/ens_${memid}
 mkdir -p ${work_root}
 cmd="cd ${work_root}"
 echo ${cmd}; eval ${cmd}
@@ -304,7 +306,7 @@ fi
 
 # check to make sure the grib_dataroot exists and is non-empty
 grib_dataroot=${DATA_ROOT}/gribbed/${BKG_DATA}
-if [! -d ${grib_dataroot} ]; then
+if [ ! -d ${grib_dataroot} ]; then
   echo "ERROR: the directory ${grib_dataroot} does not exist."
   exit 1
 elif [ `ls -l ${grib_dataroot} | wc -l` -le ${n_files} ]; then
@@ -357,6 +359,14 @@ cat namelist.wps \
   > namelist.wps.tmp
 mv namelist.wps.tmp namelist.wps
 
+# Update max_dom in namelist to dummy value (domains not needed for ungrib)
+in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
+out_dom="\1 = 01"
+cat namelist.wps \
+  | sed "s/${in_dom}/${out_dom}/" \
+  > namelist.wps.tmp
+mv namelist.wps.tmp namelist.wps
+
 ##################################################################################
 # Run ungrib 
 ##################################################################################
@@ -364,7 +374,7 @@ mv namelist.wps.tmp namelist.wps
 echo
 echo "EXP_CNFG      = ${EXP_CNFG}"
 echo "MEMID         = ${MEMID}"
-echo "CYCLE_HME     = ${CYCLE_HME}"
+echo "CYC_HME       = ${CYC_HME}"
 echo "STRT_TIME     = ${strt_dt}"
 echo "END_TIME      = ${end_dt}"
 echo "BKG_DATA      = ${BKG_DATA}"

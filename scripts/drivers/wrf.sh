@@ -114,11 +114,11 @@ fi
 # DOWN_DOM     = First domain index to downscale ICs from d01, set parameter
 #                less than MAX_DOM if downscaling to be used
 # WRFOUT_INT   = Interval of wrfout in HH
-# CYCLE_INT    = Interval in HH on which DA is cycled in a cycling control flow
+# CYC_INT      = Interval in HH on which DA is cycled in a cycling control flow
 # WRF_IC       = Defines where to source WRF initial and boundary conditions from
-#                  WRF_IC = REALEXE : ICs / BCs from CYCLE_HME/realprd
+#                  WRF_IC = REALEXE : ICs / BCs from CYC_HME/realprd
 #                  WRF_IC = CYCLING : ICs / BCs from GSI / WRFDA analysis
-#                  WRF_IC = RESTART : ICs from restart file in CYCLE_HME/wrfprd
+#                  WRF_IC = RESTART : ICs from restart file in CYC_HME/wrfprd
 # IF_SST_UPDTE = Yes / No: whether WRF uses dynamic SST values 
 # IF_FEEBACK   = Yes / No: whether WRF domains use 1- or 2-way nesting
 #
@@ -210,8 +210,8 @@ elif [ ! ${WRFOUT_INT} -gt 0 ]; then
   exit 1
 fi
 
-if [ ${#CYCLE_INT} -ne 2 ]; then
-  echo "ERROR: \${CYCLE_INT}, ${CYCLE_INT}, is not in 'HH' format."
+if [ ${#CYC_INT} -ne 2 ]; then
+  echo "ERROR: \${CYC_INT}, ${CYC_INT}, is not in 'HH' format."
   exit 1
 fi
 
@@ -260,7 +260,7 @@ fi
 # WRF_ROOT   = Root directory of a clean WRF build WRF/run directory
 # EXP_CONFIG = Root directory containing sub-directories for namelists
 #              vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HME = Start time named directory for cycling data containing
+# CYC_HME    = Start time named directory for cycling data containing
 #              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # DATA_ROOT  = Directory for all forcing data files, including grib files,
 #              obs files, etc.
@@ -287,11 +287,11 @@ elif [ ! -d ${EXP_CNFG} ]; then
   exit 1
 fi
 
-if [ ${#CYCLE_HME} -ne 10 ]; then
-  echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
+if [ ! ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} is not defined."
   exit 1
-elif [ ! -d ${CYCLE_HME} ]; then
-  echo "ERROR: \${CYCLE_HME} directory '${CYCLE_HME}' does not exist."
+elif [ ! -d ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} directory '${CYC_HME}' does not exist."
   exit 1
 fi
 
@@ -331,7 +331,7 @@ fi
 #
 ##################################################################################
 
-work_root=${CYCLE_HME}/wrfprd/ens_${memid}
+work_root=${CYC_HME}/wrfprd/ens_${memid}
 mkdir -p ${work_root}
 cmd="cd ${work_root}"
 echo ${cmd}; eval ${cmd}
@@ -366,7 +366,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   if [[ ${WRF_IC} = ${CYCLING} && ${dmn} -lt ${DOWN_DOM} ]]; then
     if [[ ${dmn} = 01 ]]; then
       # obtain the boundary files from the lateral boundary update by WRFDA 
-      wrfanlroot=${CYCLE_HME}/wrfdaprd/lateral_bdy_update/ens_${memid}
+      wrfanlroot=${CYC_HME}/wrfdaprd/lateral_bdy_update/ens_${memid}
       wrfbdy=${wrfanlroot}/wrfbdy_d01
       cmd="ln -sf ${wrfbdy} wrfbdy_d01"
       echo ${cmd}; eval ${cmd}
@@ -379,10 +379,10 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       # Nested domains have boundary conditions defined by parent
       if [ ${memid} -eq 00 ]; then
         # control solution is indexed 00, analyzed with GSI
-        wrfanl_root=${CYCLE_HME}/gsiprd/d${dmn}
+        wrfanl_root=${CYC_HME}/gsiprd/d${dmn}
       else
         # ensemble perturbations are updated with EnKF step
-        wrfanl_root=${CYCLE_HME}/enkfprd/d${dmn}
+        wrfanl_root=${CYC_HME}/enkfprd/d${dmn}
       fi
     fi
 
@@ -406,7 +406,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
 
   else
     # else get initial and boundary conditions from real for downscaled domains
-    realroot=${CYCLE_HME}/realprd/ens_${memid}
+    realroot=${CYC_HME}/realprd/ens_${memid}
     if [ ${dmn} = 01 ]; then
       # Link the wrfbdy_d01 file from real
       wrfbdy=${realroot}/wrfbdy_d01
@@ -431,7 +431,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   # NOTE: THIS LINKS SST UPDATE FILES FROM REAL OUTPUTS REGARDLESS OF GSI CYCLING
   if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
     wrflowinp=wrflowinp_d${dmn}
-    realname=${CYCLE_HME}/realprd/ens_${memid}/${wrflowinp}
+    realname=${CYC_HME}/realprd/ens_${memid}/${wrflowinp}
     cmd="ln -sf ${realname} ."
     echo ${cmd}; eval ${cmd}
     if [ ! -r ${wrflowinp} ]; then
@@ -601,7 +601,7 @@ mv namelist.input.tmp namelist.input
 echo
 echo "EXP_CONFIG   = ${EXP_CONFIG}"
 echo "MEMID        = ${MEMID}"
-echo "CYCLE_HME    = ${CYCLE_HME}"
+echo "CYC_HME      = ${CYC_HME}"
 echo "STRT TIME    = "`date +"%Y-%m-%d_%H_%M_%S" -d "${strt_time}"`
 echo "END TIME     = "`date +"%Y-%m-%d_%H_%M_%S" -d "${end_time}"`
 echo "WRFOUT_INT   = ${WRFOUT_INT}"
@@ -646,10 +646,10 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
   echo 
 fi
 
-# ensure that the bkg directory exists in next ${CYCLE_HME}
-datestr=`date +%Y%m%d%H -d "${strt_time} ${CYCLE_INT} hours"`
+# ensure that the bkg directory exists in next ${CYC_HME}
+datestr=`date +%Y%m%d%H -d "${strt_time} ${CYC_INT} hours"`
 new_bkg=${datestr}/bkg/ens_${memid}
-cmd="mkdir -p ${CYCLE_HME}/../${new_bkg}"
+cmd="mkdir -p ${CYC_HME}/../${new_bkg}"
 echo ${cmd}; eval ${cmd}
 
 # Check for all wrfout files on WRFOUT_INT and link files to
@@ -663,7 +663,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       echo ${msg}
       exit 1
     else
-      cmd="ln -sf wrfout_d${dmn}_${datestr} ${CYCLE_HME}/../${new_bkg}"
+      cmd="ln -sf wrfout_d${dmn}_${datestr} ${CYC_HME}/../${new_bkg}"
       echo ${cmd}; eval ${cmd}
     fi
   done
@@ -674,7 +674,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     echo 
     exit 1
   else
-    cmd="ln -sf wrfrst_d${dmn}_${datestr} ${CYCLE_HME}/../${new_bkg}"
+    cmd="ln -sf wrfrst_d${dmn}_${datestr} ${CYC_HME}/../${new_bkg}"
     echo ${cmd}; eval ${cmd}
   fi
 done

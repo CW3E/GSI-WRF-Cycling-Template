@@ -80,6 +80,8 @@ fi
 # Options below are defined in control flow xml (case insensitive)
 #
 # ANL_TIME    = Analysis time YYYYMMDDHH
+# CYC_HME     = Start time named directory for cycling data containing
+#               bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # IF_OBSERVER = Yes : Only used as observation operator for ensemble members
 #             = No  : Analyzes control solution
 # WRF_CTR_DOM = Analyze up to domain index format DD of control solution
@@ -106,6 +108,14 @@ else
   anl_iso=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
 fi
 
+if [ ! ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} is not defined."
+  exit 1
+elif [ ! -d "${CYC_HME}" ]; then
+  echo "ERROR: \${CYC_HME} directory, ${CYC_HME}, does not exist."
+  exit 1
+fi
+
 if [[ ${IF_OBSERVER} = ${NO} ]]; then
   if [ ${#WRF_CTR_DOM} -ne 2 ]; then
     echo "ERROR: \${WRF_CTR_DOM}, ${WRF_CTR_DOM} is not in DD format."
@@ -115,7 +125,7 @@ if [[ ${IF_OBSERVER} = ${NO} ]]; then
     nummiter=2
     if_read_obs_save=".false."
     if_read_obs_skip=".false."
-    work_root=${CYCLE_HME}/gsiprd
+    work_root=${CYC_HME}/gsiprd
     max_dom=${WRF_CTR_DOM}
   fi
 elif [[ ${IF_OBSERVER} = ${YES} ]]; then
@@ -127,7 +137,7 @@ elif [[ ${IF_OBSERVER} = ${YES} ]]; then
   nummiter=0
   if_read_obs_save=".true."
   if_read_obs_skip=".false."
-  work_root=${CYCLE_HME}/enkfprd
+  work_root=${CYC_HME}/enkfprd
   max_dom=${WRF_ENS_DOM}
 else
   echo "ERROR: \${IF_OBSERVER} must equal 'Yes' or 'No' (case insensitive)."
@@ -236,8 +246,6 @@ fi
 # CRTM_ROOT = Path of CRTM including byte order
 # EXP_CNFG  = Root directory containing sub-directories for namelists
 #             vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HME = Start time named directory for cycling data containing
-#             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # DATA_ROOT = Directory for all forcing data files, including grib files,
 #             obs files, etc.
 # ENS_ROOT  = Background ensemble located at ${ENS_ROOT}/ens_${ens_n}/wrfout* 
@@ -272,14 +280,6 @@ if [ ! ${EXP_CNFG} ]; then
   exit 1
 elif [ ! -d ${EXP_CNFG} ]; then
   echo "ERROR: \${EXP_CNFG} directory, ${EXP_CNFG}, does not exist."
-  exit 1
-fi
-
-if [ ! ${CYCLE_HME} ]; then
-  echo "ERROR: \${CYCLE_HME} is not defined."
-  exit 1
-elif [ ! -d "${CYCLE_HME}" ]; then
-  echo "ERROR: \${CYCLE_HME} directory, ${CYCLE_HME}, does not exist."
   exit 1
 fi
 
@@ -693,7 +693,7 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
     # bkg_file = Path and name of background file
     #
     ##################################################################################
-    bkg_dir=${CYCLE_HME}/wrfdaprd/lower_bdy_update/ens_00
+    bkg_dir=${CYC_HME}/wrfdaprd/lower_bdy_update/ens_00
     bkg_file=${bkg_dir}/wrfout_d${dmn}_${anl_iso}
 
     if [ ! -r ${bkg_file} ]; then

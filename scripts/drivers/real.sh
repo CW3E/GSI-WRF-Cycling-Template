@@ -204,7 +204,7 @@ fi
 # WRF_ROOT  = Root directory of a "clean" WRF build WRF/run directory
 # EXP_CNFG  = Root directory containing sub-directories for namelists
 #             vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HME = Start time named directory for cycling data containing
+# CYC_HME   = Start time named directory for cycling data containing
 #             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # MPIRUN    = MPI multiprocessing evaluation call, machine specific
 # N_PROC    = The total number of processes to run real.exe with MPI
@@ -227,11 +227,11 @@ elif [ ! -d ${EXP_CNFG} ]; then
   exit 1
 fi
 
-if [ ${#CYCLE_HME} -ne 10 ]; then
-  echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
+if [ ! ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} is not defined."
   exit 1
-elif [ ! -d ${CYCLE_HME} ]; then
-  echo "ERROR: \${CYCLE_HME} directory '${CYCLE_HME}' does not exist."
+elif [ ! -d ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} directory '${CYC_HME}' does not exist."
   exit 1
 fi
 
@@ -263,7 +263,7 @@ fi
 #
 ##################################################################################
 
-work_root=${CYCLE_HME}/realprd/ens_${memid}
+work_root=${CYC_HME}/realprd/ens_${memid}
 mkdir -p ${work_root}
 cmd="cd ${work_root}"
 echo ${cmd}; eval ${cmd}
@@ -295,9 +295,9 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
     time_str=`date "+%Y-%m-%d_%H_%M_%S" -d "${strt_time} ${fcst} hours"`
     realinput_name=met_em.d${dmn}.${time_str}.nc
-    wps_dir=${CYCLE_HME}/wpsprd/ens_${memid}
+    wps_dir=${CYC_HME}/wpsprd/ens_${memid}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then
-      echo "ERROR: Input file '${CYCLE_HME}/${realinput_name}' is missing."
+      echo "ERROR: Input file '${CYC_HME}/${realinput_name}' is missing."
       exit 1
     else
       cmd="ln -sf ${wps_dir}/${realinput_name} ."
@@ -426,7 +426,7 @@ fi
 echo
 echo "EXP_CNFG     = ${EXP_CNFG}"
 echo "MEMID        = ${MEMID}"
-echo "CYCLE_HME    = ${CYCLE_HME}"
+echo "CYC_HME      = ${CYC_HME}"
 echo "STRT_TIME    = "`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
 echo "END_TIME     = "`date +%Y-%m-%d_%H_%M_%S -d "${end_time}"`
 echo "BKG_INT      = ${BKG_INT}"

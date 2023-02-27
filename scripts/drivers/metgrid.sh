@@ -183,7 +183,7 @@ fi
 # WPS_ROOT  = Root directory of a clean WPS build
 # EXP_CNFG  = Root directory containing sub-directories for namelists
 #             vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HME = Cycle YYYYMMDDHH named directory for cycling data containing
+# CYC_HME   = Cycle YYYYMMDDHH named directory for cycling data containing
 #             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # MPIRUN    = MPI multiprocessing evaluation call, machine specific
 # N_PROC    = The total number of processes to run metgrid.exe with MPI
@@ -206,11 +206,11 @@ elif [ ! -d ${EXP_CNFG} ]; then
   exit 1
 fi
 
-if [ ${#CYCLE_HME} -ne 10 ]; then
-  echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
+if [ ! ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} is not defined."
   exit 1
-elif [ ! -d ${CYCLE_HME} ]; then
-  echo "ERROR: \${CYCLE_HME} directory '${CYCLE_HME}' does not exist."
+elif [ ! -d ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} directory '${CYC_HME}' does not exist."
   exit 1
 fi
 
@@ -241,7 +241,7 @@ fi
 #
 ##################################################################################
 
-work_root=${CYCLE_HME}/wpsprd/ens_${memid}
+work_root=${CYC_HME}/wpsprd/ens_${memid}
 if [ ! -d ${work_root} ]; then
   echo "ERROR: \${work_root} directory ${work_root} does not exist."
   exit 1
@@ -340,7 +340,7 @@ echo ${cmd}; eval ${cmd}
 echo
 echo "EXP_CNFG  = ${EXP_CNFG}"
 echo "MEMID     = ${MEMID}"
-echo "CYCLE_HME = ${CYCLE_HME}"
+echo "CYC_HME   = ${CYC_HME}"
 echo "STRT_TIME = ${strt_dt}"
 echo "END_TIME  = ${end_dt}"
 echo "BKG_INT   = ${BKG_INT}"

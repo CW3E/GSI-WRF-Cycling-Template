@@ -127,7 +127,7 @@ fi
 # WRFDA_ROOT = Root directory of a WRFDA build 
 # EXP_CNFG   = Root directory containing sub-directories for namelists
 #              vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HME  = Start time named directory for cycling data containing
+# CYC_HME    = Start time named directory for cycling data containing
 #              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 #
 ##################################################################################
@@ -148,9 +148,11 @@ elif [ ! -d ${EXP_CNFG} ]; then
   exit 1
 fi
 
-if [ ${#CYCLE_HME} -ne 10 ]; then
-  # NOTE: some ungrib jobs start cycling and this directory does not always exist
-  echo "ERROR: \${CYCLE_HME}, '${CYCLE_HME}', is not in 'YYYYMMDDHH' format." 
+if [ ! ${CYC_HME} ]; then
+  echo "ERROR: \${CYC_HME} is not defined."
+  exit 1
+elif [ ! -d "${CYC_HME}" ]; then
+  echo "ERROR: \${CYC_HME} directory, ${CYC_HME}, does not exist."
   exit 1
 fi
 
@@ -170,10 +172,10 @@ fi
 ##################################################################################
 
 for memid in `seq -f "%02g" 0 ${ens_max}`; do
-  work_root=${CYCLE_HME}/wrfdaprd
-  real_dir=${CYCLE_HME}/realprd/ens_${memid}
-  gsi_dir=${CYCLE_HME}/gsiprd
-  enkf_dir=${CYCLE_HME}/enkfprd
+  work_root=${CYC_HME}/wrfdaprd
+  real_dir=${CYC_HME}/realprd/ens_${memid}
+  gsi_dir=${CYC_HME}/gsiprd
+  enkf_dir=${CYC_HME}/enkfprd
   update_bc_exe=${WRFDA_ROOT}/var/da/da_update_bc.exe
   
   if [ ! -d ${real_dir} ]; then
@@ -202,7 +204,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
   
     if [ ${memid} = 00 ]; then 
       # control background sourced from last cycle background
-      bkg_dir=${CYCLE_HME}/bkg/ens_${memid}
+      bkg_dir=${CYC_HME}/bkg/ens_${memid}
       max_dom=${WRF_CTR_DOM}
     else
       # perturbation background sourced from ensemble root
@@ -286,7 +288,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       echo "BOUNDARY   = ${BOUNDARY}"
       echo "DOMAIN     = ${dmn}"
       echo "EXP_CNFG   = ${EXP_CNFG}"
-      echo "CYCLE_HME  = ${CYCLE_HME}"
+      echo "CYC_HME    = ${CYC_HME}"
       echo "ENS_ROOT   = ${ENS_ROOT}"
       echo
       now=`date +%Y-%m-%d_%H_%M_%S`
@@ -399,7 +401,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     # Print run parameters
     echo
     echo "EXP_CNFG   = ${EXP_CNFG}"
-    echo "CYCLE_HME  = ${CYCLE_HME}"
+    echo "CYC_HME    = ${CYC_HME}"
     echo "ENS_ROOT   = ${ENS_ROOT}"
     echo
     echo "BOUNDARY   = ${BOUNDARY}"
