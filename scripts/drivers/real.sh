@@ -293,7 +293,7 @@ echo ${cmd}; eval ${cmd}
 # are available and make links to them
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
-    time_str=`date "+%Y-%m-%d_%H_%M_%S" -d "${strt_time} ${fcst} hours"`
+    time_str=`date "+%Y-%m-%d_%H:%M:%S" -d "${strt_time} ${fcst} hours"`
     realinput_name=met_em.d${dmn}.${time_str}.nc
     wps_dir=${CYC_HME}/wpsprd/ens_${memid}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then

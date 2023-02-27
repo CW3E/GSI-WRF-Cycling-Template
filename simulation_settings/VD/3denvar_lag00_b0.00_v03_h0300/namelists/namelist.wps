@@ -36,5 +36,4 @@
  fg_name           = 'FILE',        ! GFS / GEFS setting !
  !fg_name          = 'FILE', 'PRES' ! ERA5 setting !
  io_form_metgrid   = 2,
- nocolons          = .true.,
 /

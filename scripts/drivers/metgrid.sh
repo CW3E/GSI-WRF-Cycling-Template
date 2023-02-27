@@ -373,7 +373,7 @@ fi
 # Check to see if metgrid outputs are generated
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
-    time_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time} ${fcst} hours"`
+    time_str=`date +%Y-%m-%d_%H:%M:%S -d "${strt_time} ${fcst} hours"`
     if [ ! -s "met_em.d${dmn}.${time_str}.nc" ]; then
       echo "ERROR: ${metgrid_exe} failed to complete for d${dmn}."
       exit 1
