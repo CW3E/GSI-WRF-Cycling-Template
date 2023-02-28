@@ -1,7 +1,7 @@
 &control_param
  DA_FILE            = DA_FILE
  WRF_INPUT          = WRF_INPUT
- wrf_bdy_file       = './wrfinput_d01'
+ wrf_bdy_file       = './wrfbdy_d01'
  DOMAIN_ID          = DOMAIN_ID
  debug              = .true.
  UPDATE_LATERAL_BDY = UPDATE_LATERAL_BDY
