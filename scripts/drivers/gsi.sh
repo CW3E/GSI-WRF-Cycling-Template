@@ -48,7 +48,7 @@
 #
 ##################################################################################
 # uncomment to run verbose for debugging / testing
-#set -x
+set -x
 
 # Background error set for WRF-ARW by default
 bk_core_arw=".true."
@@ -146,10 +146,10 @@ fi
 
 if [[ ${IF_HYBRID} = ${YES} ]]; then
   # ensembles are required for hybrid EnVAR
-  if [ ${#WRF_ENS_DOM} -n 2 ]; then
+  if [ ${#WRF_ENS_DOM} -ne 2 ]; then
     echo "ERROR: \${WRF_ENS_DOM} is not in DD format."
     exit 1
-  elif [ ! "${N_ENS}" ]; then
+  elif [ ! ${N_ENS} ]; then
     msg="ERROR: \${N_ENS} must be specified to the number "
     msg+="of ensemble perturbations."
     echo ${msg}
@@ -157,7 +157,7 @@ if [[ ${IF_HYBRID} = ${YES} ]]; then
   elif [ ${N_ENS} -lt 2 ]; then
     echo "ERROR: ensemble size \${N_ENS} + 1 must be three or greater."
     exit 1
-  elif [ ! "${BETA}" ]; then
+  elif [ ! ${BETA} ]; then
     msg="ERROR: \${BETA} must be specified to the weight "
     msg+="between ensemble and static covariance."
     echo ${msg}
@@ -484,7 +484,6 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
       cd ${workdir}
     done
 
-    echo "Copy fix files and link CRTM coefficient files to working directory."
 
     #############################################################################
     # Set fix files in the order below:
@@ -543,12 +542,12 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
 
     # loop over fix files
     echo "Copy fix files to working directory"
-    for (( ii=0; ii < ${#srcfixfix[@]}; ii++ )); do
+    for (( ii=0; ii < ${#srcfixfile[@]}; ii++ )); do
       if [ ! -r ${srcfixfile[$ii]} ]; then
-        echo "ERROR: GSI fix file ${srcfixfile[ii]} not readable."
+        echo "ERROR: GSI fix file ${srcfixfile[$ii]} not readable."
         exit 1
       else
-        cmd="cp ${srcfixfile[$ii]} ./${gsifixfile[$ii]}"
+        cmd="cp -L ${srcfixfile[$ii]} ./${gsifixfile[$ii]}"
         echo ${cmd}; eval ${cmd}
       fi
     done
@@ -587,10 +586,10 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
      satinfo_coeffs+=( ${CRTM_ROOT}/${file}.TauCoeff.bin )
      for coeff_file in ${satinfo_coeffs[@]}; do
        if [ ! -r ${coeff_file} ]; then
-         echo ${cmd}; eval ${cmd}
          echo "ERROR: CRTM coefficient file ${coeff_file} not readable."
        else
          cmd="ln -s ${coeff_file} ."
+         echo ${cmd}; eval ${cmd}
        fi
      done
     done
@@ -598,7 +597,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     if [[ ${if_oneob} = ${YES} ]]; then
       # Only need this file for single obs test
       bufrtable=${fix_root}/prepobs_prep.bufrtable
-      cmd="cp ${bufrtable} ./prepobs_prep.bufrtable"
+      cmd="cp -L ${bufrtable} ./prepobs_prep.bufrtable"
       echo ${cmd}; eval ${cmd}
     fi
 
@@ -702,7 +701,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     else
       echo "Copy background file to working directory."
       # Copy over background field -- THIS IS MODIFIED BY GSI DO NOT LINK TO IT
-      cmd="cp ${bkg_file} wrf_inout"
+      cmd="cp -L ${bkg_file} wrf_inout"
       echo ${cmd}; eval ${cmd}
     fi
 
@@ -885,7 +884,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
            echo ${cmd}; eval ${cmd}
         fi
       done
-      cmd="cp wrfanl_ens_00_${anl_iso} wrf_inout_ensmean"
+      cmd="cp -L wrfanl_ens_00_${anl_iso} wrf_inout_ensmean"
       echo ${cmd}; eval ${cmd}
 
       # Build the GSI namelist on-the-fly for each member
@@ -905,7 +904,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
 
         ens_file=wrf_ens_${memid}
         echo "Copying ${ens_file} for GSI observer."
-        cmd="cp ${ens_file} wrf_inout"
+        cmd="cp -L ${ens_file} wrf_inout"
         echo ${cmd}; eval ${cmd}
 
         # run GSI

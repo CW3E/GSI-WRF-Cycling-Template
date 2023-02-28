@@ -231,7 +231,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
         echo "ERROR: Input file '${bkg_dir}/${wrfout}' is missing."
         exit 1
       else
-        cmd="cp ${bkg_dir}/${wrfout} ."
+        cmd="cp -L ${bkg_dir}/${wrfout} ."
         echo ${cmd}; eval ${cmd}
       fi
   
@@ -239,7 +239,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
         echo "ERROR: Input file '${real_dir}/${wrfinput}' is missing."
         exit 1
       else
-        cmd="cp ${real_dir}/${wrfinput} ."
+        cmd="cp -L ${real_dir}/${wrfinput} ."
         echo ${cmd}; eval ${cmd}
       fi
   
@@ -247,7 +247,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       #  Build da_update_bc namelist
       ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-      cmd="cp ${EXP_CNFG}/namelists/parame.in ."
+      cmd="cp -L ${EXP_CNFG}/namelists/parame.in ."
       echo ${cmd}; eval ${cmd}
   
       # Update the namelist for the domain id 
@@ -347,7 +347,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       echo "ERROR: Input file '${wrfanl}' is missing."
       exit 1
     else
-      cmd="cp ${wrfanl} ${wrfvar_outname}"
+      cmd="cp -L ${wrfanl} ${wrfvar_outname}"
       echo ${cmd}; eval ${cmd}
     fi
   
@@ -355,7 +355,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       echo "ERROR: Input file '${wrfbdy}' is missing."
       exit 1
     else
-      cmd="cp ${wrfbdy} ."
+      cmd="cp -L ${wrfbdy} ."
       echo ${cmd}; eval ${cmd}
     fi
   
@@ -363,7 +363,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     #  Build da_update_bc namelist
     ##################################################################################
     # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-    cmd="cp ${EXP_CNFG}/namelists/parame.in ."
+    cmd="cp -L ${EXP_CNFG}/namelists/parame.in ."
     echo ${cmd}; eval ${cmd}
   
     # Update the namelist for lateral boundary update 

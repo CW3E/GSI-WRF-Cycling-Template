@@ -331,7 +331,7 @@ if [ ! -r ${namelist_temp} ]; then
   echo ${msg}
   exit 1
 else
-  cmd="cp ${namelist_temp} ./namelist.input"
+  cmd="cp -L ${namelist_temp} ./namelist.input"
   echo ${cmd}; eval ${cmd}
 fi
 
