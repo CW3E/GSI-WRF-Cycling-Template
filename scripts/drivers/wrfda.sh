@@ -199,7 +199,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     cmd="rm -f wrfout_*"
     echo ${cmd}; eval ${cmd}
     
-    cmd="rm -f wrfinput_d0*"
+    cmd="rm -f wrfinput_d*"
     echo ${cmd}; eval ${cmd}
   
     if [ ${memid} = 00 ]; then 
@@ -220,12 +220,12 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     
     # Check to make sure the input files are available and copy them
     echo "Copying background and input files."
-    for dmn in `seq -f "%20g" 01 ${max_dom}`; do
+    for dmn in `seq -f "%02g" 01 ${max_dom}`; do
       # update the lower BC for the output file to pass to GSI
-      wrfout=wrfout_d0${dmn}_${anl_time}
+      wrfout=wrfout_d${dmn}_${anl_time}
 
       # wrfinput is always drawn from real step
-      wrfinput=wrfinput_d0${dmn}
+      wrfinput=wrfinput_d${dmn}
   
       if [ ! -r "${bkg_dir}/${wrfout}" ]; then
         echo "ERROR: Input file '${bkg_dir}/${wrfout}' is missing."
@@ -253,29 +253,29 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       # Update the namelist for the domain id 
       cat parame.in \
         | sed "s/\(DA_FILE\)${EQUAL}DA_FILE/\1 = '\.\/${wrfout}'/" \
-        > parame.in.new
-      mv parame.in.new parame.in
+        > parame.in.tmp
+      mv parame.in.tmp parame.in
   
       cat parame.in \
         | sed "s/\(WRF_INPUT\)${EQUAL}WRF_INPUT/\1 = '\.\/${wrfinput}'/" \
-        > parame.in.new
-      mv parame.in.new parame.in
+        > parame.in.tmp
+      mv parame.in.tmp parame.in
   
       cat parame.in \
         | sed "s/\(DOMAIN_ID\)${EQUAL}DOMAIN_ID/\1 = ${dmn}/" \
-        > parame.in.new
-      mv parame.in.new parame.in
+        > parame.in.tmp
+      mv parame.in.tmp parame.in
   
       # Update the namelist for lower boundary update 
       cat parame.in \
         | sed "s/\(UPDATE_LOW_BDY\)${EQUAL}UPDATE_LOW_BDY/\1 = \.true\./" \
-        > parame.in.new
-      mv parame.in.new parame.in
+        > parame.in.tmp
+      mv parame.in.tmp parame.in
   
       cat parame.in \
         | sed "s/\(UPDATE_LATERAL_BDY\)${EQUAL}UPDATE_LATERAL_BDY/\1 = \.false\./" \
-        > parame.in.new
-      mv parame.in.new parame.in
+        > parame.in.tmp
+      mv parame.in.tmp parame.in
   
       ##################################################################################
       # Run update_bc_exe
@@ -299,6 +299,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       ##################################################################################
       error=$?
       
+      # NOTE: THIS CHECK NEEDS IMPROVEMENT, DOESN'T CATCH ERRORS IN THE PROGRAM LOG
       if [ ${error} -ne 0 ]; then
         echo "ERROR: ${update_bc_exe} exited with status ${error}."
         exit ${error}
@@ -341,7 +342,6 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
 
     wrfbdy=${real_dir}/wrfbdy_d01
     wrfvar_outname=wrfanl_ens_${memid}_${anl_time}
-    wrfbdy_name=wrfbdy_d01
   
     if [ ! -r "${wrfanl}" ]; then
       echo "ERROR: Input file '${wrfanl}' is missing."
@@ -355,7 +355,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       echo "ERROR: Input file '${wrfbdy}' is missing."
       exit 1
     else
-      cmd="cp ${wrfbdy} ${wrfbdy_name}"
+      cmd="cp ${wrfbdy} ."
       echo ${cmd}; eval ${cmd}
     fi
   
@@ -363,41 +363,41 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     #  Build da_update_bc namelist
     ##################################################################################
     # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
-    cmd="cp ${EXP_CNFG}/namelists/parame.in ./"
+    cmd="cp ${EXP_CNFG}/namelists/parame.in ."
     echo ${cmd}; eval ${cmd}
   
     # Update the namelist for lateral boundary update 
     cat parame.in \
       | sed "s/\(DA_FILE\)${EQUAL}DA_FILE/\1 = '\.\/${wrfvar_outname}'/" \
-      > parame.in.new
-    mv parame.in.new parame.in
-  
-    cat parame.in \
-      | sed "s/\(WRF_INPUT\)${EQUAL}WRF_INPUT/\1 = '\.\/wrfinput_d01'/" \
-      > parame.in.new
-    mv parame.in.new parame.in
+      > parame.in.tmp
+    mv parame.in.tmp parame.in
   
     cat parame.in \
       | sed "s/\(DOMAIN_ID\)${EQUAL}DOMAIN_ID/\1 = 01/" \
-      > parame.in.new
-    mv parame.in.new parame.in
+      > parame.in.tmp
+    mv parame.in.tmp parame.in
   
-    # Update the namelist for lower boundary update 
+    # Update the namelist for lateral boundary update 
     cat parame.in \
       | sed "s/\(UPDATE_LOW_BDY\)${EQUAL}UPDATE_LOW_BDY/\1 = \.false\./" \
-      > parame.in.new
-    mv parame.in.new parame.in
+      > parame.in.tmp
+    mv parame.in.tmp parame.in
   
     cat parame.in \
       | sed "s/\(UPDATE_LAT_BDY\)${EQUAL}UPDATE_LATERAL_BDY/\1 = \.true\./" \
-      > parame.in.new
-    mv parame.in.new parame.in
+      > parame.in.tmp
+    mv parame.in.tmp parame.in
 
     cat parame.in \
        | sed "s/\(WRF_BDY_FILE\)${EQUAL}WRF_BDY_FILE/\1 = '\.\/${wrfbdy_name}'/" \
-       > parame.in.new
-    mv parame.in.new parame.in
+       > parame.in.tmp
+    mv parame.in.tmp parame.in
   
+    # fill with a dummy argument in namelist template
+    cat parame.in \
+      | sed "s/\(WRF_INPUT\)${EQUAL}WRF_INPUT/\1 = '\.\/wrfinput_d01'/" \
+      > parame.in.tmp
+    mv parame.in.tmp parame.in
   
     ##################################################################################
     # Run update_bc_exe
@@ -422,6 +422,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     ##################################################################################
     error=$?
     
+    # NOTE: THIS CHECK NEEDS IMPROVEMENT, DOESN'T CATCH ERRORS IN THE PROGRAM LOG
     if [ ${error} -ne 0 ]; then
       echo "ERROR: ${update_bc_exe} exited with status ${error}."
       exit ${error}
