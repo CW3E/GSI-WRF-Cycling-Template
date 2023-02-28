@@ -57,19 +57,19 @@ module load ncl_ncarg
 USR_HME="/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template"
 
 # define control flow to analyze 
-CTR_FLW="deterministic_forecast_lag06_b0.20"
+CTR_FLW="WWRF"
 
 # define the case-wise sub-directory
 CSE="VD"
 
 # define date range and cycle interval for forecast start dates
-START_DT="2019021100"
+START_DT="2019020400"
 END_DT="2019021400"
 CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
 ANL_MIN="24"
-ANL_MAX="96"
+ANL_MAX="240"
 ANL_INT="24"
 
 # define the accumulation interval for verification valid times
@@ -79,7 +79,7 @@ ACC_INT="24"
 GRD="d02"
 
 # set to regrid to lat / long for MET compatibility when handling grid errors
-RGRD="FALSE"
+RGRD="TRUE"
 
 #################################################################################
 # Process data
@@ -92,8 +92,7 @@ scripts_home="${USR_HME}/scripts/analysis/MET_analysis"
 
 # change to scripts directory
 cmd="cd ${scripts_home}"
-echo ${cmd}
-eval ${cmd}
+echo ${cmd}; eval ${cmd}
 
 # Convert START_DT from 'YYYYMMDDHH' format to start_dt Unix date format
 start_dt="${START_DT:0:8} ${START_DT:8:2}"
@@ -102,7 +101,7 @@ start_dt=`date -d "${start_dt}"`
 # Convert END_DT from 'YYYYMMDDHH' format to end_dt iso format 
 end_dt="${END_DT:0:8} ${END_DT:8:2}"
 end_dt=`date -d "${end_dt}"`
-end_dt=`date +%Y:%m:%d_%H -d "${end_dt}"`
+end_dt=`date +%Y-%m-%d_%H -d "${end_dt}"`
 
 if [ ${RGRD} = "TRUE" ]; then
   gres=(0.08 0.027 0.009)
@@ -119,8 +118,8 @@ cycle_hour=0
 # directory string for forecast analysis initialization time
 dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 
-# loop condition for analysis initialization times
-loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
+# loop break condition for analysis initialization times
+loopstr=`date +%Y-%m-%d_%H -d "${start_dt} ${cycle_hour} hours"`
 
 while [[ ! ${loopstr} > ${end_dt} ]]; do
   # set input paths
@@ -138,8 +137,8 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     # define valid times for accumulation    
     (( anl_end_hr = lead_hour + cycle_hour ))
     (( anl_start_hr = anl_end_hr - ACC_INT ))
-    anl_end=`date +%Y-%m-%d_%H:%M:%S -d "${start_dt} ${anl_end_hr} hours"`
-    anl_start=`date +%Y-%m-%d_%H:%M:%S -d "${start_dt} ${anl_start_hr} hours"`
+    anl_end=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_end_hr} hours"`
+    anl_start=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_start_hr} hours"`
 
     # set input file names
     file_1="${input_path}/wrfout_${GRD}_${anl_start}"
@@ -147,7 +146,8 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     
     # set output path
     output_path="${out_root}/${dirstr}/${GRD}"
-    mkdir -p ${output_path}
+    cmd="mkdir -p ${output_path}"
+    echo ${cmd}; eval ${cmd}
     
     # set output file name
     output_file="wrfcf_${GRD}_${anl_start}_to_${anl_end}.nc"
@@ -201,7 +201,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
   dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 
   # update time string for lexicographical comparison
-  loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
+  loopstr=`date +%Y-%m-%d_%H -d "${start_dt} ${cycle_hour} hours"`
 done
 
 echo "Script completed at `date`, verify outputs at out_root ${out_root}"
