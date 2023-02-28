@@ -374,9 +374,16 @@ fi
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
     time_str=`date +%Y-%m-%d_%H:%M:%S -d "${strt_time} ${fcst} hours"`
-    if [ ! -s "met_em.d${dmn}.${time_str}.nc" ]; then
+    out_name="met_em.d${dmn}.${time_str}.nc"
+    if [ ! -s "${out_name}" ]; then
       echo "ERROR: ${metgrid_exe} failed to complete for d${dmn}."
       exit 1
+    else
+      # rename to no-colon style for WRF
+      time_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time} ${fcst} hours"`
+      re_name="met_em.d${dmn}.${time_str}.nc"
+      cmd="mv ${out_name} ${re_name}"
+      echo ${cmd}; eval ${cmd}
     fi
   done
 done

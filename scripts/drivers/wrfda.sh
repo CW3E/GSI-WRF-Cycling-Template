@@ -233,8 +233,6 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       else
         cmd="cp ${bkg_dir}/${wrfout} ."
         echo ${cmd}; eval ${cmd}
-        #NOTE THIS EXIT IS FOR DEBUGGING
-        exit 1
       fi
   
       if [ ! -r "${real_dir}/${wrfinput}" ]; then
@@ -270,12 +268,12 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
   
       # Update the namelist for lower boundary update 
       cat parame.in \
-        | sed "s/\(UPDTE_LOW_BDY\)${EQUAL}UPDATE_LOW_BDY/\1 = \.true\./" \
+        | sed "s/\(UPDATE_LOW_BDY\)${EQUAL}UPDATE_LOW_BDY/\1 = \.true\./" \
         > parame.in.new
       mv parame.in.new parame.in
   
       cat parame.in \
-        | sed "s/\(UPDTE_LATERAL_BDY\)${EQUAL}UPDATE_LATERAL_BDY/\1 = \.false\./" \
+        | sed "s/\(UPDATE_LATERAL_BDY\)${EQUAL}UPDATE_LATERAL_BDY/\1 = \.false\./" \
         > parame.in.new
       mv parame.in.new parame.in
   
@@ -368,32 +366,38 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     cmd="cp ${EXP_CNFG}/namelists/parame.in ./"
     echo ${cmd}; eval ${cmd}
   
-    # Update the namelist for the domain id 
-    cat parame.in \
-       | sed "s/\(${DA}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfvar_outname}'/" \
-       > parame.in.new
-    mv parame.in.new parame.in
-  
-    cat parame.in \
-       | sed "s/\(${DOMAIN}_${ID}\)${EQUAL}[[:digit:]]\{1,\}/\1 = 01/" \
-       > parame.in.new
-    mv parame.in.new parame.in
-  
     # Update the namelist for lateral boundary update 
     cat parame.in \
-       | sed "s/\(${WRF}_${BDY}_${FILE}\)${EQUAL}.*/\1 = '\.\/${wrfbdy_name}'/" \
-       > parame.in.new
+      | sed "s/\(DA_FILE\)${EQUAL}DA_FILE/\1 = '\.\/${wrfvar_outname}'/" \
+      > parame.in.new
     mv parame.in.new parame.in
   
     cat parame.in \
-       | sed "s/\(${UPDATE}_${LOW}_${BDY}\)${EQUAL}.*/\1 = \.false\./" \
-       > parame.in.new
+      | sed "s/\(WRF_INPUT\)${EQUAL}WRF_INPUT/\1 = '\.\/wrfinput_d01'/" \
+      > parame.in.new
     mv parame.in.new parame.in
   
     cat parame.in \
-       | sed "s/\(${UPDATE}_${LATERAL}_${BDY}\)${EQUAL}.*/\1 = \.true\./" \
+      | sed "s/\(DOMAIN_ID\)${EQUAL}DOMAIN_ID/\1 = 01/" \
+      > parame.in.new
+    mv parame.in.new parame.in
+  
+    # Update the namelist for lower boundary update 
+    cat parame.in \
+      | sed "s/\(UPDATE_LOW_BDY\)${EQUAL}UPDATE_LOW_BDY/\1 = \.false\./" \
+      > parame.in.new
+    mv parame.in.new parame.in
+  
+    cat parame.in \
+      | sed "s/\(UPDATE_LAT_BDY\)${EQUAL}UPDATE_LATERAL_BDY/\1 = \.true\./" \
+      > parame.in.new
+    mv parame.in.new parame.in
+
+    cat parame.in \
+       | sed "s/\(WRF_BDY_FILE\)${EQUAL}WRF_BDY_FILE/\1 = '\.\/${wrfbdy_name}'/" \
        > parame.in.new
     mv parame.in.new parame.in
+  
   
     ##################################################################################
     # Run update_bc_exe

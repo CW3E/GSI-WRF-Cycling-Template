@@ -293,7 +293,7 @@ echo ${cmd}; eval ${cmd}
 # are available and make links to them
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
-    time_str=`date "+%Y-%m-%d_%H:%M:%S" -d "${strt_time} ${fcst} hours"`
+    time_str=`date "+%Y-%m-%d_%H_%M_%S" -d "${strt_time} ${fcst} hours"`
     realinput_name=met_em.d${dmn}.${time_str}.nc
     wps_dir=${CYC_HME}/wpsprd/ens_${memid}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then
@@ -349,27 +349,11 @@ e_H=`date +%H -d "${end_time}"`
 e_M=`date +%M -d "${end_time}"`
 e_S=`date +%S -d "${end_time}"`
 
-# Compute number of days and hours for the run
-(( run_days = FCST_HRS / 24 ))
-(( run_hours = FCST_HRS % 24 ))
-
 # Update max_dom in namelist
 in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
 out_dom="\1 = ${MAX_DOM}"
 cat namelist.input \
   | sed "s/${in_dom}/${out_dom}/" \
-  > namelist.input.tmp
-mv namelist.input.tmp namelist.input
-
-# Update the run_days in wrf namelist.input
-cat namelist.input \
-  | sed "s/\(RUN_DAYS\)${EQUAL}RUN_DAYS/\1 = ${run_days}/" \
-  > namelist.input.tmp
-mv namelist.input.tmp namelist.input
-
-# Update the run_hours in wrf namelist
-cat namelist.input \
-  | sed "s/\(RUN_HOURS\)${EQUAL}RUN_HOURS/\1 = ${run_hours}/" \
   > namelist.input.tmp
 mv namelist.input.tmp namelist.input
 
@@ -408,16 +392,39 @@ cat namelist.input \
   > namelist.input.tmp
 mv namelist.input.tmp namelist.input
 
-if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
-  # update the auxinput4_interval to the BKG_INT
-  (( auxinput4_minutes = BKG_INT * 60 ))
-  aux_in="\(AUXINPUT4_INTERVAL\)${EQUAL}AUXINPUT4_INTERVAL"
-  aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
-  cat namelist.input \
-    | sed "s/${aux_in}/${aux_out}/" \
-    > namelist.input.tmp
-  mv namelist.input.tmp namelist.input
-fi
+# update the auxinput4_interval to the BKG_INT
+(( auxinput4_minutes = BKG_INT * 60 ))
+aux_in="\(AUXINPUT4_INTERVAL\)${EQUAL}AUXINPUT4_INTERVAL"
+aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
+cat namelist.input \
+  | sed "s/${aux_in}/${aux_out}/" \
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
+
+# Put dummy filler values in the template for the following (not used in real)
+in_hist="\(HISTORY_INTERVAL\)${EQUAL}HISTORY_INTERVAL"
+out_hist="\1 = 0,"
+cat namelist.input \
+  | sed "s/${in_hist}/${out_hist}/" \
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
+in_hist="\(AUXHIST2_INTERVAL\)${EQUAL}AUXHIST2_INTERVAL"
+cat namelist.input \
+  | sed "s/${in_hist}/${out_hist}/" \
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
+cat namelist.input \
+  | sed "s/\(RESTART\)${EQUAL}RESTART/\1 = .false./" \
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
+cat namelist.input \
+  | sed "s/\(RESTART_INTERVAL\)${EQUAL}RESTART_INTERVAL/\1 = 0/" \
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
+cat namelist.input \
+  | sed "s/\(FEEDBACK\)${EQUAL}FEEDBACK/\1 = 0/"\
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 ##################################################################################
 # Run REAL

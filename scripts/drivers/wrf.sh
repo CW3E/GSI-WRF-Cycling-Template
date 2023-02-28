@@ -484,11 +484,6 @@ e_H=`date +%H -d "${end_time}"`
 e_M=`date +%M -d "${end_time}"`
 e_S=`date +%S -d "${end_time}"`
 
-# Compute number of days and hours, and total minutes, for the run
-(( run_days = fcst_len / 24 ))
-(( run_hours = fcst_len % 24 ))
-(( run_mins = fcst_len * 60 ))
-
 # Update the max_dom in namelist
 in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
 out_dom="\1 = ${MAX_DOM}"
@@ -497,23 +492,19 @@ cat namelist.input \
   > namelist.input.tmp
 mv namelist.input.tmp namelist.input
 
-# Update the run_days in wrf namelist.input
-cat namelist.input \
-  | sed "s/\(RUN_DAYS\)${EQUAL}RUN_DAYS/\1 = ${run_days}/" \
-  > namelist.input.tmp
-mv namelist.input.tmp namelist.input
-
-# Update the run_hours in wrf namelist
-cat namelist.input \
-  | sed "s/\(RUN_HOURS\)${EQUAL}RUN_HOURS/\1 = ${run_hours}/" \
-  > namelist.input.tmp
-mv namelist.input.tmp namelist.input
-
 # Update the history interval in wrf namelist (minutes, propagates settings to three domains)
 (( hist_int = ${WRFOUT_INT} * 60 ))
+in_hist="\(HISTORY_INTERVAL\)${EQUAL}HISTORY_INTERVAL"
+out_hist="\1 = ${hist_int}, ${hist_int}, ${hist_int},"
 cat namelist.input \
-  | sed "s/\(HISTORY_INTERVAL\)${EQUAL}HISTORY_INTERVAL/\1 = ${hist_int}, /" \
-   > namelist.input.tmp
+  | sed "s/${in_hist}/${out_hist}/" \
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
+
+in_hist="\(AUXHIST2_INTERVAL\)${EQUAL}AUXHIST2_INTERVAL"
+cat namelist.input \
+  | sed "s/${in_hist}/${out_hist}/" \
+  > namelist.input.tmp
 mv namelist.input.tmp namelist.input
 
 # Update the restart setting in wrf namelist depending on switch
@@ -570,16 +561,14 @@ cat namelist.input \
   > namelist.input.tmp
 mv namelist.input.tmp namelist.input
 
-if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
-  # update the auxinput4_interval to the BKG_INT
-  (( auxinput4_minutes = BKG_INT * 60 ))
-  aux_in="\(AUXINPUT4_INTERVAL\)${EQUAL}AUXINPUT4_INTERVAL"
-  aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
-  cat namelist.input \
-    | sed "s/${aux_in}/${aux_out}/" \
-    > namelist.input.tmp
-  mv namelist.input.tmp namelist.input
-fi
+# update the auxinput4_interval to the BKG_INT
+(( auxinput4_minutes = BKG_INT * 60 ))
+aux_in="\(AUXINPUT4_INTERVAL\)${EQUAL}AUXINPUT4_INTERVAL"
+aux_out="\1 = ${auxinput4_minutes}, ${auxinput4_minutes}, ${auxinput4_minutes}"
+cat namelist.input \
+  | sed "s/${aux_in}/${aux_out}/" \
+  > namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 # Update feedback option for nested domains
 cat namelist.input \

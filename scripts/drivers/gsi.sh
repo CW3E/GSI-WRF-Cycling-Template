@@ -250,7 +250,7 @@ fi
 #             obs files, etc.
 # ENS_ROOT  = Background ensemble located at ${ENS_ROOT}/ens_${ens_n}/wrfout* 
 # MPIRUN    = MPI Command to execute GSI
-# GSI_PROC  = Number of workers for MPI command to exectute on
+# N_PROC    = Number of workers for MPI command to exectute on
 #
 # Below variables are derived from control flow variables for convenience
 #
@@ -304,11 +304,11 @@ if [ ! ${MPIRUN} ]; then
   exit 1
 fi
 
-if [ ! ${GSI_PROC} ]; then
-  echo "ERROR: \${GSI_PROC} is not defined."
+if [ ! ${N_PROC} ]; then
+  echo "ERROR: \${N_PROC} is not defined."
   exit 1
-elif [ ${GSI_PROC} -le 0 ]; then
-  msg="ERROR: The variable \${GSI_PROC} must be set to the "
+elif [ ${N_PROC} -le 0 ]; then
+  msg="ERROR: The variable \${N_PROC} must be set to the "
   msg+="number of processors to run GSI > 0."
   echo ${msg}
   exit 1
@@ -383,7 +383,7 @@ fi
 # Begin pre-GSI setup, running one domain at a time
 ##################################################################################
 # Create the work directory organized by domain analyzed and cd into it
-for dmn in `seq -f "%20g" 1 ${max_dom}`; do
+for dmn in `seq -f "%02g" 1 ${max_dom}`; do
   # NOTE: Hybrid DA uses the control forecast as the EnKF forecast mean, not the
   # control analysis. Work directory for GSI is sub-divided based on domain index
   dmndir=${work_root}/d${dmn}
@@ -798,7 +798,7 @@ for dmn in `seq -f "%20g" 1 ${max_dom}`; do
     echo
     now=`date +%Y-%m-%d_%H_%M_%S`
     echo "gsi analysis started at ${now} on domain d${dmn}."
-    cmd="${MPIRUN} -n ${GSI_PROC} ${GSI_EXE} > stdout.anl.${anl_iso} 2>&1"
+    cmd="${MPIRUN} -n ${N_PROC} ${GSI_EXE} > stdout.anl.${anl_iso} 2>&1"
     echo ${cmd}; eval ${cmd}
 
     ##################################################################################
