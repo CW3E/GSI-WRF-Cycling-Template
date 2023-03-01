@@ -384,7 +384,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     mv parame.in.tmp parame.in
   
     cat parame.in \
-      | sed "s/\(UPDATE_LAT_BDY\)${EQUAL}UPDATE_LATERAL_BDY/\1 = \.true\./" \
+      | sed "s/\(UPDATE_LATERAL_BDY\)${EQUAL}UPDATE_LATERAL_BDY/\1 = \.true\./" \
       > parame.in.tmp
     mv parame.in.tmp parame.in
 
