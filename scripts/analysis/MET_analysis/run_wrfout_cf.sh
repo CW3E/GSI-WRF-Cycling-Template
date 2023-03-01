@@ -76,7 +76,7 @@ ANL_INT="24"
 ACC_INT="24"
 
 # verification domain for the forecast data
-GRD="d02"
+GRD="d01"
 
 # set to regrid to lat / long for MET compatibility when handling grid errors
 RGRD="TRUE"

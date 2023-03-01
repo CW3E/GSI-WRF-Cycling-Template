@@ -52,16 +52,17 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
+            #'WWRF'
             'GFS',
             #'ECMWF',
            ]
 
 # define optional list of stats files prefixes
 PRFXS = [
-        'SQUARE_BILIN_2',
-        'SQUARE_DW_MEAN_2',
+        'SQUARE_BILIN_3',
+        'SQUARE_DW_MEAN_3',
+        'SQUARE_BUDGET_3',
         'SQUARE_NEAREST_1',
-        'SQUARE_MAXGAUSS_1',
         ]
 
 # define case-wise sub-directory

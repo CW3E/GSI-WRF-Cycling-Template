@@ -30,10 +30,10 @@ obtype = "MC_PCP";
 //
 regrid = {
    to_grid    = OBS;
-   method     = NEAREST;
-   width      = 1;
+   INT_MTHD;
+   INT_WDTH;
    vld_thresh = 0.5;
-   shape      = SQUARE;
+   INT_SHPE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

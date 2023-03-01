@@ -659,7 +659,8 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     else
       # use the bias correction file generated on the last GSI loop 
       bias_files=()
-      lag_loop=`printf %02d(( ${bc_loop} - 1 ))`
+      lag_loop=$(( ${bc_loop} - 1 ))
+      lag_loop=`printf %02d ${lag_loop}`
       bias_files+=(${dmndir}/bc_loop_${lag_loop}/satbias_out)
       bias_files+=(${dmndir}/bc_loop_${lag_loop}/satbias_pc.out)
 

@@ -41,18 +41,18 @@ from py_plt_utilities import STR_INDT, get_anls, USR_HME
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'ECMWF'
+CTR_FLW = 'GFS'
 
 # define the case-wise sub-directory
 CSE = 'VD'
 
 # verification domain for the forecast data                                                                           
-GRD = '0.25' 
+GRD = '0.25'
 
 # define the interpolation method and related parameters
 INT_SHPE = 'SQUARE'
-INT_MTHD = 'MAXGAUSS'
-INT_WDTH = '1'
+INT_MTHD = 'BUDGET'
+INT_WDTH = '3'
 
 # starting date and zero hour of forecast cycles
 START_DT = '2019-02-08T00:00:00'

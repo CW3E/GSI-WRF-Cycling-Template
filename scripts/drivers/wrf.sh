@@ -205,7 +205,7 @@ fi
 if [ ${#WRFOUT_INT} -ne 2 ]; then
   echo "ERROR: \${WRFOUT_INT} is not in HH format."
   exit 1
-elif [ ! ${WRFOUT_INT} -gt 0 ]; then
+elif [ ! ${WRFOUT_INT} -gt 00 ]; then
   echo "ERROR: \${WRFOUT_INT} must be an integer for the max WRF domain index > 0." 
   exit 1
 fi
@@ -213,6 +213,8 @@ fi
 if [ ${#CYC_INT} -ne 2 ]; then
   echo "ERROR: \${CYC_INT}, ${CYC_INT}, is not in 'HH' format."
   exit 1
+elif [ ${CYC_INT} -le 0 ]; then
+  echo "ERROR: \${CYC_INT} must be an integer for the number of cycle hours > 0."
 fi
 
 if [[ ${WRF_IC} = ${REALEXE} ]]; then

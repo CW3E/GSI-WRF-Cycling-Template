@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 01:30:00
 #SBATCH --job-name="gridstat"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -74,7 +74,7 @@ CYCLE_INT="24"
 
 # define min / max forecast hours and cycle interval for verification after start
 ANL_MIN="24"
-ANL_MAX="168"
+ANL_MAX="240"
 ANL_INT="24"
 
 # define the verification field
@@ -87,12 +87,12 @@ CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 ACC_INT="24"
 
 # define the interpolation method and related parameters
-INT_SHPE="CIRCLE"
-INT_MTHD="BILIN"
-INT_WDTH="2"
+INT_SHPE="SQUARE"
+INT_MTHD="BUDGET"
+INT_WDTH="3"
 
 # neighborhodd width for neighborhood methods
-NBRHD_WDTH="3"
+NBRHD_WDTH="25"
 
 # number of bootstrap resamplings, set 0 for off
 BTSTRP="0"
@@ -131,7 +131,7 @@ start_dt=`date -d "${start_dt}"`
 # Convert END_DT from 'YYYYMMDDHH' format to end_dt iso format 
 end_dt="${END_DT:0:8} ${END_DT:8:2}"
 end_dt=`date -d "${end_dt}"`
-end_dt=`date +%Y:%m:%d_%H -d "${end_dt}"`
+end_dt=`date +%Y-%m-%d_%H -d "${end_dt}"`
 
 # loop through the date range
 cycle_num=0
@@ -141,7 +141,7 @@ cycle_hour=0
 dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 
 # loop condition
-loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
+loopstr=`date +%Y-%m-%d_%H -d "${start_dt} ${cycle_hour} hours"`
 
 while [[ ! ${loopstr} > ${end_dt} ]]; do
   # set and clean working directory based on looped forecast start date
@@ -160,8 +160,8 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     # define valid times for accumulation    
     (( anl_end_hr = lead_hour + cycle_hour ))
     (( anl_start_hr = anl_end_hr - ACC_INT ))
-    anl_end=`date +%Y-%m-%d_%H:%M:%S -d "${start_dt} ${anl_end_hr} hours"`
-    anl_start=`date +%Y-%m-%d_%H:%M:%S -d "${start_dt} ${anl_start_hr} hours"`
+    anl_end=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_end_hr} hours"`
+    anl_start=`date +%Y-%m-%d_%H_%M_%S -d "${start_dt} ${anl_start_hr} hours"`
 
     validyear=${anl_end:0:4}
     validmon=${anl_end:5:2}
@@ -196,13 +196,11 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
         cmd="singularity exec instance://met1 pcp_combine \
         -sum ${inityear}${initmon}${initday}_${inithr}0000 ${ACC_INT} \
         ${validyear}${validmon}${validday}_${validhr}0000 ${ACC_INT} \
-        /work_root/${for_f_in} \
+        /work_root/${PRFX}_${for_f_in} \
         -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"${VRF_FLD}_${ACC_INT}hr\" \
         -pcpdir /work_root \
         -pcprx \"wrfcf_${GRD}_${anl_start}_to_${anl_end}.nc\" "
-
-        echo ${cmd}
-        eval ${cmd}
+        echo ${cmd}; eval ${cmd}
       
       else
         cmd="pcp_combine input file ${work_root}/wrfcf_${GRD}_${anl_start}_to_${anl_end}.nc is not "
@@ -214,7 +212,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       # copy the preprocessed data to the working directory from the data root
       in_path="${DATA_ROOT}/${CTR_FLW}/Precip/${dirstr}/${for_f_in}"
       if [[ -r "${in_path}" ]]; then
-        cmd="cp ${in_path} ${work_root}"
+        cmd="cp -L ${in_path} ${work_root}/${PRFX}_${for_f_in}"
         echo ${cmd}
         eval ${cmd}
       else
@@ -222,54 +220,41 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       fi
     fi
     
-    if [[ -r "${work_root}/${for_f_in}" ]]; then
+    if [[ -r "${work_root}/${PRFX}_${for_f_in}" ]]; then
       if [[ -r "${stageiv_root}/${obs_f_in}" ]]; then
-        # Regrid to Stage-IV
-        cmd="singularity exec instance://met1 regrid_data_plane \
-        /work_root/${for_f_in} \
-        /stageiv_root/${obs_f_in} \
-        /work_root/regridded_${PRFX}_${for_f_in} -field 'name=\"${VRF_FLD}_${ACC_INT}hr\"; \
-        level=\"(*,*)\";' -shape ${INT_SHPE} -method ${INT_MTHD} -width ${INT_WDTH} -v 1"
-
-        echo ${cmd}
-        eval ${cmd}
-        
         # masks are recreated depending on the existence of files from previous loops
         # NOTE: need to determine under what conditions would this file need to update
         if [[ ! -r "${work_root}/${MSK}_mask_regridded_with_StageIV.nc" ]]; then
           cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
-          /work_root/regridded_${PRFX}_${for_f_in} \
+          /stageiv_root/${obs_f_in} \
           -type poly \
           /mask_root/CA_Climate_Zone/${MSK}.poly \
           /work_root/${MSK}_mask_regridded_with_StageIV.nc"
           echo ${cmd}
           eval ${cmd}
-
         fi
 
         # update GridStatConfigTemplate archiving file in working directory unchanged on inner loop
         if [[ ! -r ${work_root}/GridStatConfig ]]; then
           cat ${scripts_root}/GridStatConfigTemplate \
+            | sed "s/INT_MTHD/method = ${INT_MTHD}/" \
+            | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
+            | sed "s/INT_SHPE/shape      = ${INT_SHPE}/" \
+            | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
             | sed "s/VRF_FLD/name       = \"${VRF_FLD}_${ACC_INT}hr\"/" \
             | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
-            | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
             | sed "s/PLY_MSK/poly = [ \"\/work_root\/${MSK}_mask_regridded_with_StageIV.nc\" ]/" \
-            | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
             | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
+            | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
             | sed "s/PRFX/output_prefix    = \"${PRFX}\"/" \
             > ${work_root}/GridStatConfig_${PRFX} 
         fi
-            # Keeping these lines below as a reference until it is better understood the relationship between
-            # interpolation sub-steps
-            ##| sed "s/INT_SHPE/shape      = ${INT_SHPE}/" \
-            ##| sed "s/INT_MTHD/method = ${INT_MTHD}/" \
-            ##| sed "s/INT_WDTH/width = ${INT_WDTH}/" \
 
         # Run gridstat
         cmd="singularity exec instance://met1 grid_stat -v 10 \
-        /work_root/regridded_${PRFX}_${for_f_in}
+        /work_root/${PRFX}_${for_f_in} \
         /stageiv_root/${obs_f_in} \
-        /work_root/GridStatConfig_${PRFX}
+        /work_root/GridStatConfig_${PRFX} \
         -outdir /work_root"
         echo ${cmd}
         eval ${cmd}
@@ -282,7 +267,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
       fi
 
     else
-      cmd="regrid_data_plane input file ${out_root}/${for_f_in} is not readable " 
+      cmd="gridstat input file ${out_root}/${PRFX}_${for_f_in} is not readable " 
       cmd+=" or does not exist, skipping grid_stat for forecast initialization "
       cmd+="${loopstr}, forecast hour ${lead_hour}." 
       echo ${cmd}
@@ -292,22 +277,12 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
     singularity instance stop met1
 
     # clean up working directory
-    cmd="rm -f ${work_root}/${for_f_in}"
-    echo ${cmd}
-    eval ${cmd}
-
-    cmd="rm -f ${work_root}/regridded_${PRFX}_${for_f_in}"
-    echo ${cmd}
-    eval ${cmd}
+    cmd="rm -f ${work_root}/${PRFX}_${for_f_in}"
+    echo ${cmd}; eval ${cmd}
 
     (( lead_num += 1 )) 
     (( lead_hour = ANL_MIN + lead_num * ANL_INT )) 
   done
-
-  # clean up old land mask
-  cmd="rm -f ${work_root}/${MSK}_mask_regridded_with_StageIV.nc"
-  echo ${cmd}
-  eval ${cmd}
 
   # update the cycle number
   (( cycle_num += 1))
@@ -317,7 +292,7 @@ while [[ ! ${loopstr} > ${end_dt} ]]; do
   dirstr=`date +%Y%m%d%H -d "${start_dt} ${cycle_hour} hours"`
 
   # update time string for lexicographical comparison
-  loopstr=`date +%Y:%m:%d_%H -d "${start_dt} ${cycle_hour} hours"`
+  loopstr=`date +%Y-%m-%d_%H -d "${start_dt} ${cycle_hour} hours"`
 done
 
 echo "Script completed at `date`, verify outputs at out_root ${out_root}"
