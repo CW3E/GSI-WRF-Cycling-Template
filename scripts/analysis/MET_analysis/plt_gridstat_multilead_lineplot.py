@@ -50,8 +50,8 @@ from py_plt_utilities import USR_HME
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            #'WWRF'
-            'GFS',
+            'WWRF'
+            #'GFS',
             #'ECMWF',
            ]
 
@@ -67,7 +67,7 @@ PRFXS = [
 CSE = 'VD'
 
 # verification domain for the forecast data
-GRD='d02'
+GRD='d01'
 
 # verification domain for the calibration data
 REF='0.25'

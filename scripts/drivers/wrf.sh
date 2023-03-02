@@ -352,7 +352,7 @@ for file in ${wrf_dat_files[@]}; do
   echo ${cmd}; eval ${cmd}
 done
 
-if [[ ${WRF_IC} = ${REALEXE} || ${WRF_IC} = ${CYCLING} ]]
+if [[ ${WRF_IC} = ${REALEXE} || ${WRF_IC} = ${CYCLING} ]]; then
   # Remove any old WRF outputs in the directory from failed runs
   cmd="rm -f wrfout_*"
   echo ${cmd}; eval ${cmd}
@@ -398,7 +398,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       exit 1
     fi
 
-  elif [[ ${WRF_IC} = ${RESTART} ]]
+  elif [[ ${WRF_IC} = ${RESTART} ]]; then
     # check for restart files at valid start time for each domain
     wrfrst=${work_root}/wrfrst_d${dmn}_${datestr}
     if [ ! -r ${wrfrst} ]; then
@@ -497,7 +497,7 @@ mv namelist.input.tmp namelist.input
 # Update the history interval in wrf namelist (minutes, propagates settings to three domains)
 (( hist_int = ${WRFOUT_INT} * 60 ))
 in_hist="\(HISTORY_INTERVAL\)${EQUAL}HISTORY_INTERVAL"
-out_hist="\1 = ${hist_int}, ${hist_int}, ${hist_int},"
+out_hist="\1 = ${hist_int}, ${hist_int}, ${hist_int}"
 cat namelist.input \
   | sed "s/${in_hist}/${out_hist}/" \
   > namelist.input.tmp
@@ -580,8 +580,8 @@ mv namelist.input.tmp namelist.input
 
 # Update the quilting settings to the parameters set in the workflow
 cat namelist.input \
-  | sed "s/\(NIO_TASKS_PER_GROUP\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_TPG}/" \
-  | sed "s/\(NIO_GROUPS\)${EQUAL}[[:digit:]]\{1,\}/\1 = ${NIO_GROUPS}/" \
+  | sed "s/\(NIO_TASKS_PER_GROUP\)${EQUAL}NIO_TASKS_PER_GROUP/\1 = ${NIO_TPG}/" \
+  | sed "s/\(NIO_GROUPS\)${EQUAL}NIO_GROUPS/\1 = ${NIO_GROUPS}/" \
   > namelist.input.tmp
 mv namelist.input.tmp namelist.input
 

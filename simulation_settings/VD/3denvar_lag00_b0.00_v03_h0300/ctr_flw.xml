@@ -42,7 +42,7 @@
   <!ENTITY CYC_STRT     "20190209"> <!-- First initial time for a DA cycle including analsysis and forecast -->
   <!ENTITY WRM_END      "20190209"> <!-- Last initial time for a cycle without a forecast -->
   <!ENTITY CYC_END      "201902100000"> <!-- Last initial time for a DA cycle including analysis and forecast -->
-  <!ENTITY CYC_INT      "06:00:00"> <!-- Interval between cycle start / end times NOTE: cycle groups must match -->
+  <!ENTITY CYC_INT      "06"> <!-- Interval between cycle start / end times NOTE: cycle groups must match -->
   <!ENTITY FCST_HRS     "06"> <!-- Fixed length forecast length within every cycle in HH, usually equal to CYC_INT -->
   <!-- END CYCLING SETTINGS -->
 
@@ -186,10 +186,10 @@
     <dependency>
       <or>
         <not>
-          <cycleexistdep cycle_offset="-&CYC_INT;"/> 
+          <cycleexistdep cycle_offset="-&CYC_INT;:00:00"/> 
         </not> 	
-        <taskdep task="wrf_ens_00_cyc" cycle_offset="-&CYC_INT;" state="SUCCEEDED"/>
-        <taskdep task="wrf_ens_00_for" cycle_offset="-&CYC_INT;" state="SUCCEEDED"/>
+        <taskdep task="wrf_ens_00_cyc" cycle_offset="-&CYC_INT;:00:00" state="SUCCEEDED"/>
+        <taskdep task="wrf_ens_00_for" cycle_offset="-&CYC_INT;:00:00" state="SUCCEEDED"/>
       </or>
     </dependency>
   </task>
@@ -261,9 +261,9 @@
     <dependency>
       <or>
         <not>
-          <cycleexistdep cycle_offset="-&CYC_INT;"/> 
+          <cycleexistdep cycle_offset="-&CYC_INT;:00:00"/> 
         </not> 	
-        <taskdep task="wrf_ens_00_cyc" cycle_offset="-&CYC_INT;" state="SUCCEEDED"/>
+        <taskdep task="wrf_ens_00_cyc" cycle_offset="-&CYC_INT;00:00" state="SUCCEEDED"/>
       </or>
     </dependency>
   </task>
@@ -1003,7 +1003,7 @@
     </envar>
     <envar>
       <name>STRT_TIME</name>
-      <value><cyclestr offset="&CYC_INT;">@Y@m@d@H</cyclestr></value>
+      <value><cyclestr offset="&CYC_INT;:00:00">@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
       <name>CYC_TIME</name>

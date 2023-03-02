@@ -52,8 +52,8 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            #'WWRF'
-            'GFS',
+            'WWRF'
+            #'GFS',
             #'ECMWF',
            ]
 
