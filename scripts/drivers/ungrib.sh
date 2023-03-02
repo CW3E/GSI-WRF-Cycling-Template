@@ -305,17 +305,17 @@ else
 fi
 
 # check to make sure the grib_dataroot exists and is non-empty
-grib_dataroot=${DATA_ROOT}/gribbed/${BKG_DATA}
+grib_dataroot=${DATA_ROOT}/gribbed/${BKG_DATA}/${bkg_strt_date}
 if [ ! -d ${grib_dataroot} ]; then
   echo "ERROR: the directory ${grib_dataroot} does not exist."
   exit 1
-elif [ `ls -l ${grib_dataroot} | wc -l` -le ${n_files} ]; then
+elif [ `ls -l ${grib_dataroot}/${fnames} | wc -l` -le ${n_files} ]; then
   msg="ERROR: grib data directory '${grib_dataroot}' is missing bkg input files."
   echo ${msg}
   exit 1
 else
   # link the grib data to the working directory
-  cmd="./link_grib.csh ${grib_dataroot}/${bkg_strt_date}/${fnames}"
+  cmd="./link_grib.csh ${grib_dataroot}/${fnames}"
   echo ${cmd}; eval ${cmd}
 fi
 

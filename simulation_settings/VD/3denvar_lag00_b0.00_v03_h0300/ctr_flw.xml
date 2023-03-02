@@ -47,7 +47,7 @@
   <!-- END CYCLING SETTINGS -->
 
   <!-- FORECAST VERIFICATION SETTINGS -->
-  <!ENTITY EXP_VRF      "201902110000"> <!-- Verification time for dynamic length forecast simulations -->
+  <!ENTITY EXP_VRF      "2019021100"> <!-- Verification time for dynamic length forecast simulations -->
   <!ENTITY VRF_STRT     "20190210"> <!-- First cycle to begin forecast verifcation at valid date -->
   <!ENTITY VRF_END      "20190210"> <!-- Last cycle to begin forecast verification at valid date -->
   <!ENTITY VRF_FOR_DOM  "02"> <!-- Domain index to have ICs downscaled from d01 for forecast validation -->
