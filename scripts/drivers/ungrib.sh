@@ -309,7 +309,7 @@ grib_dataroot=${DATA_ROOT}/gribbed/${BKG_DATA}/${bkg_strt_date}
 if [ ! -d ${grib_dataroot} ]; then
   echo "ERROR: the directory ${grib_dataroot} does not exist."
   exit 1
-elif [ `ls -l ${grib_dataroot}/${fnames} | wc -l` -le ${n_files} ]; then
+elif [ `ls -l ${grib_dataroot}/${fnames} | wc -l` -lt ${n_files} ]; then
   msg="ERROR: grib data directory '${grib_dataroot}' is missing bkg input files."
   echo ${msg}
   exit 1
