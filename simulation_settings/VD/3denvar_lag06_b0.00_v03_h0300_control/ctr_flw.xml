@@ -17,10 +17,11 @@
   <!ENTITY CLNE_ROOT    "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template"> <!-- Full path of framework git clone -->
   <!ENTITY SOFT_ROOT    "/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT"> <!-- Root directory of software stack executables -->
   <!ENTITY DATA_ROOT    "/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/&CSE_NAME;"> <!-- Root directory of case study forcing data -->
+  <!ENTITY WORK_ROOT    "/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template"> <!-- Root directory of /data/simulation_io -->
   <!-- END COMPUTER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
-  <!ENTITY EXP_HME      "&CLNE_ROOT;/data/simulation_io/&EXP_NAME;"> <!-- Root directory of experiment I/O --> 
+  <!ENTITY EXP_HME      "&WORK_ROOT;/data/simulation_io/&EXP_NAME;"> <!-- Root directory of experiment I/O --> 
   <!ENTITY EXP_LOG      "&CLNE_ROOT;/logs/&EXP_NAME;"> <!-- Root directory of workflow task logs -->
   <!ENTITY EXP_CNFG     "&CLNE_ROOT;/simulation_settings/&EXP_NAME;"> <!-- Root directory of experiment configuration files -->
   <!ENTITY SCRIPTS      "&CLNE_ROOT;/scripts"> <!-- Root directory of workflow framework scripts -->
