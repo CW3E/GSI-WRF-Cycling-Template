@@ -455,7 +455,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
 
         # unpack nested directory structure, if exists
         obs_nest=(`find ${obs_dir} -type f`)
-        for file in ${obs_nes[@]}; do
+        for file in ${obs_nest[@]}; do
           cmd="mv ${file} ${obs_dir}"
           echo ${cmd}; eval ${cmd}
         done
