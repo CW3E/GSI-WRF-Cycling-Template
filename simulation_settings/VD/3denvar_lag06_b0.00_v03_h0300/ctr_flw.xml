@@ -4,7 +4,7 @@
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
   <!-- CONTROL FLOW NAME / TUNABLE SETTINGS -->
-  <!ENTITY LAG          "00"> <!-- Define the lag of the ensemble simulation start time here in HH -->
+  <!ENTITY LAG          "06"> <!-- Define the lag of the ensemble simulation start time here in HH -->
   <!ENTITY BETA         "0.00"> <!-- Define tuneable beta value for ensemble / static background hybridization here -->
   <!ENTITY S_ENS_V      "03"> <!-- Define tuneable beta value for ensemble vertical localization scale here -->
   <!ENTITY S_ENS_H      "0300"> <!-- Define tuneable value for ensemble horizontal localization scale here -->
@@ -40,17 +40,17 @@
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYC_STRT     "20190209"> <!-- First initial time for a DA cycle including analsysis and forecast -->
-  <!ENTITY WRM_END      "20190209"> <!-- Last initial time for a cycle without a forecast -->
-  <!ENTITY CYC_END      "201902100000"> <!-- Last initial time for a DA cycle including analysis and forecast -->
+  <!ENTITY WRM_END      "20190210"> <!-- Last initial time for a cycle without a forecast -->
+  <!ENTITY CYC_END      "201902150000"> <!-- Last initial time for a DA cycle including analysis and forecast -->
   <!ENTITY CYC_INT      "06"> <!-- Interval between cycle start / end times NOTE: cycle groups must match -->
   <!ENTITY FCST_HRS     "06"> <!-- Fixed length forecast length within every cycle in HH, usually equal to CYC_INT -->
   <!-- END CYCLING SETTINGS -->
 
   <!-- FORECAST VERIFICATION SETTINGS -->
-  <!ENTITY EXP_VRF      "2019021100"> <!-- Verification time for dynamic length forecast simulations -->
-  <!ENTITY VRF_STRT     "20190210"> <!-- First cycle to begin forecast verifcation at valid date -->
-  <!ENTITY VRF_END      "20190210"> <!-- Last cycle to begin forecast verification at valid date -->
-  <!ENTITY VRF_FOR_DOM  "02"> <!-- Domain index to have ICs downscaled from d01 for forecast validation -->
+  <!ENTITY EXP_VRF      "2019021500"> <!-- Verification time for dynamic length forecast simulations -->
+  <!ENTITY VRF_STRT     "20190211"> <!-- First cycle to begin forecast verifcation at valid date -->
+  <!ENTITY VRF_END      "20190214"> <!-- Last cycle to begin forecast verification at valid date -->
+  <!ENTITY VRF_FOR_DOM  "02"> <!-- Min domain index to have ICs downscaled from d01 for forecast validation -->
   <!-- END FORECAST VERIFICATION SETTINGS -->
 
   <!-- CONTROL SETTINGS -->
@@ -371,7 +371,7 @@
     </envar>
     <envar>
       <name>MAX_DOM</name>
-      <value>&CTR_CYC_DOM;</value>
+      <value>&CTR_FOR_DOM;</value>
     </envar>
     <envar>
       <name>WPS_ROOT</name>
@@ -513,7 +513,7 @@
     </envar>
     <envar>
       <name>MAX_DOM</name>
-      <value>&CTR_CYC_DOM;</value>
+      <value>&CTR_FOR_DOM;</value>
     </envar>
     <envar>
       <name>IF_SST_UPDTE</name>

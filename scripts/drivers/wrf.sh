@@ -523,6 +523,7 @@ else
 fi
 
 # Update the restart interval in wrf namelist to the end of the fcst_len
+run_mins=$(( fcst_len * 60 ))
 cat namelist.input \
   | sed "s/\(RESTART_INTERVAL\)${EQUAL}RESTART_INTERVAL/\1 = ${run_mins}/" \
   > namelist.input.tmp
