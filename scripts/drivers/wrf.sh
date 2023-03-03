@@ -655,7 +655,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       echo ${msg}
       exit 1
     else
-      cmd="ln -sf wrfout_d${dmn}_${datestr} ${CYC_HME}/../${new_bkg}"
+      cmd="ln -sfr wrfout_d${dmn}_${datestr} ${CYC_HME}/../${new_bkg}"
       echo ${cmd}; eval ${cmd}
     fi
   done
@@ -666,7 +666,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     echo 
     exit 1
   else
-    cmd="ln -sf wrfrst_d${dmn}_${datestr} ${CYC_HME}/../${new_bkg}"
+    cmd="ln -sfr wrfrst_d${dmn}_${datestr} ${CYC_HME}/../${new_bkg}"
     echo ${cmd}; eval ${cmd}
   fi
 done
