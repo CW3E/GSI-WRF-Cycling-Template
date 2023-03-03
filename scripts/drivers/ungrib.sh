@@ -184,7 +184,7 @@ if [ ${BKG_DATA} = GFS ]; then
   fnames="gfs.0p25.${BKG_STRT_TIME}.f*"
 
   # compute the number of input files to ungrib (incld. first/last times)
-  n_files=$(( ${fcst_len} / ${BKG_DATA_INT} + 1 ))
+  n_files=$(( ${fcst_len} / ${BKG_INT} + 1 ))
 
 elif [ ${BKG_DATA} = GEFS ]; then
   if [ ${memid} = 00 ]; then
@@ -195,7 +195,7 @@ elif [ ${BKG_DATA} = GEFS ]; then
     fnames="gep${memid}.t${bkg_strt_hh}z.pgrb*"
   fi
   # GEFS comes in a/b files for each valid time
-  n_files=$(( 2 * ${fcst_len} / ${BKG_DATA_INT} + 1 ))
+  n_files=$(( 2 * ${fcst_len} / ${BKG_INT} + 1 ))
 
 else
   msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
