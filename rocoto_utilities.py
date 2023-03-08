@@ -32,6 +32,7 @@
 ##################################################################################
 import os
 import time
+from datetime import datetime as dt
 
 ##################################################################################
 # SET GLOBAL PARAMETERS
@@ -51,6 +52,8 @@ CSES = [
 CTR_FLWS = [
             '3denvar_lag00_b0.00_v03_h0300',
            ]
+
+END = dt(2024, 01, 01, 00)
 
 ##################################################################################
 # Derived paths
@@ -143,7 +146,7 @@ def run_rocotorewind(cses, flows, cycles, tasks):
 
 if __name__ == '__main__':
     # monitor and advance the jobs
-    while (True):
+    while (dt.now() < END):
         run_rocotorun()
         time.sleep(60)
 
