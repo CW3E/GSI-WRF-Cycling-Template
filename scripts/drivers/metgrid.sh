@@ -104,7 +104,7 @@ fi
 # Options below are defined in workflow variables
 #
 # MEMID      = Ensemble ID index, 00 for control, i > 0 for perturbation
-# STRT_TIME  = Simulation start time in YYMMDDHH
+# STRT_DT    = Simulation start time in YYMMDDHH
 # IF_DYN_LEN = "Yes" or "No" switch to compute forecast length dynamically 
 # FCST_HRS   = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
 # EXP_VRF    = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
@@ -121,13 +121,13 @@ else
   memid=`printf %02d $(( 10#${MEMID} ))`
 fi
 
-if [ ${#STRT_TIME} -ne 10 ]; then
-  echo "ERROR: \${STRT_TIME}, '${STRT_TIME}', is not in 'YYYYMMDDHH' format." 
+if [ ${#STRT_DT} -ne 10 ]; then
+  echo "ERROR: \${STRT_DT}, '${STRT_DT}', is not in 'YYYYMMDDHH' format." 
   exit 1
 else
-  # Convert STRT_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
-  strt_time="${STRT_TIME:0:8} ${STRT_TIME:8:2}"
-  strt_time=`date -d "${strt_time}"`
+  # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
+  strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
+  strt_dt=`date -d "${strt_dt}"`
 fi
 
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
@@ -148,7 +148,7 @@ elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
     # compute forecast length relative to start time and verification time
     exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
     exp_vrf=`date +%s -d "${exp_vrf}"`
-    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_time}"`) / 3600 ))
+    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_dt}"`) / 3600 ))
     fcst_len=`printf %03d $(( 10#${fcst_len} ))`
   fi
 else
@@ -157,7 +157,7 @@ else
 fi
 
 # define the end time based on forecast length control flow above
-end_time=`date -d "${strt_time} ${fcst_len} hours"`
+end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
 if [ ! ${BKG_INT} ]; then
   echo "ERROR: \${BKG_INT} is not defined."
@@ -305,8 +305,8 @@ cat namelist.wps \
 mv namelist.wps.tmp namelist.wps
 
 # define start / end time patterns for namelist.wps
-strt_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
-end_dt=`date +%Y-%m-%d_%H_%M_%S -d "${end_time}"`
+strt_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
+end_dt=`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
 
 in_sd="\(START_DATE\)${EQUAL}START_DATE"
 out_sd="\1 = '${strt_dt}','${strt_dt}','${strt_dt}'"
@@ -338,13 +338,13 @@ echo ${cmd}; eval ${cmd}
 ##################################################################################
 # Print run parameters
 echo
-echo "EXP_CNFG  = ${EXP_CNFG}"
-echo "MEMID     = ${MEMID}"
-echo "CYC_HME   = ${CYC_HME}"
-echo "STRT_TIME = ${strt_dt}"
-echo "END_TIME  = ${end_dt}"
-echo "BKG_INT   = ${BKG_INT}"
-echo "MAX_DOM   = ${MAX_DOM}"
+echo "EXP_CNFG = ${EXP_CNFG}"
+echo "MEMID    = ${MEMID}"
+echo "CYC_HME  = ${CYC_HME}"
+echo "STRT_DT  = ${strt_dt}"
+echo "END_DT   = ${end_dt}"
+echo "BKG_INT  = ${BKG_INT}"
+echo "MAX_DOM  = ${MAX_DOM}"
 echo
 now=`date +%Y-%m-%d_%H_%M_%S`
 echo "metgrid started at ${now}."
@@ -373,15 +373,15 @@ fi
 # Check to see if metgrid outputs are generated
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
-    time_str=`date +%Y-%m-%d_%H:%M:%S -d "${strt_time} ${fcst} hours"`
-    out_name="met_em.d${dmn}.${time_str}.nc"
+    dt_str=`date +%Y-%m-%d_%H:%M:%S -d "${strt_dt} ${fcst} hours"`
+    out_name="met_em.d${dmn}.${dt_str}.nc"
     if [ ! -s "${out_name}" ]; then
       echo "ERROR: ${metgrid_exe} failed to complete for d${dmn}."
       exit 1
     else
       # rename to no-colon style for WRF
-      time_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time} ${fcst} hours"`
-      re_name="met_em.d${dmn}.${time_str}.nc"
+      dt_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${fcst} hours"`
+      re_name="met_em.d${dmn}.${dt_str}.nc"
       cmd="mv ${out_name} ${re_name}"
       echo ${cmd}; eval ${cmd}
     fi
@@ -394,7 +394,7 @@ for file in ${wps_dat_files[@]}; do
   echo ${cmd}; eval ${cmd}
 done
 
-echo "metgrid.sh completed successfully at `date`."
+echo "metgrid.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
 
 ##################################################################################
 # end

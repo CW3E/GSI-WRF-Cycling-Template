@@ -104,7 +104,7 @@ fi
 # Options below are defined in workflow variables 
 #
 # MEMID        = Ensemble ID index, 00 for control, i > 00 for perturbation
-# STRT_TIME    = Simulation start time in YYMMDDHH
+# STRT_DT      = Simulation start time in YYMMDDHH
 # IF_DYN_LEN   = "Yes" or "No" switch to compute forecast length dynamically 
 # FCST_HRS     = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
 # EXP_VRF      = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
@@ -132,13 +132,13 @@ else
   memid=`printf %02d $(( 10#${MEMID} ))`
 fi
 
-if [ ${#STRT_TIME} -ne 10 ]; then
-  echo "ERROR: \${STRT_TIME}, ${STRT_TIME}, is not in 'YYYYMMDDHH' format." 
+if [ ${#STRT_DT} -ne 10 ]; then
+  echo "ERROR: \${STRT_DT}, ${STRT_DT}, is not in 'YYYYMMDDHH' format." 
   exit 1
 else
-  # Convert STRT_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
-  strt_time="${STRT_TIME:0:8} ${STRT_TIME:8:2}"
-  strt_time=`date -d "${strt_time}"`
+  # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
+  strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
+  strt_dt=`date -d "${strt_dt}"`
 fi
 
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
@@ -159,7 +159,7 @@ elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
     # compute forecast length relative to start time and verification time
     exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
     exp_vrf=`date +%s -d "${exp_vrf}"`
-    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_time}"`) / 3600 ))
+    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_dt}"`) / 3600 ))
     fcst_len=`printf %03d $(( 10#${fcst_len} ))`
   fi
 else
@@ -168,7 +168,7 @@ else
 fi
 
 # define the end time based on forecast length control flow above
-end_time=`date -d "${strt_time} ${fcst_len} hours"`
+end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
 if [ ! ${BKG_INT} ]; then
   echo "ERROR: \${BKG_INT} is not defined."
@@ -363,14 +363,14 @@ fi
 # Link WRF initial conditions
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   wrfinput=wrfinput_d${dmn}
-  datestr=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
+  dt_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
   # if cycling AND analyzing this domain, get initial conditions from last analysis
   if [[ ${WRF_IC} = ${CYCLING} && ${dmn} -lt ${DOWN_DOM} ]]; then
     if [[ ${dmn} = 01 ]]; then
       # obtain the boundary files from the lateral boundary update by WRFDA 
       wrfanlroot=${CYC_HME}/wrfdaprd/lateral_bdy_update/ens_${memid}
       wrfbdy=${wrfanlroot}/wrfbdy_d01
-      cmd="ln -sf ${wrfbdy} wrfbdy_d01"
+      cmd="ln -sfr ${wrfbdy} wrfbdy_d01"
       echo ${cmd}; eval ${cmd}
       if [ ! -r "./wrfbdy_d01" ]; then
         echo "ERROR: wrfinput ${wrfbdy} does not exist or is not readable."
@@ -389,8 +389,8 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     fi
 
     # link the wrf inputs
-    wrfanl=${wrfanlroot}/wrfanl_ens_${memid}_${datestr}
-    cmd="ln -sf ${wrfanl} ${wrfinput}"
+    wrfanl=${wrfanlroot}/wrfanl_ens_${memid}_${dt_str}
+    cmd="ln -sfr ${wrfanl} ${wrfinput}"
     echo ${cmd}; eval ${cmd}
 
     if [ ! -r ${wrfinput} ]; then
@@ -400,7 +400,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
 
   elif [[ ${WRF_IC} = ${RESTART} ]]; then
     # check for restart files at valid start time for each domain
-    wrfrst=${work_root}/wrfrst_d${dmn}_${datestr}
+    wrfrst=${work_root}/wrfrst_d${dmn}_${dt_str}
     if [ ! -r ${wrfrst} ]; then
       echo "ERROR: wrfrst source ${wrfrst} does not exist or is not readable."
       exit 1
@@ -412,7 +412,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     if [ ${dmn} = 01 ]; then
       # Link the wrfbdy_d01 file from real
       wrfbdy=${realroot}/wrfbdy_d01
-      cmd="ln -sf ${wrfbdy} wrfbdy_d01"
+      cmd="ln -sfr ${wrfbdy} wrfbdy_d01"
       echo ${cmd}; eval ${cmd};
 
       if [ ! -r wrfbdy_d01 ]; then
@@ -421,7 +421,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       fi
     fi
     realname=${realroot}/${wrfinput}
-    cmd="ln -sf ${realname} ."
+    cmd="ln -sfr ${realname} ."
     echo ${cmd}; eval ${cmd}
 
     if [ ! -r ${wrfinput} ]; then
@@ -434,7 +434,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
     wrflowinp=wrflowinp_d${dmn}
     realname=${CYC_HME}/realprd/ens_${memid}/${wrflowinp}
-    cmd="ln -sf ${realname} ."
+    cmd="ln -sfr ${realname} ."
     echo ${cmd}; eval ${cmd}
     if [ ! -r ${wrflowinp} ]; then
       echo "ERROR: wrflwinp ${wrflowinp} does not exist or is not readable."
@@ -473,18 +473,18 @@ else
 fi
 
 # Get the start and end time components
-s_Y=`date +%Y -d "${strt_time}"`
-s_m=`date +%m -d "${strt_time}"`
-s_d=`date +%d -d "${strt_time}"`
-s_H=`date +%H -d "${strt_time}"`
-s_M=`date +%M -d "${strt_time}"`
-s_S=`date +%S -d "${strt_time}"`
-e_Y=`date +%Y -d "${end_time}"`
-e_m=`date +%m -d "${end_time}"`
-e_d=`date +%d -d "${end_time}"`
-e_H=`date +%H -d "${end_time}"`
-e_M=`date +%M -d "${end_time}"`
-e_S=`date +%S -d "${end_time}"`
+s_Y=`date +%Y -d "${strt_dt}"`
+s_m=`date +%m -d "${strt_dt}"`
+s_d=`date +%d -d "${strt_dt}"`
+s_H=`date +%H -d "${strt_dt}"`
+s_M=`date +%M -d "${strt_dt}"`
+s_S=`date +%S -d "${strt_dt}"`
+e_Y=`date +%Y -d "${end_dt}"`
+e_m=`date +%m -d "${end_dt}"`
+e_d=`date +%d -d "${end_dt}"`
+e_H=`date +%H -d "${end_dt}"`
+e_M=`date +%M -d "${end_dt}"`
+e_S=`date +%S -d "${end_dt}"`
 
 # Update the max_dom in namelist
 in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
@@ -594,8 +594,8 @@ echo
 echo "EXP_CONFIG   = ${EXP_CONFIG}"
 echo "MEMID        = ${MEMID}"
 echo "CYC_HME      = ${CYC_HME}"
-echo "STRT TIME    = "`date +"%Y-%m-%d_%H_%M_%S" -d "${strt_time}"`
-echo "END TIME     = "`date +"%Y-%m-%d_%H_%M_%S" -d "${end_time}"`
+echo "STRT_DT      = "`date +"%Y-%m-%d_%H_%M_%S" -d "${strt_dt}"`
+echo "END_DT       = "`date +"%Y-%m-%d_%H_%M_%S" -d "${end_dt}"`
 echo "WRFOUT_INT   = ${WRFOUT_INT}"
 echo "BKG_DATA     = ${BKG_DATA}"
 echo "MAX_DOM      = ${MAX_DOM}"
@@ -639,8 +639,8 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
 fi
 
 # ensure that the bkg directory exists in next ${CYC_HME}
-datestr=`date +%Y%m%d%H -d "${strt_time} ${CYC_INT} hours"`
-new_bkg=${datestr}/bkg/ens_${memid}
+dt_str=`date +%Y%m%d%H -d "${strt_dt} ${CYC_INT} hours"`
+new_bkg=${dt_str}/bkg/ens_${memid}
 cmd="mkdir -p ${CYC_HME}/../${new_bkg}"
 echo ${cmd}; eval ${cmd}
 
@@ -648,25 +648,25 @@ echo ${cmd}; eval ${cmd}
 # the appropriate bkg directory
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   for fcst in `seq -f "%03g" 0 ${WRFOUT_INT} ${fcst_len}`; do
-    datestr=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time} ${fcst} hours"`
-    if [ ! -s wrfout_d${dmn}_${datestr} ]; then
-      msg="WRF failed to complete, wrfout_d${dmn}_${datestr} "
+    dt_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${fcst} hours"`
+    if [ ! -s wrfout_d${dmn}_${dt_str} ]; then
+      msg="WRF failed to complete, wrfout_d${dmn}_${dt_str} "
       msg+="is missing or empty."
       echo ${msg}
       exit 1
     else
-      cmd="ln -sfr wrfout_d${dmn}_${datestr} ${CYC_HME}/../${new_bkg}"
+      cmd="ln -sfr wrfout_d${dmn}_${dt_str} ${CYC_HME}/../${new_bkg}"
       echo ${cmd}; eval ${cmd}
     fi
   done
 
-  if [ ! -s wrfrst_d${dmn}_${datestr} ]; then
-    msg="WRF failed to complete, wrfrst_d${dmn}_${datestr} is "
+  if [ ! -s wrfrst_d${dmn}_${dt_str} ]; then
+    msg="WRF failed to complete, wrfrst_d${dmn}_${dt_str} is "
     msg+="missing or empty."
     echo 
     exit 1
   else
-    cmd="ln -sfr wrfrst_d${dmn}_${datestr} ${CYC_HME}/../${new_bkg}"
+    cmd="ln -sfr wrfrst_d${dmn}_${dt_str} ${CYC_HME}/../${new_bkg}"
     echo ${cmd}; eval ${cmd}
   fi
 done
@@ -677,7 +677,7 @@ for file in ${wrf_dat_files[@]}; do
     echo ${cmd}; eval ${cmd}
 done
 
-echo "wrf.sh completed successfully at `date`."
+echo "wrf.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
 
 ##################################################################################
 # end

@@ -79,7 +79,7 @@ fi
 ##################################################################################
 # Options below are defined in control flow xml (case insensitive)
 #
-# ANL_TIME    = Analysis time YYYYMMDDHH
+# ANL_DT      = Analysis time YYYYMMDDHH
 # CYC_HME     = Start time named directory for cycling data containing
 #               bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
 # IF_OBSERVER = Yes : Only used as observation operator for ensemble members
@@ -97,14 +97,16 @@ fi
 #
 ##################################################################################
 
-# Convert ANL_TIME from 'YYYYMMDDHH' format to anl_iso Unix date format
-if [ ${#ANL_TIME} -ne 10 ]; then
-  echo "ERROR: \${ANL_TIME}, ${ANL_TIME}, is not in 'YYYYMMDDHH' format."
+# Convert ANL_DT from 'YYYYMMDDHH' format to anl_iso Unix date format
+if [ ${#ANL_DT} -ne 10 ]; then
+  echo "ERROR: \${ANL_DT}, ${ANL_DT}, is not in 'YYYYMMDDHH' format."
   exit 1
 else
-  # Define directory path name variable anl_iso from ANL_TIME
-  hh=${ANL_TIME:8:2}
-  anl_date=${ANL_TIME:0:8}
+  # define anl date components separately
+  anl_date=${ANL_DT:0:8}
+  hh=${ANL_DT:8:2}
+
+  # Define file path name variable anl_iso from ANL_DT
   anl_iso=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
 fi
 
@@ -254,7 +256,7 @@ fi
 #
 # Below variables are derived from control flow variables for convenience
 #
-# anl_iso   = Defined by the ANL_TIME variable, to be used as path
+# anl_iso   = Defined by the ANL_DT variable, to be used as path
 #             name variable in iso format for wrfout
 #
 ##################################################################################
@@ -708,8 +710,8 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
 
     # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
     #if [[ ${IF_4DENVAR} = ${YES} ]] ; then
-    # PDYa=`echo ${ANL_TIME} | cut -c1-8`
-    # cyca=`echo ${ANL_TIME} | cut -c9-10`
+    # PDYa=`echo ${ANL_DT} | cut -c1-8`
+    # cyca=`echo ${ANL_DT} | cut -c9-10`
     # gdate=`date -u -d "${PDYa} ${cyca} -6 hour" +%Y%m%d%H` #guess date is 6hr ago
     # gHH=`echo ${gdate} |cut -c9-10`
     # datem1=`date -u -d "${PDYa} ${cyca} -1 hour" +%Y-%m-%d_%H_%M_%S` #1hr ago
@@ -732,7 +734,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
             echo "ERROR: ensemble file ${ens_file} does not exist."
             exit 1
           else
-            cmd="ln -sf ${ens_file} ./wrf_ens_${memid}"
+            cmd="ln -sfr ${ens_file} ./wrf_ens_${memid}"
             echo ${cmd}; eval ${cmd}
           fi
         done
@@ -786,15 +788,15 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     ##################################################################################
     # Print run parameters
     echo
-    echo "ANL_TIME          = ${ANL_TIME}"
-    echo "BKG               = ${bkg_file}"
-    echo "IF_OBSERVER       = ${IF_OBSERVER}"
-    echo "IF_HYBRID         = ${IF_HYBRID}"
-    echo "ENS_ROOT          = ${ENS_ROOT}"
-    echo "BETA              = ${BETA}"
-    echo "S_ENS_V           = ${S_ENS_V}"
-    echo "S_ENS_H           = ${S_ENS_H}"
-    echo "IF_4DENVAR        = ${IF_4DENVAR}"
+    echo "ANL_DT      = ${ANL_DT}"
+    echo "BKG         = ${bkg_file}"
+    echo "IF_OBSERVER = ${IF_OBSERVER}"
+    echo "IF_HYBRID   = ${IF_HYBRID}"
+    echo "ENS_ROOT    = ${ENS_ROOT}"
+    echo "BETA        = ${BETA}"
+    echo "S_ENS_V     = ${S_ENS_V}"
+    echo "S_ENS_H     = ${S_ENS_H}"
+    echo "IF_4DENVAR  = ${IF_4DENVAR}"
     echo
     now=`date +%Y-%m-%d_%H_%M_%S`
     echo "gsi analysis started at ${now} on domain d${dmn}."
@@ -937,7 +939,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
   done 
 done
 
-echo "gsi.sh completed successfully at `date`."
+echo "gsi.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
 
 ##################################################################################
 

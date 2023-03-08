@@ -53,7 +53,7 @@ fi
 ##################################################################################
 # Options below are defined in control flow xml
 #
-# ANL_TIME     = Analysis time YYYYMMDDHH
+# ANL_DT     = Analysis time YYYYMMDDHH
 # BOUNDARY     = 'LOWER' if updating lower boundary conditions 
 #                'LATERAL' if updating lateral boundary conditions
 # WRF_CTR_DOM  = Max domain index of control forecast to update BOUNDARY=LOWER
@@ -64,14 +64,14 @@ fi
 #
 ##################################################################################
 
-# Convert ANL_TIME from 'YYYYMMDDHH' format to anl_time iso format
-if [ ${#ANL_TIME} -ne 10 ]; then
-  echo "ERROR: \${ANL_TIME}, ${ANL_TIME}, is not in 'YYYYMMDDHH' format."
+# Convert ANL_DT from 'YYYYMMDDHH' format to anl_iso iso format
+if [ ${#ANL_DT} -ne 10 ]; then
+  echo "ERROR: \${ANL_DT}, ${ANL_DT}, is not in 'YYYYMMDDHH' format."
   exit 1
 else
-  anl_date=${ANL_TIME:0:8}
-  hh=${ANL_TIME:8:2}
-  anl_time=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
+  anl_date=${ANL_DT:0:8}
+  hh=${ANL_DT:8:2}
+  anl_iso=`date +%Y-%m-%d_%H_%M_%S -d "${anl_date} ${hh} hours"`
 fi
 
 if [[ ${BOUNDARY} = ${LOWER} ]]; then
@@ -222,7 +222,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     echo "Copying background and input files."
     for dmn in `seq -f "%02g" 01 ${max_dom}`; do
       # update the lower BC for the output file to pass to GSI
-      wrfout=wrfout_d${dmn}_${anl_time}
+      wrfout=wrfout_d${dmn}_${anl_iso}
 
       # wrfinput is always drawn from real step
       wrfinput=wrfinput_d${dmn}
@@ -328,7 +328,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
         echo "ERROR: \${gsi_dir} directory, ${gsi_dir}, does not exist."
         exit 1
       else
-        wrfanl=${gsi_dir}/d01/wrfanl_ens_${memid}_${anl_time}
+        wrfanl=${gsi_dir}/d01/wrfanl_ens_${memid}_${anl_iso}
       fi
     else
       if [ ! -d ${enkf_dir} ]; then
@@ -336,12 +336,12 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
         exit 1
       else
         # NOTE: ENKF SCRIPT NEED TO UPDATE OUTPUT NAMING CONVENTIONS
-        wrfanl=${enkf_dir}/d01/wrfanl_ens_${memid}_${anl_time}
+        wrfanl=${enkf_dir}/d01/wrfanl_ens_${memid}_${anl_iso}
       fi
     fi
 
     wrfbdy=${real_dir}/wrfbdy_d01
-    wrfvar_outname=wrfanl_ens_${memid}_${anl_time}
+    wrfvar_outname=wrfanl_ens_${memid}_${anl_iso}
   
     if [ ! -r "${wrfanl}" ]; then
       echo "ERROR: Input file '${wrfanl}' is missing."

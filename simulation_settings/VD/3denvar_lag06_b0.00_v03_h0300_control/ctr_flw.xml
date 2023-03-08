@@ -9,7 +9,7 @@
   <!ENTITY S_ENS_V      "03"> <!-- Define tuneable beta value for ensemble vertical localization scale here -->
   <!ENTITY S_ENS_H      "0300"> <!-- Define tuneable value for ensemble horizontal localization scale here -->
   <!ENTITY CSE_NAME     "VD"> <!-- Define the case study name for experiment group -->
-  <!ENTITY CNFG_NAME    "3denvar_lag&LAG;_b&BETA;_v&S_ENS_V;_h&S_ENS_H;"> <!-- Configuration name including tunable parameters -->
+  <!ENTITY CNFG_NAME    "3denvar_lag&LAG;_b&BETA;_v&S_ENS_V;_h&S_ENS_H;_control"> <!-- Configuration name including tunable parameters -->
   <!ENTITY EXP_NAME     "&CSE_NAME;/&CNFG_NAME;"> <!-- Experiment logs and data are defined in the case / configuration nested structure -->
   <!-- END CONTROL FLOW NAME / TUNABLE SETTINGS -->
 
@@ -141,11 +141,11 @@
        <value>00</value>
     </envar>
     <envar>
-      <name>STRT_TIME</name>
+      <name>STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>BKG_STRT_TIME</name>
+      <name>BKG_STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -216,11 +216,11 @@
        <value>00</value>
     </envar>
     <envar>
-      <name>STRT_TIME</name>
+      <name>STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>BKG_STRT_TIME</name>
+      <name>BKG_STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -290,7 +290,7 @@
        <value>00</value>
     </envar>
     <envar>
-      <name>STRT_TIME</name>
+      <name>STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -355,7 +355,7 @@
        <value>00</value>
     </envar>
     <envar>
-      <name>STRT_TIME</name>
+      <name>STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -420,7 +420,7 @@
        <value>00</value>
     </envar>
     <envar>
-      <name>STRT_TIME</name>
+      <name>STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -493,7 +493,7 @@
        <value>00</value>
     </envar>
     <envar>
-      <name>STRT_TIME</name>
+      <name>STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -562,7 +562,7 @@
       <value>&WRF_CNST;</value>
     </envar>
     <envar>
-      <name>ANL_TIME</name>
+      <name>ANL_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -615,7 +615,7 @@
       <value>&GSI_CNST;</value>
     </envar>
     <envar>
-      <name>ANL_TIME</name>
+      <name>ANL_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -712,7 +712,7 @@
       <value>&WRF_CNST;</value>
     </envar>
     <envar>
-      <name>ANL_TIME</name>
+      <name>ANL_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -785,11 +785,11 @@
       <value>&CYC_INT;</value>
     </envar>
     <envar>
-      <name>STRT_TIME</name>
+      <name>STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>CYC_TIME</name>
+      <name>CYC_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -894,11 +894,11 @@
       <value>&CYC_INT;</value>
     </envar>
     <envar>
-      <name>STRT_TIME</name>
+      <name>STRT_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>CYC_TIME</name>
+      <name>CYC_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
@@ -964,7 +964,7 @@
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_FCST_WC;</walltime>
     <jobname><cyclestr>wrf_ens_00_@Y@m@d@H</cyclestr></jobname>
-    <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00.log</cyclestr></join>
+    <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00_restart.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
     <native>--export=ALL</native>
@@ -1003,11 +1003,11 @@
       <value>&CYC_INT;</value>
     </envar>
     <envar>
-      <name>STRT_TIME</name>
+      <name>STRT_DT</name>
       <value><cyclestr offset="&CYC_INT;:00:00">@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>CYC_TIME</name>
+      <name>CYC_DT</name>
       <value><cyclestr>@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>

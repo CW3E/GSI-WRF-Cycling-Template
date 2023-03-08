@@ -103,16 +103,16 @@ fi
 ##################################################################################
 # Options below are defined in workflow variables
 #
-# MEMID         = Ensemble ID index, 00 for control, i > 0 for perturbation
-# STRT_TIME     = Simulation start time in YYMMDDHH
-# BKG_STRT_TIME = Background data simulation start time in YYMMDDHH
-# IF_DYN_LEN    = "Yes" or "No" switch to compute forecast length dynamically 
-# FCST_HRS      = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
-# EXP_VRF       = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
-# BKG_INT       = Interval of background input data in HH
-# BKG_DATA      = String case variable for supported inputs: GFS, GEFS currently
-# IF_ECMWF_ML   = "Yes" or "No" switch to compute ECMWF coefficients for
-#                 initializing with model level data, case insensitive
+# MEMID       = Ensemble ID index, 00 for control, i > 0 for perturbation
+# STRT_DT     = Simulation start time in YYMMDDHH
+# BKG_STRT_DT = Background data simulation start time in YYMMDDHH
+# IF_DYN_LEN  = "Yes" or "No" switch to compute forecast length dynamically 
+# FCST_HRS    = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
+# EXP_VRF     = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
+# BKG_INT     = Interval of background input data in HH
+# BKG_DATA    = String case variable for supported inputs: GFS, GEFS currently
+# IF_ECMWF_ML = "Yes" or "No" switch to compute ECMWF coefficients for
+#               initializing with model level data, case insensitive
 #
 ##################################################################################
 
@@ -124,13 +124,13 @@ else
   memid=`printf %02d $(( 10#${MEMID} ))`
 fi
 
-if [ ${#STRT_TIME} -ne 10 ]; then
-  echo "ERROR: \${STRT_TIME}, ${STRT_TIME}, is not in 'YYYYMMDDHH' format." 
+if [ ${#STRT_DT} -ne 10 ]; then
+  echo "ERROR: \${STRT_DT}, ${STRT_DT}, is not in 'YYYYMMDDHH' format." 
   exit 1
 else
-  # Convert STRT_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
-  strt_time="${STRT_TIME:0:8} ${STRT_TIME:8:2}"
-  strt_time=`date -d "${strt_time}"`
+  # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
+  strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
+  strt_dt=`date -d "${strt_dt}"`
 fi
 
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
@@ -151,7 +151,7 @@ elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
     # compute forecast length relative to start time and verification time
     exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
     exp_vrf=`date +%s -d "${exp_vrf}"`
-    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_time}"`) / 3600 ))
+    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_dt}"`) / 3600 ))
     fcst_len=`printf %03d $(( 10#${fcst_len} ))`
   fi
 else
@@ -160,15 +160,15 @@ else
 fi
 
 # define the end time based on forecast length control flow above
-end_time=`date -d "${strt_time} ${fcst_len} hours"`
+end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
-if [ ${#BKG_STRT_TIME} -ne 10 ]; then
-  echo "ERROR: \${BKG_STRT_TIME}, '${BKG_STRT_TIME}', is not in 'YYYYMMDDHH' format." 
+if [ ${#BKG_STRT_DT} -ne 10 ]; then
+  echo "ERROR: \${BKG_STRT_DT}, '${BKG_STRT_DT}', is not in 'YYYYMMDDHH' format." 
   exit 1
 else
-  # define BKG_STRT_TIME date string wihtout HH
-  bkg_strt_date=${BKG_STRT_TIME:0:8}
-  bkg_strt_hh=${BKG_STRT_TIME:8:2}
+  # define BKG_STRT_DT date string wihtout HH
+  bkg_strt_dt=${BKG_STRT_DT:0:8}
+  bkg_strt_hh=${BKG_STRT_DT:8:2}
 fi
 
 if [ ! ${BKG_INT} ]; then
@@ -181,7 +181,7 @@ fi
 
 if [ ${BKG_DATA} = GFS ]; then
   # GFS has single control trajectory
-  fnames="gfs.0p25.${BKG_STRT_TIME}.f*"
+  fnames="gfs.0p25.${BKG_STRT_DT}.f*"
 
   # compute the number of input files to ungrib (incld. first/last times)
   n_files=$(( ${fcst_len} / ${BKG_INT} + 1 ))
@@ -305,7 +305,7 @@ else
 fi
 
 # check to make sure the grib_dataroot exists and is non-empty
-grib_dataroot=${DATA_ROOT}/gribbed/${BKG_DATA}/${bkg_strt_date}
+grib_dataroot=${DATA_ROOT}/gribbed/${BKG_DATA}/${bkg_strt_dt}
 if [ ! -d ${grib_dataroot} ]; then
   echo "ERROR: the directory ${grib_dataroot} does not exist."
   exit 1
@@ -335,8 +335,8 @@ else
 fi
 
 # define start / end time patterns for namelist.wps
-strt_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
-end_dt=`date +%Y-%m-%d_%H_%M_%S -d "${end_time}"`
+strt_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
+end_dt=`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
 
 in_sd="\(START_DATE\)${EQUAL}START_DATE"
 out_sd="\1 = '${strt_dt}','${strt_dt}','${strt_dt}'"
@@ -372,14 +372,14 @@ mv namelist.wps.tmp namelist.wps
 ##################################################################################
 # Print run parameters
 echo
-echo "EXP_CNFG      = ${EXP_CNFG}"
-echo "MEMID         = ${MEMID}"
-echo "CYC_HME       = ${CYC_HME}"
-echo "STRT_TIME     = ${strt_dt}"
-echo "END_TIME      = ${end_dt}"
-echo "BKG_DATA      = ${BKG_DATA}"
-echo "BKG_STRT_TIME = ${BKG_STRT_TIME}"
-echo "BKG_INT       = ${BKG_INT}"
+echo "EXP_CNFG    = ${EXP_CNFG}"
+echo "MEMID       = ${MEMID}"
+echo "CYC_HME     = ${CYC_HME}"
+echo "STRT_DT     = ${strt_dt}"
+echo "END_DT      = ${end_dt}"
+echo "BKG_DATA    = ${BKG_DATA}"
+echo "BKG_STRT_DT = ${BKG_STRT_DT}"
+echo "BKG_INT     = ${BKG_INT}"
 echo
 now=`date +%Y-%m-%d_%H_%M_%S`
 echo "ungrib started at ${now}."
@@ -408,7 +408,7 @@ fi
 
 # verify all file outputs
 for fcst in `seq -f "%03g" 0 ${BKG_INT}} ${fcst_len}`; do
-  filename="FILE:`date +%Y-%m-%d_%H -d "${strt_time} ${fcst} hours"`"
+  filename="FILE:`date +%Y-%m-%d_%H -d "${strt_dt} ${fcst} hours"`"
   if [ ! -s ${filename} ]; then
     echo "ERROR: ${filename} is missing."
     exit 1
@@ -425,7 +425,7 @@ if [ ${IF_ECMWF_ML} = ${YES} ]; then
 
   # Check to see if we've got all the files we're expecting
   for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
-    filename=PRES:`date +%Y-%m-%d_%H -d "${strt_time} ${fcst} hours"`
+    filename=PRES:`date +%Y-%m-%d_%H -d "${strt_dt} ${fcst} hours"`
     if [ ! -s ${filename} ]; then
       echo "ERROR: ${filename} is missing."
       exit 1
@@ -443,7 +443,7 @@ done
 cmd="rm -f GRIBFILE.*"
 echo ${cmd}; eval ${cmd}
 
-echo "ungrib.sh completed successfully at `date`."
+echo "ungrib.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
 
 ##################################################################################
 # end

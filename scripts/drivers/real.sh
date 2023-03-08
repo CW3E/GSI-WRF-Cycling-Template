@@ -104,7 +104,7 @@ fi
 # Options below are defined in workflow variables
 #
 # MEMID        = Ensemble ID index, 00 for control, i > 00 for perturbation
-# STRT_TIME    = Simulation start time in YYMMDDHH
+# STRT_DT      = Simulation start time in YYMMDDHH
 # IF_DYN_LEN   = "Yes" or "No" switch to compute forecast length dynamically 
 # FCST_HRS     = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
 # EXP_VRF      = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
@@ -124,13 +124,13 @@ else
   memid=`printf %02d $(( 10#${MEMID} ))`
 fi
 
-if [ ${#STRT_TIME} -ne 10 ]; then
-  echo "ERROR: \${STRT_TIME}, ${STRT_TIME}, is not in 'YYYYMMDDHH' format." 
+if [ ${#STRT_DT} -ne 10 ]; then
+  echo "ERROR: \${STRT_DT}, ${STRT_DT}, is not in 'YYYYMMDDHH' format." 
   exit 1
 else
-  # Convert STRT_TIME from 'YYYYMMDDHH' format to strt_time Unix date format
-  strt_time="${STRT_TIME:0:8} ${STRT_TIME:8:2}"
-  strt_time=`date -d "${strt_time}"`
+  # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
+  strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
+  strt_dt=`date -d "${strt_dt}"`
 fi
 
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
@@ -151,7 +151,7 @@ elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
     # compute forecast length relative to start time and verification time
     exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
     exp_vrf=`date +%s -d "${exp_vrf}"`
-    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_time}"`) / 3600 ))
+    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_dt}"`) / 3600 ))
     fcst_len=`printf %03d $(( 10#${fcst_len} ))`
   fi
 else
@@ -160,7 +160,7 @@ else
 fi
 
 # define the end time based on forecast length control flow above
-end_time=`date -d "${strt_time} ${fcst_len} hours"`
+end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
 if [ ! ${BKG_INT} ]; then
   echo "ERROR: \${BKG_INT} is not defined."
@@ -293,14 +293,14 @@ echo ${cmd}; eval ${cmd}
 # are available and make links to them
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
-    time_str=`date "+%Y-%m-%d_%H_%M_%S" -d "${strt_time} ${fcst} hours"`
-    realinput_name=met_em.d${dmn}.${time_str}.nc
+    dt_str=`date "+%Y-%m-%d_%H_%M_%S" -d "${strt_dt} ${fcst} hours"`
+    realinput_name=met_em.d${dmn}.${dt_str}.nc
     wps_dir=${CYC_HME}/wpsprd/ens_${memid}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then
       echo "ERROR: Input file '${CYC_HME}/${realinput_name}' is missing."
       exit 1
     else
-      cmd="ln -sf ${wps_dir}/${realinput_name} ."
+      cmd="ln -sfr ${wps_dir}/${realinput_name} ."
       echo ${cmd}; eval ${cmd}
     fi
   done
@@ -336,18 +336,18 @@ else
 fi
 
 # Get the start and end time components
-s_Y=`date +%Y -d "${strt_time}"`
-s_m=`date +%m -d "${strt_time}"`
-s_d=`date +%d -d "${strt_time}"`
-s_H=`date +%H -d "${strt_time}"`
-s_M=`date +%M -d "${strt_time}"`
-s_S=`date +%S -d "${strt_time}"`
-e_Y=`date +%Y -d "${end_time}"`
-e_m=`date +%m -d "${end_time}"`
-e_d=`date +%d -d "${end_time}"`
-e_H=`date +%H -d "${end_time}"`
-e_M=`date +%M -d "${end_time}"`
-e_S=`date +%S -d "${end_time}"`
+s_Y=`date +%Y -d "${strt_dt}"`
+s_m=`date +%m -d "${strt_dt}"`
+s_d=`date +%d -d "${strt_dt}"`
+s_H=`date +%H -d "${strt_dt}"`
+s_M=`date +%M -d "${strt_dt}"`
+s_S=`date +%S -d "${strt_dt}"`
+e_Y=`date +%Y -d "${end_dt}"`
+e_m=`date +%m -d "${end_dt}"`
+e_d=`date +%d -d "${end_dt}"`
+e_H=`date +%H -d "${end_dt}"`
+e_M=`date +%M -d "${end_dt}"`
+e_S=`date +%S -d "${end_dt}"`
 
 # Update max_dom in namelist
 in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
@@ -434,8 +434,8 @@ echo
 echo "EXP_CNFG     = ${EXP_CNFG}"
 echo "MEMID        = ${MEMID}"
 echo "CYC_HME      = ${CYC_HME}"
-echo "STRT_TIME    = "`date +%Y-%m-%d_%H_%M_%S -d "${strt_time}"`
-echo "END_TIME     = "`date +%Y-%m-%d_%H_%M_%S -d "${end_time}"`
+echo "STRT_DT      = "`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
+echo "END_DT       = "`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
 echo "BKG_INT      = ${BKG_INT}"
 echo "BKG_DATA     = ${BKG_DATA}"
 echo "MAX_DOM      = ${MAX_DOM}"
@@ -520,7 +520,7 @@ for file in ${wrf_dat_files[@]}; do
     echo ${cmd}; eval ${cmd}
 done
 
-echo "real.sh completed successfully at `date`."
+echo "real.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
 
 ##################################################################################
 # end
