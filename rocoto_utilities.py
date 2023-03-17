@@ -45,12 +45,12 @@ RCT_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/rocoto'
 
 # Case study sub directories
 CSES = [
-        'VD',
+        'CC',
        ]
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
-            '3denvar_lag00_b0.00_v03_h0300',
+            'generate_ensemble_lag06',
            ]
 
 END = dt(2024, 01, 01, 00)
