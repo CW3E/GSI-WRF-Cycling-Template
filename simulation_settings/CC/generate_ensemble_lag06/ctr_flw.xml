@@ -357,7 +357,7 @@
       </envar>
       <envar>
         <name>WRF_IC</name>
-        <value>CYCLING</value>
+        <value>REALEXE</value>
       </envar>
       <envar>
         <name>IF_SST_UPDTE</name>
