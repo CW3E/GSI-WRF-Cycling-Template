@@ -34,7 +34,7 @@
 
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYC_STRT     "202101220000"> <!-- First initial time for a DA cycle including analsysis and forecast -->
-  <!ENTITY CYC_END      "201902150000"> <!-- Last initial time for a DA cycle including analysis and forecast -->
+  <!ENTITY CYC_END      "202101290000"> <!-- Last initial time for a DA cycle including analysis and forecast -->
   <!ENTITY CYC_INT      "06"> <!-- Interval between cycle start / end times NOTE: cycle groups must match -->
   <!-- END CYCLING SETTINGS -->
 
@@ -43,6 +43,7 @@
   <!ENTITY MEM_LIST     "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
   <!ENTITY N_ENS        "20"> <!-- Must equal the max index of the MEM_LIST above or 00 if not hybrid DA -->
   <!ENTITY WRF_ENS_DOM  "01"> <!-- Max domain for ensemble simulation -->
+  <!ENTITY VRF_FOR_DOM  "02"> <!-- Domain index for ensemble verification -->
   <!ENTITY ENS_BKG_DATA "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
   <!ENTITY ENS_BKG_INT  "06"> <!-- Data file frequency for ensemble simulation forcing in HH -->
   <!ENTITY FCST_HRS     "12"> <!-- Length of ensemble forecast in HH -->
@@ -80,14 +81,13 @@
 <workflow realtime="F" scheduler="&SCHED;">
   <cycledef group="6-hourly">&CYC_STRT; &CYC_END; &CYC_INT;:00:00</cycledef>
   <log verbosity="10"><cyclestr>&EXP_LOG;/@Y@m@d@H/workflow.log</cyclestr></log>
-  
   <metatask name="ensemble">
-    <var name="ENS_N">&ENS_LIST;</var>  
+    <var name="ENS_N">&MEM_LIST;</var>  
     <task name="ungrib_ens_#ENS_N#" maxtries="12" cycledefs="6-hourly">
       <command>&DRIVERS;/ungrib.sh</command>
       <cores>1</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>
-      <walltime>&WPS_CYC_WC;</walltime>
+      <walltime>&WPS_WC;</walltime>
       <jobname><cyclestr>ungrib_ens_#ENS_N#_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&EXP_LOG;/@Y@m@d@H/ungrib_ens_#ENS_N#.log</cyclestr></join>
       <native>&PART_DEBUG;</native>
@@ -152,8 +152,6 @@
           <not>
             <cycleexistdep cycle_offset="-&CYC_INT;:00:00"/> 
           </not> 	
-          <taskdep task="wrf_ens_#ENS_N#" cycle_offset="-&CYC_INT;:00:00" state="QUEUED"/>
-          <taskdep task="wrf_ens_#ENS_N#" cycle_offset="-&CYC_INT;:00:00" state="RUNNING"/>
           <taskdep task="wrf_ens_#ENS_N#" cycle_offset="-&CYC_INT;:00:00" state="SUCCEEDED"/>
         </or>
       </dependency>
@@ -163,7 +161,7 @@
       <command>&DRIVERS;/metgrid.sh</command>
       <cores>&WPS_PROC;</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>
-      <walltime>&WPS_CYC_WC;</walltime>
+      <walltime>&WPS_WC;</walltime>
       <jobname><cyclestr>metgrid_ens_#ENS_N#_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&EXP_LOG;/@Y@m@d@H/metgrid_ens_#ENS_N#.log</cyclestr></join>
       <native>&PART_DEBUG;</native>
@@ -228,7 +226,7 @@
       <command>&DRIVERS;/real.sh</command>
       <cores>&WPS_PROC;</cores>
       <nodesize>&WPS_NODESIZE;</nodesize>
-      <walltime>&WPS_CYC_WC;</walltime>
+      <walltime>&WPS_WC;</walltime>
       <jobname><cyclestr>real_ens_#ENS_N#_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&EXP_LOG;/@Y@m@d@H/real_ens_#ENS_N#.log</cyclestr></join>
       <native>&PART_DEBUG;</native>
@@ -301,7 +299,7 @@
       <command>&DRIVERS;/wrf.sh</command>
       <cores>&WRF_PROC;</cores>
       <nodesize>&WRF_NODESIZE;</nodesize>
-      <walltime>&WRF_CYC_WC;</walltime>
+      <walltime>&WRF_WC;</walltime>
       <jobname><cyclestr>wrf_ens_#ENS_N#_@Y@m@d@H</cyclestr></jobname>
       <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_#ENS_N#.log</cyclestr></join>
       <native>&PART_COMPU;</native>
