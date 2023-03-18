@@ -73,7 +73,7 @@
  adaptation_domain		     = 1,
  time_step_fract_num                 = 0,
  time_step_fract_den                 = 1,
- max_dom                             = 2,
+ MAX_DOM                             = MAX_DOM,
  e_vert                              = 80,   80,
  p_top_requested                     = 1000,
  !! GEFS setting AWS pre 2021 !!
@@ -197,7 +197,7 @@
 ! bucket_J                            = 1.e9
 !/
 
-!! reference hybrid physics scheme (mostly reanalysis settings) !!
+!! reference hybrid physics scheme dynamic sst_update !!
 &physics
  mp_physics                          = 8,     8,
  ra_lw_physics                       = 4,     4,
@@ -222,13 +222,46 @@
  grav_settling                       = 0, 0,
  ysu_topdown_pblmix                  = 1,
  sst_skin			     = 0,
- sst_update                          = 1,
+ SST_UPDATE                          = SST_UPDATE,
  usemonalb                           = .true.,
  rdlai2d                             = .true.,
  num_land_cat			     = 21,
  num_soil_cat			     = 16,
  num_soil_layers                     = 4,
 /
+
+!! reference hybrid physics scheme (mostly reanalysis settings) !!
+!&physics
+! mp_physics                          = 8,     8,
+! ra_lw_physics                       = 4,     4,
+! ra_sw_physics                       = 4,     4,
+! radt                                = 9,     3,
+! sf_sfclay_physics                   = 5,     5,
+! sf_surface_physics                  = 4,     4,
+! bl_pbl_physics                      = 5,     5,
+! bldt                                = 0,     0,
+! cu_physics                          = 3,     0,
+! cu_rad_feedback                     = .true., .false.,
+! cu_diag                             = 1,     0,
+! cudt                                = 0,     0,
+! ishallow                            = 0,
+! isfflx                              = 1,
+! ifsnow                              = 1,
+! icloud                              = 3,
+! surface_input_source                = 1,
+! sf_urban_physics                    = 0,     0,
+! do_radar_ref                        = 1,
+! prec_acc_dt                         = 60.,   60.,
+! grav_settling                       = 0, 0,
+! ysu_topdown_pblmix                  = 1,
+! sst_skin			     = 0,
+! sst_update                          = 1,
+! usemonalb                           = .true.,
+! rdlai2d                             = .true.,
+! num_land_cat			     = 21,
+! num_soil_cat			     = 16,
+! num_soil_layers                     = 4,
+!/
 
 !! reference hybrid physics scheme changing sf_sfclay_physics (necessary sf_sfclay_phs for next bl_pbl_phys) !!
 !&physics
