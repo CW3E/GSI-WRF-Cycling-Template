@@ -141,6 +141,15 @@ else
   strt_dt=`date -d "${strt_dt}"`
 fi
 
+if [ ${#CYC_DT} -ne 10 ]; then
+  echo "ERROR: \${CYC_DT}, ${CYC_DT}, is not in 'YYYYMMDDHH' format." 
+  exit 1
+else
+  # Convert CYC_DT from 'YYYYMMDDHH' format to cyc_dt Unix date format
+  cyc_dt="${CYC_DT:0:8} ${CYC_DT:8:2}"
+  cyc_dt=`date -d "${cyc_dt}"`
+fi
+
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
   echo "Generating fixed length forecast forcing data."
   if [ ! ${FCST_HRS} ]; then
@@ -639,7 +648,7 @@ if [ ${nsuccess} -ne ${ntotal} ]; then
 fi
 
 # ensure that the bkg directory exists in next ${CYC_HME}
-dt_str=`date +%Y%m%d%H -d "${strt_dt} ${CYC_INT} hours"`
+dt_str=`date +%Y%m%d%H -d "${cyc_dt} ${CYC_INT} hours"`
 new_bkg=${dt_str}/bkg/ens_${memid}
 cmd="mkdir -p ${CYC_HME}/../${new_bkg}"
 echo ${cmd}; eval ${cmd}
