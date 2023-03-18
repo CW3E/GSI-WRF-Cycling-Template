@@ -1,8 +1,4 @@
 &time_control
- RUN_DAYS                            = RUN_DAYS,
- RUN_HOURS                           = RUN_HOURS,
- RUN_MINUTES                         = RUN_MINUTES,
- RUN_SECONDS                         = RUN_SECONDS,
  START_YEAR                          = START_YEAR,
  START_MONTH                         = START_MONTH,
  START_DAY                           = START_DAY,
