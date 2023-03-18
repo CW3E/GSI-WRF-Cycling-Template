@@ -179,7 +179,7 @@
       </envar>
       <envar>
         <name>STRT_DT</name>
-        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+        <value><cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H</cyclestr></value>
       </envar>
       <envar>
         <name>IF_DYN_LEN</name>
@@ -244,7 +244,7 @@
       </envar>
       <envar>
         <name>STRT_DT</name>
-        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+        <value><cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H</cyclestr></value>
       </envar>
       <envar>
         <name>IF_DYN_LEN</name>
@@ -341,7 +341,7 @@
       </envar>
       <envar>
         <name>STRT_DT</name>
-        <value><cyclestr>@Y@m@d@H</cyclestr></value>
+        <value><cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H</cyclestr></value>
       </envar>
       <envar>
         <name>CYC_DT</name>

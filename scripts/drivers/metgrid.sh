@@ -305,13 +305,13 @@ cat namelist.wps \
 mv namelist.wps.tmp namelist.wps
 
 # define start / end time patterns for namelist.wps
-strt_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
-end_dt=`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
+strt_iso=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
+end_iso=`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
 
 in_sd="\(START_DATE\)${EQUAL}START_DATE"
-out_sd="\1 = '${strt_dt}','${strt_dt}','${strt_dt}'"
+out_sd="\1 = '${strt_iso}','${strt_iso}','${strt_iso}'"
 in_ed="\(END_DATE\)${EQUAL}END_DATE"
-out_ed="\1 = '${end_dt}','${end_dt}','${end_dt}'"
+out_ed="\1 = '${end_iso}','${end_iso}','${end_iso}'"
 
 # Update the start and end date in namelist (propagates settings to three domains)
 cat namelist.wps \
@@ -341,8 +341,8 @@ echo
 echo "EXP_CNFG = ${EXP_CNFG}"
 echo "MEMID    = ${MEMID}"
 echo "CYC_HME  = ${CYC_HME}"
-echo "STRT_DT  = ${strt_dt}"
-echo "END_DT   = ${end_dt}"
+echo "STRT_DT  = ${strt_iso}"
+echo "END_DT   = ${end_iso}"
 echo "BKG_INT  = ${BKG_INT}"
 echo "MAX_DOM  = ${MAX_DOM}"
 echo
