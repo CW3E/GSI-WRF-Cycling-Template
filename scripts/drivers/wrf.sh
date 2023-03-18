@@ -158,6 +158,7 @@ if [[ ${IF_DYN_LEN} = ${NO} ]]; then
   else
     # parse forecast hours as base 10 padded
     fcst_len=`printf %03d $(( 10#${FCST_HRS} ))`
+    echo "Forecast length is ${fcst_len} hours."
   fi
 elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
   echo "Generating forecast forcing data until experiment validation time."
@@ -532,7 +533,8 @@ else
 fi
 
 # Update the restart interval in wrf namelist to the end of the fcst_len
-run_mins=$(( fcst_len * 60 ))
+fcst_hrs=`printf $(( 10#${fcst_len} ))`
+run_mins=$(( ${fcst_hrs} * 60 ))
 cat namelist.input \
   | sed "s/\(RESTART_INTERVAL\)${EQUAL}RESTART_INTERVAL/\1 = ${run_mins}/" \
   > namelist.input.tmp
@@ -668,11 +670,13 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       echo ${cmd}; eval ${cmd}
     fi
   done
-
+  # Check for all wrfrst files for each domain at end of forecast and link files to
+  # the appropriate bkg directory
+  dt_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${fcst_len} hours"`
   if [ ! -s wrfrst_d${dmn}_${dt_str} ]; then
     msg="WRF failed to complete, wrfrst_d${dmn}_${dt_str} is "
     msg+="missing or empty."
-    echo 
+    echo ${msg}
     exit 1
   else
     cmd="ln -sfr wrfrst_d${dmn}_${dt_str} ${CYC_HME}/../${new_bkg}"
