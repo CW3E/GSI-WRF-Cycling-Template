@@ -101,8 +101,8 @@
   <!ENTITY WRF_MEM      "5G"> <!-- WRF MEM per CPU argument for SLURM -->
   <!ENTITY WRF_NODESIZE "24"> <!-- WRF node size -->
   <!ENTITY WRF_NODES    "16"> <!-- Number of nodes for WRF jobs -->
-  <!ENTITY WRF_CYC_WC   "01:30:00"> <!-- Wallclock limit for WRF jobs -->
-  <!ENTITY WRF_FCST_WC  "72"> <!-- Wallclock limit multiplier applied to WRF forecast hours with dynamically set forecast length -->
+  <!ENTITY WRF_CYC_WC   "02:30:00"> <!-- Wallclock limit for WRF jobs -->
+  <!ENTITY WRF_FCST_WC  "24"> <!-- Wallclock limit multiplier applied to WRF forecast hours with dynamically set forecast length -->
   <!ENTITY GSI_PROC     "64"> <!-- GSI number of procs -->
   <!ENTITY GSI_MEM      "21G"> <!-- GSI MEM per CPU argument for SLURM -->
   <!ENTITY GSI_NODESIZE "64"> <!-- GSI node size -->
@@ -128,7 +128,7 @@
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_CYC_WC;</walltime>
-    <jobname><cyclestr>ungrib_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>ungrib_ens_00_cyc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/ungrib_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -203,7 +203,7 @@
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_FCST_WC;</walltime>
-    <jobname><cyclestr>ungrib_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>ungrib_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/ungrib_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -272,7 +272,7 @@
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_CYC_WC;</walltime>
-    <jobname><cyclestr>metgrid_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>metgrid_ens_00_cyc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/metgrid_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -337,7 +337,7 @@
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_FCST_WC;</walltime>
-    <jobname><cyclestr>metgrid_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>metgrid_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/metgrid_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -402,7 +402,7 @@
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_CYC_WC;</walltime>
-    <jobname><cyclestr>real_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>real_ens_00_cyc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/real_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -475,7 +475,7 @@
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_FCST_WC;</walltime>
-    <jobname><cyclestr>real_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>real_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/real_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -743,7 +743,7 @@
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_CYC_WC;</walltime>
-    <jobname><cyclestr>wrf_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>wrf_ens_00_cyc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
@@ -852,7 +852,7 @@
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_CYC_WC;</walltime>
-    <jobname><cyclestr>wrf_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>wrf_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
@@ -961,7 +961,7 @@
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_FCST_WC;</walltime>
-    <jobname><cyclestr>wrf_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>wrf_ens_00_restart_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00_restart.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
