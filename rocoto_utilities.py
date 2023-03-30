@@ -51,6 +51,7 @@ CSES = [
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
             'generate_ensemble_lag06',
+            '3denvar_lag00_b0.10_v06_h0300_test',
            ]
 
 END = dt(2024, 1, 1, 0)

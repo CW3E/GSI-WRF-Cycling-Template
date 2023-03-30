@@ -54,10 +54,10 @@ from download_utilities import STR_INDT, get_reqs
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # starting date and zero hour of data
-START_DATE = '2021-01-29T00:00:00'
+START_DATE = '2021-01-21T12:00:00'
 
 # final date and zero hour of data
-END_DATE = '2021-01-29T00:00:00'
+END_DATE = '2021-01-21T12:00:00'
 
 # interval of forecast data outputs after zero hour
 FCST_INT = 3
