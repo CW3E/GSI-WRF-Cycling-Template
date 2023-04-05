@@ -102,7 +102,7 @@
   <!ENTITY WRF_NODESIZE "24"> <!-- WRF node size -->
   <!ENTITY WRF_NODES    "16"> <!-- Number of nodes for WRF jobs -->
   <!ENTITY WRF_CYC_WC   "02:30:00"> <!-- Wallclock limit for WRF jobs -->
-  <!ENTITY WRF_FCST_WC  "24"> <!-- Wallclock limit multiplier applied to WRF forecast hours with dynamically set forecast length -->
+  <!ENTITY WRF_FCST_WC  "24:00:00"> <!-- Wallclock limit applied to WRF forecast hours with dynamically set forecast length -->
   <!ENTITY GSI_PROC     "64"> <!-- GSI number of procs -->
   <!ENTITY GSI_MEM      "21G"> <!-- GSI MEM per CPU argument for SLURM -->
   <!ENTITY GSI_NODESIZE "64"> <!-- GSI node size -->
@@ -189,11 +189,8 @@
     </envar>
     <dependency>
       <or>
-        <not>
-          <cycleexistdep cycle_offset="-&CYC_INT;:00:00"/> 
-        </not> 	
-        <taskdep task="wrf_ens_00_cyc" cycle_offset="-&CYC_INT;:00:00" state="SUCCEEDED"/>
-        <taskdep task="wrf_ens_00_for" cycle_offset="-&CYC_INT;:00:00" state="SUCCEEDED"/>
+	<sh shell="/bin/bash">&SCRIPTS;/utilities/check_status.sh "<cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr>" "&CLNE_ROOT;" "&CSE_NAME;" "&CNFG_NAME;" "cyc"</sh>
+	<sh shell="/bin/bash">&SCRIPTS;/utilities/check_status.sh "<cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr>" "&CLNE_ROOT;" "&CSE_NAME;" "&CNFG_NAME;" "for"</sh>
       </or>
     </dependency>
   </task>
@@ -263,7 +260,7 @@
       <value>&DATA_ROOT;</value>
     </envar>
     <dependency>
-	    <sh shell="/bin/bash">&SCRIPTS;/utilities/check_status.sh "<cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr>" "&CLNE_ROOT;" "&CSE_NAME;" "&CNFG_NAME;"</sh>
+      <sh shell="/bin/bash">&SCRIPTS;/utilities/check_status.sh "<cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr>" "&CLNE_ROOT;" "&CSE_NAME;" "&CNFG_NAME;" "cyc"</sh>
     </dependency>
   </task>
 

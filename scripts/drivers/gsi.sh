@@ -514,20 +514,18 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     srcfixfile=()
     gsifixfile=()
 
-    echo "Use NAM-ARW background error covariance fix files."
-    srcfixfile+=( ${fix_root}/nam_nmmstat_na.gcv )
-    srcfixfile+=( ${fix_root}/nam_errtable.r3dv )
-    srcfixfile+=( ${fix_root}/anavinfo_arw_netcdf )
-
-    # the following files filter observation types
-    srcfixfile+=( ${fix_root}/global_satangbias.txt )
-    srcfixfile+=( ${fix_root}/global_satinfo.txt )
-    srcfixfile+=( ${fix_root}/global_convinfo.txt )
-    srcfixfile+=( ${fix_root}/global_ozinfo.txt )
-    srcfixfile+=( ${fix_root}/global_pcpinfo.txt )
-    srcfixfile+=( ${fix_root}/global_lightinfo.txt )
-
-    # needed for assimilation of ATMS radiances
+    echo "Copy fix files from ${fix_root}."
+    # files should be named the following in ${fix_root}, can be linked to these names
+    # from various source files / background error options
+    srcfixfile+=( ${fix_root}/berror_stats )
+    srcfixfile+=( ${fix_root}/errtable )
+    srcfixfile+=( ${fix_root}/anavinfo )
+    srcfixfile+=( ${fix_root}/satangbias.txt )
+    srcfixfile+=( ${fix_root}/satinfo.txt )
+    srcfixfile+=( ${fix_root}/convinfo.txt )
+    srcfixfile+=( ${fix_root}/ozinfo.txt )
+    srcfixfile+=( ${fix_root}/pcpinfo.txt )
+    srcfixfile+=( ${fix_root}/lightinfo.txt )
     srcfixfile+=( ${fix_root}/atms_beamwidth.txt )
 
     # linked names for GSI to read in
@@ -765,9 +763,9 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     ##################################################################################
     # Build GSI namelist
     ##################################################################################
-    echo "Build the namelist with default NAM-ARW."
+    echo "Build the namelist with parameters for NAM-ARW."
 
-    # default is NAM
+    # default parameers taken from NAM
     vs_op='1.0,'
     hzscl_op='0.373,0.746,1.50,'
 
