@@ -416,6 +416,19 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       exit 1
     fi
 
+    if [[ ${dmn} = 01 ]]; then
+      # obtain the boundary files from the lateral boundary update by WRFDA step
+      # included for possible re-generation of BCs for longer extended forecast
+      wrfanlroot=${CYC_HME}/wrfdaprd/lateral_bdy_update/ens_${memid}
+      wrfbdy=${wrfanlroot}/wrfbdy_d01
+      cmd="ln -sfr ${wrfbdy} wrfbdy_d01"
+      echo ${cmd}; eval ${cmd}
+      if [ ! -r "./wrfbdy_d01" ]; then
+        echo "ERROR: wrfinput ${wrfbdy} does not exist or is not readable."
+        exit 1
+      fi
+    fi
+
   else
     # else get initial and boundary conditions from real for downscaled domains
     realroot=${CYC_HME}/realprd/ens_${memid}

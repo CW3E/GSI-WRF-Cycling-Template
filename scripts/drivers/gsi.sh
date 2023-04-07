@@ -48,7 +48,7 @@
 #
 ##################################################################################
 # uncomment to run verbose for debugging / testing
-set -x
+#set -x
 
 # Background error set for WRF-ARW by default
 bk_core_arw=".true."

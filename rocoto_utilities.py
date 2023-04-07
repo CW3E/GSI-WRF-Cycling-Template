@@ -38,24 +38,29 @@ from datetime import datetime as dt
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # directory path for root of git clone of GSI-WRF-Cycling-Template
-USR_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template'
+USR_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/restart_tests/GSI-WRF-Cycling-Template'
 
 # directory for rocoto install
 RCT_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/rocoto'
 
 # Case study sub directories
 CSES = [
-        'VD',
+        'CC',
        ]
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
-            '3denvar_lag06_b0.00_v03_h0300_test',
-            '3denvar_lag06_b0.20_v03_h0300_test',
-            '3denvar_lag06_b0.40_v03_h0300_test',
-            '3denvar_lag06_b0.60_v03_h0300_test',
-            '3denvar_lag06_b0.80_v03_h0300_test',
-            '3denvar_lag06_b1.00_v03_h0300_test',
+            'deterministic_forecast_b0.00_restart',
+            'deterministic_forecast_b0.10_restart',
+            'deterministic_forecast_b0.20_restart',
+            'deterministic_forecast_b0.30_restart',
+            'deterministic_forecast_b0.40_restart',
+            'deterministic_forecast_b0.50_restart',
+            'deterministic_forecast_b0.60_restart',
+            'deterministic_forecast_b0.70_restart',
+            'deterministic_forecast_b0.80_restart',
+            'deterministic_forecast_b0.90_restart',
+            'deterministic_forecast_b1.00_restart',
            ]
 
 END = dt(2024, 1, 1, 0)
