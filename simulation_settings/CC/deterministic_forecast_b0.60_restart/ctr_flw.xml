@@ -4,7 +4,7 @@
   <!-- GSI Observation-Analysis-Forecast Cycling Workflow -->
 
   <!-- CONTROL FLOW NAME / TUNABLE SETTINGS -->
-  <!ENTITY BETA         "0.00"> <!-- Define tuneable beta value for ensemble / static background hybridization here -->
+  <!ENTITY BETA         "0.60"> <!-- Define tuneable beta value for ensemble / static background hybridization here -->
   <!ENTITY CSE_NAME     "CC"> <!-- Define the case study name for experiment group -->
   <!ENTITY CNFG_NAME    "deterministic_forecast_b&BETA;_restart"> <!-- Configuration name including tunable parameters -->
   <!ENTITY EXP_NAME     "&CSE_NAME;/&CNFG_NAME;"> <!-- Experiment logs and data are defined in the case / configuration nested structure -->

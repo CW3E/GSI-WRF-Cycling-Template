@@ -1,0 +1,12 @@
+&control_param
+ DA_FILE            = DA_FILE
+ WRF_INPUT          = WRF_INPUT
+ wrf_bdy_file       = './wrfbdy_d01'
+ DOMAIN_ID          = DOMAIN_ID
+ debug              = .true.
+ UPDATE_LATERAL_BDY = UPDATE_LATERAL_BDY
+ UPDATE_LOW_BDY     = UPDATE_LOW_BDY
+ update_lsm         = .false.
+ iswater            = 16
+ var4d_lbc          = .false.
+/
