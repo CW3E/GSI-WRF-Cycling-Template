@@ -26,6 +26,7 @@
   <!ENTITY EXP_CNFG     "&CLNE_ROOT;/simulation_settings/&EXP_NAME;"> <!-- Root directory of experiment configuration files -->
   <!ENTITY SCRIPTS      "&CLNE_ROOT;/scripts"> <!-- Root directory of workflow framework scripts -->
   <!ENTITY DRIVERS      "&SCRIPTS;/drivers"> <!-- Root directory of task driver scripts -->
+  <!ENTITY UTILITY      "&SCRIPTS;/utilities"> <!-- Root directory of utility scripts for hacking rocoto to work... -->
   <!ENTITY ENVRNMTS     "&SCRIPTS;/environments"> <!-- Root directory of software stack environment scripts -->
   <!-- END WORKFLOW SETTINGS -->
 
@@ -186,13 +187,9 @@
       <value>&DATA_ROOT;</value>
     </envar>
     <dependency>
-      <or>
-        <not>
-          <cycleexistdep cycle_offset="-&CYC_INT;:00:00"/> 
-        </not> 	
-	<sh shell="/bin/bash">&SCRIPTS;/utilities/check_status.sh "<cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr>" "&CLNE_ROOT;" "&CSE_NAME;" "&CNFG_NAME;" "cyc"</sh>
-	<sh shell="/bin/bash">&SCRIPTS;/utilities/check_status.sh "<cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr>" "&CLNE_ROOT;" "&CSE_NAME;" "&CNFG_NAME;" "for"</sh>
-      </or>
+      <not>
+        <cycleexistdep cycle_offset="-&CYC_INT;:00:00"/> 
+      </not> 	
     </dependency>
   </task>
 
@@ -954,7 +951,7 @@
     </dependency>
   </task>
 
-  <task name="wrf_ens_00_restart" maxtries="1" cycledefs="00Z_forecast">
+  <task name="wrf_ens_00_restart" maxtries="12" cycledefs="00Z_forecast">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
@@ -1063,4 +1060,39 @@
     </dependency>
   </task>
 
+  <task name="boot_next_cycle" maxtries="3" cycledefs="00Z_no_forecast,00Z_forecast,06Z,12Z,18Z">
+    <command>&UTILITY;/boot_next_cycle.sh</command>
+    <cores>1</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_CYC_WC;</walltime>
+    <jobname><cyclestr>boot_cycle_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&EXP_LOG;/@Y@m@d@H/boot_cycle.log</cyclestr></join>
+    <native>&PART_DEBUG;</native>
+    <native>&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
+    <envar>
+      <name>CLNE_ROOT</name>
+      <value>&CLNE_ROOT;</value>
+    </envar>
+    <envar>
+      <name>CYC</name>
+      <value><cyclestr offset="&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr></value>
+    </envar>
+    <envar>
+      <name>CSE</name>
+      <value>&CSE_NAME;</value>
+    </envar>
+    <envar>
+      <name>FLW</name>
+      <value>&CNFG_NAME;</value>
+    </envar>
+    <dependency> 
+      <or>
+        <taskdep task="wrf_ens_00_cyc" state="SUCCEEDED"/>
+        <taskdep task="wrf_ens_00_for" state="SUCCEEDED"/>
+      </or>
+    </dependency>
+  </task>
 </workflow>

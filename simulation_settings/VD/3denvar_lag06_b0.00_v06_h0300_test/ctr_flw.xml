@@ -951,7 +951,7 @@
     </dependency>
   </task>
 
-  <task name="wrf_ens_00_restart" maxtries="1" cycledefs="00Z_forecast">
+  <task name="wrf_ens_00_restart" maxtries="12" cycledefs="00Z_forecast">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
@@ -1060,7 +1060,7 @@
     </dependency>
   </task>
 
-  <task name="boot_next_cycle" maxtries="1" cycledefs="00Z_no_forecast,00Z_forecast,06Z,12Z,18Z">
+  <task name="boot_next_cycle" maxtries="3" cycledefs="00Z_no_forecast,00Z_forecast,06Z,12Z,18Z">
     <command>&UTILITY;/boot_next_cycle.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
