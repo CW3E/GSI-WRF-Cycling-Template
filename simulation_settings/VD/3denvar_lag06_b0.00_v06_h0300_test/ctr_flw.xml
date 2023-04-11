@@ -1061,7 +1061,7 @@
   </task>
 
   <task name="boot_next_cycle" maxtries="1" cycledefs="00Z_no_forecast,00Z_forecast,06Z,12Z,18Z">
-    <command>&UTILITY;/boot_cycle.sh</command>
+    <command>&UTILITY;/boot_next_cycle.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_CYC_WC;</walltime>
