@@ -6,10 +6,10 @@
   <!-- CONTROL FLOW NAME / TUNABLE SETTINGS -->
   <!ENTITY LAG          "06"> <!-- Define the lag of the ensemble simulation start time here in HH -->
   <!ENTITY BETA         "0.00"> <!-- Define tuneable beta value for ensemble / static background hybridization here -->
-  <!ENTITY S_ENS_V      "03"> <!-- Define tuneable beta value for ensemble vertical localization scale here -->
+  <!ENTITY S_ENS_V      "06"> <!-- Define tuneable beta value for ensemble vertical localization scale here -->
   <!ENTITY S_ENS_H      "0300"> <!-- Define tuneable value for ensemble horizontal localization scale here -->
   <!ENTITY CSE_NAME     "VD"> <!-- Define the case study name for experiment group -->
-  <!ENTITY CNFG_NAME    "3denvar_lag&LAG;_b&BETA;_v&S_ENS_V;_h&S_ENS_H;_control"> <!-- Configuration name including tunable parameters -->
+  <!ENTITY CNFG_NAME    "3denvar_lag&LAG;_b&BETA;_v&S_ENS_V;_h&S_ENS_H;_test"> <!-- Configuration name including tunable parameters -->
   <!ENTITY EXP_NAME     "&CSE_NAME;/&CNFG_NAME;"> <!-- Experiment logs and data are defined in the case / configuration nested structure -->
   <!-- END CONTROL FLOW NAME / TUNABLE SETTINGS -->
 
@@ -26,6 +26,7 @@
   <!ENTITY EXP_CNFG     "&CLNE_ROOT;/simulation_settings/&EXP_NAME;"> <!-- Root directory of experiment configuration files -->
   <!ENTITY SCRIPTS      "&CLNE_ROOT;/scripts"> <!-- Root directory of workflow framework scripts -->
   <!ENTITY DRIVERS      "&SCRIPTS;/drivers"> <!-- Root directory of task driver scripts -->
+  <!ENTITY UTILITY      "&SCRIPTS;/utilities"> <!-- Root directory of utility scripts for hacking rocoto to work... -->
   <!ENTITY ENVRNMTS     "&SCRIPTS;/environments"> <!-- Root directory of software stack environment scripts -->
   <!-- END WORKFLOW SETTINGS -->
 
@@ -42,7 +43,7 @@
   <!-- CYCLING SETTINGS -->
   <!ENTITY CYC_STRT     "20190209"> <!-- First initial time for a DA cycle including analsysis and forecast -->
   <!ENTITY WRM_END      "20190210"> <!-- Last initial time for a cycle without a forecast -->
-  <!ENTITY CYC_END      "201902150000"> <!-- Last initial time for a DA cycle including analysis and forecast -->
+  <!ENTITY CYC_END      "20190214"> <!-- Last initial time for a DA cycle including analysis and forecast -->
   <!ENTITY CYC_INT      "06"> <!-- Interval between cycle start / end times NOTE: cycle groups must match -->
   <!ENTITY FCST_HRS     "06"> <!-- Fixed length forecast length within every cycle in HH, usually equal to CYC_INT -->
   <!-- END CYCLING SETTINGS -->
@@ -66,8 +67,6 @@
   <!ENTITY MEM_LIST     "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20"> <!-- list of ensemble perturbation indices -->
   <!ENTITY N_ENS        "20"> <!-- Must equal the max index of the MEM_LIST above or 00 if not hybrid DA -->
   <!ENTITY WRF_ENS_DOM  "01"> <!-- Max domain for ensemble simulation -->
-  <!ENTITY ENS_BKG_DATA "GEFS"> <!-- GFS and GEFS currently supported for 3D-(En)VAR -->
-  <!ENTITY ENS_BKG_INT  "06"> <!-- Data file frequency for ensemble simulation forcing in HH -->
   <!-- END ENSEMBLE SETTINGS -->
 
   <!-- WRF SETTINGS -->
@@ -101,8 +100,8 @@
   <!ENTITY WRF_MEM      "5G"> <!-- WRF MEM per CPU argument for SLURM -->
   <!ENTITY WRF_NODESIZE "24"> <!-- WRF node size -->
   <!ENTITY WRF_NODES    "16"> <!-- Number of nodes for WRF jobs -->
-  <!ENTITY WRF_CYC_WC   "01:30:00"> <!-- Wallclock limit for WRF jobs -->
-  <!ENTITY WRF_FCST_WC  "72"> <!-- Wallclock limit multiplier applied to WRF forecast hours with dynamically set forecast length -->
+  <!ENTITY WRF_CYC_WC   "02:30:00"> <!-- Wallclock limit for WRF jobs -->
+  <!ENTITY WRF_FCST_WC  "60:00:00"> <!-- Wallclock limit applied to WRF forecast hours with dynamically set forecast length -->
   <!ENTITY GSI_PROC     "64"> <!-- GSI number of procs -->
   <!ENTITY GSI_MEM      "21G"> <!-- GSI MEM per CPU argument for SLURM -->
   <!ENTITY GSI_NODESIZE "64"> <!-- GSI node size -->
@@ -112,12 +111,15 @@
 ]>
 
 <workflow realtime="F" scheduler="&SCHED;">
+  <!-- DEFINE CYCLE GROUPS -->
   <!-- NOTE: WE WILL USE DISTINCT CYCLE GROUPS AT 00 / 06 / 12 / 18 HRS TO CONTROL FORECAST AUTOMATION -->
   <cycledef group="00Z_no_forecast">&CYC_STRT;0000 &WRM_END;0000 24:00:00</cycledef>
   <cycledef group="00Z_forecast">&VRF_STRT;0000 &VRF_END;0000 24:00:00</cycledef>
-  <cycledef group="06Z">&CYC_STRT;0600 &CYC_END; 24:00:00</cycledef>
-  <cycledef group="12Z">&CYC_STRT;1200 &CYC_END; 24:00:00</cycledef>
-  <cycledef group="18Z">&CYC_STRT;1800 &CYC_END; 24:00:00</cycledef>
+  <cycledef group="06Z">&CYC_STRT;0600 &CYC_END;0000 24:00:00</cycledef>
+  <cycledef group="12Z">&CYC_STRT;1200 &CYC_END;0000 24:00:00</cycledef>
+  <cycledef group="18Z">&CYC_STRT;1800 &CYC_END;0000 24:00:00</cycledef>
+  <!-- END CYCLE GROUPS -->
+
   <log verbosity="10"><cyclestr>&EXP_LOG;/@Y@m@d@H/workflow.log</cyclestr></log>
   
   <task name="ungrib_ens_00_cyc" maxtries="12" cycledefs="00Z_no_forecast,06Z,12Z,18Z">
@@ -125,7 +127,7 @@
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_CYC_WC;</walltime>
-    <jobname><cyclestr>ungrib_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>ungrib_ens_00_cyc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/ungrib_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -185,13 +187,9 @@
       <value>&DATA_ROOT;</value>
     </envar>
     <dependency>
-      <or>
-        <not>
-          <cycleexistdep cycle_offset="-&CYC_INT;:00:00"/> 
-        </not> 	
-        <taskdep task="wrf_ens_00_cyc" cycle_offset="-&CYC_INT;:00:00" state="SUCCEEDED"/>
-        <taskdep task="wrf_ens_00_for" cycle_offset="-&CYC_INT;:00:00" state="SUCCEEDED"/>
-      </or>
+      <not>
+        <cycleexistdep cycle_offset="-&CYC_INT;:00:00"/> 
+      </not> 	
     </dependency>
   </task>
 
@@ -200,7 +198,7 @@
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_FCST_WC;</walltime>
-    <jobname><cyclestr>ungrib_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>ungrib_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/ungrib_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -260,12 +258,7 @@
       <value>&DATA_ROOT;</value>
     </envar>
     <dependency>
-      <or>
-        <not>
-          <cycleexistdep cycle_offset="-&CYC_INT;:00:00"/> 
-        </not> 	
-        <taskdep task="wrf_ens_00_cyc" cycle_offset="-&CYC_INT;00:00" state="SUCCEEDED"/>
-      </or>
+      <sh shell="/bin/bash">&SCRIPTS;/utilities/check_status.sh "<cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr>" "&CLNE_ROOT;" "&CSE_NAME;" "&CNFG_NAME;" "cyc"</sh>
     </dependency>
   </task>
 
@@ -274,7 +267,7 @@
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_CYC_WC;</walltime>
-    <jobname><cyclestr>metgrid_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>metgrid_ens_00_cyc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/metgrid_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -339,7 +332,7 @@
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_FCST_WC;</walltime>
-    <jobname><cyclestr>metgrid_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>metgrid_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/metgrid_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -404,7 +397,7 @@
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_CYC_WC;</walltime>
-    <jobname><cyclestr>real_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>real_ens_00_cyc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/real_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -477,7 +470,7 @@
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_FCST_WC;</walltime>
-    <jobname><cyclestr>real_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>real_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/real_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
@@ -745,7 +738,7 @@
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_CYC_WC;</walltime>
-    <jobname><cyclestr>wrf_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>wrf_ens_00_cyc_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
@@ -854,7 +847,7 @@
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_CYC_WC;</walltime>
-    <jobname><cyclestr>wrf_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>wrf_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
@@ -958,12 +951,48 @@
     </dependency>
   </task>
 
+  <task name="boot_next_cycle" maxtries="3" cycledefs="00Z_no_forecast,00Z_forecast,06Z,12Z,18Z">
+    <command>&UTILITY;/boot_next_cycle.sh</command>
+    <cores>1</cores>
+    <nodesize>&WPS_NODESIZE;</nodesize>
+    <walltime>&WPS_CYC_WC;</walltime>
+    <jobname><cyclestr>boot_cycle_@Y@m@d@H</cyclestr></jobname>
+    <join><cyclestr>&EXP_LOG;/@Y@m@d@H/boot_cycle.log</cyclestr></join>
+    <native>&PART_DEBUG;</native>
+    <native>&PROJECT;</native>
+    <native>--export=ALL</native>
+    <native>--nodes=&WPS_NODES;</native>
+    <native>--mem-per-cpu=&WPS_MEM;</native>
+    <envar>
+      <name>CLNE_ROOT</name>
+      <value>&CLNE_ROOT;</value>
+    </envar>
+    <envar>
+      <name>CYC</name>
+      <value><cyclestr offset="&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr></value>
+    </envar>
+    <envar>
+      <name>CSE</name>
+      <value>&CSE_NAME;</value>
+    </envar>
+    <envar>
+      <name>FLW</name>
+      <value>&CNFG_NAME;</value>
+    </envar>
+    <dependency> 
+      <or>
+        <taskdep task="wrf_ens_00_cyc" state="SUCCEEDED"/>
+        <taskdep task="wrf_ens_00_for" state="SUCCEEDED"/>
+      </or>
+    </dependency>
+  </task>
+
   <task name="wrf_ens_00_restart" maxtries="12" cycledefs="00Z_forecast">
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
     <walltime>&WRF_FCST_WC;</walltime>
-    <jobname><cyclestr>wrf_ens_00_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>wrf_ens_00_restart_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00_restart.log</cyclestr></join>
     <native>&PART_COMPU;</native>
     <native>&PROJECT;</native>
@@ -1066,5 +1095,4 @@
      <taskdep task="wrf_ens_00_for" state="SUCCEEDED"/>
     </dependency>
   </task>
-
 </workflow>
