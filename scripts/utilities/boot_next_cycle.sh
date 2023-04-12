@@ -58,8 +58,22 @@ if [ ! ${FLW} ]; then
   exit 1
 fi
 
-# grep the next task from the workflow status log
-IFS=" " read -ra cyc_stat <<< `grep "${CYC}" ${CLNE_ROOT}/workflow_status/${CSE}-${FLW}_workflow_status.txt | head -n 1`
+# define the workflow log
+worklog=${CLNE_ROOT}/workflow_status/${CSE}-${FLW}_workflow_status.txt 
+
+# check the number of lines
+linecount=`wc -l < ${worklog}`
+
+if [ ! -r ${worklog} ]; then
+  echo "ERROR: worfklow log ${worklog} does not exist or is not readable."
+  exit 1
+elif [ ${linecount} -eq 0 ]; then
+  echo "ERROR: workflow log ${worklog} is empty."
+  exit 1
+else
+  # grep the next task from the workflow status log
+  IFS=" " read -ra cyc_stat <<< `grep "${CYC}" ${worklog} | head -n 1`
+fi
 
 # unpack next task to boot from the status log
 tsk=${cyc_stat[1]}
@@ -70,4 +84,27 @@ echo ${cmd}; eval ${cmd}
 cmd="python -c 'import rocoto_utilities; rocoto_utilities.run_rocotoboot([\"${CSE}\"],[\"${FLW}\"],[\"${CYC}\"],[\"${tsk}\"])'"
 echo ${cmd}; eval ${cmd}
 
+cmd="sleep 120"
+echo ${cmd}; eval ${cmd}
+
+# check for an update to the workflow log with new status for job
+if [ ! -r ${worklog} ]; then
+  echo "ERROR: worfklow log ${worklog} does not exist or is not readable."
+  exit 1
+elif [ ${linecount} -eq 0 ]; then
+  echo "ERROR: workflow log ${worklog} is empty."
+  exit 1
+else
+  IFS=" " read -ra cyc_stat <<< `grep "${CYC}" ${worklog} | head -n 1`
+fi
+
+if [ ${cyc_stat[2]} = "-" ]; then
+  echo "ERROR: task did not update."
+  exit 1
+else
+  echo "Task ${cyc_stat[1]} booted for cycle ${cyc_stat[0]} with job id:"
+  echo "${cyc_stat[2]}"
+fi
+
+echo "Script completed at `date +%Y-%m-%d_%H_%M_%S`."
 exit 0

@@ -1065,7 +1065,7 @@
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
     <walltime>&WPS_CYC_WC;</walltime>
-    <jobname><cyclestr>boot_cycle_@Y@m@d@H</cyclestr></jobname>
+    <jobname><cyclestr>boot_next_cycle_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/boot_cycle.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
     <native>&PROJECT;</native>
