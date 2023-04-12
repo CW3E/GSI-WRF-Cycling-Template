@@ -2,6 +2,11 @@
 ##################################################################################
 # Description
 ##################################################################################
+# NOTE: at this moment this script is not supported and has not been made to
+# function with the current versions of the code.  This is simply kept here for
+# later reference in case workflows using GSI-EnKF are implemented at a later date.
+#
+#
 # This driver script is a major fork and rewrite of the standard EnKF.ksh
 # driver script as discussed in the documentation:
 # 

@@ -13,9 +13,7 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WPS environment
-# in a WPS_constants.sh script to be sourced in the below.  Variable
-# aliases in this script are based on conventions defined in the
-# WPS_constants.sh and the control flow .xml driving this script.
+# in a WRF_constants.sh script to be sourced in the below.
 #
 ##################################################################################
 # License Statement:
@@ -201,13 +199,13 @@ fi
 ##################################################################################
 # Below variables are defined in workflow variables
 #
-# WRF_ROOT  = Root directory of a "clean" WRF build WRF/run directory
-# EXP_CNFG  = Root directory containing sub-directories for namelists
-#             vtables, geogrid data, GSI fix files, etc.
-# CYC_HME   = Start time named directory for cycling data containing
-#             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# MPIRUN    = MPI multiprocessing evaluation call, machine specific
-# N_PROC    = The total number of processes to run real.exe with MPI
+# WRF_ROOT = Root directory of a "clean" WRF build WRF/run directory
+# EXP_CNFG = Root directory containing sub-directories for namelists
+#            vtables, geogrid data, GSI fix files, etc.
+# CYC_HME  = Start time named directory for cycling data containing
+#            bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
+# MPIRUN   = MPI multiprocessing evaluation call, machine specific
+# N_PROC   = The total number of processes to run real.exe with MPI
 #
 ##################################################################################
 

@@ -4,7 +4,6 @@
 #SBATCH -t 48:00:00
 #SBATCH -J download_ERA5
 #SBATCH --export=ALL
-
 ##################################################################################
 # Description
 ##################################################################################
@@ -22,7 +21,7 @@
 # License Statement
 ##################################################################################
 #
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,12 +38,11 @@
 ##################################################################################
 # initiate bash and source bashrc to initialize environement
 conda init bash
-source /home/cgrudzien/.bashrc
+source /home/USERNAME/.bashrc
 
 # set the working directory and cd there
-USR_HME="/cw3e/mead/projects/cwp130/scratch/cgrudzien"
-PRJ_HME="${USR_HME}/GSI-WRF-Cycling-Template/Valentine-Case/3D-EnVAR"
-scripts="${PRJ_HME}/scripts/downloads"
+CLNE_HME="/cw3e/mead/projects/cwp106/scratch"
+scripts="${CLNE_HME}/scripts/downloads"
 cd ${scripts}
 eval `echo pwd`
 
@@ -61,7 +59,7 @@ python -u download_ERA5.py ${levels}
 
 echo "Finished download script, verify downloads"
 
-exit 0
-
 ##################################################################################
 # end
+
+exit 0

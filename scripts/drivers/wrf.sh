@@ -13,9 +13,7 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WRF environment
-# in a WRF_constants.sh script to be sourced in the below.  Variable
-# aliases in this script are based on conventions defined in the
-# WRF_constants.sh and the control flow .xml driving this script.
+# in a WRF_constants.sh script to be sourced in the below.
 #
 ##################################################################################
 # License Statement:
@@ -335,11 +333,11 @@ fi
 ##################################################################################
 # The following paths are relative to workflow supplied root paths
 #
-# work_root      = Working directory where WRF runs
-# wrf_dat_files  = All file contents of clean WRF/run directory
-#                  namelists, boundary and input data will be linked
-#                  from other sources
-# wrf_exe        = Path and name of working executable
+# work_root     = Working directory where WRF runs
+# wrf_dat_files = All file contents of clean WRF/run directory
+#                 namelists, boundary and input data will be linked
+#                 from other sources
+# wrf_exe       = Path and name of working executable
 #
 ##################################################################################
 

@@ -12,9 +12,7 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WRFDA environment
-# in a WRF_constants.sh script to be sourced in the below.  Variable
-# aliases in this script are based on conventions defined in the
-# WRF_constants.sh and the control flow .xml driving this script.
+# in a WRF_constants.sh script to be sourced in the below.
 #
 ##################################################################################
 # License Statement:
@@ -53,7 +51,7 @@ fi
 ##################################################################################
 # Options below are defined in control flow xml
 #
-# ANL_DT     = Analysis time YYYYMMDDHH
+# ANL_DT       = Analysis time YYYYMMDDHH
 # BOUNDARY     = 'LOWER' if updating lower boundary conditions 
 #                'LATERAL' if updating lateral boundary conditions
 # WRF_CTR_DOM  = Max domain index of control forecast to update BOUNDARY=LOWER
@@ -282,12 +280,12 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       ##################################################################################
       # Print run parameters
       echo
-      echo "MEM_ID     = ${memid}"
-      echo "BOUNDARY   = ${BOUNDARY}"
-      echo "DOMAIN     = ${dmn}"
-      echo "EXP_CNFG   = ${EXP_CNFG}"
-      echo "CYC_HME    = ${CYC_HME}"
-      echo "ENS_ROOT   = ${ENS_ROOT}"
+      echo "MEM_ID   = ${memid}"
+      echo "BOUNDARY = ${BOUNDARY}"
+      echo "DOMAIN   = ${dmn}"
+      echo "EXP_CNFG = ${EXP_CNFG}"
+      echo "CYC_HME  = ${CYC_HME}"
+      echo "ENS_ROOT = ${ENS_ROOT}"
       echo
       now=`date +%Y-%m-%d_%H_%M_%S`
       echo "da_update_bc.exe started at ${now}."
@@ -404,13 +402,13 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     ##################################################################################
     # Print run parameters
     echo
-    echo "EXP_CNFG   = ${EXP_CNFG}"
-    echo "CYC_HME    = ${CYC_HME}"
-    echo "ENS_ROOT   = ${ENS_ROOT}"
+    echo "EXP_CNFG = ${EXP_CNFG}"
+    echo "CYC_HME  = ${CYC_HME}"
+    echo "ENS_ROOT = ${ENS_ROOT}"
     echo
-    echo "BOUNDARY   = ${BOUNDARY}"
-    echo "DOMAIN     = ${dmn}"
-    echo "ENS_N      = ${ens_n}"
+    echo "BOUNDARY = ${BOUNDARY}"
+    echo "DOMAIN   = ${dmn}"
+    echo "ENS_N    = ${ens_n}"
     echo
     now=`date +%Y-%m-%d_%H_%M_%S`
     echo "da_update_bc.exe started at ${now}."
@@ -430,7 +428,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
   fi
 done
 
-echo "wrfda.sh completed successfully at `date`."
+echo "wrfda.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
 
 ##################################################################################
 

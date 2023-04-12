@@ -13,9 +13,7 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WPS environment
-# in a WPS_constants.sh script to be sourced in the below.  Variable
-# aliases in this script are based on conventions defined in the
-# WRF_constants.sh and the control flow .xml driving this script.
+# in a WRF_constants.sh script to be sourced in the below.
 #
 ##################################################################################
 # License Statement:

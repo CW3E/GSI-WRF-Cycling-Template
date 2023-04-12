@@ -8,15 +8,12 @@
 #   https://dtcenter.ucar.edu/com-GSI/users/tutorial/online_tutorial/index_v3.7.php
 #
 # The purpose of this fork is to work in a Rocoto-based
-# Observation-Analysis-Forecast cycle with WRF for data denial
-# experiments. Naming conventions in this script have been smoothed
-# to match a companion major fork of the wrf.ksh
-# WRF driver script of Christopher Harrop.
+# Observation-Analysis-Forecast cycle with WRF for data denial experiments.
+# Naming conventions in this script have been smoothed to match a companion major
+# fork of the wrf.ksh WRF driver script of Christopher Harrop.
 #
 # One should write machine specific options for the GSI environment
-# in a GSI_constants.sh script to be sourced in the below.  Variable
-# aliases in this script are based on conventions defined in the
-# GSI_constants.sh and the control flow .xml driving this script.
+# in a GSI_constants.sh script to be sourced in the below.
 #
 ##################################################################################
 # License Statement:
