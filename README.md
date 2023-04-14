@@ -1,7 +1,5 @@
 # GSI-WRF-Cycling-Template
 
-[![Total lines of code without comments](https://tokei.rs/b1/github/CW3E/GSI-WRF-Cycling-Template?category=code)](https://github.com/CW3E/GSI-WRF-Cycling-Template)
-
 ## Description
 This is a template for running GSI-WRF in an offline cycling experiment.
 This workflow is based on the work of Christopher Harrop, Daniel Steinhoff, Matthew Simpson,
