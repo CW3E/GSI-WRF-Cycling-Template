@@ -30,7 +30,6 @@
 *.sqlite
 *.e*
 *.o*
-*.txt
 rsl*
 
 # OS generated files #
@@ -55,7 +54,6 @@ Thumbs.db
 # no actual data #
 ##################
 *.nc
-wrfout_*
 wrfbdy_*
 wrfinput_*
 geo_em*
