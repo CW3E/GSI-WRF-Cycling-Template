@@ -94,14 +94,15 @@
   <!ENTITY WPS_MEM      "5G"> <!-- WPS MEM per CPU argument for SLURM -->
   <!ENTITY WPS_NODESIZE "24"> <!-- WPS node size -->
   <!ENTITY WPS_NODES    "1"> <!-- Number of nodes for WPS / REAL jobs -->
-  <!ENTITY WPS_CYC_WC   "00:30:00"> <!-- Wallclock limit for WPS cycle jobs -->
-  <!ENTITY WPS_FCST_WC  "01:00:00"> <!-- Wallclock limit for WPS forecast jobs -->
+  <!ENTITY WPS_CYC_WC   "00:30:00"> <!-- Wallclock limit for WPS short-range cycling -->
+  <!ENTITY WPS_FOR_WC   "01:00:00"> <!-- Wallclock limit for WPS extended forecast jobs -->
   <!ENTITY WRF_PROC     "384"> <!-- WRF number of procs -->
   <!ENTITY WRF_MEM      "5G"> <!-- WRF MEM per CPU argument for SLURM -->
   <!ENTITY WRF_NODESIZE "24"> <!-- WRF node size -->
   <!ENTITY WRF_NODES    "16"> <!-- Number of nodes for WRF jobs -->
-  <!ENTITY WRF_CYC_WC   "02:30:00"> <!-- Wallclock limit for WRF jobs -->
-  <!ENTITY WRF_FCST_WC  "60:00:00"> <!-- Wallclock limit applied to WRF forecast hours with dynamically set forecast length -->
+  <!ENTITY WRF_CYC_WC   "01:30:00"> <!-- Wallclock limit for WRF short-range cycling -->
+  <!ENTITY WRF_FOR_WC   "03:30:00"> <!-- Wallclock limit for WRF short-range cycling with nested domain -->
+  <!ENTITY WRF_RST_WC   "60:00:00"> <!-- Wallclock limit for WRF extended restart forecast -->
   <!ENTITY GSI_PROC     "64"> <!-- GSI number of procs -->
   <!ENTITY GSI_MEM      "21G"> <!-- GSI MEM per CPU argument for SLURM -->
   <!ENTITY GSI_NODESIZE "64"> <!-- GSI node size -->
@@ -197,7 +198,7 @@
     <command>&DRIVERS;/ungrib.sh</command>
     <cores>1</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
-    <walltime>&WPS_FCST_WC;</walltime>
+    <walltime>&WPS_FOR_WC;</walltime>
     <jobname><cyclestr>ungrib_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/ungrib_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
@@ -331,7 +332,7 @@
     <command>&DRIVERS;/metgrid.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
-    <walltime>&WPS_FCST_WC;</walltime>
+    <walltime>&WPS_FOR_WC;</walltime>
     <jobname><cyclestr>metgrid_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/metgrid_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
@@ -469,7 +470,7 @@
     <command>&DRIVERS;/real.sh</command>
     <cores>&WPS_PROC;</cores>
     <nodesize>&WPS_NODESIZE;</nodesize>
-    <walltime>&WPS_FCST_WC;</walltime>
+    <walltime>&WPS_FOR_WC;</walltime>
     <jobname><cyclestr>real_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/real_ens_00.log</cyclestr></join>
     <native>&PART_DEBUG;</native>
@@ -846,7 +847,7 @@
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
-    <walltime>&WRF_CYC_WC;</walltime>
+    <walltime>&WRF_FOR_WC;</walltime>
     <jobname><cyclestr>wrf_ens_00_for_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00.log</cyclestr></join>
     <native>&PART_COMPU;</native>
@@ -991,7 +992,7 @@
     <command>&DRIVERS;/wrf.sh</command>
     <cores>&WRF_PROC;</cores>
     <nodesize>&WRF_NODESIZE;</nodesize>
-    <walltime>&WRF_FCST_WC;</walltime>
+    <walltime>&WRF_RST_WC;</walltime>
     <jobname><cyclestr>wrf_ens_00_restart_@Y@m@d@H</cyclestr></jobname>
     <join><cyclestr>&EXP_LOG;/@Y@m@d@H/wrf_ens_00_restart.log</cyclestr></join>
     <native>&PART_COMPU;</native>
