@@ -8,25 +8,25 @@
   <!ENTITY BETA         "0.00"> <!-- Define tuneable beta value for ensemble / static background hybridization here -->
   <!ENTITY S_ENS_V      "06"> <!-- Define tuneable beta value for ensemble vertical localization scale here -->
   <!ENTITY S_ENS_H      "0300"> <!-- Define tuneable value for ensemble horizontal localization scale here -->
-  <!ENTITY CSE_NAME     "VD"> <!-- Define the case study name for experiment group -->
-  <!ENTITY CNFG_NAME    "3denvar_lag&LAG;_b&BETA;_v&S_ENS_V;_h&S_ENS_H;"> <!-- Configuration name including tunable parameters -->
+  <!ENTITY CSE_NAME     "CC"> <!-- Define the case study name for experiment group -->
+  <!ENTITY CNFG_NAME    "NAM_lag&LAG;_b&BETA;_v&S_ENS_V;_h&S_ENS_H;"> <!-- Configuration name including tunable parameters -->
   <!ENTITY EXP_NAME     "&CSE_NAME;/&CNFG_NAME;"> <!-- Experiment logs and data are defined in the case / configuration nested structure -->
   <!-- END CONTROL FLOW NAME / TUNABLE SETTINGS -->
 
   <!-- COMPUTER-DEPENDENT ITEMS -->
-  <!ENTITY CLNE_ROOT    "/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"> <!-- Full path of framework git clone -->
-  <!ENTITY SOFT_ROOT    "/cw3e/mead/projects/cwp106/scratch/SOFT_ROOT"> <!-- Root directory of software stack executables -->
-  <!ENTITY DATA_ROOT    "/cw3e/mead/projects/cwp106/scratch/DATA/&CSE_NAME;"> <!-- Root directory of case study forcing data -->
-  <!ENTITY WORK_ROOT    "/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template"> <!-- Root directory of EXP_HME defined below -->
+  <!ENTITY CLNE_ROOT    "/cw3e/mead/projects/cwp106/scratch/cgrudzien/Common-Case/GSI-WRF-Cycling-Template"> <!-- Full path of framework git clone -->
+  <!ENTITY SOFT_ROOT    "/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT"> <!-- Root directory of software stack executables -->
+  <!ENTITY DATA_ROOT    "/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/&CSE_NAME;"> <!-- Root directory of case study forcing data -->
+  <!ENTITY WORK_ROOT    "/cw3e/mead/projects/cwp106/scratch/cgrudzien/Common-Case"> <!-- Root directory of /data/simulation_io -->
   <!-- END COMPUTER-DEPENDENT -->
 
   <!-- WORKFLOW SETTINGS -->
-  <!ENTITY EXP_HME      "&WORK_ROOT;/data/simulation_io/&EXP_NAME;"> <!-- Root directory of experiment I/O --> 
+  <!ENTITY EXP_HME      "&WORK_ROOT;/cycling_runs/&EXP_NAME;"> <!-- Root directory of experiment I/O --> 
   <!ENTITY EXP_LOG      "&CLNE_ROOT;/logs/&EXP_NAME;"> <!-- Root directory of workflow task logs -->
   <!ENTITY EXP_CNFG     "&CLNE_ROOT;/simulation_settings/&EXP_NAME;"> <!-- Root directory of experiment configuration files -->
   <!ENTITY SCRIPTS      "&CLNE_ROOT;/scripts"> <!-- Root directory of workflow framework scripts -->
   <!ENTITY DRIVERS      "&SCRIPTS;/drivers"> <!-- Root directory of task driver scripts -->
-  <!ENTITY UTILITY      "&SCRIPTS;/utilities"> <!-- Root directory of utility scripts -->
+  <!ENTITY UTILITY      "&SCRIPTS;/utilities"> <!-- Root directory of utility scripts for hacking rocoto to work... -->
   <!ENTITY ENVRNMTS     "&SCRIPTS;/environments"> <!-- Root directory of software stack environment scripts -->
   <!-- END WORKFLOW SETTINGS -->
 
@@ -41,17 +41,17 @@
   <!-- END SOFTWARE SETTINGS -->
 
   <!-- CYCLING SETTINGS -->
-  <!ENTITY CYC_STRT     "20190209"> <!-- First initial time for a DA cycle including analsysis and forecast -->
-  <!ENTITY WRM_END      "20190210"> <!-- Last initial time for a cycle without a forecast -->
-  <!ENTITY CYC_END      "20190214"> <!-- Last initial time for a DA cycle including analysis and forecast -->
+  <!ENTITY CYC_STRT     "20210122"> <!-- First initial time for a DA cycle including analsysis and forecast -->
+  <!ENTITY WRM_END      "20210123"> <!-- Last initial time for a cycle without a forecast -->
+  <!ENTITY CYC_END      "20210128"> <!-- Last initial time for a DA cycle including analysis and forecast -->
   <!ENTITY CYC_INT      "06"> <!-- Interval between cycle start / end times NOTE: cycle groups must match -->
   <!ENTITY FCST_HRS     "06"> <!-- Fixed length forecast length within every cycle in HH, usually equal to CYC_INT -->
   <!-- END CYCLING SETTINGS -->
 
   <!-- FORECAST VERIFICATION SETTINGS -->
-  <!ENTITY EXP_VRF      "2019021500"> <!-- Verification time for dynamic length forecast simulations -->
-  <!ENTITY VRF_STRT     "20190211"> <!-- First cycle to begin forecast verifcation at valid date -->
-  <!ENTITY VRF_END      "20190214"> <!-- Last cycle to begin forecast verification at valid date -->
+  <!ENTITY EXP_VRF      "2021012900"> <!-- Verification time for dynamic length forecast simulations -->
+  <!ENTITY VRF_STRT     "20210124"> <!-- First cycle to begin forecast verifcation at valid date -->
+  <!ENTITY VRF_END      "20210128"> <!-- Last cycle to begin forecast verification at valid date -->
   <!ENTITY VRF_FOR_DOM  "02"> <!-- Min domain index to have ICs downscaled from d01 for forecast validation -->
   <!-- END FORECAST VERIFICATION SETTINGS -->
 
@@ -79,7 +79,7 @@
 
   <!-- GSI SETTINGS -->
   <!ENTITY IF_HYBRID    "Yes"> <!-- Uses ensemble-based covariance Yes / No -->
-  <!ENTITY MAX_BC_LOOP  "02"> <!-- Max loop index to iterate GSI variational bias correction files, loop 0 uses GDAS global files -->
+  <!ENTITY MAX_BC_LOOP  "02"> <!-- Max loop index to iterate GSI variational bias correction files, loop 0 is uses GDAS global files -->
   <!-- END GSI SETTINGS -->
  
   <!-- JOB SETTINGS -->
@@ -94,15 +94,15 @@
   <!ENTITY WPS_MEM      "5G"> <!-- WPS MEM per CPU argument for SLURM -->
   <!ENTITY WPS_NODESIZE "24"> <!-- WPS node size -->
   <!ENTITY WPS_NODES    "1"> <!-- Number of nodes for WPS / REAL jobs -->
-  <!ENTITY WPS_CYC_WC   "00:30:00"> <!-- Wallclock limit for WPS short-range cycling -->
-  <!ENTITY WPS_FOR_WC   "01:00:00"> <!-- Wallclock limit for WPS extended forecast jobs -->
+  <!ENTITY WPS_CYC_WC   "00:30:00"> <!-- Wallclock limit for WPS cycle jobs -->
+  <!ENTITY WPS_FOR_WC   "01:00:00"> <!-- Wallclock limit for WPS forecast jobs -->
   <!ENTITY WRF_PROC     "384"> <!-- WRF number of procs -->
   <!ENTITY WRF_MEM      "5G"> <!-- WRF MEM per CPU argument for SLURM -->
   <!ENTITY WRF_NODESIZE "24"> <!-- WRF node size -->
   <!ENTITY WRF_NODES    "16"> <!-- Number of nodes for WRF jobs -->
   <!ENTITY WRF_CYC_WC   "01:30:00"> <!-- Wallclock limit for WRF short-range cycling -->
-  <!ENTITY WRF_FOR_WC   "03:30:00"> <!-- Wallclock limit for WRF short-range cycling with nested domain -->
-  <!ENTITY WRF_RST_WC   "60:00:00"> <!-- Wallclock limit for WRF extended restart forecast -->
+  <!ENTITY WRF_FOR_WC   "03:30:00"> <!-- Wallclock limit applied to WRF short-range cycling with nested domain -->
+  <!ENTITY WRF_RST_WC   "72:00:00"> <!-- Wallclock limit applied to WRF extended restart forecast -->
   <!ENTITY GSI_PROC     "64"> <!-- GSI number of procs -->
   <!ENTITY GSI_MEM      "21G"> <!-- GSI MEM per CPU argument for SLURM -->
   <!ENTITY GSI_NODESIZE "64"> <!-- GSI node size -->
