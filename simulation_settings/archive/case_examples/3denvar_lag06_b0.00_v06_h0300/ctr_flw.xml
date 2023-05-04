@@ -258,9 +258,6 @@
       <name>DATA_ROOT</name>
       <value>&DATA_ROOT;</value>
     </envar>
-    <dependency>
-      <sh shell="/bin/bash">&SCRIPTS;/utilities/check_status.sh "<cyclestr offset="-&CYC_INT;:00:00">@Y@m@d@H@M</cyclestr>" "&CLNE_ROOT;" "&CSE_NAME;" "&CNFG_NAME;" "cyc"</sh>
-    </dependency>
   </task>
 
   <task name="metgrid_ens_00_cyc" maxtries="12" cycledefs="00Z_no_forecast,06Z,12Z,18Z">
@@ -1095,5 +1092,8 @@
     <dependency> 
      <taskdep task="wrf_ens_00_for" state="SUCCEEDED"/>
     </dependency>
+    <hangdependency>
+      <datadep age="2400"><cyclestr>&EXP_HME;/@Y@m@d@H/wrfprd/ens_00/rsl.out.0000</cyclestr></datadep>
+    </hangdependency>
   </task>
 </workflow>
