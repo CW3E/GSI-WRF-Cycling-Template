@@ -98,12 +98,20 @@ else
   IFS=" " read -ra cyc_stat <<< `grep "${CYC}" ${worklog} | head -n 1`
 fi
 
-if [ ${cyc_stat[2]} = "-" ]; then
+# define a regular expression to match integer patterns to check for job id
+re='^[0-9]+$'
+
+# unpack grepped line
+cycle=${cyc_stat[0]}
+task=${cyc_stat[1]}
+job_id=${cyc_stat[2]}
+
+if ! [[ ${job_id} =~ ${re} ]]; then
   echo "ERROR: task did not update."
   exit 1
 else
-  echo "Task ${cyc_stat[1]} booted for cycle ${cyc_stat[0]} with job id:"
-  echo "${cyc_stat[2]}"
+  echo "Task ${task} booted for cycle ${cycle} with job id:"
+  echo "${job_id}"
 fi
 
 echo "Script completed at `date +%Y-%m-%d_%H_%M_%S`."
