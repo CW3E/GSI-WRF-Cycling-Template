@@ -84,7 +84,7 @@ echo ${cmd}; eval ${cmd}
 cmd="python -c 'import rocoto_utilities; rocoto_utilities.run_rocotoboot([\"${CSE}\"],[\"${FLW}\"],[\"${CYC}\"],[\"${tsk}\"])'"
 echo ${cmd}; eval ${cmd}
 
-cmd="sleep 120"
+cmd="sleep 300"
 echo ${cmd}; eval ${cmd}
 
 # check for an update to the workflow log with new status for job

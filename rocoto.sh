@@ -6,4 +6,4 @@
 #SBATCH --export=ALL
 
 # run rocoto 
-python rocoto_utilities.py
+python -u rocoto_utilities.py
