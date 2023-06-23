@@ -88,7 +88,7 @@
 #set -x
 
 if [ ! -x ${CNST} ]; then
-  printf "ERROR: constants file ${CNST} does not exist or is not executable.\n"
+  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
   exit 1
 else
   # Read constants into the current shell

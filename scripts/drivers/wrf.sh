@@ -88,7 +88,7 @@
 #set -x
 
 if [ ! -x ${CNST} ]; then
-  printf "ERROR: constants file ${CNST} does not exist or is not executable.\n"
+  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
   exit 1
 else
   # Read constants into the current shell
@@ -161,7 +161,7 @@ if [[ ${IF_DYN_LEN} = ${NO} ]]; then
 elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
   printf "Generating forecast forcing data until experiment validation time.\n"
   if [ ${#EXP_VRF} -ne 10 ]; then
-    printf "ERROR: \${EXP_VRF}, ${EXP_VRF} is not in 'YYYMMDDHH' format.\n"
+    printf "ERROR: \${EXP_VRF}, ${EXP_VRF}, is not in 'YYYMMDDHH' format.\n"
     exit 1
   else
     # compute forecast length relative to start time and verification time
@@ -194,7 +194,7 @@ if [[ ${BKG_DATA} != GFS &&  ${BKG_DATA} != GEFS ]]; then
 fi
 
 if [ ${#MAX_DOM} -ne 2 ]; then
-  printf "ERROR: \${MAX_DOM}, ${MAX_DOM} is not in DD format.\n"
+  printf "ERROR: \${MAX_DOM}, ${MAX_DOM}, is not in DD format.\n"
   exit 1
 elif [ ! ${MAX_DOM} -gt 00 ]; then
   printf "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00.\n"
