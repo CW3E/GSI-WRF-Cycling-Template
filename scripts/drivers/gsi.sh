@@ -161,7 +161,7 @@ if [[ ${IF_HYBRID} = ${YES} ]]; then
     msg+="between ensemble and static covariance.\n"
     printf "${msg}"
     exit 1
-  elif [ ${BETA} -lt 0 || ${BETA} -gt 1 ]; then
+  elif [[ $(echo "${BETA} < 0" | bc -l ) -eq 1 || $(echo "${BETA} > 1" | bc -l ) -eq 1 ]]; then
     printf "ERROR:\n ${BETA}\n must be between 0 and 1.\n"
     exit 1
   else
