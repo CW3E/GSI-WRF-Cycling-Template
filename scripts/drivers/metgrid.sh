@@ -13,14 +13,12 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WPS environment
-# in a WPS_constants.sh script to be sourced in the below.  Variable
-# aliases in this script are based on conventions defined in the
-# WPS_constants.sh and the control flow .xml driving this script.
+# in a WRF_constants.sh script to be sourced in the below.
 #
 ##################################################################################
 # License Statement:
 ##################################################################################
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -87,64 +85,91 @@
 # Preamble
 ##################################################################################
 # uncomment to run verbose for debugging / testing
-set -x
+#set -x
 
-if [ ! -x "${CONSTANT}" ]; then
-  echo "ERROR: constants file ${CONSTANT} does not exist or is not executable."
+if [ ! -x ${CNST} ]; then
+  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
   exit 1
+else
+  # Read constants into the current shell
+  cmd=". ${CNST}"
+  printf "${cmd}\n"; eval ${cmd}
 fi
-
-# Read constants into the current shell
-. ${CONSTANT}
 
 ##################################################################################
 # Make checks for metgrid settings
 ##################################################################################
 # Options below are defined in workflow variables
 #
-# ENS_N         = Ensemble ID index, 00 for control, i > 0 for perturbation
-# FCST_LENGTH   = Total length of WRF forecast simulation in HH
-# DATA_INTERVAL = Interval of input data in HH
-# START_TIME    = Simulation start time in YYMMDDHH
-# MAX_DOM       = Max number of domains to use in namelist settings
+# MEMID      = Ensemble ID index, 00 for control, i > 0 for perturbation
+# STRT_DT    = Simulation start time in YYMMDDHH
+# IF_DYN_LEN = "Yes" or "No" switch to compute forecast length dynamically 
+# FCST_HRS   = Total length of WRF forecast simulation in HH, IF_DYN_LEN=No
+# EXP_VRF    = Verfication time for calculating forecast hours, IF_DYN_LEN=Yes
+# BKG_INT    = Interval of input data in HH
+# MAX_DOM    = Max number of domains to use in namelist settings
 #
 ##################################################################################
 
-if [ ! "${ENS_N}"  ]; then
-  echo "ERROR: \${ENS_N} is not defined."
-  exit 1
-fi
-
-# ensure padding to two digits is included
-ens_n=`printf %02d $(( 10#${ENS_N} ))`
-
-if [ ! "${FCST_LENGTH}" ]; then
-  echo "ERROR: \${FCST_LENGTH} is not defined."
-  exit 1
-fi
-
-if [ ! "${DATA_INTERVAL}" ]; then
-  echo "ERROR: \${DATA_INTERVAL} is not defined."
-  exit 1
-fi
-
-if [ ! "${START_TIME}" ]; then
-  echo "ERROR: \${START_TIME} is not defined."
-  exit 1
-fi
-
-# Convert START_TIME from 'YYYYMMDDHH' format to start_time Unix date format
-if [ ${#START_TIME} -ne 10 ]; then
-  echo "ERROR: start time, '${START_TIME}', is not in 'YYYYMMDDHH' format."
+if [ ! ${MEMID} ]; then
+  printf "ERROR: \${MEMID} is not defined.\n"
   exit 1
 else
-  start_time="${START_TIME:0:8} ${START_TIME:8:2}"
+  # ensure padding to two digits is included
+  memid=`printf %02d $(( 10#${MEMID} ))`
 fi
-start_time=`date -d "${start_time}"`
-end_time=`date -d "${start_time} ${FCST_LENGTH} hours"`
 
-if [ ! ${MAX_DOM} ]; then
-  echo "ERROR: \${MAX_DOM} is not defined."
+if [ ${#STRT_DT} -ne 10 ]; then
+  printf "ERROR: \${STRT_DT}, '${STRT_DT}', is not in 'YYYYMMDDHH' format.\n"
+  exit 1
+else
+  # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
+  strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
+  strt_dt=`date -d "${strt_dt}"`
+fi
+
+if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
+  printf "Generating fixed length forecast forcing data.\n"
+  if [ ! ${FCST_HRS} ]; then
+    printf "ERROR: \${FCST_HRS} is not defined.\n"
+    exit 1
+  else
+    # parse forecast hours as base 10 padded
+    fcst_len=`printf %03d $(( 10#${FCST_HRS} ))`
+  fi
+elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
+  printf "Generating forecast forcing data until experiment validation time.\n"
+  if [ ${#EXP_VRF} -ne 10 ]; then
+    printf "ERROR: \${EXP_VRF}, ${EXP_VRF} is not in 'YYYMMDDHH' format.\n"
+    exit 1
+  else
+    # compute forecast length relative to start time and verification time
+    exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
+    exp_vrf=`date +%s -d "${exp_vrf}"`
+    fcst_len=$(( (${exp_vrf} - `date +%s -d "${strt_dt}"`) / 3600 ))
+    fcst_len=`printf %03d $(( 10#${fcst_len} ))`
+  fi
+else
+  printf "\${IF_DYN_LEN} must be set to 'Yes' or 'No' (case insensitive).\n"
+  exit 1
+fi
+
+# define the end time based on forecast length control flow above
+end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
+
+if [ ! ${BKG_INT} ]; then
+  printf "ERROR: \${BKG_INT} is not defined.\n"
+  exit 1
+elif [ ${BKG_INT} -le 0 ]; then
+  printf "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs.\n"
+  exit 1
+fi
+
+if [ ${#MAX_DOM} -ne 2 ]; then
+  printf "ERROR: \${MAX_DOM}, ${MAX_DOM} is not in DD format.\n"
+  exit 1
+elif [ ${MAX_DOM} -le 00 ]; then
+  printf "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00.\n"
   exit 1
 fi
 
@@ -153,48 +178,52 @@ fi
 ##################################################################################
 # Below variables are defined in workflow variables
 #
-# WPS_ROOT   = Root directory of a "clean" WPS build
-# EXP_CONFIG = Root directory containing sub-directories for namelists
-#              vtables, geogrid data, GSI fix files, etc.
-# CYCLE_HOME = Start time named directory for cycling data containing
-#              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
+# WPS_ROOT  = Root directory of a clean WPS build
+# EXP_CNFG  = Root directory containing sub-directories for namelists
+#             vtables, geogrid data, GSI fix files, etc.
+# CYC_HME   = Cycle YYYYMMDDHH named directory for cycling data containing
+#             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
+# MPIRUN    = MPI multiprocessing evaluation call, machine specific
+# N_PROC    = The total number of processes to run metgrid.exe with MPI
 #
 ##################################################################################
 
-if [ ! "${WPS_ROOT}" ]; then
-  echo "ERROR: \${WPS_ROOT} is not defined."
+if [ ! ${WPS_ROOT} ]; then
+  printf "ERROR: \${WPS_ROOT} is not defined.\n"
+  exit 1
+elif [ ! -d ${WPS_ROOT} ]; then
+  printf "ERROR: \${WPS_ROOT} directory\n ${WPS_ROOT}\n does not exist.\n"
   exit 1
 fi
 
-if [ ! -d "${WPS_ROOT}" ]; then
-  echo "ERROR: \${WPS_ROOT} directory ${WPS_ROOT} does not exist."
+if [ ! ${EXP_CNFG} ]; then
+  printf "ERROR: \${EXP_CNFG} is not defined.\n"
+  exit 1
+elif [ ! -d ${EXP_CNFG} ]; then
+  printf "ERROR: \${EXP_CNFG} directory\n ${EXP_CNFG}\n does not exist.\n"
   exit 1
 fi
 
-if [ ! -d ${EXP_CONFIG} ]; then
-  echo "ERROR: \${EXP_CONFIG} directory ${EXP_CONFIG} does not exist."
+if [ ! ${CYC_HME} ]; then
+  printf "ERROR: \${CYC_HME} is not defined.\n"
+  exit 1
+elif [ ! -d ${CYC_HME} ]; then
+  printf "ERROR: \${CYC_HME} directory\n ${CYC_HME}\n does not exist.\n"
   exit 1
 fi
 
-if [ -z ${CYCLE_HOME} ]; then
-  echo "ERROR: \${CYCLE_HOME} directory name is not defined."
+if [ ! ${MPIRUN} ]; then
+  printf "ERROR: \${MPIRUN} is not defined.\n"
   exit 1
 fi
 
-if [ ! "${MPIRUN}" ]; then
-  echo "ERROR: \${MPIRUN} is not defined."
+if [ ! ${N_PROC} ]; then
+  printf "ERROR: \${N_PROC} is not defined.\n"
   exit 1
-fi
-
-if [ ! "${WPS_PROC}" ]; then
-  echo "ERROR: \${WPS_PROC} is not defined."
-  exit 1
-fi
-
-if [ -z "${WPS_PROC}" ]; then
-  msg="ERROR: The variable \${WPS_PROC} must be set to the number"
-  msg+=" of processors to run WPS."
-  echo ${msg}
+elif [ ${N_PROC} -le 0 ]; then
+  msg="ERROR: The variable \${N_PROC} must be set to the number"
+  msg+=" of processors to run metgrid.exe.\n"
+  printf "${msg}"
   exit 1
 fi
 
@@ -203,114 +232,122 @@ fi
 ##################################################################################
 # The following paths are relative to workflow root paths
 #
-# work_root      = Working directory where metgrid_exe runs and outputs
-# wps_dat_files  = All file contents of clean WPS directory
-#                  namelists and input data will be linked from other sources
-# metgrid_exe    = Path and name of working executable
+# work_root     = Working directory where metgrid_exe runs and outputs
+# wps_dat_files = All file contents of clean WPS directory
+#                 namelists and input data will be linked from other sources
+# metgrid_exe   = Path and name of working executable
 #
 ##################################################################################
 
-work_root=${CYCLE_HOME}/wpsprd/ens_${ens_n}
+work_root=${CYC_HME}/wpsprd/ens_${memid}
 if [ ! -d ${work_root} ]; then
-  echo "ERROR: \${work_root} directory ${work_root} does not exist."
+  printf "ERROR: \${work_root} directory\n ${work_root}\n does not exist.\n"
   exit 1
 else
-  cd ${work_root}
+  cmd="cd ${work_root}"
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 wps_dat_files=(${WPS_ROOT}/*)
 metgrid_exe=${WPS_ROOT}/metgrid.exe
 
 if [ ! -x ${metgrid_exe} ]; then
-  echo "ERROR: ${metgrid_exe} does not exist, or is not executable."
+  printf "ERROR:\n ${metgrid_exe}\n does not exist, or is not executable.\n"
   exit 1
 fi
 
 # Make links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
-  ln -sf ${file} ./
+  cmd="ln -sf ${file} ."
+  printf "${cmd}\n"; eval ${cmd}
 done
 
 # Remove any previous geogrid static files
-rm -f geo_em.d0*
+cmd="rm -f geo_em.d*"
+printf "${cmd}\n"; eval ${cmd}
 
 # Check to make sure the geogrid input files (e.g. geo_em.d01.nc)
 # are available and make links to them
-dmn=1
-while [ ${dmn} -le ${MAX_DOM} ]; do
-  geoinput_name=${EXP_CONFIG}/geogrid/geo_em.d0${dmn}.nc
+for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+  geoinput_name=${EXP_CNFG}/geogrid/geo_em.d${dmn}.nc
   if [ ! -r "${geoinput_name}" ]; then
-    echo "ERROR: Input file '${geoinput_name}' is missing."
+    printf "ERROR: Input file\n ${geoinput_name}\n is missing.\n"
     exit 1
+  else
+    cmd="ln -sf ${geoinput_name} ."
+    printf "${cmd}\n"; eval ${cmd}
   fi
-  ln -sf ${geoinput_name} ./
-  (( dmn += 1 ))
 done
 
 ##################################################################################
 #  Build WPS namelist
 ##################################################################################
-# Copy the wrf namelist from the static dir
-# NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
-cp ${EXP_CONFIG}/namelists/namelist.wps .
+# Copy the wps namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
+namelist_temp=${EXP_CNFG}/namelists/namelist.wps
+if [ ! -r ${namelist_temp} ]; then 
+  msg="WPS namelist template\n ${namelist_temp}\n is not readable or "
+  msg+="does not exist.\n"
+  printf "${msg}"
+  exit 1
+else
+  cmd="cp -L ${namelist_temp} ."
+  printf "${cmd}\n"; eval ${cmd}
+fi
 
 # Update max_dom in namelist
-in_dom="\(${MAX}_${DOM}\)${EQUAL}[[:digit:]]\{1,\}"
+in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
 out_dom="\1 = ${MAX_DOM}"
 cat namelist.wps \
   | sed "s/${in_dom}/${out_dom}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
+  > namelist.wps.tmp
+mv namelist.wps.tmp namelist.wps
 
 # define start / end time patterns for namelist.wps
-start_dt=`date +%Y-%m-%d_%H:%M:%S -d "${start_time}"`
-end_dt=`date +%Y-%m-%d_%H:%M:%S -d "${end_time}"`
+strt_iso=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
+end_iso=`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
 
-in_sd="\(${START}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*"
-out_sd="\1 = '${start_dt}','${start_dt}','${start_dt}'"
-in_ed="\(${END}_${DATE}\)${EQUAL}'${YYYYMMDD_HHMMSS}'.*"
-out_ed="\1 = '${end_dt}','${end_dt}','${end_dt}'"
+in_sd="\(START_DATE\)${EQUAL}START_DATE"
+out_sd="\1 = '${strt_iso}','${strt_iso}','${strt_iso}'"
+in_ed="\(END_DATE\)${EQUAL}END_DATE"
+out_ed="\1 = '${end_iso}','${end_iso}','${end_iso}'"
 
 # Update the start and end date in namelist (propagates settings to three domains)
 cat namelist.wps \
   | sed "s/${in_sd}/${out_sd}/" \
   | sed "s/${in_ed}/${out_ed}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
+  > namelist.wps.tmp
+mv namelist.wps.tmp namelist.wps
 
 # Update interval in namelist
-(( data_interval_sec = DATA_INTERVAL * 3600 ))
-in_int="\(${INTERVAL}_${SECOND}[Ss]\)${EQUAL}[[:digit:]]\{1,\}"
+(( data_interval_sec = BKG_INT * 3600 ))
+in_int="\(INTERVAL_SECONDS\)${EQUAL}INTERVAL_SECONDS"
 out_int="\1 = ${data_interval_sec}"
 cat namelist.wps \
   | sed "s/${in_int}/${out_int}/" \
-  > namelist.wps.new
-mv namelist.wps.new namelist.wps
+  > namelist.wps.tmp
+mv namelist.wps.tmp namelist.wps
 
 # Remove pre-existing metgrid files
-rm -f met_em.d0*.*.nc
+cmd="rm -f met_em.d0*.*.nc"
+printf "${cmd}\n"; eval ${cmd}
 
 ##################################################################################
 # Run metgrid 
 ##################################################################################
 # Print run parameters
-echo
-echo "ENS_N          = ${ENS_N}"
-echo "WPS_ROOT       = ${WPS_ROOT}"
-echo "EXP_CONFIG     = ${EXP_CONFIG}"
-echo "CYCLE_HOME     = ${CYCLE_HOME}"
-echo
-echo "FCST LENGTH    = ${FCST_LENGTH}"
-echo "DATA INTERVAL  = ${DATA_INTERVAL}"
-echo "MAX_DOM        = ${MAX_DOM}"
-echo
-echo "START TIME     = "`date +"%Y/%m/%d %H:%M:%S" -d "${start_time}"`
-echo "END TIME       = "`date +"%Y/%m/%d %H:%M:%S" -d "${end_time}"`
-echo
-now=`date +%Y%m%d%H%M%S`
-echo "metgrid started at ${now}."
-
-${MPIRUN} -n ${WPS_PROC} ${metgrid_exe}
+printf "\n"
+printf "EXP_CNFG = ${EXP_CNFG}\n"
+printf "MEMID    = ${MEMID}\n"
+printf "CYC_HME  = ${CYC_HME}\n"
+printf "STRT_DT  = ${strt_iso}\n"
+printf "END_DT   = ${end_iso}\n"
+printf "BKG_INT  = ${BKG_INT}\n"
+printf "MAX_DOM  = ${MAX_DOM}\n"
+printf "\n"
+now=`date +%Y-%m-%d_%H_%M_%S`
+printf "metgrid started at ${now}.\n"
+cmd="${MPIRUN} -n ${N_PROC} ${metgrid_exe}"
+printf "${cmd}\n"; eval ${cmd}
 
 ##################################################################################
 # Run time error check
@@ -320,40 +357,42 @@ error=$?
 # save metgrid logs
 log_dir=metgrid_log.${now}
 mkdir ${log_dir}
-mv metgrid.log* ${log_dir}
+cmd="mv metgrid.log* ${log_dir}"
+printf "${cmd}\n"; eval ${cmd}
 
-# save a copy of namelist
-cp namelist.wps ${log_dir}
+cmd="mv namelist.wps ${log_dir}"
+printf "${cmd}\n"; eval ${cmd}
 
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${metgrid_exe} exited with status ${error}."
+  printf "ERROR:\n ${metgrid_exe}\n exited with status ${error}.\n"
   exit ${error}
 fi
 
 # Check to see if metgrid outputs are generated
-dmn=1
-while [ ${dmn} -le ${MAX_DOM} ]; do
-  fcst=0
-  while [ ${fcst} -le ${FCST_LENGTH} ]; do
-    time_str=`date +%Y-%m-%d_%H:%M:%S -d "${start_time} ${fcst} hours"`
-    if [ ! -e "met_em.d0${dmn}.${time_str}.nc" ]; then
-      echo "${metgrid_exe} for d0${dmn} failed to complete."
+for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+  for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
+    dt_str=`date +%Y-%m-%d_%H:%M:%S -d "${strt_dt} ${fcst} hours"`
+    out_name="met_em.d${dmn}.${dt_str}.nc"
+    if [ ! -s "${out_name}" ]; then
+      printf "ERROR:\n ${metgrid_exe}\n failed to complete for d${dmn}.\n"
       exit 1
+    else
+      # rename to no-colon style for WRF
+      dt_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${fcst} hours"`
+      re_name="met_em.d${dmn}.${dt_str}.nc"
+      cmd="mv ${out_name} ${re_name}"
+      printf "${cmd}\n"; eval ${cmd}
     fi
-    (( fcst += DATA_INTERVAL ))
   done
-  (( dmn += 1 ))
 done
 
 # Remove links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
-    rm -f `basename ${file}`
+  cmd="rm -f `basename ${file}`"
+  printf "${cmd}\n"; eval ${cmd}
 done
 
-# Remove namelist
-rm -f namelist.wps
-
-echo "metgrid.sh completed successfully at `date`."
+printf "metgrid.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"
 
 ##################################################################################
 # end

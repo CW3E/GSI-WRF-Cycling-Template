@@ -86,7 +86,6 @@ cse = CSE + '/' + CTR_FLW
 data_root = USR_HME + '/data/analysis' + '/' + cse + '/GSI_analysis'
 in_path = data_root + '/GSI_cost_grad_anl_' + START_DT + '_to_' +\
           END_DT + '.bin'
-
 out_path = data_root + '/GSI_cost_grad_anl_d0' + str(DOM) + '_' +\
            START_DT + '_to_' + END_DT + '.png'
 

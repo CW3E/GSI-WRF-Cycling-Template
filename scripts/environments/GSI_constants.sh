@@ -9,7 +9,7 @@
 ##########################################################################
 # License Statement:
 ##########################################################################
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,24 +34,15 @@ module load intel/2018.1.163
 module load intelmpi/2018.1.163
 module load hdf5/1.10.3
 module load netcdf/4.6.1
-module list
 
 # Set up netcdf
-export JASPERLIB="/usr/lib64"
-export JASPERINC="/usr/include"
-export LD_LIBRARY_PATH=/usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 export MODULEPATH=/share/apps/compute/modulefiles/applications:$MODULEPATH
 export NETCDF="/opt/netcdf/4.6.1/intel/intelmpi/"
 export HDF5="/opt/hdf5/1.10.3/intel/intelmpi/"
-export PATH=${NCARG_ROOT}/bin:${PATH}
 
 # setup lapack
 module load lapack
 LAPACK_PATH="/share/apps/compute/lapack"
-module list
-
-# ensure ulimit is set unlimited
-ulimit -s unlimited
 
 # Yes / No case insensitive switch
 YES=[Yy][Ee][Ss]

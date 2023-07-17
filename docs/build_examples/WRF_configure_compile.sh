@@ -1,20 +1,16 @@
 #!/bin/bash
-set -x
+#SBATCH -p compute
+#SBATCH --nodes=1
+#SBATCH --mem=120G
+#SBATCH -t 03:00:00
+#SBATCH -J build_WRF
+#SBATCH --export=ALL
 
-# WRF configure and compile steps, based on COMET tutorial for
-# WRF v4.4 / WPS 4.4
 # sets COMET specific environment for intelmpi 2019.5.281
-# change to intel mpi
 module purge
 export MODULEPATH=/share/apps/compute/modulefiles:$MODULEPATH
 module load intel/2019.5.281
 module load intelmpi/2019.5.281
-
-# set up zlib, libpng, jasperlib
-#Use this for non module version, note issues with DART
-export JASPERLIB="/usr/lib64"
-export JASPERINC="/usr/include"
-export LD_LIBRARY_PATH=/usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 
 # Set up netcdf
 export MODULEPATH=/share/apps/compute/modulefiles/applications:$MODULEPATH
@@ -33,13 +29,6 @@ echo `module list` >> $log_file  2>&1
 echo `which mpif77` >> $log_file  2>&1
 echo `which ifort` >> $log_file  2>&1
 echo `which ncdump` >> $log_file  2>&1
-echo `ls -l $JASPERLIB/libjasper.so` >>  $log_file  2>&1
-echo `ls -ltr $JASPERLIB/libjasper.so.1.0.0`  >>  $log_file  2>&1
-echo `ls -l $JASPERLIB/libpng.so` >>  $log_file  2>&1
-echo `ls -l $JASPERLIB/libpng15.so` >>  $log_file  2>&1
-echo `ls -l $JASPERLIB/libz.so` >> $log_file  2>&1
-echo `ls -l $JASPERLIB/libz.so.1.2.7` >> $log_file  2>&1
-echo "LD_LIBRARY_PATH: ${LD_LIBRARY_PATH}" >> $log_file  2>&1
 
 # Set up WRF directory / configure
 echo "setting up compile directory"   >> $log_file  2>&1
@@ -47,7 +36,7 @@ echo "setting up compile directory"   >> $log_file  2>&1
 
 # uncomment for fresh configuration file
 #./configure 
-#
+
 # if making fresh configure note the following
 # Use 66  will have AVX2 optimization, needs so flag fixing after configure
 # 
@@ -57,12 +46,7 @@ echo "setting up compile directory"   >> $log_file  2>&1
 # 
 # Need to fix the configure.wrf file for COMET configuration:
 # 
-# 	% cp -pr configure.wrf  configure.wrf_66_orig
-# 	% cp -pr configure.wrf configure.wrf-4.3.1_intelmpi_2019.5.281_comet
-# 
-# edit configure.wrf-4.3.1_intelmpi_2019.5.281_comet :
-# 
-# 	(base) [cpapadop@comet-ln2 WRF-4.3.1]$ diff configure.wrf-4.3.1_intelmpi_2019.5.281_comet  configure.wrf_66_orig 
+# 	diff configure.wrf-4.4.2_comet  configure.wrf_66_orig 
 # 	142,144c142,143
 # 	< OPTAVX          =       -xCORE-AVX2
 # 	< CFLAGS_LOCAL    =       -w -O3 -ip $(OPTAVX) #-xHost -fp-model fast=2 -no-prec-div -no-prec-sqrt -ftz -no-multibyte-chars -xCORE-AVX2 # -DRSL0_ONLY
@@ -78,12 +62,12 @@ echo "setting up compile directory"   >> $log_file  2>&1
 # 	< FCBASEOPTS_NO_G =       -ip -fp-model precise -w -ftz -align all -fno-alias $(FORMAT_FREE) $(BYTESWAPIO) $(OPTAVX) #-xHost -fp-model fast=2 -no-heap-arrays -no-prec-div -no-prec-sqrt -fno-common -xCORE-AVX2
 # 	---
 # 	> FCBASEOPTS_NO_G =       -ip -fp-model precise -w -ftz -align all -fno-alias $(FORMAT_FREE) $(BYTESWAPIO) -xHost -fp-model fast=2 -no-heap-arrays -no-prec-div -no-prec-sqrt -fno-common -xCORE-AVX2
-# 	(base) [cpapadop@comet-ln2 WRF-4.3.1]$ 
-# 	
 # 
-cp configure.wrf-4.4_intelmpi_2019.5.281_comet ./configure.wrf  >> $log_file  2>&1
-echo "END setting up compile directory"   >> $log_file  2>&1
 
+cmd="cp configure.wrf-4.4.2_comet_2023-02-14 ./configure.wrf  >> $log_file  2>&1"
+echo ${cmd}
+eval ${cmd}
+echo "END setting up compile directory"   >> $log_file  2>&1
 
 echo "Begin wrf compile" >> $log_file 2>&1
 # Uncomment to run compile, can be tested to this point

@@ -61,6 +61,7 @@ START_DT1 = '2019-02-11_00:00:00'
 START_DT2 = '2019-02-11_00:00:00' 
 
 # valid date time for analysis
+ANL_DT = '2021-01-28_00:00:00'
 ANL_DT = '2019-02-15_00:00:00'
 
 # max domain to plot
@@ -131,7 +132,7 @@ class MidpointNormalize(nrm):
         return np.ma.masked_array(np.interp(value, x, y))
 
 # hard code the scale for intercomparability
-abs_scale = 400
+#abs_scale = 400
 
 # make the scales of d01 / d02 equivalent in color map
 scale = np.array([])
