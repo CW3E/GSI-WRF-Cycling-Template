@@ -13,9 +13,7 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WPS environment
-# in a WPS_constants.sh script to be sourced in the below.  Variable
-# aliases in this script are based on conventions defined in the
-# WPS_constants.sh and the control flow .xml driving this script.
+# in a WRF_constants.sh script to be sourced in the below.
 #
 ##################################################################################
 # License Statement:
@@ -90,12 +88,12 @@
 #set -x
 
 if [ ! -x ${CNST} ]; then
-  echo "ERROR: constants file ${CNST} does not exist or is not executable."
+  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
   exit 1
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 ##################################################################################
@@ -117,7 +115,7 @@ fi
 ##################################################################################
 
 if [ ! ${MEMID}  ]; then
-  echo "ERROR: \${MEMID} is not defined."
+  printf "ERROR: \${MEMID} is not defined.\n"
   exit 1
 else
   # ensure padding to two digits is included
@@ -125,7 +123,7 @@ else
 fi
 
 if [ ${#STRT_DT} -ne 10 ]; then
-  echo "ERROR: \${STRT_DT}, ${STRT_DT}, is not in 'YYYYMMDDHH' format." 
+  printf "ERROR: \${STRT_DT}, ${STRT_DT}, is not in 'YYYYMMDDHH' format.\n"
   exit 1
 else
   # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
@@ -134,18 +132,18 @@ else
 fi
 
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
-  echo "Generating fixed length forecast forcing data."
+  printf "Generating fixed length forecast forcing data.\n"
   if [ ! ${FCST_HRS} ]; then
-    echo "ERROR: \${FCST_HRS} is not defined."
+    printf "ERROR: \${FCST_HRS} is not defined.\n"
     exit 1
   else
     # parse forecast hours as base 10 padded
     fcst_len=`printf %03d $(( 10#${FCST_HRS} ))`
   fi
 elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
-  echo "Generating forecast forcing data until experiment validation time."
+  printf "Generating forecast forcing data until experiment validation time.\n"
   if [ ${#EXP_VRF} -ne 10 ]; then
-    echo "ERROR: \${EXP_VRF}, ${EXP_VRF} is not in 'YYYMMDDHH' format."
+    printf "ERROR: \${EXP_VRF}, ${EXP_VRF}, is not in 'YYYMMDDHH' format.\n"
     exit 1
   else
     # compute forecast length relative to start time and verification time
@@ -155,7 +153,7 @@ elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
     fcst_len=`printf %03d $(( 10#${fcst_len} ))`
   fi
 else
-  echo "\${IF_DYN_LEN} must be set to 'Yes' or 'No' (case insensitive)."
+  printf "\${IF_DYN_LEN} must be set to 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
@@ -163,36 +161,38 @@ fi
 end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
 if [ ! ${BKG_INT} ]; then
-  echo "ERROR: \${BKG_INT} is not defined."
+  printf "ERROR: \${BKG_INT} is not defined.\n"
   exit 1
 elif [ ${BKG_INT} -le 0 ]; then
-  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
+  printf "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs.\n"
   exit 1
 fi
 
 if [[ ${BKG_DATA} != GFS && ${BKG_DATA} != GEFS ]]; then
   msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
-  msg+=" as currently supported inputs."
-  echo ${msg}
+  msg+=" as currently supported inputs.\n"
+  printf "${msg}"
   exit 1
 fi
 
 if [ ${#MAX_DOM} -ne 2 ]; then
-  echo "ERROR: \${MAX_DOM}, ${MAX_DOM}, is not in DD format."
+  printf "ERROR: \${MAX_DOM}, ${MAX_DOM}, is not in DD format.\n"
   exit 1
 elif [ ${MAX_DOM} -le 00 ]; then
-  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00." 
+  msg="ERROR: \${MAX_DOM} must be an integer for the max WRF "
+  msg+="domain index > 00.\n"
+  printf "${msg}"
   exit 1
 fi
 
 if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
-  echo "SST Update turned on."
+  printf "SST Update turned on.\n"
   sst_update=1
 elif [[ ${IF_SST_UPDTE} = ${NO} ]]; then
-  echo "SST Update turned off."
+  printf "SST Update turned off.\n"
   sst_update=0
 else
-  echo "ERROR: \${IF_SST_UPDTE} must equal 'Yes' or 'No' (case insensitive)."
+  printf "ERROR: \${IF_SST_UPDTE} must equal 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
@@ -201,52 +201,52 @@ fi
 ##################################################################################
 # Below variables are defined in workflow variables
 #
-# WRF_ROOT  = Root directory of a "clean" WRF build WRF/run directory
-# EXP_CNFG  = Root directory containing sub-directories for namelists
-#             vtables, geogrid data, GSI fix files, etc.
-# CYC_HME   = Start time named directory for cycling data containing
-#             bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# MPIRUN    = MPI multiprocessing evaluation call, machine specific
-# N_PROC    = The total number of processes to run real.exe with MPI
+# WRF_ROOT = Root directory of a "clean" WRF build WRF/run directory
+# EXP_CNFG = Root directory containing sub-directories for namelists
+#            vtables, geogrid data, GSI fix files, etc.
+# CYC_HME  = Start time named directory for cycling data containing
+#            bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
+# MPIRUN   = MPI multiprocessing evaluation call, machine specific
+# N_PROC   = The total number of processes to run real.exe with MPI
 #
 ##################################################################################
 
 if [ ! ${WRF_ROOT} ]; then
-  echo "ERROR: \${WRF_ROOT} is not defined."
+  printf "ERROR: \${WRF_ROOT} is not defined.\n"
   exit 1
 elif [ ! -d ${WRF_ROOT} ]; then
-  echo "ERROR: \${WRF_ROOT} directory ${WRF_ROOT} does not exist."
+  printf "ERROR: \${WRF_ROOT} directory\n ${WRF_ROOT}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} is not defined."
+  printf "ERROR: \${EXP_CNFG} is not defined.\n"
   exit 1
 elif [ ! -d ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} directory ${EXP_CNFG} does not exist."
+  printf "ERROR: \${EXP_CNFG} directory\n ${EXP_CNFG}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${CYC_HME} ]; then
-  echo "ERROR: \${CYC_HME} is not defined."
+  printf "ERROR: \${CYC_HME} is not defined.\n"
   exit 1
 elif [ ! -d ${CYC_HME} ]; then
-  echo "ERROR: \${CYC_HME} directory '${CYC_HME}' does not exist."
+  printf "ERROR: \${CYC_HME} directory\n ${CYC_HME}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${MPIRUN} ]; then
-  echo "ERROR: \${MPIRUN} is not defined."
+  printf "ERROR: \${MPIRUN} is not defined.\n"
   exit 1
 fi
 
 if [ ! ${N_PROC} ]; then
-  echo "ERROR: \${N_PROC} is not defined."
+  printf "ERROR: \${N_PROC} is not defined.\n"
   exit 1
 elif [ ${N_PROC} -le 0 ]; then
   msg="ERROR: The variable \${N_PROC} must be set to the number"
-  msg+=" of processors to run real.exe."
-  echo ${msg}
+  msg+=" of processors to run real.exe.\n"
+  printf "${msg}"
   exit 1
 fi
 
@@ -266,28 +266,28 @@ fi
 work_root=${CYC_HME}/realprd/ens_${memid}
 mkdir -p ${work_root}
 cmd="cd ${work_root}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 wrf_dat_files=(${WRF_ROOT}/run/*)
 real_exe=${WRF_ROOT}/main/real.exe
 
 if [ ! -x ${real_exe} ]; then
-  echo "ERROR: ${real_exe} does not exist, or is not executable."
+  printf "ERROR:\n ${real_exe}\n does not exist, or is not executable.\n"
   exit 1
 fi
 
 # Make links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
   cmd="ln -sf ${file} ."
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 done
 
 # Remove IC/BC in the directory if old data present
 cmd="rm -f wrfinput_d0*"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 cmd="rm -f wrfbdy_d01"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 # Check to make sure the real input files (e.g. met_em.d01.*)
 # are available and make links to them
@@ -297,27 +297,27 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     realinput_name=met_em.d${dmn}.${dt_str}.nc
     wps_dir=${CYC_HME}/wpsprd/ens_${memid}
     if [ ! -r "${wps_dir}/${realinput_name}" ]; then
-      echo "ERROR: Input file '${CYC_HME}/${realinput_name}' is missing."
+      printf "ERROR: Input file\n ${CYC_HME}/${realinput_name}\n is missing.\n"
       exit 1
     else
       cmd="ln -sfr ${wps_dir}/${realinput_name} ."
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
     fi
   done
 done
 
 # Move existing rsl files to a subdir if there are any
-echo "Checking for pre-existing rsl files."
+printf "Checking for pre-existing rsl files.\n"
 if [ -f rsl.out.0000 ]; then
   rsldir=rsl.`ls -l --time-style=+%Y-%m-%d_%H_%M_%S rsl.out.0000 | cut -d" " -f 6`
   mkdir ${rsldir}
-  echo "Moving pre-existing rsl files to ${rsldir}."
+  printf "Moving pre-existing rsl files to ${rsldir}.\n"
   cmd="mv rsl.out.* ${rsldir}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
   cmd="mv rsl.error.* ${rsldir}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 else
-  echo "No pre-existing rsl files were found."
+  printf "No pre-existing rsl files were found.\n"
 fi
 
 ##################################################################################
@@ -326,13 +326,13 @@ fi
 # Copy the wrf namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
 namelist_temp=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
 if [ ! -r ${namelist_temp} ]; then 
-  msg="WRF namelist template '${namelist_temp}' is not readable or "
-  msg+="does not exist."
-  echo ${msg}
+  msg="WRF namelist template\n ${namelist_temp}\n is not readable or "
+  msg+="does not exist.\n"
+  printf "${msg}"
   exit 1
 else
   cmd="cp -L ${namelist_temp} ./namelist.input"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 # Get the start and end time components
@@ -348,6 +348,10 @@ e_d=`date +%d -d "${end_dt}"`
 e_H=`date +%H -d "${end_dt}"`
 e_M=`date +%M -d "${end_dt}"`
 e_S=`date +%S -d "${end_dt}"`
+
+# define start / end time iso patterns
+strt_iso=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
+end_iso=`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
 
 # Update max_dom in namelist
 in_dom="\(MAX_DOM\)${EQUAL}MAX_DOM"
@@ -430,21 +434,21 @@ mv namelist.input.tmp namelist.input
 # Run REAL
 ##################################################################################
 # Print run parameters
-echo
-echo "EXP_CNFG     = ${EXP_CNFG}"
-echo "MEMID        = ${MEMID}"
-echo "CYC_HME      = ${CYC_HME}"
-echo "STRT_DT      = "`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
-echo "END_DT       = "`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
-echo "BKG_INT      = ${BKG_INT}"
-echo "BKG_DATA     = ${BKG_DATA}"
-echo "MAX_DOM      = ${MAX_DOM}"
-echo "IF_SST_UPDTE = ${IF_SST_UPDTE}"
-echo
+printf "\n"
+printf "EXP_CNFG     = ${EXP_CNFG}\n"
+printf "MEMID        = ${MEMID}\n"
+printf "CYC_HME      = ${CYC_HME}\n"
+printf "STRT_DT      = ${strt_iso}\n"
+printf "END_DT       = ${end_iso}\n"
+printf "BKG_INT      = ${BKG_INT}\n"
+printf "BKG_DATA     = ${BKG_DATA}\n"
+printf "MAX_DOM      = ${MAX_DOM}\n"
+printf "IF_SST_UPDTE = ${IF_SST_UPDTE}\n"
+printf "\n"
 now=`date +%Y-%m-%d_%H_%M_%S`
-echo "real started at ${now}."
+printf "real started at ${now}.\n"
 cmd="${MPIRUN} -n ${N_PROC} ${real_exe}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 ##################################################################################
 # Run time error check
@@ -455,34 +459,35 @@ error=$?
 rsldir=rsl.real.${now}
 mkdir ${rsldir}
 cmd="mv rsl.out.* ${rsldir}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 cmd="mv rsl.error.* ${rsldir}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 cmd="mv namelist.* ${rsldir}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${real_exe} exited with status ${error}."
+  printf "ERROR:\n ${real_exe}\n exited with status ${error}.\n"
   exit ${error}
 fi
 
 # Look for successful completion messages in rsl files
 nsuccess=`cat ${rsldir}/rsl.* | awk '/SUCCESS COMPLETE REAL/' | wc -l`
 (( ntotal = N_PROC * 2 ))
-echo "Found ${nsuccess} of ${ntotal} completion messages."
+printf "Found ${nsuccess} of ${ntotal} completion messages.\n"
 if [ ${nsuccess} -ne ${ntotal} ]; then
-  msg="ERROR: ${real_exe} did not complete sucessfully, missing "
-  msg+="completion messages in rsl.* files."
-  echo ${msg}
+  msg="ERROR:\n ${real_exe}\n did not complete sucessfully, missing "
+  msg+="completion messages in rsl.* files.\n"
+  printf "${msg}"
   exit 1
 fi
 
 # check to see if the BC output is generated
-bc_file=wrfbdy_d01
-if [ ! -s ${bc_file} ]; then
-  echo "${real_exe} failed to generate boundary conditions ${bc_file}."
+if [ ! -s wrfbdy_d01 ]; then
+  msg="ERROR:\n ${real_exe}\n failed to generate boundary conditions "
+  msg+="wrfbdy_d01.\n"
+  printf "${msg}"
   exit 1
 fi
 
@@ -490,9 +495,9 @@ fi
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   ic_file=wrfinput_d${dmn}
   if [ ! -s ${ic_file} ]; then
-    msg="${real_exe} failed to generate initial conditions ${ic_file} "
-    msg+="for domain d${dmn}."
-    echo ${msg}
+    msg="ERROR:\n ${real_exe}\n failed to generate initial conditions ${ic_file} "
+    msg+="for domain d${dmn}.\n"
+    printf "${msg}"
     exit 1
   fi
 done
@@ -502,9 +507,9 @@ if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     sst_file=wrflowinp_d${dmn}
     if [ ! -s ${sst_file} ]; then
-      msg="${real_exe} failed to generate SST update file ${sst_file} "
-      msg+="for domain d${dmn}."
-      echo ${msg}
+      msg="ERROR:\n ${real_exe}\n failed to generate SST update file ${sst_file} "
+      msg+="for domain d${dmn}.\n"
+      printf "${msg}"
       exit 1
     fi
   done
@@ -512,15 +517,15 @@ fi
 
 # Remove the real input files (e.g. met_em.d01.*)
 cmd="rm -f ./met_em.*"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 # Remove links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
     cmd="rm -f `basename ${file}`"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 done
 
-echo "real.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
+printf "real.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"
 
 ##################################################################################
 # end

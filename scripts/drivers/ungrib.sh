@@ -13,9 +13,7 @@
 # driver script provided in the GSI tutorials.
 #
 # One should write machine specific options for the WPS environment
-# in a WPS_constants.sh script to be sourced in the below.  Variable
-# aliases in this script are based on conventions defined in the
-# WRF_constants.sh and the control flow .xml driving this script.
+# in a WRF_constants.sh script to be sourced in the below.
 #
 ##################################################################################
 # License Statement:
@@ -90,12 +88,12 @@
 #set -x
 
 if [ ! -x ${CNST} ]; then
-  echo "ERROR: constants file ${CNST} does not exist or is not executable."
+  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
   exit 1
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 ##################################################################################
@@ -117,7 +115,7 @@ fi
 ##################################################################################
 
 if [ ! ${MEMID} ]; then
-  echo "ERROR: ensemble index \${MEMID} is not defined."
+  printf "ERROR: ensemble index \${MEMID} is not defined.\n"
   exit 1
 else
   # ensure padding to two digits is included in memid variable
@@ -125,7 +123,7 @@ else
 fi
 
 if [ ${#STRT_DT} -ne 10 ]; then
-  echo "ERROR: \${STRT_DT}, ${STRT_DT}, is not in 'YYYYMMDDHH' format." 
+  printf "ERROR: \${STRT_DT}, ${STRT_DT}, is not in 'YYYYMMDDHH' format.\n"
   exit 1
 else
   # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
@@ -134,18 +132,18 @@ else
 fi
 
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
-  echo "Generating fixed length forecast forcing data."
+  printf "Generating fixed length forecast forcing data.\n"
   if [ ! ${FCST_HRS} ]; then
-    echo "ERROR: \${FCST_HRS} is not defined."
+    printf "ERROR: \${FCST_HRS} is not defined.\n"
     exit 1
   else
     # parse forecast hours as base 10 padded
     fcst_len=`printf %03d $(( 10#${FCST_HRS} ))`
   fi
 elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
-  echo "Generating forecast forcing data until experiment validation time."
+  printf "Generating forecast forcing data until experiment validation time.\n"
   if [ ${#EXP_VRF} -ne 10 ]; then
-    echo "ERROR: \${EXP_VRF}, ${EXP_VRF} is not in 'YYYMMDDHH' format."
+    printf "ERROR: \${EXP_VRF}, ${EXP_VRF} is not in 'YYYMMDDHH' format.\n"
     exit 1
   else
     # compute forecast length relative to start time and verification time
@@ -155,7 +153,7 @@ elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
     fcst_len=`printf %03d $(( 10#${fcst_len} ))`
   fi
 else
-  echo "\${IF_DYN_LEN} must be set to 'Yes' or 'No' (case insensitive)"
+  printf "\${IF_DYN_LEN} must be set to 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
@@ -163,7 +161,7 @@ fi
 end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
 if [ ${#BKG_STRT_DT} -ne 10 ]; then
-  echo "ERROR: \${BKG_STRT_DT}, '${BKG_STRT_DT}', is not in 'YYYYMMDDHH' format." 
+  printf "ERROR: \${BKG_STRT_DT}, '${BKG_STRT_DT}', is not in 'YYYYMMDDHH' format.\n"
   exit 1
 else
   # define BKG_STRT_DT date string wihtout HH
@@ -172,10 +170,10 @@ else
 fi
 
 if [ ! ${BKG_INT} ]; then
-  echo "ERROR: \${BKG_INT} is not defined."
+  printf "ERROR: \${BKG_INT} is not defined.\n"
   exit 1
 elif [ ${BKG_INT} -le 0 ]; then
-  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
+  printf "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs.\n"
   exit 1
 fi
 
@@ -199,13 +197,13 @@ elif [ ${BKG_DATA} = GEFS ]; then
 
 else
   msg="ERROR: \${BKG_DATA} must equal 'GFS' or 'GEFS'"
-  msg+=" as currently supported inputs."
-  echo ${msg}
+  msg+=" as currently supported inputs.\n"
+  printf "${msg}"
   exit 1
 fi
 
 if [[ ${IF_ECMWF_ML} != ${YES} && ${IF_ECMWF_ML} != ${NO} ]]; then
-  echo "ERROR: \${IF_ECMWF_ML} must equal 'Yes' or 'No' (case insensitive)."
+  printf "ERROR: \${IF_ECMWF_ML} must equal 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
@@ -225,34 +223,34 @@ fi
 ##################################################################################
 
 if [ ! ${WPS_ROOT} ]; then
-  echo "ERROR: \${WPS_ROOT} is not defined."
+  printf "ERROR: \${WPS_ROOT} is not defined.\n"
   exit 1
 elif [ ! -d ${WPS_ROOT} ]; then
-  echo "ERROR: WPS_ROOT directory '${WPS_ROOT}' does not exist."
+  printf "ERROR: WPS_ROOT directory\n ${WPS_ROOT}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} is not defined."
+  printf "ERROR: \${EXP_CNFG} is not defined.\n"
   exit 1
 elif [ ! -d ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} directory '${EXP_CNFG}' does not exist."
+  printf "ERROR: \${EXP_CNFG} directory\n ${EXP_CNFG}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${CYC_HME} ]; then
-  echo "ERROR: \${CYC_HME} is not defined."
+  printf "ERROR: \${CYC_HME} is not defined.\n"
   exit 1
 elif [ ! -d ${CYC_HME} ]; then
-  echo "ERROR: \${CYC_HME} directory '${CYC_HME}' does not exist."
+  printf "ERROR: \${CYC_HME} directory\n ${CYC_HME}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${DATA_ROOT} ]; then
-  echo "ERROR: \${DATA_ROOT} is not defined."
+  printf "ERROR: \${DATA_ROOT} is not defined.\n"
   exit 1
 elif [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: \${DATA_ROOT} directory '${DATA_ROOT}' does not exist."
+  printf "ERROR: \${DATA_ROOT} directory\n ${DATA_ROOT}\n does not exist.\n"
   exit 1
 fi
 
@@ -273,50 +271,52 @@ fi
 work_root=${CYC_HME}/wpsprd/ens_${memid}
 mkdir -p ${work_root}
 cmd="cd ${work_root}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 wps_dat_files=(${WPS_ROOT}/*)
 ungrib_exe=${WPS_ROOT}/ungrib.exe
 
 if [ ! -x ${ungrib_exe} ]; then
-  echo "ERROR: ungrib.exe '${ungrib_exe}' does not exist, or is not executable."
+  printf "ERROR: ungrib.exe\n ${ungrib_exe}\n does not exist, or is not executable.\n"
   exit 1
 fi
 
 # Make links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
   cmd="ln -sf ${file} ."
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 done
 
 # Remove any previous Vtables
 cmd="rm -f Vtable"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 # Check to make sure the variable table is available
 vtable=${EXP_CNFG}/variable_tables/Vtable.${BKG_DATA}
 if [ ! -r ${vtable} ]; then
-  msg="ERROR: Vtable at location '${vtable}' is not readable or does not exist."
-  echo ${msg}
+  msg="ERROR: Vtable at location\n ${vtable}\n is not readable or does not "
+  msg+="exist.\n"
+  printf "${msg}"
   exit 1
 else
   cmd="ln -sf ${vtable} Vtable"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 # check to make sure the grib_dataroot exists and is non-empty
 grib_dataroot=${DATA_ROOT}/gribbed/${BKG_DATA}/${bkg_strt_dt}
 if [ ! -d ${grib_dataroot} ]; then
-  echo "ERROR: the directory ${grib_dataroot} does not exist."
+  printf "ERROR: the directory\n ${grib_dataroot}\n does not exist.\n"
   exit 1
 elif [ `ls -l ${grib_dataroot}/${fnames} | wc -l` -lt ${n_files} ]; then
-  msg="ERROR: grib data directory '${grib_dataroot}' is missing bkg input files."
-  echo ${msg}
+  msg="ERROR: grib data directory\n ${grib_dataroot}\n is "
+  msg+="missing bkg input files.\n"
+  printf "${msg}"
   exit 1
 else
   # link the grib data to the working directory
   cmd="./link_grib.csh ${grib_dataroot}/${fnames}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 ##################################################################################
@@ -325,23 +325,23 @@ fi
 # Copy the wps namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
 namelist_temp=${EXP_CNFG}/namelists/namelist.wps
 if [ ! -r ${namelist_temp} ]; then 
-  msg="WPS namelist template '${namelist_temp}' is not readable or "
-  msg+="does not exist."
-  echo ${msg}
+  msg="WPS namelist template\n ${namelist_temp}\n is not readable or "
+  msg+="does not exist.\n"
+  printf "${msg}"
   exit 1
 else
   cmd="cp -L ${namelist_temp} ."
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 # define start / end time patterns for namelist.wps
-strt_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
-end_dt=`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
+strt_iso=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
+end_iso=`date +%Y-%m-%d_%H_%M_%S -d "${end_dt}"`
 
 in_sd="\(START_DATE\)${EQUAL}START_DATE"
-out_sd="\1 = '${strt_dt}','${strt_dt}','${strt_dt}'"
+out_sd="\1 = '${strt_iso}','${strt_iso}','${strt_iso}'"
 in_ed="\(END_DATE\)${EQUAL}END_DATE"
-out_ed="\1 = '${end_dt}','${end_dt}','${end_dt}'"
+out_ed="\1 = '${end_iso}','${end_iso}','${end_iso}'"
 
 # Update the start and end date in namelist (propagates settings to three domains)
 cat namelist.wps \
@@ -371,20 +371,20 @@ mv namelist.wps.tmp namelist.wps
 # Run ungrib 
 ##################################################################################
 # Print run parameters
-echo
-echo "EXP_CNFG    = ${EXP_CNFG}"
-echo "MEMID       = ${MEMID}"
-echo "CYC_HME     = ${CYC_HME}"
-echo "STRT_DT     = ${strt_dt}"
-echo "END_DT      = ${end_dt}"
-echo "BKG_DATA    = ${BKG_DATA}"
-echo "BKG_STRT_DT = ${BKG_STRT_DT}"
-echo "BKG_INT     = ${BKG_INT}"
-echo
+printf "\n"
+printf "EXP_CNFG    = ${EXP_CNFG}\n"
+printf "MEMID       = ${MEMID}\n"
+printf "CYC_HME     = ${CYC_HME}\n"
+printf "STRT_DT     = ${strt_iso}\n"
+printf "END_DT      = ${end_iso}\n"
+printf "BKG_DATA    = ${BKG_DATA}\n"
+printf "BKG_STRT_DT = ${BKG_STRT_DT}\n"
+printf "BKG_INT     = ${BKG_INT}\n"
+printf "\n"
 now=`date +%Y-%m-%d_%H_%M_%S`
-echo "ungrib started at ${now}."
+printf "ungrib started at ${now}.\n"
 cmd="./ungrib.exe"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 ##################################################################################
 # Run time error check
@@ -395,14 +395,14 @@ error=$?
 log_dir=ungrib_log.${now}
 mkdir ${log_dir}
 cmd="mv ungrib.log ${log_dir}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 cmd="mv namelist.wps ${log_dir}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 # check run error code
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${ungrib_exe} exited with status ${error}."
+  printf "ERROR: \n${ungrib_exe}\n exited with status ${error}.\n"
   exit ${error}
 fi
 
@@ -410,7 +410,7 @@ fi
 for fcst in `seq -f "%03g" 0 ${BKG_INT}} ${fcst_len}`; do
   filename="FILE:`date +%Y-%m-%d_%H -d "${strt_dt} ${fcst} hours"`"
   if [ ! -s ${filename} ]; then
-    echo "ERROR: ${filename} is missing."
+    printf "ERROR: ${filename} is missing.\n"
     exit 1
   fi
 done
@@ -419,15 +419,15 @@ done
 # NOTE: namelist.wps should account for the "PRES" file prefixes in fg_names
 if [ ${IF_ECMWF_ML} = ${YES} ]; then
   cmd="ln -sf ${EXP_CNFG}/variable_tables/ecmwf_coeffs ."
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
   cmd="./util/calc_ecmwf_p.exe"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 
   # Check to see if we've got all the files we're expecting
   for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
     filename=PRES:`date +%Y-%m-%d_%H -d "${strt_dt} ${fcst} hours"`
     if [ ! -s ${filename} ]; then
-      echo "ERROR: ${filename} is missing."
+      printf "ERROR: ${filename} is missing.\n"
       exit 1
     fi
   done
@@ -436,14 +436,14 @@ fi
 # Remove links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
     cmd="rm -f `basename ${file}`"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 done
 
 # remove links to grib files
 cmd="rm -f GRIBFILE.*"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
-echo "ungrib.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
+printf "ungrib.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"
 
 ##################################################################################
 # end

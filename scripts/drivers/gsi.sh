@@ -8,15 +8,12 @@
 #   https://dtcenter.ucar.edu/com-GSI/users/tutorial/online_tutorial/index_v3.7.php
 #
 # The purpose of this fork is to work in a Rocoto-based
-# Observation-Analysis-Forecast cycle with WRF for data denial
-# experiments. Naming conventions in this script have been smoothed
-# to match a companion major fork of the wrf.ksh
-# WRF driver script of Christopher Harrop.
+# Observation-Analysis-Forecast cycle with WRF for data denial experiments.
+# Naming conventions in this script have been smoothed to match a companion major
+# fork of the wrf.ksh WRF driver script of Christopher Harrop.
 #
 # One should write machine specific options for the GSI environment
-# in a GSI_constants.sh script to be sourced in the below.  Variable
-# aliases in this script are based on conventions defined in the
-# GSI_constants.sh and the control flow .xml driving this script.
+# in a GSI_constants.sh script to be sourced in the below.
 #
 ##################################################################################
 # License Statement:
@@ -48,7 +45,7 @@
 #
 ##################################################################################
 # uncomment to run verbose for debugging / testing
-set -x
+#set -x
 
 # Background error set for WRF-ARW by default
 bk_core_arw=".true."
@@ -66,12 +63,12 @@ grid_ratio=1
 
 # Read constants into the current shell
 if [ ! -x ${CNST} ]; then
-  echo "ERROR: constants file ${CNST} does not exist or is not executable."
+  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
   exit 1
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 ##################################################################################
@@ -99,7 +96,7 @@ fi
 
 # Convert ANL_DT from 'YYYYMMDDHH' format to anl_iso Unix date format
 if [ ${#ANL_DT} -ne 10 ]; then
-  echo "ERROR: \${ANL_DT}, ${ANL_DT}, is not in 'YYYYMMDDHH' format."
+  printf "ERROR: \${ANL_DT}, ${ANL_DT}, is not in 'YYYYMMDDHH' format.\n"
   exit 1
 else
   # define anl date components separately
@@ -111,19 +108,19 @@ else
 fi
 
 if [ ! ${CYC_HME} ]; then
-  echo "ERROR: \${CYC_HME} is not defined."
+  printf "ERROR: \${CYC_HME} is not defined.\n"
   exit 1
 elif [ ! -d "${CYC_HME}" ]; then
-  echo "ERROR: \${CYC_HME} directory, ${CYC_HME}, does not exist."
+  printf "ERROR: \${CYC_HME} directory\n ${CYC_HME}\n does not exist.\n"
   exit 1
 fi
 
 if [[ ${IF_OBSERVER} = ${NO} ]]; then
   if [ ${#WRF_CTR_DOM} -ne 2 ]; then
-    echo "ERROR: \${WRF_CTR_DOM}, ${WRF_CTR_DOM} is not in DD format."
+    printf "ERROR: \${WRF_CTR_DOM}\n ${WRF_CTR_DOM}\n is not in DD format.\n"
     exit 1
   else
-    echo "GSI updates control forecast."
+    printf "GSI updates control forecast.\n"
     nummiter=2
     if_read_obs_save=".false."
     if_read_obs_skip=".false."
@@ -132,110 +129,110 @@ if [[ ${IF_OBSERVER} = ${NO} ]]; then
   fi
 elif [[ ${IF_OBSERVER} = ${YES} ]]; then
   if [[ ! ${IF_HYBRID} = ${YES} ]]; then
-    echo "ERROR: \${IF_HYBRID} must equal Yes if \${IF_OBSERVER} = Yes."
+    printf "ERROR: \${IF_HYBRID} must equal Yes if \${IF_OBSERVER} = Yes.\n"
     exit 1
   fi
-  echo "GSI is observer for EnKF ensemble."
+  printf "GSI is observer for EnKF ensemble.\n"
   nummiter=0
   if_read_obs_save=".true."
   if_read_obs_skip=".false."
   work_root=${CYC_HME}/enkfprd
   max_dom=${WRF_ENS_DOM}
 else
-  echo "ERROR: \${IF_OBSERVER} must equal 'Yes' or 'No' (case insensitive)."
+  printf "ERROR: \${IF_OBSERVER} must equal 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
 if [[ ${IF_HYBRID} = ${YES} ]]; then
   # ensembles are required for hybrid EnVAR
   if [ ${#WRF_ENS_DOM} -ne 2 ]; then
-    echo "ERROR: \${WRF_ENS_DOM} is not in DD format."
+    printf "ERROR: \${WRF_ENS_DOM} is not in DD format.\n"
     exit 1
   elif [ ! ${N_ENS} ]; then
     msg="ERROR: \${N_ENS} must be specified to the number "
-    msg+="of ensemble perturbations."
-    echo ${msg}
+    msg+="of ensemble perturbations.\n"
+    printf "${msg}"
     exit 1
   elif [ ${N_ENS} -lt 2 ]; then
-    echo "ERROR: ensemble size \${N_ENS} + 1 must be three or greater."
+    printf "ERROR: ensemble size \${N_ENS} + 1 must be three or greater.\n"
     exit 1
   elif [ ! ${BETA} ]; then
     msg="ERROR: \${BETA} must be specified to the weight "
-    msg+="between ensemble and static covariance."
-    echo ${msg}
+    msg+="between ensemble and static covariance.\n"
+    printf "${msg}"
     exit 1
-  elif [ ${BETA} -lt 0 || ${BETA} -gt 1 ]; then
-    echo "ERROR: ${BETA} must be between 0 and 1."
+  elif [[ $(echo "${BETA} < 0" | bc -l ) -eq 1 || $(echo "${BETA} > 1" | bc -l ) -eq 1 ]]; then
+    printf "ERROR:\n ${BETA}\n must be between 0 and 1.\n"
     exit 1
   else
-    echo "GSI performs hybrid ensemble variational DA with ensemble size ${N_ENS}."
-    echo "Background covariance weight ${BETA}."
+    printf "GSI performs hybrid ensemble variational DA with ensemble size ${N_ENS}.\n"
+    printf "Background covariance weight ${BETA}.\n"
     ifhyb=".true."
   fi
 elif [[ ${IF_HYBRID} = ${NO} ]]; then
-  echo "GSI performs variational DA without ensemble."
+  printf "GSI performs variational DA without ensemble.\n"
   ifhyb=".false."
 else
-  echo "ERROR: \${IF_HYBRID} must equal 'Yes' or 'No' (case insensitive)."
+  printf "ERROR: \${IF_HYBRID} must equal 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
 if [ ! ${S_ENS_V} ]; then
   msg="ERROR: \${S_ENS_V} must be specified to the length of vertical "
-  msg+="localization scale in grid units."
-  echo ${msg}
+  msg+="localization scale in grid units.\n"
+  printf "${msg}"
   exit 1
   if [ ${S_ENS_V} -lt 0 ]; then
-    echo "ERROR: ${S_ENS_V} must be greater than 0."
+    printf "ERROR:\n ${S_ENS_V}\n must be greater than 0.\n"
     exit 1
   fi
 fi
 
 if [ ! ${S_ENS_H} ]; then
   msg="ERROR: \${S_ENS_H} must be specified to the length of horizontal "
-  msg+="localization scale in km."
-  echo ${msg}
+  msg+="localization scale in km.\n"
+  printf "${msg}"
   exit 1
   if [ ${S_ENS_H} -lt 0 ]; then
-    echo "ERROR: ${S_ENS_H} must be greater than 0."
+    printf "ERROR: ${S_ENS_H} must be greater than 0.\n"
     exit 1
   fi
 fi
 
 if [ ${#MAX_BC_LOOP} -ne 2 ]; then
   msg="ERROR: \${MAX_BC_LOOP} must be specified to the number of "
-  msg+="variational bias correction iterations in format LL."
-  echo ${msg}
+  msg+="variational bias correction iterations in format LL.\n"
+  printf "${msg}"
   exit 1
 elif [ ${MAX_BC_LOOP} -lt 0 ]; then
   msg="ERROR: the number of iterations of variational bias "
-  msg+="correction must be non-negative."
-  echo ${msg}
+  msg+="correction must be non-negative.\n"
+  printf "${msg}"
   exit 1
 fi
 
 if [[ ${IF_4DENVAR} = ${YES} ]]; then
   if [[ ! ${IF_HYBRID} = ${YES} ]]; then
-    echo "ERROR: \${IF_HYBRID} must equal Yes if \${IF_4DENVAR} = Yes."
+    printf "ERROR: \${IF_HYBRID} must equal Yes if \${IF_4DENVAR} = Yes.\n"
     exit 1
   else
-    echo "GSI performs 4D hybrid ensemble variational DA."
+    printf "GSI performs 4D hybrid ensemble variational DA.\n"
     if4d=".true."
   fi
 elif [[ ${IF_4DENVAR} = ${NO} ]]; then
     if4d=".false."
 else
-  echo "ERROR: \${IF_4DENVAR} must equal 'Yes' or 'No' (case insensitive)."
+  printf "ERROR: \${IF_4DENVAR} must equal 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
 if [[ ${if_oneob} = ${YES} ]]; then
-  echo "GSI performs single observation test."
+  printf "GSI performs single observation test.\n"
   if_oneobtest=".true."
 elif [[ ${if_oneob} = ${NO} ]]; then
   if_oneobtest=".false."
 else
-  echo "ERROR: \${if_oneob} must equal 'Yes' or 'No' (case insensitive)."
+  printf "ERROR: \${if_oneob} must equal 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
@@ -262,57 +259,57 @@ fi
 ##################################################################################
 
 if [ ! ${GSI_EXE} ]; then
-  echo "ERROR: \${GSI_EXE} is not defined."
+  printf "ERROR: \${GSI_EXE} is not defined.\n"
   exit 1
 elif [ ! -x ${GSI_EXE} ]; then
-  echo "ERROR: GSI executable, ${GSI_EXE}, is not executable."
+  printf "ERROR: GSI executable\n ${GSI_EXE}\n is not executable.\n"
   exit 1
 fi
 
 if [ ! ${CRTM_ROOT} ]; then
-  echo "ERROR: \${CRTM_ROOT} is not defined."
+  printf "ERROR: \${CRTM_ROOT} is not defined.\n"
   exit 1
 elif [ ! -d ${CRTM_ROOT} ]; then
-  echo "ERROR: CRTM_ROOT directory, ${CRTM_ROOT}, does not exist."
+  printf "ERROR: CRTM_ROOT directory\n ${CRTM_ROOT}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} is not defined."
+  printf "ERROR: \${EXP_CNFG} is not defined.\n"
   exit 1
 elif [ ! -d ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} directory, ${EXP_CNFG}, does not exist."
+  printf "ERROR: \${EXP_CNFG} directory\n ${EXP_CNFG}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${DATA_ROOT} ]; then
-  echo "ERROR: \${DATA_ROOT} is not defined."
+  printf "ERROR: \${DATA_ROOT} is not defined.\n"
   exit 1
 elif [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: \${DATA_ROOT} directory, ${DATA_ROOT}, does not exist."
+  printf "ERROR: \${DATA_ROOT} directory\n ${DATA_ROOT}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${ENS_ROOT} ]; then
-  echo "ERROR: \${ENS_ROOT} is not defined."
+  printf "ERROR: \${ENS_ROOT} is not defined.\n"
   exit 1
 elif [ ! -d ${ENS_ROOT} ]; then
-  echo "ERROR: \${ENS_ROOT} directory, ${ENS_ROOT}, does not exist."
+  printf "ERROR: \${ENS_ROOT} directory\n ${ENS_ROOT}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${MPIRUN} ]; then
-  echo "ERROR: \${MPIRUN} is not defined."
+  printf "ERROR: \${MPIRUN} is not defined.\n"
   exit 1
 fi
 
 if [ ! ${N_PROC} ]; then
-  echo "ERROR: \${N_PROC} is not defined."
+  printf "ERROR: \${N_PROC} is not defined.\n"
   exit 1
 elif [ ${N_PROC} -le 0 ]; then
   msg="ERROR: The variable \${N_PROC} must be set to the "
-  msg+="number of processors to run GSI > 0."
-  echo ${msg}
+  msg+="number of processors to run GSI > 0.\n"
+  printf "${msg}"
   exit 1
 fi
 
@@ -336,47 +333,47 @@ prepbufr_tar=${obs_root}/prepbufr.${anl_date}.nr.tar.gz
 prepbufr_dir=${obs_root}/${anl_date}.nr
 
 if [ ! -d ${obs_root} ]; then
-  echo "ERROR: \${obs_root} directory, ${obs_root}, does not exist."
+  printf "ERROR: \${obs_root} directory\n ${obs_root}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! -d ${fix_root} ]; then
-  echo "ERROR: fix file directory, ${fix_root}, does not exist."
+  printf "ERROR: fix file directory\n ${fix_root}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! -r ${satlist} ]; then
-  echo "ERROR: satellite namelist, ${satlist}, is not readable."
+  printf "ERROR: satellite namelist\n ${satlist}\n is not readable.\n"
   exit 1
 fi
 
 if [ ! -x ${gsi_namelist} ]; then
-  echo "ERROR: ${gsi_namelist} is not executable."
+  printf "ERROR:\n ${gsi_namelist}\n is not executable.\n"
   exit 1
 fi
 
 if [ ! -r ${prepbufr_tar} ]; then
-  echo "ERROR: prepbufr tar file '${prepbufr_tar}' is not readable."
+  printf "ERROR: prepbufr tar file\n ${prepbufr_tar}\n is not readable.\n"
   exit 1
 else
   # untar prepbufr data to predefined directory
   # define prepbufr directory
   mkdir -p ${prepbufr_dir}
   cmd="tar -xvf ${prepbufr_tar} -C ${prepbufr_dir}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 
   # unpack nested directory structure
   prepbufr_nest=(`find ${prepbufr_dir} -type f`)
   for file in ${prepbufr_nest[@]}; do
     cmd="mv ${file} ${prepbufr_dir}"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
   done
   cmd="rmdir ${prepbufr_dir}/*"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 
   prepbufr=${prepbufr_dir}/prepbufr.gdas.${anl_date}.t${hh}z.nr
   if [ ! -r ${prepbufr} ]; then
-    echo "ERROR: file '${prepbufr}' is not readable."
+    printf "ERROR: file\n ${prepbufr}\n is not readable.\n"
     exit 1
   fi
 fi
@@ -389,12 +386,12 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
   # NOTE: Hybrid DA uses the control forecast as the EnKF forecast mean, not the
   # control analysis. Work directory for GSI is sub-divided based on domain index
   dmndir=${work_root}/d${dmn}
-  echo "Create work root directory ${dmndir}."
+  printf "Create work root directory\n ${dmndir}.\n"
 
   if [ -d "${dmndir}" ]; then
-    echo "Existing GSI work root ${dmndir}, removing old data for new run."
+    printf "Existing GSI work root\n ${dmndir}\n removing old data for new run.\n"
     cmd="rm -rf ${dmndir}"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
   fi
   mkdir -p ${dmndir}
 
@@ -408,19 +405,19 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
       workdir=${dmndir}/bc_loop_${bc_loop}
       mkdir ${workdir}
       cmd="cd ${workdir}"
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
 
     else
       workdir=${dmndir}
     fi
 
-    echo "Variational bias correction update loop ${bc_loop}."
-    echo "Working directory ${workdir}."
-    echo "Linking observation bufrs to working directory."
+    printf "Variational bias correction update loop ${bc_loop}.\n"
+    printf "Working directory\n ${workdir}\n"
+    printf "Linking observation bufrs to working directory.\n"
 
     # Link to the prepbufr conventional data
     cmd="ln -s ${prepbufr} prepbufr"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     # Link to satellite data -- note satlist is assumed two column with prefix
     # for GDAS and GSI conventions in first and second column respectively
@@ -442,28 +439,28 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     # loop over obs types
     for (( ii=0; ii < ${#srcobsfile[@]}; ii++ )); do 
       cmd="cd ${obs_root}"
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
 
       tar_file=${obs_root}/${srcobsfile[$ii]}.${anl_date}.tar.gz
       obs_dir=${obs_root}/${anl_date}.${srcobsfile[$ii]}
       mkdir -p ${obs_dir}
       if [ ! -r "${tar_file}" ]; then
-        echo "ERROR: file ${tar_file} not found."
+        printf "ERROR: file\n ${tar_file}\n not found.\n"
         exit 1
       else
         # untar to specified directory
         cmd="tar -xvf ${tar_file} -C ${obs_dir}"
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
 
         # unpack nested directory structure, if exists
         obs_nest=(`find ${obs_dir} -type f`)
         for file in ${obs_nest[@]}; do
           cmd="mv ${file} ${obs_dir}"
-          echo ${cmd}; eval ${cmd}
+          printf "${cmd}\n"; eval ${cmd}
         done
 
         cmd="rmdir ${obs_dir}/*"
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
 
         # NOTE: differences in data file types for "satwnd"
         if [ ${srcobsfile[$ii]} = satwnd ]; then
@@ -473,14 +470,14 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
         fi
 
         if [ ! -r "${obs_file}" ]; then
-           echo "ERROR: obs file ${srcobsfile[$ii]} not found."
+           printf "ERROR: obs file\n ${srcobsfile[$ii]}\n not found.\n"
            exit 1
         else
-           echo "Link source obs file ${obs_file}."
+           printf "Link source obs file\n ${obs_file}\n"
            cmd="cd ${workdir}"
-           echo ${cmd}; eval ${cmd}
+           printf "${cmd}\n"; eval ${cmd}
            cmd="ln -sf ${obs_file} ./${gsiobsfile[$ii]}"
-           echo ${cmd}; eval ${cmd}
+           printf "${cmd}\n"; eval ${cmd}
         fi
       fi
       cd ${workdir}
@@ -514,7 +511,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     srcfixfile=()
     gsifixfile=()
 
-    echo "Copy fix files from ${fix_root}."
+    printf "Copy fix files from\n ${fix_root}\n"
     # files should be named the following in ${fix_root}, can be linked to these names
     # from various source files / background error options
     srcfixfile+=( ${fix_root}/berror_stats )
@@ -541,14 +538,14 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     gsifixfile+=( atms_beamwidth.txt )
 
     # loop over fix files
-    echo "Copy fix files to working directory"
+    printf "Copy fix files to working directory:\n"
     for (( ii=0; ii < ${#srcfixfile[@]}; ii++ )); do
       if [ ! -r ${srcfixfile[$ii]} ]; then
-        echo "ERROR: GSI fix file ${srcfixfile[$ii]} not readable."
+        printf "ERROR: GSI fix file\n ${srcfixfile[$ii]}\n not readable.\n"
         exit 1
       else
         cmd="cp -L ${srcfixfile[$ii]} ./${gsifixfile[$ii]}"
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
       fi
     done
 
@@ -567,15 +564,15 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     coeffs+=( CloudCoeff.bin )
 
     # loop over coeffs 
-    echo "Link CRTM coefficient files"
+    printf "Link CRTM coefficient files:\n"
     for (( ii=0; ii < ${#coeffs[@]}; ii++ )); do
       coeff_file=${CRTM_ROOT}/${coeffs[$ii]}
       if [ ! -r ${coeff_file} ]; then
-        echo "ERROR: CRTM coefficient file ${coeff_file} not readable."
+        printf "ERROR: CRTM coefficient file\n ${coeff_file}\n not readable.\n"
         exit 1
       else
         cmd="ln -s ${coeff_file} ."
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
       fi
     done
 
@@ -586,10 +583,10 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
      satinfo_coeffs+=( ${CRTM_ROOT}/${file}.TauCoeff.bin )
      for coeff_file in ${satinfo_coeffs[@]}; do
        if [ ! -r ${coeff_file} ]; then
-         echo "ERROR: CRTM coefficient file ${coeff_file} not readable."
+         printf "ERROR: CRTM coefficient file\n ${coeff_file}\n not readable.\n"
        else
          cmd="ln -s ${coeff_file} ."
-         echo ${cmd}; eval ${cmd}
+         printf "${cmd}\n"; eval ${cmd}
        fi
      done
     done
@@ -598,7 +595,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
       # Only need this file for single obs test
       bufrtable=${fix_root}/prepobs_prep.bufrtable
       cmd="cp -L ${bufrtable} ./prepobs_prep.bufrtable"
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
     fi
 
     if [ ${bc_loop} = 00 ]; then
@@ -625,34 +622,34 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
         bias_dir=${bias_dirs[$ii]}
         bias_file=${bias_files[$ii]}
         if [ ! -r ${tar_file} ]; then
-          echo "Tar ${tar_file} of GDAS bias corrections not readable."
+          printf "Tar\n ${tar_file}\n of GDAS bias corrections not readable.\n"
           exit 1
         else
           # untar to specified directory
           mkdir -p ${bias_dir}
           cmd="tar -xvf ${tar_file} -C ${bias_dir}"
-          echo ${cmd}; eval ${cmd}
+          printf "${cmd}\n"; eval ${cmd}
         
           # unpack nested directory structure
           bias_nest=(`find ${bias_dir} -type f`)
           for file in ${bias_nest[@]}; do
             cmd="mv ${file} ${bias_dir}"
-            echo ${cmd}; eval ${cmd}
+            printf "${cmd}\n"; eval ${cmd}
           done
 
           cmd="rmdir ${bias_dir}/*"
-          echo ${cmd}; eval ${cmd}
+          printf "${cmd}\n"; eval ${cmd}
         
           if [ ! -r ${bias_file} ]; then
-           echo "GDAS bias correction file not readable at ${bias_file}."
+           printf "GDAS bias correction file not readable at\n ${bias_file}\n"
            exit 1
           else
             msg="Link the GDAS bias correction file ${bias_file} "
-            msg+="for loop zero of analysis."
-            echo ${msg}
+            msg+="for loop zero of analysis.\n"
+            printf "${msg}"
                   
             cmd="ln -sf ${bias_file} ./${bias_in_files[$ii]}"
-            echo ${cmd}; eval ${cmd}
+            printf "${cmd}\n"; eval ${cmd}
           fi
         fi
       done
@@ -672,15 +669,15 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
       for (( ii=0; ii < ${#tar_files[@]}; ii++ )); do
 	      bias_file=${bias_files[$ii]}
         if [ ! -r "${bias_file}" ]; then
-          echo "Bias file ${bias_file} variational bias corrections not readable."
+          printf "Bias file\n ${bias_file}\n variational bias corrections not readable.\n"
           exit 1
         else
           msg="Linking variational bias correction file "
-	        msg+="${bias_file} from last analysis."
-	        echo ${msg}
+	        msg+="${bias_file} from last analysis.\n"
+	        printf "${msg}"
 
           cmd="ln -sf ${bias_file} ./${bias_in_files[$ii]}"
-	        echo ${cmd}; eval ${cmd}
+	        printf "${cmd}\n"; eval ${cmd}
         fi
       done
     fi
@@ -697,13 +694,13 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     bkg_file=${bkg_dir}/wrfout_d${dmn}_${anl_iso}
 
     if [ ! -r ${bkg_file} ]; then
-      echo "ERROR: background file ${bkg_file} does not exist."
+      printf "ERROR: background file\n ${bkg_file}\n does not exist.\n"
       exit 1
     else
-      echo "Copy background file to working directory."
+      printf "Copy background file to working directory.\n"
       # Copy over background field -- THIS IS MODIFIED BY GSI DO NOT LINK TO IT
       cmd="cp -L ${bkg_file} wrf_inout"
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
     fi
 
     # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
@@ -725,20 +722,20 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     if [[ ${IF_HYBRID} = ${YES} ]]; then
       if [ ${dmn} -le ${WRF_ENS_DOM} ]; then
         # copy WRF ensemble members
-        echo " Copy ensemble perturbations to working directory."
+        printf " Copy ensemble perturbations to working directory.\n"
         for memid in `seq -f "%02g" 1 ${N_ENS}`; do
           ens_file=${ENS_ROOT}/bkg/ens_${memid}/wrfout_d${dmn}_${anl_iso}
           if [ !-r ${ens_file} ]; then
-            echo "ERROR: ensemble file ${ens_file} does not exist."
+            printf "ERROR: ensemble file\n ${ens_file}\n does not exist.\n"
             exit 1
           else
             cmd="ln -sfr ${ens_file} ./wrf_ens_${memid}"
-            echo ${cmd}; eval ${cmd}
+            printf "${cmd}\n"; eval ${cmd}
           fi
         done
         
         cmd="ls ./wrf_ens_* > filelist02"
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
 
         # NOTE: THE FOLLOWING DIRECTORIES WILL NEED TO BE REVISED
         #if [[ ${IF_4DENVAR} = ${YES} ]]; then
@@ -750,9 +747,9 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
 
       else
         # run simple 3D-VAR without an ensemble 
-        echo "WARNING"
-        echo "Dual resolution ensemble perturbations and control are not an option yet."
-        echo "Running nested domain d${dmn} as simple 3D-VAR update."
+        printf "WARNING:\n"
+        printf "Dual resolution ensemble perturbations and control are not an option yet.\n"
+        printf "Running nested domain d${dmn} as simple 3D-VAR update.\n"
         ifhyb=".false."
       fi
 
@@ -763,7 +760,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     ##################################################################################
     # Build GSI namelist
     ##################################################################################
-    echo "Build the namelist with parameters for NAM-ARW."
+    printf "Build the namelist with parameters for NAM-ARW.\n"
 
     # default parameers taken from NAM
     vs_op='1.0,'
@@ -771,7 +768,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
 
     # Build the GSI namelist on-the-fly
     cmd=". ${gsi_namelist}"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     # modify the anavinfo vertical levels based on wrf_inout for WRF ARW and NMM
     bklevels=`ncdump -h wrf_inout | grep "bottom_top =" | awk '{print $3}' `
@@ -785,21 +782,21 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     # Run GSI
     ##################################################################################
     # Print run parameters
-    echo
-    echo "ANL_DT      = ${ANL_DT}"
-    echo "BKG         = ${bkg_file}"
-    echo "IF_OBSERVER = ${IF_OBSERVER}"
-    echo "IF_HYBRID   = ${IF_HYBRID}"
-    echo "ENS_ROOT    = ${ENS_ROOT}"
-    echo "BETA        = ${BETA}"
-    echo "S_ENS_V     = ${S_ENS_V}"
-    echo "S_ENS_H     = ${S_ENS_H}"
-    echo "IF_4DENVAR  = ${IF_4DENVAR}"
-    echo
+    printf "\n"
+    printf "ANL_DT      = ${ANL_DT}\n"
+    printf "BKG         = ${bkg_file}\n"
+    printf "IF_OBSERVER = ${IF_OBSERVER}\n"
+    printf "IF_HYBRID   = ${IF_HYBRID}\n"
+    printf "ENS_ROOT    = ${ENS_ROOT}\n"
+    printf "BETA        = ${BETA}\n"
+    printf "S_ENS_V     = ${S_ENS_V}\n"
+    printf "S_ENS_H     = ${S_ENS_H}\n"
+    printf "IF_4DENVAR  = ${IF_4DENVAR}\n"
+    printf "\n"
     now=`date +%Y-%m-%d_%H_%M_%S`
-    echo "gsi analysis started at ${now} on domain d${dmn}."
+    printf "gsi analysis started at ${now} on domain d${dmn}.\n"
     cmd="${MPIRUN} -n ${N_PROC} ${GSI_EXE} > stdout.anl.${anl_iso} 2>&1"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     ##################################################################################
     # Run time error check
@@ -807,13 +804,13 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     error=$?
 
     if [ ${error} -ne 0 ]; then
-      echo "ERROR: ${GSI_EXE} exited with status ${error}."
+      printf "ERROR:\n ${GSI_EXE}\n exited with status ${error}.\n"
       exit ${error}
     fi
 
     # Copy the output to cycling naming convention
     cmd="mv wrf_inout wrfanl_ens_00_${anl_iso}"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     ##################################################################################
     # Loop over first and last outer loops to generate innovation
@@ -865,7 +862,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
     ls -l * > list_run_directory
 
     if [[ ${if_clean} = ${YES} && ${IF_OBSERVER} = ${NO} ]]; then
-      echo " Clean working directory after GSI run."
+      printf "Clean working directory after GSI run.\n"
       rm -f *Coeff.bin     # all CRTM coefficient files
       rm -f pe0*           # diag files on each processor
       rm -f obs_input.*    # observation middle files
@@ -882,17 +879,17 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
       for type in ${listall}; do
         if [[ -f diag_${type}_${string}.${anl_iso} ]]; then
            cmd="mv diag_${type}_${string}.${anl_iso} diag_${type}_${string}.ensmean"
-           echo ${cmd}; eval ${cmd}
+           printf "${cmd}\n"; eval ${cmd}
         fi
       done
       cmd="cp -L wrfanl_ens_00_${anl_iso} wrf_inout_ensmean"
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
 
       # Build the GSI namelist on-the-fly for each member
       if_read_obs_save=".false."
       if_read_obs_skip=".true."
       cmd=". ${gsi_namelist}"
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
 
       # Loop through each member
       loop=01
@@ -904,32 +901,32 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
         fi
 
         ens_file=wrf_ens_${memid}
-        echo "Copying ${ens_file} for GSI observer."
+        printf "Copying ${ens_file} for GSI observer.\n"
         cmd="cp -L ${ens_file} wrf_inout"
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
 
         # run GSI
-        echo "Run GSI observer for member ${memid}."
+        printf "Run GSI observer for member ${memid}.\n"
         cmd="${MPIRUN} ${GSI_EXE} > stdout_ens_${memid}.anl.${anl_iso} 2>&1"
-	      echo ${cmd}; eval ${cmd}
+	      printf "${cmd}\n"; eval ${cmd}
 
         # run time error check and save run time file status
         error=$?
 
         if [ ${error} -ne 0 ]; then
-          echo "ERROR: ${GSI_EXE} exited with status ${error} for member ${memid}."
+          printf "ERROR:\n ${GSI_EXE}\n exited with status ${error} for member ${memid}.\n"
           exit ${error}
         fi
 
         cmd="ls -l * > list_run_directory_mem${memid}"
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
 
         # generate diag files
         for type in ${listall}; do
           count=`ls pe*${type}_${loop}* | wc -l`
           if [[ ${count} -gt 0 ]]; then
             cmd="cat pe*${type}_${loop}* > diag_${type}_${string}.mem${memid}"
-            echo ${cmd}; eval ${cmd}
+            printf "${cmd}\n"; eval ${cmd}
           fi
         done
       done
@@ -937,7 +934,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
   done 
 done
 
-echo "gsi.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
+printf "gsi.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"
 
 ##################################################################################
 

@@ -13,7 +13,7 @@
 # License Statement:
 ##################################################################################
 #
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,25 +38,42 @@ from datetime import datetime as dt
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # directory path for root of git clone of GSI-WRF-Cycling-Template
-USR_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/GSI-WRF-Cycling-Template'
+USR_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/Common-Case/GSI-WRF-Cycling-Template'
 
 # directory for rocoto install
 RCT_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/rocoto'
 
 # Case study sub directories
 CSES = [
-        'VD',
+        'CC',
        ]
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
-            '3denvar_lag06_b0.00_v06_h0300_test',
-            '3denvar_lag06_b0.00_v03_h0300_test',
-            '3denvar_lag06_b0.20_v03_h0300_test',
-            '3denvar_lag06_b0.40_v03_h0300_test',
-            '3denvar_lag06_b0.60_v03_h0300_test',
-            '3denvar_lag06_b0.80_v03_h0300_test',
-            '3denvar_lag06_b1.00_v03_h0300_test',
+            #'NAM_lag06_b0.00_v06_h0300',
+            #'NAM_lag06_b0.20_v06_h0300',
+            #'NAM_lag06_b0.40_v06_h0300',
+            #'NAM_lag06_b0.60_v06_h0300',
+            #'NAM_lag06_b0.80_v06_h0300',
+            #'NAM_lag06_b1.00_v06_h0300',
+            #'RAP_lag06_b0.00_v06_h0300',
+            #'RAP_lag06_b0.20_v06_h0300',
+            'RAP_lag06_b0.40_v06_h0300',
+            #'RAP_lag06_b0.60_v06_h0300',
+            #'RAP_lag06_b0.80_v06_h0300',
+            #'RAP_lag06_b1.00_v06_h0300',
+            'NAM_lag06_b0.00_v03_h0300',
+            'NAM_lag06_b0.20_v03_h0300',
+            'NAM_lag06_b0.40_v03_h0300',
+            'NAM_lag06_b0.60_v03_h0300',
+            'NAM_lag06_b0.80_v03_h0300',
+            'NAM_lag06_b1.00_v03_h0300',
+            'RAP_lag06_b0.00_v03_h0300',
+            'RAP_lag06_b0.20_v03_h0300',
+            'RAP_lag06_b0.40_v03_h0300',
+            'RAP_lag06_b0.60_v03_h0300',
+            'RAP_lag06_b0.80_v03_h0300',
+            'RAP_lag06_b1.00_v03_h0300',
            ]
 
 END = dt(2024, 1, 1, 0)

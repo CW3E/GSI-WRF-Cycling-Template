@@ -44,9 +44,6 @@ export HDF5="/opt/hdf5/1.10.3/intel/intelmpi/"
 module load lapack
 LAPACK_PATH="/share/apps/compute/lapack"
 
-# ensure ulimit is set unlimited
-ulimit -s unlimited
-
 # Yes / No case insensitive switch
 YES=[Yy][Ee][Ss]
 NO=[Nn][Oo]
