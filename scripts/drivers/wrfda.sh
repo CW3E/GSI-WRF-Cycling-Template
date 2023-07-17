@@ -38,12 +38,12 @@
 #set -x
 
 if [ ! -x ${CNST} ]; then
-  echo "ERROR: constants file ${CNST} does not exist or is not executable."
+  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
   exit 1
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 ##################################################################################
@@ -57,14 +57,14 @@ fi
 # WRF_CTR_DOM  = Max domain index of control forecast to update BOUNDARY=LOWER
 # IF_ENS_UPDTE = Skip lower / lateral BC updates if 'No'
 # N_ENS        = Max ensemble index to apply update IF_ENS_UPDATE='Yes'
-# ENS_ROOT     = Forecast ensemble located at ${ENS_ROOT}/ens_${ens_n}/wrfout* 
+# ENS_ROOT     = Forecast ensemble located at ${ENS_ROOT}/ens_${memid}/wrfout* 
 # WRF_ENS_DOM  = Max domain index of ensemble perturbations
 #
 ##################################################################################
 
 # Convert ANL_DT from 'YYYYMMDDHH' format to anl_iso iso format
 if [ ${#ANL_DT} -ne 10 ]; then
-  echo "ERROR: \${ANL_DT}, ${ANL_DT}, is not in 'YYYYMMDDHH' format."
+  printf "ERROR: \${ANL_DT}, ${ANL_DT}, is not in 'YYYYMMDDHH' format.\n"
   exit 1
 else
   anl_date=${ANL_DT:0:8}
@@ -74,18 +74,18 @@ fi
 
 if [[ ${BOUNDARY} = ${LOWER} ]]; then
   if [ ${#WRF_CTR_DOM} -ne 2 ]; then
-    echo "ERROR: \${WRF_CTR_DOM}, ${WRF_CTR_DOM} is not in DD format."
+    printf "ERROR: \${WRF_CTR_DOM}, ${WRF_CTR_DOM} is not in DD format.\n"
     exit 1
   fi
   msg="Updating lower boundary conditions for WRF control domains "
-  msg+="d01 through d${WRF_CTR_DOM}."
-  echo ${msg}
+  msg+="d01 through d${WRF_CTR_DOM}.\n"
+  printf "${msg}"
 elif [[ ${BOUNDARY} = ${LATERAL} ]]; then
-  echo "Updating WRF control lateral boundary conditions."
+  printf "Updating WRF control lateral boundary conditions.\n"
 else
   msg="ERROR: \${BOUNDARY}, ${BOUNDARY}, must equal 'LOWER' or 'LATERAL'"
-  msg+="(case insensitive)."
-  echo ${msg}
+  msg+="(case insensitive).\n"
+  printf "${msg}"
   exit 1
 fi
 
@@ -94,26 +94,27 @@ if [[ ${IF_ENS_UPDTE} = ${NO} ]]; then
   ens_max=0
 elif [[ ${IF_ENS_UPDTE} = ${YES} ]]; then
   if [ ! ${N_ENS} ]; then
-    echo "ERROR: \${N_ENS} is not defined."
+    printf "ERROR: \${N_ENS} is not defined.\n"
     exit 1
   fi
   if [ ! ${ENS_ROOT} ]; then
-    echo "ERROR: \${ENS_ROOT} is not defined."
+    printf "ERROR: \${ENS_ROOT} is not defined.\n"
     exit 1
   elif [ ! -d ${ENS_ROOT} ]; then
-    echo "ERROR: \${ENS_ROOT} directory ${ENS_ROOT} does not exist."
+    printf "ERROR: \${ENS_ROOT} directory\n ${ENS_ROOT}\n does not exist.\n"
     exit 1
   elif [[ ${BOUNDARY} = LOWER && ${#WRF_ENS_DOM} -ne 2 ]]; then
-    echo "ERROR: \${WRF_ENS_DOM}, ${WRF_ENS_DOM} is not in DD format."
+    printf "ERROR: \${WRF_ENS_DOM}, ${WRF_ENS_DOM}, is not in DD format.\n"
     exit 1
   else
     # perform over the entire ensemble (ensure base 10 for padded indices)
     ens_max=`printf $(( 10#${N_ENS} ))`
     msg="Updating lower boundary conditions for WRF perturbation domains "
     msg+="d01 through d${WRF_ENS_DMN}."
+    printf "${msg}"
   fi
 else
-  echo "ERROR: \${IF_ENS_UPDTE} must equal 'Yes' or 'No' (case insensitive)."
+  printf "ERROR: \${IF_ENS_UPDTE} must equal 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
@@ -131,26 +132,26 @@ fi
 ##################################################################################
 
 if [ ! ${WRFDA_ROOT} ]; then
-  echo "ERROR: \${WRFDA_ROOT} is not defined."
+  printf "ERROR: \${WRFDA_ROOT} is not defined.\n"
   exit 1
 elif [ ! -d ${WRFDA_ROOT} ]; then
-  echo "ERROR: \${WRFDA_ROOT} directory ${WRFDA_ROOT} does not exist."
+  printf "ERROR: \${WRFDA_ROOT} directory\n ${WRFDA_ROOT}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} is not defined."
+  printf "ERROR: \${EXP_CNFG} is not defined.\n"
   exit 1
 elif [ ! -d ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} directory '${EXP_CNFG}' does not exist."
+  printf "ERROR: \${EXP_CNFG} directory\n ${EXP_CNFG}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${CYC_HME} ]; then
-  echo "ERROR: \${CYC_HME} is not defined."
+  printf "ERROR: \${CYC_HME} is not defined.\n"
   exit 1
 elif [ ! -d "${CYC_HME}" ]; then
-  echo "ERROR: \${CYC_HME} directory, ${CYC_HME}, does not exist."
+  printf "ERROR: \${CYC_HME} directory\n ${CYC_HME}\n does not exist.\n"
   exit 1
 fi
 
@@ -177,12 +178,12 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
   update_bc_exe=${WRFDA_ROOT}/var/da/da_update_bc.exe
   
   if [ ! -d ${real_dir} ]; then
-    echo "ERROR: \${real_dir} directory ${real_dir} does not exist."
+    printf "ERROR: \${real_dir} directory\n ${real_dir}\n does not exist.\n"
     exit 1
   fi
   
   if [ ! -x ${update_bc_exe} ]; then
-    echo "ERROR: ${update_bc_exe} does not exist, or is not executable."
+    printf "ERROR:\n ${update_bc_exe}\n does not exist, or is not executable.\n"
     exit 1
   fi
   
@@ -191,14 +192,14 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     work_root=${work_root}/lower_bdy_update/ens_${memid}
     mkdir -p ${work_root}
     cmd="cd ${work_root}"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
     
     # Remove IC/BC in the directory if old data present
     cmd="rm -f wrfout_*"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
     
     cmd="rm -f wrfinput_d*"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
   
     if [ ${memid} = 00 ]; then 
       # control background sourced from last cycle background
@@ -212,12 +213,12 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
 
     # verify forecast data root
     if [ ! -d ${bkg_dir} ]; then
-      echo "ERROR: \${bkg_dir} directory ${bkg_dir} does not exist."
+      printf "ERROR: \${bkg_dir} directory\n ${bkg_dir}\n does not exist.\n"
       exit 1
     fi
     
     # Check to make sure the input files are available and copy them
-    echo "Copying background and input files."
+    printf "Copying background and input files.\n"
     for dmn in `seq -f "%02g" 01 ${max_dom}`; do
       # update the lower BC for the output file to pass to GSI
       wrfout=wrfout_d${dmn}_${anl_iso}
@@ -226,19 +227,19 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       wrfinput=wrfinput_d${dmn}
   
       if [ ! -r "${bkg_dir}/${wrfout}" ]; then
-        echo "ERROR: Input file '${bkg_dir}/${wrfout}' is missing."
+        printf "ERROR: Input file\n ${bkg_dir}/${wrfout}\n is missing.\n"
         exit 1
       else
         cmd="cp -L ${bkg_dir}/${wrfout} ."
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
       fi
   
       if [ ! -r "${real_dir}/${wrfinput}" ]; then
-        echo "ERROR: Input file '${real_dir}/${wrfinput}' is missing."
+        printf "ERROR: Input file\n ${real_dir}/${wrfinput}\n is missing.\n"
         exit 1
       else
         cmd="cp -L ${real_dir}/${wrfinput} ."
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
       fi
   
       ##################################################################################
@@ -246,7 +247,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
       cmd="cp -L ${EXP_CNFG}/namelists/parame.in ."
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
   
       # Update the namelist for the domain id 
       cat parame.in \
@@ -279,18 +280,19 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       # Run update_bc_exe
       ##################################################################################
       # Print run parameters
-      echo
-      echo "MEM_ID   = ${memid}"
-      echo "BOUNDARY = ${BOUNDARY}"
-      echo "DOMAIN   = ${dmn}"
-      echo "EXP_CNFG = ${EXP_CNFG}"
-      echo "CYC_HME  = ${CYC_HME}"
-      echo "ENS_ROOT = ${ENS_ROOT}"
-      echo
+      printf "\n"
+      printf "MEM_ID   = ${memid}\n"
+      printf "BOUNDARY = ${BOUNDARY}\n"
+      printf "DOMAIN   = ${dmn}\n"
+      printf "ANL_DT   = ${anl_iso}\n"
+      printf "EXP_CNFG = ${EXP_CNFG}\n"
+      printf "CYC_HME  = ${CYC_HME}\n"
+      printf "ENS_ROOT = ${ENS_ROOT}\n"
+      printf "\n"
       now=`date +%Y-%m-%d_%H_%M_%S`
-      echo "da_update_bc.exe started at ${now}."
+      printf "da_update_bc.exe started at ${now}.\n"
       cmd="${update_bc_exe}"
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
   
       ##################################################################################
       # Run time error check
@@ -299,7 +301,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       
       # NOTE: THIS CHECK NEEDS IMPROVEMENT, DOESN'T CATCH ERRORS IN THE PROGRAM LOG
       if [ ${error} -ne 0 ]; then
-        echo "ERROR: ${update_bc_exe} exited with status ${error}."
+        printf "ERROR:\n ${update_bc_exe}\n exited with status ${error}.\n"
         exit ${error}
       fi
     done
@@ -309,28 +311,28 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     work_root=${work_root}/lateral_bdy_update/ens_${memid}
     mkdir -p ${work_root}
     cmd="cd ${work_root}"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
     
     # Remove IC/BC in the directory if old data present
     cmd="rm -f wrfout_*"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="rm -f wrfinput_d0*"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="rm -f wrfbdy_d01"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     if [ ${memid} = 00 ]; then
       if [ ! -d ${gsi_dir} ]; then
-        echo "ERROR: \${gsi_dir} directory, ${gsi_dir}, does not exist."
+        printf "ERROR: \${gsi_dir} directory\n ${gsi_dir}\n does not exist.\n"
         exit 1
       else
         wrfanl=${gsi_dir}/d01/wrfanl_ens_${memid}_${anl_iso}
       fi
     else
       if [ ! -d ${enkf_dir} ]; then
-        echo "ERROR: \${enkf_dir} directory, ${enkf_dir}, does not exist."
+        printf "ERROR: \${enkf_dir} directory\n ${enkf_dir}\n does not exist.\n"
         exit 1
       else
         # NOTE: ENKF SCRIPT NEED TO UPDATE OUTPUT NAMING CONVENTIONS
@@ -342,19 +344,19 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     wrfvar_outname=wrfanl_ens_${memid}_${anl_iso}
   
     if [ ! -r "${wrfanl}" ]; then
-      echo "ERROR: Input file '${wrfanl}' is missing."
+      printf "ERROR: Input file\n ${wrfanl}\n is missing.\n"
       exit 1
     else
       cmd="cp -L ${wrfanl} ${wrfvar_outname}"
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
     fi
   
     if [ ! -r "${wrfbdy}" ]; then
-      echo "ERROR: Input file '${wrfbdy}' is missing."
+      printf "ERROR: Input file \n${wrfbdy}\n is missing.\n"
       exit 1
     else
       cmd="cp -L ${wrfbdy} ."
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
     fi
   
     ##################################################################################
@@ -362,7 +364,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     ##################################################################################
     # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
     cmd="cp -L ${EXP_CNFG}/namelists/parame.in ."
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
   
     # Update the namelist for lateral boundary update 
     cat parame.in \
@@ -401,19 +403,19 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     # Run update_bc_exe
     ##################################################################################
     # Print run parameters
-    echo
-    echo "EXP_CNFG = ${EXP_CNFG}"
-    echo "CYC_HME  = ${CYC_HME}"
-    echo "ENS_ROOT = ${ENS_ROOT}"
-    echo
-    echo "BOUNDARY = ${BOUNDARY}"
-    echo "DOMAIN   = ${dmn}"
-    echo "ENS_N    = ${ens_n}"
-    echo
+    printf "\n"
+    printf "MEM_ID   = ${memid}\n"
+    printf "BOUNDARY = ${BOUNDARY}\n"
+    printf "DOMAIN   = ${dmn}\n"
+    printf "ANL_DT   = ${anl_iso}\n"
+    printf "EXP_CNFG = ${EXP_CNFG}\n"
+    printf "CYC_HME  = ${CYC_HME}\n"
+    printf "ENS_ROOT = ${ENS_ROOT}\n"
+    printf "\n"
     now=`date +%Y-%m-%d_%H_%M_%S`
-    echo "da_update_bc.exe started at ${now}."
+    printf "da_update_bc.exe started at ${now}.\n"
     cmd="${update_bc_exe}"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
   
     ##################################################################################
     # Run time error check
@@ -422,13 +424,13 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     
     # NOTE: THIS CHECK NEEDS IMPROVEMENT, DOESN'T CATCH ERRORS IN THE PROGRAM LOG
     if [ ${error} -ne 0 ]; then
-      echo "ERROR: ${update_bc_exe} exited with status ${error}."
+      printf "ERROR:\n ${update_bc_exe}\n exited with status ${error}.\n"
       exit ${error}
     fi
   fi
 done
 
-echo "wrfda.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
+printf "wrfda.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"
 
 ##################################################################################
 

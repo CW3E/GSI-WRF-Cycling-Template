@@ -6,7 +6,7 @@ This workflow is based on the work of Christopher Harrop, Daniel Steinhoff, Matt
 Caroline Papadopoulos, Patrick Mulrooney, Minghua Zheng, Ivette Hernandez Ba&ntilde;os and
 others. Scripts in this repository were forked and re-written from examples from the CW3E
 WRF NRT ensemble forecast system. Variable conventions have been changed in order to
-integrate a full end-to-end re-forcast system with forecast skill evaluated with
+integrate a full end-to-end re-forecast system with forecast skill evaluated with
 [MET-tools](https://github.com/CW3E/MET-tools) workflows.
 
 Please pardon the lack of documentation while the system undergoes a major re-write

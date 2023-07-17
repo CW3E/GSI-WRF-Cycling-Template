@@ -88,12 +88,12 @@
 #set -x
 
 if [ ! -x ${CNST} ]; then
-  echo "ERROR: constants file ${CNST} does not exist or is not executable."
+  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
   exit 1
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 ##################################################################################
@@ -112,7 +112,7 @@ fi
 ##################################################################################
 
 if [ ! ${MEMID} ]; then
-  echo "ERROR: \${MEMID} is not defined."
+  printf "ERROR: \${MEMID} is not defined.\n"
   exit 1
 else
   # ensure padding to two digits is included
@@ -120,7 +120,7 @@ else
 fi
 
 if [ ${#STRT_DT} -ne 10 ]; then
-  echo "ERROR: \${STRT_DT}, '${STRT_DT}', is not in 'YYYYMMDDHH' format." 
+  printf "ERROR: \${STRT_DT}, '${STRT_DT}', is not in 'YYYYMMDDHH' format.\n"
   exit 1
 else
   # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
@@ -129,18 +129,18 @@ else
 fi
 
 if [[ ${IF_DYN_LEN} = ${NO} ]]; then 
-  echo "Generating fixed length forecast forcing data."
+  printf "Generating fixed length forecast forcing data.\n"
   if [ ! ${FCST_HRS} ]; then
-    echo "ERROR: \${FCST_HRS} is not defined."
+    printf "ERROR: \${FCST_HRS} is not defined.\n"
     exit 1
   else
     # parse forecast hours as base 10 padded
     fcst_len=`printf %03d $(( 10#${FCST_HRS} ))`
   fi
 elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
-  echo "Generating forecast forcing data until experiment validation time."
+  printf "Generating forecast forcing data until experiment validation time.\n"
   if [ ${#EXP_VRF} -ne 10 ]; then
-    echo "ERROR: \${EXP_VRF}, ${EXP_VRF} is not in 'YYYMMDDHH' format."
+    printf "ERROR: \${EXP_VRF}, ${EXP_VRF} is not in 'YYYMMDDHH' format.\n"
     exit 1
   else
     # compute forecast length relative to start time and verification time
@@ -150,7 +150,7 @@ elif [[ ${IF_DYN_LEN} = ${YES} ]]; then
     fcst_len=`printf %03d $(( 10#${fcst_len} ))`
   fi
 else
-  echo "\${IF_DYN_LEN} must be set to 'Yes' or 'No' (case insensitive)."
+  printf "\${IF_DYN_LEN} must be set to 'Yes' or 'No' (case insensitive).\n"
   exit 1
 fi
 
@@ -158,18 +158,18 @@ fi
 end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
 if [ ! ${BKG_INT} ]; then
-  echo "ERROR: \${BKG_INT} is not defined."
+  printf "ERROR: \${BKG_INT} is not defined.\n"
   exit 1
 elif [ ${BKG_INT} -le 0 ]; then
-  echo "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs."
+  printf "ERROR: \${BKG_INT} must be HH > 0 for the frequency of data inputs.\n"
   exit 1
 fi
 
 if [ ${#MAX_DOM} -ne 2 ]; then
-  echo "ERROR: \${MAX_DOM}, ${MAX_DOM} is not in DD format."
+  printf "ERROR: \${MAX_DOM}, ${MAX_DOM} is not in DD format.\n"
   exit 1
 elif [ ${MAX_DOM} -le 00 ]; then
-  echo "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00." 
+  printf "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00.\n"
   exit 1
 fi
 
@@ -189,41 +189,41 @@ fi
 ##################################################################################
 
 if [ ! ${WPS_ROOT} ]; then
-  echo "ERROR: \${WPS_ROOT} is not defined."
+  printf "ERROR: \${WPS_ROOT} is not defined.\n"
   exit 1
 elif [ ! -d ${WPS_ROOT} ]; then
-  echo "ERROR: \${WPS_ROOT} directory '${WPS_ROOT}' does not exist."
+  printf "ERROR: \${WPS_ROOT} directory\n ${WPS_ROOT}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} is not defined."
+  printf "ERROR: \${EXP_CNFG} is not defined.\n"
   exit 1
 elif [ ! -d ${EXP_CNFG} ]; then
-  echo "ERROR: \${EXP_CNFG} directory '${EXP_CNFG}' does not exist."
+  printf "ERROR: \${EXP_CNFG} directory\n ${EXP_CNFG}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${CYC_HME} ]; then
-  echo "ERROR: \${CYC_HME} is not defined."
+  printf "ERROR: \${CYC_HME} is not defined.\n"
   exit 1
 elif [ ! -d ${CYC_HME} ]; then
-  echo "ERROR: \${CYC_HME} directory '${CYC_HME}' does not exist."
+  printf "ERROR: \${CYC_HME} directory\n ${CYC_HME}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! ${MPIRUN} ]; then
-  echo "ERROR: \${MPIRUN} is not defined."
+  printf "ERROR: \${MPIRUN} is not defined.\n"
   exit 1
 fi
 
 if [ ! ${N_PROC} ]; then
-  echo "ERROR: \${N_PROC} is not defined."
+  printf "ERROR: \${N_PROC} is not defined.\n"
   exit 1
 elif [ ${N_PROC} -le 0 ]; then
   msg="ERROR: The variable \${N_PROC} must be set to the number"
-  msg+=" of processors to run metgrid.exe."
-  echo ${msg}
+  msg+=" of processors to run metgrid.exe.\n"
+  printf "${msg}"
   exit 1
 fi
 
@@ -241,41 +241,41 @@ fi
 
 work_root=${CYC_HME}/wpsprd/ens_${memid}
 if [ ! -d ${work_root} ]; then
-  echo "ERROR: \${work_root} directory ${work_root} does not exist."
+  printf "ERROR: \${work_root} directory\n ${work_root}\n does not exist.\n"
   exit 1
 else
   cmd="cd ${work_root}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 wps_dat_files=(${WPS_ROOT}/*)
 metgrid_exe=${WPS_ROOT}/metgrid.exe
 
 if [ ! -x ${metgrid_exe} ]; then
-  echo "ERROR: ${metgrid_exe} does not exist, or is not executable."
+  printf "ERROR:\n ${metgrid_exe}\n does not exist, or is not executable.\n"
   exit 1
 fi
 
 # Make links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
   cmd="ln -sf ${file} ."
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 done
 
 # Remove any previous geogrid static files
 cmd="rm -f geo_em.d*"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 # Check to make sure the geogrid input files (e.g. geo_em.d01.nc)
 # are available and make links to them
 for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
   geoinput_name=${EXP_CNFG}/geogrid/geo_em.d${dmn}.nc
   if [ ! -r "${geoinput_name}" ]; then
-    echo "ERROR: Input file '${geoinput_name}' is missing."
+    printf "ERROR: Input file\n ${geoinput_name}\n is missing.\n"
     exit 1
   else
     cmd="ln -sf ${geoinput_name} ."
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
   fi
 done
 
@@ -285,13 +285,13 @@ done
 # Copy the wps namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
 namelist_temp=${EXP_CNFG}/namelists/namelist.wps
 if [ ! -r ${namelist_temp} ]; then 
-  msg="WPS namelist template '${namelist_temp}' is not readable or "
-  msg+="does not exist."
-  echo ${msg}
+  msg="WPS namelist template\n ${namelist_temp}\n is not readable or "
+  msg+="does not exist.\n"
+  printf "${msg}"
   exit 1
 else
   cmd="cp -L ${namelist_temp} ."
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 # Update max_dom in namelist
@@ -329,25 +329,25 @@ mv namelist.wps.tmp namelist.wps
 
 # Remove pre-existing metgrid files
 cmd="rm -f met_em.d0*.*.nc"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 ##################################################################################
 # Run metgrid 
 ##################################################################################
 # Print run parameters
-echo
-echo "EXP_CNFG = ${EXP_CNFG}"
-echo "MEMID    = ${MEMID}"
-echo "CYC_HME  = ${CYC_HME}"
-echo "STRT_DT  = ${strt_iso}"
-echo "END_DT   = ${end_iso}"
-echo "BKG_INT  = ${BKG_INT}"
-echo "MAX_DOM  = ${MAX_DOM}"
-echo
+printf "\n"
+printf "EXP_CNFG = ${EXP_CNFG}\n"
+printf "MEMID    = ${MEMID}\n"
+printf "CYC_HME  = ${CYC_HME}\n"
+printf "STRT_DT  = ${strt_iso}\n"
+printf "END_DT   = ${end_iso}\n"
+printf "BKG_INT  = ${BKG_INT}\n"
+printf "MAX_DOM  = ${MAX_DOM}\n"
+printf "\n"
 now=`date +%Y-%m-%d_%H_%M_%S`
-echo "metgrid started at ${now}."
+printf "metgrid started at ${now}.\n"
 cmd="${MPIRUN} -n ${N_PROC} ${metgrid_exe}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 ##################################################################################
 # Run time error check
@@ -358,13 +358,13 @@ error=$?
 log_dir=metgrid_log.${now}
 mkdir ${log_dir}
 cmd="mv metgrid.log* ${log_dir}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 cmd="mv namelist.wps ${log_dir}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 if [ ${error} -ne 0 ]; then
-  echo "ERROR: ${metgrid_exe} exited with status ${error}."
+  printf "ERROR:\n ${metgrid_exe}\n exited with status ${error}.\n"
   exit ${error}
 fi
 
@@ -374,14 +374,14 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     dt_str=`date +%Y-%m-%d_%H:%M:%S -d "${strt_dt} ${fcst} hours"`
     out_name="met_em.d${dmn}.${dt_str}.nc"
     if [ ! -s "${out_name}" ]; then
-      echo "ERROR: ${metgrid_exe} failed to complete for d${dmn}."
+      printf "ERROR:\n ${metgrid_exe}\n failed to complete for d${dmn}.\n"
       exit 1
     else
       # rename to no-colon style for WRF
       dt_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${fcst} hours"`
       re_name="met_em.d${dmn}.${dt_str}.nc"
       cmd="mv ${out_name} ${re_name}"
-      echo ${cmd}; eval ${cmd}
+      printf "${cmd}\n"; eval ${cmd}
     fi
   done
 done
@@ -389,10 +389,10 @@ done
 # Remove links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
   cmd="rm -f `basename ${file}`"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 done
 
-echo "metgrid.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`."
+printf "metgrid.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"
 
 ##################################################################################
 # end
