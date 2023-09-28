@@ -18,7 +18,7 @@
 ##################################################################################
 # License Statement:
 ##################################################################################
-# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
