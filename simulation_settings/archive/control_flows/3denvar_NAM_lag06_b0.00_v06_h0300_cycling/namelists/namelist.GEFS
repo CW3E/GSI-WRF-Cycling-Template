@@ -86,8 +86,6 @@
  j_parent_start                      = 1,    210,
  e_we                                = 965,  901,
  e_sn                                = 700,  781,
- e_vert                              = 80,    80,
- p_top_requested                     = 1000,
  parent_time_step_ratio              = 1, 3,
  FEEDBACK                            = FEEDBACK
  smooth_option                       = 2
