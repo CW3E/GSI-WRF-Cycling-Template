@@ -27,18 +27,28 @@
 # Using GMT time zone for time computations
 export TZ="GMT"
 
-# sets COMET specific environment for intelmpi 2019.5.281
+# defines expanse environment
 module purge
-export MODULEPATH=/share/apps/compute/modulefiles:$MODULEPATH
-module load intel/2019.5.281
-module load intelmpi/2019.5.281
+module restore
 
-# Set up netcdf
-export MODULEPATH=/share/apps/compute/modulefiles/applications:$MODULEPATH
-module load hdf5/1.10.7
-module load netcdf/4.7.4intelmpi
-export NETCDF="/share/apps/compute/netcdf/intel2019/intelmpi"
-export HDF5="/share/apps/compute/hdf5/intel2019/intelmpi"
+# intel
+module load cpu/0.15.4
+module load intel/19.1.1.217
+module load intel-mpi/2019.8.254
+module load netcdf-c/4.7.4
+module load netcdf-fortran/4.5.3
+module load netcdf-cxx/4.2
+module load hdf5/1.10.6
+module load parallel-netcdf/1.12.1
+
+export NETCDF="/expanse/lustre/projects/ddp181/cpapadop/WRF_CODE/WRF-4.5/NETCDF"
+export HDF5="/cm/shared/apps/spack/cpu/opt/spack/linux-centos8-zen2/intel-19.1.1.217/hdf5-1.10.6-v7kfafsb4rv7yds3i3zr4ym24q62veef"
+# for quilting
+export NETCDFPAR=${NETCDF}
+
+# set up libs
+export LD_LIBRARY_PATH=${NETCDF}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export PATH=${NETCDF}/bin:${PATH}
 
 # create variables for namelist templates / switches
 CYCLING=[Cc][Yy][Cc][Ll][Ii][Nn][Gg]

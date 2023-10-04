@@ -93,7 +93,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 ##################################################################################
@@ -266,7 +266,7 @@ fi
 work_root=${CYC_HME}/realprd/ens_${memid}
 mkdir -p ${work_root}
 cmd="cd ${work_root}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 wrf_dat_files=(${WRF_ROOT}/run/*)
 real_exe=${WRF_ROOT}/main/real.exe
@@ -279,15 +279,15 @@ fi
 # Make links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
   cmd="ln -sf ${file} ."
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 done
 
 # Remove IC/BC in the directory if old data present
 cmd="rm -f wrfinput_d0*"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 cmd="rm -f wrfbdy_d01"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # Check to make sure the real input files (e.g. met_em.d01.*)
 # are available and make links to them
@@ -301,7 +301,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       exit 1
     else
       cmd="ln -sfr ${wps_dir}/${realinput_name} ."
-      printf "${cmd}\n"; eval ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
     fi
   done
 done
@@ -313,9 +313,9 @@ if [ -f rsl.out.0000 ]; then
   mkdir ${rsldir}
   printf "Moving pre-existing rsl files to ${rsldir}.\n"
   cmd="mv rsl.out.* ${rsldir}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
   cmd="mv rsl.error.* ${rsldir}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 else
   printf "No pre-existing rsl files were found.\n"
 fi
@@ -323,6 +323,10 @@ fi
 ##################################################################################
 #  Build real namelist
 ##################################################################################
+# Remove any previous namelists
+cmd="rm -f namelist.input"
+printf "${cmd}\n"; eval "${cmd}"
+
 # Copy the wrf namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
 namelist_temp=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
 if [ ! -r ${namelist_temp} ]; then 
@@ -332,7 +336,7 @@ if [ ! -r ${namelist_temp} ]; then
   exit 1
 else
   cmd="cp -L ${namelist_temp} ./namelist.input"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # Get the start and end time components
@@ -448,7 +452,7 @@ printf "\n"
 now=`date +%Y-%m-%d_%H_%M_%S`
 printf "real started at ${now}.\n"
 cmd="${MPIRUN} -n ${N_PROC} ${real_exe}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################
 # Run time error check
@@ -459,13 +463,13 @@ error=$?
 rsldir=rsl.real.${now}
 mkdir ${rsldir}
 cmd="mv rsl.out.* ${rsldir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 cmd="mv rsl.error.* ${rsldir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 cmd="mv namelist.* ${rsldir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 if [ ${error} -ne 0 ]; then
   printf "ERROR:\n ${real_exe}\n exited with status ${error}.\n"
@@ -517,12 +521,12 @@ fi
 
 # Remove the real input files (e.g. met_em.d01.*)
 cmd="rm -f ./met_em.*"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # Remove links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
     cmd="rm -f `basename ${file}`"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 done
 
 printf "real.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"

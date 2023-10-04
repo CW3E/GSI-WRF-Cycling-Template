@@ -93,7 +93,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 ##################################################################################
@@ -245,7 +245,7 @@ if [ ! -d ${work_root} ]; then
   exit 1
 else
   cmd="cd ${work_root}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 wps_dat_files=(${WPS_ROOT}/*)
@@ -259,12 +259,12 @@ fi
 # Make links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
   cmd="ln -sf ${file} ."
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 done
 
 # Remove any previous geogrid static files
 cmd="rm -f geo_em.d*"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # Check to make sure the geogrid input files (e.g. geo_em.d01.nc)
 # are available and make links to them
@@ -275,13 +275,17 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     exit 1
   else
     cmd="ln -sf ${geoinput_name} ."
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
   fi
 done
 
 ##################################################################################
 #  Build WPS namelist
 ##################################################################################
+# Remove any previous namelists
+cmd="rm -f namelist.wps"
+printf "${cmd}\n"; eval "${cmd}"
+
 # Copy the wps namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
 namelist_temp=${EXP_CNFG}/namelists/namelist.wps
 if [ ! -r ${namelist_temp} ]; then 
@@ -291,7 +295,7 @@ if [ ! -r ${namelist_temp} ]; then
   exit 1
 else
   cmd="cp -L ${namelist_temp} ."
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # Update max_dom in namelist
@@ -329,7 +333,7 @@ mv namelist.wps.tmp namelist.wps
 
 # Remove pre-existing metgrid files
 cmd="rm -f met_em.d0*.*.nc"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################
 # Run metgrid 
@@ -347,7 +351,7 @@ printf "\n"
 now=`date +%Y-%m-%d_%H_%M_%S`
 printf "metgrid started at ${now}.\n"
 cmd="${MPIRUN} -n ${N_PROC} ${metgrid_exe}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################
 # Run time error check
@@ -358,10 +362,10 @@ error=$?
 log_dir=metgrid_log.${now}
 mkdir ${log_dir}
 cmd="mv metgrid.log* ${log_dir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 cmd="mv namelist.wps ${log_dir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 if [ ${error} -ne 0 ]; then
   printf "ERROR:\n ${metgrid_exe}\n exited with status ${error}.\n"
@@ -381,7 +385,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       dt_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${fcst} hours"`
       re_name="met_em.d${dmn}.${dt_str}.nc"
       cmd="mv ${out_name} ${re_name}"
-      printf "${cmd}\n"; eval ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
     fi
   done
 done
@@ -389,7 +393,7 @@ done
 # Remove links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
   cmd="rm -f `basename ${file}`"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 done
 
 printf "metgrid.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"

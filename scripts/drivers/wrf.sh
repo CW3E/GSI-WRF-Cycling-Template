@@ -93,7 +93,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 ##################################################################################
@@ -344,7 +344,7 @@ fi
 work_root=${CYC_HME}/wrfprd/ens_${memid}
 mkdir -p ${work_root}
 cmd="cd ${work_root}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 wrf_dat_files=(${WRF_ROOT}/run/*)
 wrf_exe=${WRF_ROOT}/main/wrf.exe
@@ -357,15 +357,15 @@ fi
 # Make links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
   cmd="ln -sf ${file} ."
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 done
 
 if [[ ${WRF_IC} = ${REALEXE} || ${WRF_IC} = ${CYCLING} ]]; then
   # Remove any old WRF outputs in the directory from failed runs
   cmd="rm -f wrfout_*"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
   cmd="rm -f wrfrst_*"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # Link WRF initial conditions
@@ -379,7 +379,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       wrfanlroot=${CYC_HME}/wrfdaprd/lateral_bdy_update/ens_${memid}
       wrfbdy=${wrfanlroot}/wrfbdy_d01
       cmd="ln -sfr ${wrfbdy} wrfbdy_d01"
-      printf "${cmd}\n"; eval ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
       if [ ! -r "./wrfbdy_d01" ]; then
         printf "ERROR: wrfinput\n ${wrfbdy}\n does not exist or is not readable.\n"
         exit 1
@@ -399,7 +399,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     # link the wrf inputs
     wrfanl=${wrfanlroot}/wrfanl_ens_${memid}_${dt_str}
     cmd="ln -sfr ${wrfanl} ${wrfinput}"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 
     if [ ! -r ${wrfinput} ]; then
       printf "ERROR: wrfinput source\n ${wrfanl}\n does not exist or is not readable.\n"
@@ -420,7 +420,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       wrfanlroot=${CYC_HME}/wrfdaprd/lateral_bdy_update/ens_${memid}
       wrfbdy=${wrfanlroot}/wrfbdy_d01
       cmd="ln -sfr ${wrfbdy} wrfbdy_d01"
-      printf "${cmd}\n"; eval ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
       if [ ! -r "./wrfbdy_d01" ]; then
         printf "ERROR: wrfinput\n ${wrfbdy}\n does not exist or is not readable.\n"
         exit 1
@@ -434,7 +434,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       # Link the wrfbdy_d01 file from real
       wrfbdy=${realroot}/wrfbdy_d01
       cmd="ln -sfr ${wrfbdy} wrfbdy_d01"
-      printf "${cmd}\n"; eval ${cmd};
+      printf "${cmd}\n"; eval "${cmd}";
 
       if [ ! -r wrfbdy_d01 ]; then
         printf "ERROR:\n ${wrfbdy}\n does not exist or is not readable.\n"
@@ -443,7 +443,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     fi
     realname=${realroot}/${wrfinput}
     cmd="ln -sfr ${realname} ."
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 
     if [ ! -r ${wrfinput} ]; then
       printf "ERROR: wrfinput\n ${realname}\n does not exist or is not readable.\n"
@@ -456,7 +456,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     wrflowinp=wrflowinp_d${dmn}
     realname=${CYC_HME}/realprd/ens_${memid}/${wrflowinp}
     cmd="ln -sfr ${realname} ."
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
     if [ ! -r ${wrflowinp} ]; then
       printf "ERROR: wrflwinp\n ${wrflowinp}\n does not exist or is not readable.\n"
       exit 1
@@ -471,9 +471,9 @@ if [ -f rsl.out.0000 ]; then
   mkdir ${rsldir}
   printf "Moving pre-existing rsl files to ${rsldir}.\n"
   cmd="mv rsl.out.* ${rsldir}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
   cmd="mv rsl.error.* ${rsldir}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 else
   printf "No pre-existing rsl files were found.\n"
 fi
@@ -481,6 +481,10 @@ fi
 ##################################################################################
 #  Build WRF namelist
 ##################################################################################
+# Remove any previous namelists
+cmd="rm -f namelist.input"
+printf "${cmd}\n"; eval "${cmd}"
+
 # Copy the wrf namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
 namelist_temp=${EXP_CNFG}/namelists/namelist.${BKG_DATA}
 if [ ! -r ${namelist_temp} ]; then 
@@ -490,7 +494,7 @@ if [ ! -r ${namelist_temp} ]; then
   exit 1
 else
   cmd="cp -L ${namelist_temp} ./namelist.input"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # Get the start and end time components
@@ -632,7 +636,7 @@ printf
 now=`date +%Y-%m-%d_%H_%M_%S`
 printf "wrf started at ${now}.\n"
 cmd="${MPIRUN} -n ${N_PROC} ${wrf_exe}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################
 # Run time error check
@@ -643,11 +647,11 @@ error=$?
 rsldir=rsl.wrf.${now}
 mkdir ${rsldir}
 cmd="mv rsl.out.* ${rsldir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 cmd="mv rsl.error.* ${rsldir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 cmd="mv namelist.* ${rsldir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 if [ ${error} -ne 0 ]; then
   printf "ERROR:\n ${wrf_exe}\n exited with status ${error}.\n"
@@ -668,7 +672,7 @@ fi
 dt_str=`date +%Y%m%d%H -d "${cyc_dt} ${CYC_INT} hours"`
 new_bkg=${dt_str}/bkg/ens_${memid}
 cmd="mkdir -p ${CYC_HME}/../${new_bkg}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # Check for all wrfout files on WRFOUT_INT and link files to
 # the appropriate bkg directory
@@ -682,7 +686,7 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
       exit 1
     else
       cmd="ln -sfr wrfout_d${dmn}_${dt_str} ${CYC_HME}/../${new_bkg}"
-      printf "${cmd}\n"; eval ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
     fi
   done
   # Check for all wrfrst files for each domain at end of forecast and link files to
@@ -695,14 +699,14 @@ for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
     exit 1
   else
     cmd="ln -sfr wrfrst_d${dmn}_${dt_str} ${CYC_HME}/../${new_bkg}"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
   fi
 done
 
 # Remove links to the WRF DAT files
 for file in ${wrf_dat_files[@]}; do
     cmd="rm -f `basename ${file}`"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 done
 
 printf "wrf.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"

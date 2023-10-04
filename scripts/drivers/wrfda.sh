@@ -43,7 +43,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 ##################################################################################
@@ -192,14 +192,14 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     work_root=${work_root}/lower_bdy_update/ens_${memid}
     mkdir -p ${work_root}
     cmd="cd ${work_root}"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
     
     # Remove IC/BC in the directory if old data present
     cmd="rm -f wrfout_*"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
     
     cmd="rm -f wrfinput_d*"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
   
     if [ ${memid} = 00 ]; then 
       # control background sourced from last cycle background
@@ -231,7 +231,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
         exit 1
       else
         cmd="cp -L ${bkg_dir}/${wrfout} ."
-        printf "${cmd}\n"; eval ${cmd}
+        printf "${cmd}\n"; eval "${cmd}"
       fi
   
       if [ ! -r "${real_dir}/${wrfinput}" ]; then
@@ -239,7 +239,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
         exit 1
       else
         cmd="cp -L ${real_dir}/${wrfinput} ."
-        printf "${cmd}\n"; eval ${cmd}
+        printf "${cmd}\n"; eval "${cmd}"
       fi
   
       ##################################################################################
@@ -247,7 +247,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       ##################################################################################
       # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
       cmd="cp -L ${EXP_CNFG}/namelists/parame.in ."
-      printf "${cmd}\n"; eval ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
   
       # Update the namelist for the domain id 
       cat parame.in \
@@ -292,7 +292,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       now=`date +%Y-%m-%d_%H_%M_%S`
       printf "da_update_bc.exe started at ${now}.\n"
       cmd="${update_bc_exe}"
-      printf "${cmd}\n"; eval ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
   
       ##################################################################################
       # Run time error check
@@ -311,17 +311,17 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     work_root=${work_root}/lateral_bdy_update/ens_${memid}
     mkdir -p ${work_root}
     cmd="cd ${work_root}"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
     
     # Remove IC/BC in the directory if old data present
     cmd="rm -f wrfout_*"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 
     cmd="rm -f wrfinput_d0*"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 
     cmd="rm -f wrfbdy_d01"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 
     if [ ${memid} = 00 ]; then
       if [ ! -d ${gsi_dir} ]; then
@@ -348,7 +348,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       exit 1
     else
       cmd="cp -L ${wrfanl} ${wrfvar_outname}"
-      printf "${cmd}\n"; eval ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
     fi
   
     if [ ! -r "${wrfbdy}" ]; then
@@ -356,7 +356,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
       exit 1
     else
       cmd="cp -L ${wrfbdy} ."
-      printf "${cmd}\n"; eval ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
     fi
   
     ##################################################################################
@@ -364,7 +364,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     ##################################################################################
     # Copy the namelist from the static dir -- THIS WILL BE MODIFIED DO NOT LINK TO IT
     cmd="cp -L ${EXP_CNFG}/namelists/parame.in ."
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
   
     # Update the namelist for lateral boundary update 
     cat parame.in \
@@ -415,7 +415,7 @@ for memid in `seq -f "%02g" 0 ${ens_max}`; do
     now=`date +%Y-%m-%d_%H_%M_%S`
     printf "da_update_bc.exe started at ${now}.\n"
     cmd="${update_bc_exe}"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
   
     ##################################################################################
     # Run time error check

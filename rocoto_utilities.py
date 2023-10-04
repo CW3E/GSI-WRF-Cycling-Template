@@ -38,42 +38,19 @@ from datetime import datetime as dt
 # SET GLOBAL PARAMETERS
 ##################################################################################
 # directory path for root of git clone of GSI-WRF-Cycling-Template
-USR_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/Common-Case/GSI-WRF-Cycling-Template'
+USR_HME = '/expanse/lustre/projects/ddp181/cgrudzien/JEDI-MPAS-Common-Case/GSI-WRF-Cycling-Template'
 
 # directory for rocoto install
-RCT_HME = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/rocoto'
+RCT_HME = '/expanse/lustre/projects/ddp181/cgrudzien/SOFT_ROOT/rocoto'
 
 # Case study sub directories
 CSES = [
-        'CC',
+        'DeepDive',
        ]
 
 # name of .xml workflows to execute and monitor WITHOUT the extension of file
 CTR_FLWS = [
-            #'NAM_lag06_b0.00_v06_h0300',
-            #'NAM_lag06_b0.20_v06_h0300',
-            #'NAM_lag06_b0.40_v06_h0300',
-            #'NAM_lag06_b0.60_v06_h0300',
-            #'NAM_lag06_b0.80_v06_h0300',
-            #'NAM_lag06_b1.00_v06_h0300',
-            #'RAP_lag06_b0.00_v06_h0300',
-            #'RAP_lag06_b0.20_v06_h0300',
-            'RAP_lag06_b0.40_v06_h0300',
-            #'RAP_lag06_b0.60_v06_h0300',
-            #'RAP_lag06_b0.80_v06_h0300',
-            #'RAP_lag06_b1.00_v06_h0300',
-            'NAM_lag06_b0.00_v03_h0300',
-            'NAM_lag06_b0.20_v03_h0300',
-            'NAM_lag06_b0.40_v03_h0300',
-            'NAM_lag06_b0.60_v03_h0300',
-            'NAM_lag06_b0.80_v03_h0300',
-            'NAM_lag06_b1.00_v03_h0300',
-            'RAP_lag06_b0.00_v03_h0300',
-            'RAP_lag06_b0.20_v03_h0300',
-            'RAP_lag06_b0.40_v03_h0300',
-            'RAP_lag06_b0.60_v03_h0300',
-            'RAP_lag06_b0.80_v03_h0300',
-            'RAP_lag06_b1.00_v03_h0300',
+            '2022122800_valid_date_ensemble',
            ]
 
 END = dt(2024, 1, 1, 0)

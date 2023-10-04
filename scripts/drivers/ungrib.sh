@@ -93,7 +93,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 ##################################################################################
@@ -271,7 +271,7 @@ fi
 work_root=${CYC_HME}/wpsprd/ens_${memid}
 mkdir -p ${work_root}
 cmd="cd ${work_root}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 wps_dat_files=(${WPS_ROOT}/*)
 ungrib_exe=${WPS_ROOT}/ungrib.exe
@@ -284,12 +284,12 @@ fi
 # Make links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
   cmd="ln -sf ${file} ."
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 done
 
 # Remove any previous Vtables
 cmd="rm -f Vtable"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # Check to make sure the variable table is available
 vtable=${EXP_CNFG}/variable_tables/Vtable.${BKG_DATA}
@@ -300,7 +300,7 @@ if [ ! -r ${vtable} ]; then
   exit 1
 else
   cmd="ln -sf ${vtable} Vtable"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # check to make sure the grib_dataroot exists and is non-empty
@@ -316,12 +316,16 @@ elif [ `ls -l ${grib_dataroot}/${fnames} | wc -l` -lt ${n_files} ]; then
 else
   # link the grib data to the working directory
   cmd="./link_grib.csh ${grib_dataroot}/${fnames}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 ##################################################################################
 #  Build WPS namelist
 ##################################################################################
+# Remove any previous namelists
+cmd="rm -f namelist.wps"
+printf "${cmd}\n"; eval "${cmd}"
+
 # Copy the wps namelist template, NOTE: THIS WILL BE MODIFIED DO NOT LINK TO IT
 namelist_temp=${EXP_CNFG}/namelists/namelist.wps
 if [ ! -r ${namelist_temp} ]; then 
@@ -331,7 +335,7 @@ if [ ! -r ${namelist_temp} ]; then
   exit 1
 else
   cmd="cp -L ${namelist_temp} ."
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # define start / end time patterns for namelist.wps
@@ -384,7 +388,7 @@ printf "\n"
 now=`date +%Y-%m-%d_%H_%M_%S`
 printf "ungrib started at ${now}.\n"
 cmd="./ungrib.exe"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################
 # Run time error check
@@ -395,10 +399,10 @@ error=$?
 log_dir=ungrib_log.${now}
 mkdir ${log_dir}
 cmd="mv ungrib.log ${log_dir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 cmd="mv namelist.wps ${log_dir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # check run error code
 if [ ${error} -ne 0 ]; then
@@ -407,7 +411,8 @@ if [ ${error} -ne 0 ]; then
 fi
 
 # verify all file outputs
-for fcst in `seq -f "%03g" 0 ${BKG_INT}} ${fcst_len}`; do
+fcst_hrs=`seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`
+for fcst in ${fcst_hrs[@]}; do
   filename="FILE:`date +%Y-%m-%d_%H -d "${strt_dt} ${fcst} hours"`"
   if [ ! -s ${filename} ]; then
     printf "ERROR: ${filename} is missing.\n"
@@ -419,12 +424,12 @@ done
 # NOTE: namelist.wps should account for the "PRES" file prefixes in fg_names
 if [ ${IF_ECMWF_ML} = ${YES} ]; then
   cmd="ln -sf ${EXP_CNFG}/variable_tables/ecmwf_coeffs ."
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
   cmd="./util/calc_ecmwf_p.exe"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 
   # Check to see if we've got all the files we're expecting
-  for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
+  for fcst in ${fcst_hrs[@]}; do
     filename=PRES:`date +%Y-%m-%d_%H -d "${strt_dt} ${fcst} hours"`
     if [ ! -s ${filename} ]; then
       printf "ERROR: ${filename} is missing.\n"
@@ -436,12 +441,12 @@ fi
 # Remove links to the WPS DAT files
 for file in ${wps_dat_files[@]}; do
     cmd="rm -f `basename ${file}`"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 done
 
 # remove links to grib files
 cmd="rm -f GRIBFILE.*"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 printf "ungrib.sh completed successfully at `date +%Y-%m-%d_%H_%M_%S`.\n"
 
