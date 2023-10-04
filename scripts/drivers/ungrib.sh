@@ -160,6 +160,9 @@ fi
 # define the end time based on forecast length control flow above
 end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
+# define a sequence of all forecast hours with background interval spacing
+fcst_seq=`seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`
+
 if [ ${#BKG_STRT_DT} -ne 10 ]; then
   printf "ERROR: \${BKG_STRT_DT}, '${BKG_STRT_DT}', is not in 'YYYYMMDDHH' format.\n"
   exit 1
@@ -411,8 +414,7 @@ if [ ${error} -ne 0 ]; then
 fi
 
 # verify all file outputs
-fcst_hrs=`seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`
-for fcst in ${fcst_hrs[@]}; do
+for fcst in ${fcst_seq[@]}; do
   filename="FILE:`date +%Y-%m-%d_%H -d "${strt_dt} ${fcst} hours"`"
   if [ ! -s ${filename} ]; then
     printf "ERROR: ${filename} is missing.\n"
@@ -429,7 +431,7 @@ if [ ${IF_ECMWF_ML} = ${YES} ]; then
   printf "${cmd}\n"; eval "${cmd}"
 
   # Check to see if we've got all the files we're expecting
-  for fcst in ${fcst_hrs[@]}; do
+  for fcst in ${fcst_seq[@]}; do
     filename=PRES:`date +%Y-%m-%d_%H -d "${strt_dt} ${fcst} hours"`
     if [ ! -s ${filename} ]; then
       printf "ERROR: ${filename} is missing.\n"

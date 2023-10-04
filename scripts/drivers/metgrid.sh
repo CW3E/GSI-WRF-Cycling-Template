@@ -157,6 +157,9 @@ fi
 # define the end time based on forecast length control flow above
 end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
+# define a sequence of all forecast hours with background interval spacing
+fcst_seq=`seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`
+
 if [ ! ${BKG_INT} ]; then
   printf "ERROR: \${BKG_INT} is not defined.\n"
   exit 1
@@ -172,6 +175,9 @@ elif [ ${MAX_DOM} -le 00 ]; then
   printf "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00.\n"
   exit 1
 fi
+
+# define a sequence of all domains in padded syntax
+dmns=`seq -f "%02g" 1 ${MAX_DOM}`
 
 ##################################################################################
 # Define metgrid workflow dependencies
@@ -268,7 +274,7 @@ printf "${cmd}\n"; eval "${cmd}"
 
 # Check to make sure the geogrid input files (e.g. geo_em.d01.nc)
 # are available and make links to them
-for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+for dmn in ${dmns[@]}; do
   geoinput_name=${EXP_CNFG}/geogrid/geo_em.d${dmn}.nc
   if [ ! -r "${geoinput_name}" ]; then
     printf "ERROR: Input file\n ${geoinput_name}\n is missing.\n"
@@ -373,8 +379,8 @@ if [ ${error} -ne 0 ]; then
 fi
 
 # Check to see if metgrid outputs are generated
-for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
-  for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
+for dmn in ${dmns[@]}; do
+  for fcst in ${fcst_seq[@]}; do
     dt_str=`date +%Y-%m-%d_%H:%M:%S -d "${strt_dt} ${fcst} hours"`
     out_name="met_em.d${dmn}.${dt_str}.nc"
     if [ ! -s "${out_name}" ]; then

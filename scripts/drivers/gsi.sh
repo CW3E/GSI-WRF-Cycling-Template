@@ -177,6 +177,9 @@ else
   exit 1
 fi
 
+# create a sequence of member ids
+mem_list=`seq -f "%02g" 1 ${N_ENS}`
+
 if [ ! ${S_ENS_V} ]; then
   msg="ERROR: \${S_ENS_V} must be specified to the length of vertical "
   msg+="localization scale in grid units.\n"
@@ -723,7 +726,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
       if [ ${dmn} -le ${WRF_ENS_DOM} ]; then
         # copy WRF ensemble members
         printf " Copy ensemble perturbations to working directory.\n"
-        for memid in `seq -f "%02g" 1 ${N_ENS}`; do
+        for memid in ${mem_list[@]}; do
           ens_file=${ENS_ROOT}/bkg/ens_${memid}/wrfout_d${dmn}_${anl_iso}
           if [ !-r ${ens_file} ]; then
             printf "ERROR: ensemble file\n ${ens_file}\n does not exist.\n"
@@ -893,7 +896,7 @@ for dmn in `seq -f "%02g" 1 ${max_dom}`; do
 
       # Loop through each member
       loop=01
-      for memid in `seq -f "%02g" 1 ${N_ENS}`; do
+      for memid in ${mem_list[@]}; do
         rm pe0*
         # get new background for each member
         if [[ -f wrf_inout ]]; then

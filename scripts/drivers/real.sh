@@ -160,6 +160,9 @@ fi
 # define the end time based on forecast length control flow above
 end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
+# define a sequence of all forecast hours with background interval spacing
+fcst_seq=`seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`
+
 if [ ! ${BKG_INT} ]; then
   printf "ERROR: \${BKG_INT} is not defined.\n"
   exit 1
@@ -184,6 +187,9 @@ elif [ ${MAX_DOM} -le 00 ]; then
   printf "${msg}"
   exit 1
 fi
+
+# define a sequence of all domains in padded syntax
+dmns=`seq -f "%02g" 1 ${MAX_DOM}`
 
 if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
   printf "SST Update turned on.\n"
@@ -291,8 +297,8 @@ printf "${cmd}\n"; eval "${cmd}"
 
 # Check to make sure the real input files (e.g. met_em.d01.*)
 # are available and make links to them
-for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
-  for fcst in `seq -f "%03g" 0 ${BKG_INT} ${fcst_len}`; do
+for dmn in ${dmns[@]}; do
+  for fcst in ${fcst_seq[@]}; do
     dt_str=`date "+%Y-%m-%d_%H_%M_%S" -d "${strt_dt} ${fcst} hours"`
     realinput_name=met_em.d${dmn}.${dt_str}.nc
     wps_dir=${CYC_HME}/wpsprd/ens_${memid}
@@ -496,7 +502,7 @@ if [ ! -s wrfbdy_d01 ]; then
 fi
 
 # check to see if the IC output is generated
-for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+for dmn in ${dmns[@]}; do
   ic_file=wrfinput_d${dmn}
   if [ ! -s ${ic_file} ]; then
     msg="ERROR:\n ${real_exe}\n failed to generate initial conditions ${ic_file} "
@@ -508,7 +514,7 @@ done
 
 # check to see if the SST update fields are generated
 if [[ ${IF_SST_UPDTE} = ${YES} ]]; then
-  for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+  for dmn in ${dmns[@]}; do
     sst_file=wrflowinp_d${dmn}
     if [ ! -s ${sst_file} ]; then
       msg="ERROR:\n ${real_exe}\n failed to generate SST update file ${sst_file} "

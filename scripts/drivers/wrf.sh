@@ -178,6 +178,7 @@ fi
 # define the end time based on forecast length control flow above
 end_dt=`date -d "${strt_dt} ${fcst_len} hours"`
 
+
 if [ ! ${BKG_INT} ]; then
   printf "ERROR: \${BKG_INT} is not defined.\n"
   exit 1
@@ -200,6 +201,9 @@ elif [ ! ${MAX_DOM} -gt 00 ]; then
   printf "ERROR: \${MAX_DOM} must be an integer for the max WRF domain index > 00.\n"
   exit 1
 fi
+
+# define a sequence of all domains in padded syntax
+dmns=`seq -f "%02g" 1 ${MAX_DOM}`
 
 if [ ${#DOWN_DOM} -ne 2 ]; then
   printf "ERROR: \${DOWN_DOM}, ${DOWN_DOM}, is not in DD format.\n"
@@ -369,7 +373,7 @@ if [[ ${WRF_IC} = ${REALEXE} || ${WRF_IC} = ${CYCLING} ]]; then
 fi
 
 # Link WRF initial conditions
-for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+for dmn in ${dmns[@]}; do
   wrfinput=wrfinput_d${dmn}
   dt_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
   # if cycling AND analyzing this domain, get initial conditions from last analysis
@@ -676,7 +680,7 @@ printf "${cmd}\n"; eval "${cmd}"
 
 # Check for all wrfout files on WRFOUT_INT and link files to
 # the appropriate bkg directory
-for dmn in `seq -f "%02g" 1 ${MAX_DOM}`; do
+for dmn in ${dmns[@]}; do
   for fcst in `seq -f "%03g" 0 ${WRFOUT_INT} ${fcst_len}`; do
     dt_str=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${fcst} hours"`
     if [ ! -s wrfout_d${dmn}_${dt_str} ]; then
