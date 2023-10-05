@@ -276,8 +276,6 @@ fi
 #              vtables, geogrid data, GSI fix files, etc.
 # CYC_HME    = Start time named directory for cycling data containing
 #              bkg, wpsprd, realprd, wrfprd, wrfdaprd, gsiprd, enkfprd
-# DATA_ROOT  = Directory for all forcing data files, including grib files,
-#              obs files, etc.
 # MPIRUN     = MPI Command to execute WRF
 # N_PROC     = The total number of processes to run wrf.exe with MPI
 # NIO_GROUPS = Number of Quilting groups -- only used for NIO_TPG > 0
@@ -306,14 +304,6 @@ if [ ! ${CYC_HME} ]; then
   exit 1
 elif [ ! -d ${CYC_HME} ]; then
   printf "ERROR: \${CYC_HME} directory\n ${CYC_HME}\n does not exist.\n"
-  exit 1
-fi
-
-if [ ! ${DATA_ROOT} ]; then
-  printf "ERROR: \${DATA_ROOT} is not defined.\n"
-  exit 1
-elif [ ! -d ${DATA_ROOT} ]; then
-  printf "ERROR: \${DATA_ROOT} directory\n ${DATA_ROOT}\n does not exist.\n"
   exit 1
 fi
 

@@ -816,10 +816,6 @@
       <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
     </envar>
     <envar>
-      <name>DATA_ROOT</name>
-      <value>&DATA_ROOT;</value>
-    </envar>
-    <envar>
       <name>MPIRUN</name>
       <value>&MPIRUN;</value>
     </envar>
@@ -923,10 +919,6 @@
     <envar>
       <name>CYC_HME</name>
       <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
-    </envar>
-    <envar>
-      <name>DATA_ROOT</name>
-      <value>&DATA_ROOT;</value>
     </envar>
     <envar>
       <name>MPIRUN</name>
@@ -1068,10 +1060,6 @@
     <envar>
       <name>CYC_HME</name>
       <value><cyclestr>&EXP_HME;/@Y@m@d@H</cyclestr></value>
-    </envar>
-    <envar>
-      <name>DATA_ROOT</name>
-      <value>&DATA_ROOT;</value>
     </envar>
     <envar>
       <name>MPIRUN</name>
