@@ -54,22 +54,22 @@ from download_utilities import STR_INDT, get_reqs
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # starting date and zero hour of data
-START_DATE = '2021-01-21T12:00:00'
+START_DATE = '2022-12-23T00:00:00'
 
 # final date and zero hour of data
-END_DATE = '2021-01-21T12:00:00'
+END_DATE = '2022-12-27T00:00:00'
 
 # interval of forecast data outputs after zero hour
 FCST_INT = 3
 
 # number of hours between zero hours for forecast data
-CYCLE_INT = 6
+CYCLE_INT = 24
 
 # max forecast length in hours
-MAX_FCST = 18
+MAX_FCST = 120
 
 # root directory where date stamped sub-directories will collect data downloads
-DATA_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/CC/GEFS' 
+DATA_ROOT = '/expanse/lustre/projects/ddp181/cgrudzien/JEDI-MPAS-Common-Case/DATA/GEFS'
 
 ##################################################################################
 # UTILITY METHODS
